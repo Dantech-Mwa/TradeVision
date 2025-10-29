@@ -86,6 +86,8 @@
       <button data-tool="arrow"><i class="fas fa-arrow-up"></i><span>Arrow</span></button>
     </div>
 
+    <button onclick="runSavedPine()" style="margin:0.5rem; padding:0.5rem 1rem; background:var(--accent); color:white; border:none; border-radius:4px;">Run Saved Pine</button>
+    
     <!-- Main Chart -->
     <div class="main-chart">
       <div id="chart-container"
@@ -324,6 +326,11 @@ document.getElementById('drawing-tools').innerHTML = `
   <button onclick="currentTool='text'">Text</button>
   <button onclick="drawings=[]">Clear</button>
 `;
+ async function runSavedPine() {
+  const script = localStorage.getItem('pineScript') || defaultScript;
+  // Reuse same PineJS logic as pine-editor.html
+  // (You can extract to shared JS later)
+}
   // Resize
   window.addEventListener('resize', () => {
     if (chart) chart.resize(document.getElementById('chart').clientWidth, 500);
