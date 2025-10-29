@@ -4,75 +4,87 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Economic Calendar - TradeVision</title>
-  <link rel="icon" href="assets/icons/chart.svg" type="image/svg+xml">
+  <link rel="icon" href="assets/icons/calendar.svg" type="image/svg+xml">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
     :root{--bg:#141518;--bg-light:#1e222d;--text:#d1d4dc;--text-light:#9ea1b5;--accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#2d313e;--card:#1e222d;}
     [data-theme="light"]{--bg:#ffffff;--bg-light:#f8f9fa;--text:#2d3748;--text-light:#718096;--accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#e2e8f0;--card:#ffffff;}
-    body{margin:0;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);}
+    body{margin:0;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;}
     a{color:var(--accent);text-decoration:none;}
-    .container{max-width:1000px;margin:0 auto;padding:2rem 1rem;}
+    .container{max-width:1200px;margin:0 auto;padding:2rem 1rem;}
     .header{background:var(--bg-light);border-bottom:1px solid var(--border);padding:0.75rem 0;position:sticky;top:0;z-index:100;}
     .flex-between{display:flex;justify-content:space-between;align-items:center;}
     .logo{font-weight:700;font-size:1.4rem;color:var(--accent);}
-    .logo i{font-size:1.5rem;}
     .nav-links a{margin:0 0.75rem;font-weight:500;}
     .icon-btn{background:none;border:none;color:var(--text-light);font-size:1.2rem;cursor:pointer;padding:0.5rem;}
-    .calendar-controls{margin-bottom:1rem;display:flex;gap:1rem;flex-wrap:wrap;}
-    .calendar-controls select,.calendar-controls input{padding:0.5rem;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text);}
+    .filters{display:flex;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap;}
+    .filter-group input,.filter-group select{padding:0.5rem;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text);}
     table{width:100%;border-collapse:collapse;margin-top:1rem;}
     th,td{padding:0.75rem 1rem;text-align:left;border-bottom:1px solid var(--border);}
-    th{background:var(--bg-light);font-weight:600;}
-    .impact-high{color:var(--red);}
+    th{background:var(--bg-light);font-weight:600;cursor:pointer;}
+    .impact-high{color:var(--red);font-weight:700;}
     .impact-medium{color:#ff9800;}
     .impact-low{color:var(--text-light);}
     .footer{background:var(--bg-light);border-top:1px solid var(--border);padding:1rem 0;font-size:0.8rem;text-align:center;color:var(--text-light);}
+    @media(max-width:768px){.filters{flex-direction:column;}}
   </style>
 </head>
+
 <body data-theme="dark">
   <header class="header">
     <div class="container flex-between">
-      <div class="logo"><a href="index.html" class="flex-center"><i class="fas fa-chart-line"></i><span>TradeVision</span></a></div>
+      <div class="logo"><a href="index.html" class="flex-center"><i class="fas fa-calendar-alt"></i><span>Economic Calendar</span></a></div>
       <nav class="nav-links">
         <a href="chart.html">Chart</a>
         <a href="watchlist.html">Watchlist</a>
         <a href="screener.html">Screener</a>
         <a href="ideas.html">Ideas</a>
         <a href="alerts.html">Alerts</a>
-        <a href="trading.html">Trade</a>
-        <a href="backtest.html">Backtest</a>
       </nav>
       <div class="header-actions">
         <button id="theme-toggle" class="icon-btn"><i class="fas fa-moon"></i></button>
-        <a href="profile.html" class="icon-btn"><i class="fas fa-user"></i></a>
-        <a href="settings.html" class="icon-btn"><i class="fas fa-cog"></i></a>
       </div>
     </div>
   </header>
 
   <div class="container">
-    <h1>Economic Calendar</h1>
-    <div class="calendar-controls">
-      <input type="date" id="date-filter" value="2025-10-29">
-      <select id="country-filter">
-        <option>All Countries</option>
-        <option>US</option>
-        <option>EU</option>
-        <option>CN</option>
-      </select>
-      <select id="impact-filter">
-        <option>All Impact</option>
-        <option>High</option>
-        <option>Medium</option>
-        <option>Low</option>
-      </select>
+    <div class="filters">
+      <div class="filter-group">
+        <label>Country</label>
+        <select id="country-filter">
+          <option value="">All Countries</option>
+          <option value="US">United States</option>
+          <option value="GB">United Kingdom</option>
+          <option value="EU">Eurozone</option>
+          <option value="JP">Japan</option>
+          <option value="CN">China</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Impact</label>
+        <select id="impact-filter">
+          <option value="">All</option>
+          <option value="3">High</option>
+          <option value="2">Medium</option>
+          <option value="1">Low</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>From Date</label>
+        <input type="date" id="from-date" value="2025-10-29">
+      </div>
+      <div class="filter-group">
+        <label>To Date</label>
+        <input type="date" id="to-date" value="2025-10-30">
+      </div>
+      <button id="fetch-btn" style="padding:0.5rem 1rem;background:var(--accent);color:white;border:none;border-radius:4px;cursor:pointer;">Load Calendar</button>
     </div>
 
-    <table id="events-table">
+    <table id="calendar-table">
       <thead>
         <tr>
-          <th>Time</th>
+          <th>Time (UTC)</th>
           <th>Country</th>
           <th>Event</th>
           <th>Impact</th>
@@ -81,25 +93,8 @@
           <th>Previous</th>
         </tr>
       </thead>
-      <tbody>
-        <tr>
-          <td>14:30</td>
-          <td>US</td>
-          <td>GDP QoQ</td>
-          <td class="impact-high">High</td>
-          <td>3.1%</td>
-          <td>3.0%</td>
-          <td>2.8%</td>
-        </tr>
-        <tr>
-          <td>16:00</td>
-          <td>EU</td>
-          <td>CPI YoY</td>
-          <td class="impact-medium">Medium</td>
-          <td>2.1%</td>
-          <td>2.0%</td>
-          <td>1.9%</td>
-        </tr>
+      <tbody id="calendar-body">
+        <tr><td colspan="7">Loading events...</td></tr>
       </tbody>
     </table>
   </div>
@@ -109,6 +104,7 @@
   </footer>
 
   <script>
+    // Theme Toggle
     const themeToggle = document.getElementById('theme-toggle');
     const body = document.body;
     const themeIcon = themeToggle.querySelector('i');
@@ -121,6 +117,65 @@
     const savedTheme = localStorage.getItem('theme') || 'dark';
     body.setAttribute('data-theme', savedTheme);
     if (savedTheme === 'light') themeIcon.classList.replace('fa-moon', 'fa-sun');
+
+    // Fetch TradingView Calendar
+    async function fetchCalendar() {
+      const from = document.getElementById('from-date').value;
+      const to = document.getElementById('to-date').value;
+      const country = document.getElementById('country-filter').value;
+      const impact = document.getElementById('impact-filter').value;
+      const fromUTC = `${from}T00:00:00.000Z`;
+      const toUTC = `${to}T23:59:59.999Z`;
+      let url = `https://economic-calendar.tradingview.com/events?from=${fromUTC}&to=${toUTC}`;
+      if (country) url += `&countries=${country}`;
+      if (impact) url += `&importance=${impact}`;
+
+      try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        const data = await response.json();
+        if (data.error) throw new Error(data.error);
+        renderTable(data.result || []);
+      } catch (error) {
+        console.error('API Error:', error);
+        document.getElementById('calendar-body').innerHTML = `<tr><td colspan="7">Error loading data: ${error.message}</td></tr>`;
+      }
+    }
+
+    // Render Table
+    function renderTable(events) {
+      const tbody = document.getElementById('calendar-body');
+      if (events.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7">No events found.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = events.map(event => {
+        const time = new Date(event.date).toLocaleString('en-US', { timeZone: 'UTC' });
+        const impactStars = '★'.repeat(event.importance || 1);
+        const impactClass = event.importance === 3 ? 'impact-high' : event.importance === 2 ? 'impact-medium' : 'impact-low';
+        return `
+          <tr>
+            <td>${time}</td>
+            <td>${event.country}</td>
+            <td>${event.event}</td>
+            <td class="${impactClass}">${impactStars}</td>
+            <td>${event.actual || '--'}</td>
+            <td>${event.forecast || '--'}</td>
+            <td>${event.previous || '--'}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Events
+    document.getElementById('fetch-btn').addEventListener('click', fetchCalendar);
+    document.getElementById('country-filter').addEventListener('change', fetchCalendar);
+    document.getElementById('impact-filter').addEventListener('change', fetchCalendar);
+    document.getElementById('from-date').addEventListener('change', fetchCalendar);
+    document.getElementById('to-date').addEventListener('change', fetchCalendar);
+
+    // Load on page load
+    window.addEventListener('load', fetchCalendar);
   </script>
 </body>
 </html>
