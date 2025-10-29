@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chart - TradeVision</title>
+  <link rel="icon" href="assets/icons/chart.svg" type="image/svg+xml">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+  <link id="theme-style" rel="stylesheet" href="assets/css/main.css">
+  <link rel="stylesheet" href="assets/css/dark-theme.css">
+  <style>
+    :root{--bg:#141518;--bg-light:#1e222d;--text:#d1d4dc;--text-light:#9ea1b5;--accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#2d313e;--card:#1e222d;}
+    [data-theme="light"]{--bg:#ffffff;--bg-light:#f8f9fa;--text:#2d3748;--text-light:#718096;--accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#e2e8f0;--card:#ffffff;}
+    body{margin:0;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);}
+    a{color:var(--accent);text-decoration:none;}
+    .container{max-width:1400px;margin:0 auto;padding:0 1rem;}
+    .flex-between{display:flex;justify-content:space-between;align-items:center;}
+    .flex-center{display:flex;align-items:center;gap:0.5rem;}
+    .header{background:var(--bg-light);border-bottom:1px solid var(--border);padding:0.75rem 0;position:sticky;top:0;z-index:100;}
+    .logo{font-weight:700;font-size:1.4rem;color:var(--accent);}
+    .logo i{font-size:1.5rem;}
+    .nav-links a{margin:0 0.75rem;font-weight:500;}
+    .icon-btn{background:none;border:none;color:var(--text-light);font-size:1.2rem;cursor:pointer;padding:0.5rem;}
+    .chart-layout{display:grid;grid-template-columns:60px 1fr 250px;gap:0;height:calc(100vh - 60px);}
+    .sidebar-left{background:var(--bg-light);border-right:1px solid var(--border);overflow-y:auto;padding:0.5rem;}
+    .sidebar-left button{width:100%;padding:0.75rem 0;border:none;background:none;color:var(--text-light);cursor:pointer;text-align:center;font-size:0.9rem;}
+    .sidebar-left button:hover,.sidebar-left button.active{background:var(--accent);color:white;}
+    .sidebar-left i{font-size:1.2rem;display:block;margin-bottom:0.25rem;}
+    .main-chart{overflow:hidden;position:relative;}
+    #chart-container{width:100%;height:100%;}
+    .sidebar-right{background:var(--bg-light);border-left:1px solid var(--border);padding:1rem;overflow-y:auto;}
+    .panel-title{font-weight:600;margin-bottom:1rem;font-size:1rem;}
+    .symbol-info{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;}
+    .symbol-info h2{font-size:1.3rem;margin:0;}
+    .symbol-info .price{font-size:1.2rem;font-weight:600;}
+    .change{color:var(--green);}
+    .change.negative{color:var(--red);}
+    .timeframe-bar{margin-bottom:1rem;display:flex;flex-wrap:wrap;gap:0.5rem;}
+    .timeframe-btn{padding:0.4rem 0.8rem;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:4px;font-size:0.85rem;cursor:pointer;}
+    .timeframe-btn.active{background:var(--accent);color:white;border-color:var(--accent);}
+    .indicator-list{margin-top:1rem;}
+    .indicator-item{display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid var(--border);font-size:0.9rem;}
+    .remove-indicator{color:var(--red);cursor:pointer;}
+    .footer{background:var(--bg-light);border-top:1px solid var(--border);padding:0.75rem 0;font-size:0.8rem;text-align:center;color:var(--text-light);}
+    @media(max-width:992px){.chart-layout{grid-template-columns:1fr;}}
+    @media(max-width:992px){.sidebar-left,.sidebar-right{display:none;}}
+  </style>
+</head>
+<body data-theme="dark">
+  <header class="header">
+    <div class="container flex-between">
+      <div class="logo"><a href="index.html" class="flex-center"><i class="fas fa-chart-line"></i><span>TradeVision</span></a></div>
+      <nav class="nav-links">
+        <a href="chart.html">Chart</a>
+        <a href="watchlist.html">Watchlist</a>
+        <a href="screener.html">Screener</a>
+        <a href="ideas.html">Ideas</a>
+        <a href="alerts.html">Alerts</a>
+        <a href="trading.html">Trade</a>
+        <a href="backtest.html">Backtest</a>
+      </nav>
+      <div class="header-actions">
+        <button id="theme-toggle" class="icon-btn"><i class="fas fa-moon"></i></button>
+        <a href="profile.html" class="icon-btn"><i class="fas fa-user"></i></a>
+        <a href="settings.html" class="icon-btn"><i class="fas fa-cog"></i></a>
+      </div>
+    </div>
+  </header>
+
+  <div class="chart-layout">
+    <!-- Left Sidebar: Drawing Tools -->
+    <div class="sidebar-left" id="drawing-tools">
+      <button data-tool="cursor" class="active"><i class="fas fa-mouse-pointer"></i><span>Cursor</span></button>
+      <button data-tool="line"><i class="fas fa-minus"></i><span>Line</span></button>
+      <button data-tool="trendline"><i class="fas fa-chart-line"></i><span>Trend</span></button>
+      <button data-tool="horizontal"><i class="fas fa-grip-lines"></i><span>H-Line</span></button>
+      <button data-tool="fib-retracement"><i class="fas fa-ruler"></i><span>Fib</span></button>
+      <button data-tool="rectangle"><i class="fas fa-square"></i><span>Rect</span></button>
+      <button data-tool="ellipse"><i class="fas fa-circle"></i><span>Ellipse</span></button>
+      <button data-tool="text"><i class="fas fa-font"></i><span>Text</span></button>
+      <button data-tool="arrow"><i class="fas fa-arrow-up"></i><span>Arrow</span></button>
+    </div>
+
+    <!-- Main Chart -->
+    <div class="main-chart">
+      <div id="chart-container"></div>
+    </div>
+
+    <!-- Right Sidebar: Symbol Info + Timeframes + Indicators -->
+    <div class="sidebar-right">
+      <div class="symbol-info">
+        <div>
+          <h2 id="symbol-name">AAPL</h2>
+          <div id="symbol-exchange">NASDAQ</div>
+        </div>
+        <div>
+          <div class="price" id="current-price">--</div>
+          <div class="change" id="price-change">--</div>
+        </div>
+      </div>
+
+      <div class="timeframe-bar">
+        <button class="timeframe-btn" data-interval="1">1m</button>
+        <button class="timeframe-btn" data-interval="5">5m</button>
+        <button class="timeframe-btn active" data-interval="15">15m</button>
+        <button class="timeframe-btn" data-interval="60">1h</button>
+        <button class="timeframe-btn" data-interval="240">4h</button>
+        <button class="timeframe-btn" data-interval="D">1D</button>
+        <button class="timeframe-btn" data-interval="W">1W</button>
+        <button class="timeframe-btn" data-interval="M">1M</button>
+      </div>
+
+      <div>
+        <div class="panel-title">Indicators</div>
+        <button id="add-indicator-btn" style="width:100%;padding:0.5rem;background:var(--accent);color:white;border:none;border-radius:4px;cursor:pointer;">+ Add Indicator</button>
+        <div id="indicator-list" class="indicator-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container">© 2025 TradeVision. Open Source.</div>
+  </footer>
+
+  <script>
+    // Theme
+    const themeToggle = document.getElementById('theme-toggle');
+    const body = document.body;
+    const themeIcon = themeToggle.querySelector('i');
+    themeToggle.addEventListener('click', () => {
+      const isDark = body.getAttribute('data-theme') === 'dark';
+      body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+      themeIcon.classList.toggle('fa-moon'); themeIcon.classList.toggle('fa-sun');
+      localStorage.setItem('theme', isDark ? 'light' : 'dark');
+    });
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    body.setAttribute('data-theme', savedTheme);
+    if (savedTheme === 'light') themeIcon.classList.replace('fa-moon', 'fa-sun');
+
+    // Chart Setup
+    let chart, series;
+    const chartContainer = document.getElementById('chart-container');
+    function initChart() {
+      chart = LightweightCharts.createChart(chartContainer, {
+        width: chartContainer.clientWidth,
+        height: chartContainer.clientHeight,
+        layout: { background: { color: 'transparent' }, textColor: 'var(--text-light)' },
+        grid: { vertLines: { color: 'var(--border)' }, horzLines: { color: 'var(--border)' } },
+        crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
+        rightPriceScale: { borderColor: 'var(--border)' },
+        timeScale: { borderColor: 'var(--border)' },
+      });
+      series = chart.addCandlestickSeries({
+        upColor: 'var(--green)', downColor: 'var(--red)',
+        borderUpColor: 'var(--green)', borderDownColor: 'var(--red)',
+        wickUpColor: 'var(--green)', wickDownColor: 'var(--red)',
+      });
+    }
+    initChart();
+    window.addEventListener('resize', () => chart.resize(chartContainer.clientWidth, chartContainer.clientHeight));
+
+    // URL Symbol
+    const urlParams = new URLSearchParams(window.location.search);
+    let currentSymbol = urlParams.get('symbol') || 'AAPL';
+    let currentInterval = '15';
+
+    document.getElementById('symbol-name').textContent = currentSymbol;
+    loadData(currentSymbol, currentInterval);
+
+    // Timeframe Buttons
+    document.querySelectorAll('.timeframe-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.timeframe-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentInterval = btn.dataset.interval;
+        loadData(currentSymbol, currentInterval);
+      });
+    });
+
+    // Load Data
+    async function loadData(symbol, interval) {
+      let data = [];
+      if (symbol === 'BTCUSD') {
+        const res = await fetch(`https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=${interval === 'D' ? 30 : 1}`);
+        const json = await res.json();
+        data = json.prices.map((p, i) => ({
+          time: Math.floor(p[0] / 1000),
+          open: p[1], high: p[1]*1.01, low: p[1]*0.99, close: p[1]
+        }));
+      } else {
+        const base = symbol === 'AAPL' ? 180 : symbol === 'TSLA' ? 250 : 450;
+        const days = interval === 'D' ? 30 : 1;
+        data = Array.from({length: 50}, (_, i) => {
+          const close = base + Math.sin(i/5)*10;
+          return { time: Math.floor(Date.now()/1000) - (50-i)*3600, open: close, high: close*1.01, low: close*0.99, close };
+        });
+      }
+      series.setData(data.slice(-100));
+      updatePrice(data[data.length-1], data[data.length-2]);
+    }
+
+    function updatePrice(latest, prev) {
+      document.getElementById('current-price').textContent = latest.close.toFixed(2);
+      const change = ((latest.close - prev.close)/prev.close*100).toFixed(2);
+      const changeEl = document.getElementById('price-change');
+      changeEl.textContent = (change > 0 ? '+' : '') + change + '%';
+      changeEl.className = change >= 0 ? 'change' : 'change negative';
+    }
+
+    // Indicator Modal
+    const indicatorBtn = document.getElementById('add-indicator-btn');
+    const indicatorList = document.getElementById('indicator-list');
+    const indicators = ['SMA', 'EMA', 'RSI', 'MACD', 'Bollinger', 'Volume'];
+    indicatorBtn.addEventListener('click', () => {
+      const modal = document.createElement('div');
+      modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:1000;';
+      modal.innerHTML = `<div style="background:var(--card);padding:1.5rem;border-radius:8px;width:300px;">
+        <h3 style="margin-top:0;">Add Indicator</h3>
+        ${indicators.map(i => `<button style="display:block;width:100%;padding:0.5rem;margin:0.25rem 0;background:var(--bg-light);border:1px solid var(--border);border-radius:4px;cursor:pointer;" data-ind="${i}">${i}</button>`).join('')}
+        <button id="close-modal" style="margin-top:1rem;width:100%;padding:0.5rem;background:var(--red);color:white;border:none;border-radius:4px;cursor:pointer;">Close</button>
+      </div>`;
+      document.body.appendChild(modal);
+      modal.querySelectorAll('[data-ind]').forEach(b => b.addEventListener('click', () => {
+        addIndicator(b.dataset.ind);
+        modal.remove();
+      }));
+      modal.querySelector('#close-modal').addEventListener('click', () => modal.remove());
+    });
+
+    function addIndicator(name) {
+      const item = document.createElement('div');
+      item.className = 'indicator-item';
+      item.innerHTML = `<span>${name}</span><i class="fas fa-times remove-indicator"></i>`;
+      indicatorList.appendChild(item);
+      item.querySelector('.remove-indicator').addEventListener('click', () => item.remove());
+    }
+  </script>
+</body>
+</html>
