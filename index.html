@@ -5,16 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TradeVision - Open Source TradingView Clone</title>
 
-  <!-- Favicon -->
-  <link rel="icon" href="assets/icons/chart.svg" type="image/svg+xml">
-
   <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <!-- Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-  <!-- Lightweight Charts (v4 stable) -->
+  <!-- Lightweight Charts -->
   <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4/dist/lightweight-charts.standalone.production.js"></script>
 
   <style>
@@ -57,7 +54,7 @@
     .chart-card,.link-card{background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden;}
     .card-header{padding:.75rem 1rem;display:flex;justify-content:space-between;font-size:.9rem;background:var(--bg-light);}
     .symbol{font-weight:600;}
-    .chart-container{height:120px;}
+    .chart-container{height:120px;width:100%;position:relative;background:var(--card);overflow:hidden;}
     .link-card{padding:1.5rem;text-align:center;transition:.2s;}
     .link-card:hover{background:var(--bg-light);}
     .link-card i{font-size:1.8rem;margin-bottom:.5rem;color:var(--accent);}
@@ -71,6 +68,46 @@
     .footer-bottom{text-align:center;color:var(--text-light);}
 
     @media(max-width:992px){.nav-links,.header-actions>a{display:none;}}
+    
+    /* Status indicator */
+    .status-indicator {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 5px;
+    }
+    .status-connected {
+      background-color: var(--green);
+    }
+    .status-disconnected {
+      background-color: var(--red);
+    }
+    .status-connecting {
+      background-color: #ff9800;
+      animation: pulse 1.5s infinite;
+    }
+    
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.5; }
+      100% { opacity: 1; }
+    }
+    
+    /* CRITICAL FIX: Force charts to occupy full container */
+    .chart-container > div {
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+    }
+    
+    .chart-container canvas {
+      width: 100% !important;
+      height: 100% !important;
+      display: block !important;
+    }
   </style>
 </head>
 
@@ -82,7 +119,7 @@
       <div class="logo"><a href="index.html" class="flex-center"><i class="fas fa-chart-line"></i><span>TradeVision</span></a></div>
 
       <div class="search-bar">
-        <input type="text" id="symbol-search" placeholder="Search symbol (e.g. AAPL, BTC)" />
+        <input type="text" id="symbol-search" placeholder="Search symbol (e.g. BTC, ETH)" />
         <button id="search-btn"><i class="fas fa-search"></i></button>
       </div>
 
@@ -114,29 +151,51 @@
         <p>Analyze markets with 100+ indicators, drawing tools, real-time data, and social ideas.</p>
         <div class="hero-actions">
           <a href="chart.html" class="btn-primary">Open Chart</a>
-          <a href="screener.html" class="btn-secondary">Screen Stocks</a>
+          <a href="screener.html" class="btn-secondary">Screen Crypto</a>
         </div>
       </section>
 
       <!-- Mini-Charts -->
       <section class="mini-charts-grid">
-        <h2>Live Markets</h2>
-        <div class="grid-2x2">
-          <div class="chart-card" data-symbol="AAPL">
-            <div class="card-header"><span class="symbol">AAPL</span><span class="price">--</span><span class="change">--</span></div>
-            <div class="chart-container" id="chart-aapl"></div>
+        <div class="flex-between">
+          <h2>Live Markets</h2>
+          <div id="connection-status" class="flex-center">
+            <span class="status-indicator status-connecting"></span>
+            <span>Connecting...</span>
           </div>
-          <div class="chart-card" data-symbol="BTCUSD">
-            <div class="card-header"><span class="symbol">BTC/USD</span><span class="price">--</span><span class="change">--</span></div>
+        </div>
+        <div class="grid-2x2">
+          <div class="chart-card" data-symbol="BTCUSDT">
+            <div class="card-header">
+              <span class="symbol">BTC/USDT</span>
+              <span class="price">--</span>
+              <span class="change">--</span>
+            </div>
             <div class="chart-container" id="chart-btc"></div>
           </div>
-          <div class="chart-card" data-symbol="TSLA">
-            <div class="card-header"><span class="symbol">TSLA</span><span class="price">--</span><span class="change">--</span></div>
-            <div class="chart-container" id="chart-tsla"></div>
+          <div class="chart-card" data-symbol="ETHUSDT">
+            <div class="card-header">
+              <span class="symbol">ETH/USDT</span>
+              <span class="price">--</span>
+              <span class="change">--</span>
+            </div>
+            <div class="chart-container" id="chart-eth"></div>
           </div>
-          <div class="chart-card" data-symbol="SPY">
-            <div class="card-header"><span class="symbol">SPY</span><span class="price">--</span><span class="change">--</span></div>
-            <div class="chart-container" id="chart-spy"></div>
+          <div class="chart-card" data-symbol="ADAUSDT">
+            <div class="card-header">
+              <span class="symbol">ADA/USDT</span>
+              <span class="price">--</span>
+              <span class="change">--</span>
+            </div>
+            <div class="chart-container" id="chart-ada"></div>
+          </div>
+          <div class="chart-card" data-symbol="DOTUSDT">
+            <div class="card-header">
+              <span class="symbol">DOT/USDT</span>
+              <span class="price">--</span>
+              <span class="change">--</span>
+            </div>
+            <div class="chart-container" id="chart-dot"></div>
           </div>
         </div>
       </section>
@@ -166,141 +225,400 @@
     </div>
   </footer>
 
-  <!-- MAIN SCRIPT -->
   <script>
-    /* -------------------------------------------------
-       1. Theme toggle
-       ------------------------------------------------- */
-    const themeToggle = document.getElementById('theme-toggle');
-    const body = document.body;
-    const themeIcon = themeToggle.querySelector('i');
-    function setTheme(isDark) {
-      body.setAttribute('data-theme', isDark ? 'dark' : 'light');
-      themeIcon.classList.toggle('fa-moon', isDark);
-      themeIcon.classList.toggle('fa-sun', !isDark);
-      localStorage.setItem('theme', isDark ? 'dark' : 'light');
-    }
-    themeToggle.addEventListener('click', () => setTheme(body.getAttribute('data-theme') !== 'dark'));
-    setTheme(localStorage.getItem('theme') !== 'light');
+    // GLOBAL VARIABLES
+    const symbols = ['BTCUSDT', 'ETHUSDT', 'ADAUSDT', 'DOTUSDT'];
+    const charts = {};
+    let ws = null;
+    let connectionAttempts = 0;
 
-    /* -------------------------------------------------
-       2. Search
-       ------------------------------------------------- */
-    document.getElementById('search-btn').addEventListener('click', () => {
-      const q = document.getElementById('symbol-search').value.trim().toUpperCase();
-      if (q) location.href = `chart.html?symbol=${q}`;
-    });
-    document.getElementById('symbol-search').addEventListener('keypress', e => {
-      if (e.key === 'Enter') document.getElementById('search-btn').click();
-    });
-
-    /* -------------------------------------------------
-       3. Binance real-time ticker → mini-charts
-       ------------------------------------------------- */
-    const symbols = ['AAPL', 'BTCUSD', 'TSLA', 'SPY'];
-    const binanceMap = {
-      AAPL: 'aaplusdt', TSLA: 'tslausdt', SPY: 'spyusdt',
-      BTCUSD: 'btcusdt'
+    // REALISTIC BASE PRICES FOR EACH SYMBOL
+    const basePrices = {
+      'BTCUSDT': 45000,
+      'ETHUSDT': 2500,
+      'ADAUSDT': 0.5,
+      'DOTUSDT': 7
     };
-    const charts = {};   // {sym: {chart, series, data[], lastBar}}
 
-    // ---- Wait for LightweightCharts ----
-    function waitForLW() {
-      if (typeof LightweightCharts !== 'undefined') {
-        initCharts();
-        setTimeout(connectWS, 500);  // Let DOM settle
-      } else {
-        setTimeout(waitForLW, 50);
+    // CHART INITIALIZATION WITH PROPER PRICE SCALING
+    function initializeAllCharts() {
+      console.log('🔄 INITIALIZING PROPERLY SCALED CANDLESTICK CHARTS...');
+      
+      symbols.forEach(symbol => {
+        const chartId = `chart-${symbol.toLowerCase().replace('usdt', '')}`;
+        const container = document.getElementById(chartId);
+        
+        if (!container) {
+          console.error('❌ Chart container not found:', chartId);
+          return;
+        }
+
+        // Clear container
+        container.innerHTML = '';
+        
+        try {
+          // Create chart WITH VISIBLE PRICE SCALE (this fixes stretching)
+          const chart = LightweightCharts.createChart(container, {
+            width: container.clientWidth,
+            height: container.clientHeight,
+            layout: {
+              background: { color: 'transparent' },
+              textColor: '#9ea1b5',
+            },
+            grid: {
+              vertLines: { visible: false },
+              horzLines: { visible: false },
+            },
+            timeScale: {
+              visible: false,
+              borderVisible: false,
+              timeVisible: false,
+              rightOffset: 0,
+              barSpacing: 8, // Good spacing for candles
+              minBarSpacing: 4,
+              fixLeftEdge: true,
+              fixRightEdge: true,
+            },
+            rightPriceScale: {
+              visible: true, // MUST BE VISIBLE FOR PROPER SCALING
+              borderVisible: false,
+              scaleMargins: {
+                top: 0.05,    // 5% margin top
+                bottom: 0.05, // 5% margin bottom
+              },
+              entireTextOnly: true,
+            },
+            leftPriceScale: {
+              visible: false,
+              borderVisible: false,
+            },
+            crosshair: {
+              mode: 0,
+            },
+            handleScroll: false,
+            handleScale: false,
+          });
+
+          // ADD CANDLESTICK SERIES
+          const candlestickSeries = chart.addCandlestickSeries({
+            upColor: '#26a69a',
+            downColor: '#ef5350',
+            borderUpColor: '#26a69a',
+            borderDownColor: '#ef5350',
+            wickUpColor: '#26a69a',
+            wickDownColor: '#ef5350',
+            priceLineVisible: false,
+            lastValueVisible: false,
+          });
+
+          // ADD TRENDLINE SERIES
+          const trendlineSeries = chart.addLineSeries({
+            color: '#2962ff',
+            lineWidth: 1,
+            lineStyle: 0,
+            crosshairMarkerVisible: false,
+            lastValueVisible: false,
+            priceLineVisible: false,
+          });
+
+          // Generate proper candlestick data
+          const sampleCandles = generateProperCandles(10, symbol); // Fewer candles = better visibility
+          const trendlineData = calculateTrendline(sampleCandles);
+          
+          // Set data
+          candlestickSeries.setData(sampleCandles);
+          trendlineSeries.setData(trendlineData);
+
+          // Store chart reference
+          charts[symbol] = {
+            chart: chart,
+            candlestickSeries: candlestickSeries,
+            trendlineSeries: trendlineSeries,
+            candleData: sampleCandles,
+            trendlineData: trendlineData
+          };
+          
+          console.log(`✅ PROPERLY SCALED Chart initialized: ${symbol}`);
+          
+        } catch (error) {
+          console.error(`❌ Failed to create chart for ${symbol}:`, error);
+        }
+      });
+      
+      // Start WebSocket after charts are ready
+      setTimeout(connectWebSocket, 500);
+    }
+
+    // GENERATE PROPER CANDLESTICK DATA
+    function generateProperCandles(count, symbol) {
+      const candles = [];
+      const now = Math.floor(Date.now() / 1000);
+      const basePrice = basePrices[symbol];
+      let currentPrice = basePrice;
+      
+      // Realistic price ranges for each symbol
+      const priceRanges = {
+        'BTCUSDT': { min: 40000, max: 50000, volatility: 0.015 },
+        'ETHUSDT': { min: 2000, max: 3000, volatility: 0.02 },
+        'ADAUSDT': { min: 0.4, max: 0.6, volatility: 0.03 },
+        'DOTUSDT': { min: 6, max: 8, volatility: 0.025 }
+      };
+      
+      const range = priceRanges[symbol];
+      
+      for (let i = count - 1; i >= 0; i--) {
+        const time = now - i * 60 * 15; // 15-minute intervals
+        
+        // Realistic price movement within range
+        const priceChange = (Math.random() - 0.5) * 2 * range.volatility * currentPrice;
+        const open = currentPrice;
+        let close = open + priceChange;
+        
+        // Keep within realistic range
+        close = Math.max(range.min, Math.min(range.max, close));
+        
+        // Realistic high/low with proper wicks
+        const wickSize = range.volatility * currentPrice * 0.6;
+        const high = Math.max(open, close) + Math.random() * wickSize;
+        const low = Math.min(open, close) - Math.random() * wickSize;
+        
+        candles.push({
+          time: time,
+          open: parseFloat(open.toFixed(4)),
+          high: parseFloat(high.toFixed(4)),
+          low: parseFloat(low.toFixed(4)),
+          close: parseFloat(close.toFixed(4))
+        });
+        
+        currentPrice = close;
+      }
+      return candles;
+    }
+
+    // CALCULATE TRENDLINE
+    function calculateTrendline(candles) {
+      if (candles.length < 2) return [];
+      
+      const firstClose = candles[0].close;
+      const lastClose = candles[candles.length - 1].close;
+      
+      return [
+        {
+          time: candles[0].time,
+          value: firstClose
+        },
+        {
+          time: candles[candles.length - 1].time,
+          value: lastClose
+        }
+      ];
+    }
+
+    // WEB SOCKET CONNECTION
+    function connectWebSocket() {
+      console.log('🔌 Connecting to WebSocket...');
+      updateConnectionStatus('connecting');
+      
+      if (ws) {
+        ws.close();
+      }
+
+      try {
+        const streams = symbols.map(s => `${s.toLowerCase()}@ticker`).join('/');
+        ws = new WebSocket(`wss://stream.binance.com:9443/stream?streams=${streams}`);
+
+        ws.onopen = () => {
+          console.log('✅ WebSocket CONNECTED');
+          updateConnectionStatus('connected');
+          connectionAttempts = 0;
+        };
+
+        ws.onmessage = (event) => {
+          try {
+            const message = JSON.parse(event.data);
+            if (message.data) {
+              processTickerData(message.data);
+            }
+          } catch (error) {
+            console.error('Error parsing message:', error);
+          }
+        };
+
+        ws.onerror = (error) => {
+          console.error('❌ WebSocket error:', error);
+          updateConnectionStatus('error');
+        };
+
+        ws.onclose = (event) => {
+          console.log('🔌 WebSocket closed:', event.code, event.reason);
+          updateConnectionStatus('connecting');
+          
+          // Auto-reconnect
+          connectionAttempts++;
+          if (connectionAttempts < 5) {
+            const delay = Math.min(1000 * Math.pow(2, connectionAttempts), 10000);
+            console.log(`Reconnecting in ${delay}ms...`);
+            setTimeout(connectWebSocket, delay);
+          }
+        };
+
+      } catch (error) {
+        console.error('Failed to create WebSocket:', error);
+        updateConnectionStatus('error');
       }
     }
 
-    // ---- Create all charts (HEX colors only!) ----
-    function initCharts() {
-      symbols.forEach(sym => {
-        const container = document.getElementById(`chart-${sym.toLowerCase()}`);
-        if (!container) return;
-
-        const chart = LightweightCharts.createChart(container, {
-          width: container.clientWidth,
-          height: 120,
-          layout: { background: { color: '#141518' }, textColor: '#9ea1b5' },
-          grid: { vertLines: { color: '#2d313e' }, horzLines: { color: '#2d313e' } },
-          timeScale: { timeVisible: true, secondsVisible: false }
-        });
-
-        const series = chart.addCandlestickSeries({
-          upColor: '#26a69a', downColor: '#ef5350',
-          wickUpColor: '#26a69a', wickDownColor: '#ef5350'
-        });
-
-        // Seed with empty bar
-        const seed = { time: Math.floor(Date.now() / 1000) - 3600, open: 0, high: 0, low: 0, close: 0 };
-        series.setData([seed]);
-
-        charts[sym] = { chart, series, data: [], lastBar: null };
-      });
-
-      // Resize handler (correct API)
-      window.addEventListener('resize', () => {
-        Object.values(charts).forEach(c => {
-          c.chart.applyOptions({ width: c.chart.clientWidth, height: 120 });
-        });
-      });
+    // PROCESS TICKER DATA AND UPDATE CHARTS
+    function processTickerData(ticker) {
+      const symbol = ticker.s;
+      const price = parseFloat(ticker.c);
+      const changePercent = parseFloat(ticker.P);
+      
+      console.log(`📈 ${symbol}: $${price} (${changePercent}%)`);
+      
+      // Update price display
+      updatePriceDisplay(symbol, price, changePercent);
+      
+      // Update chart with new candle data
+      updateChartWithCandle(symbol, price);
     }
 
-    // ---- Binance WS (only after charts exist) ----
-    let ws;
-    function connectWS() {
-      if (Object.keys(charts).length === 0) {
-        setTimeout(connectWS, 500);
+    // UPDATE PRICE DISPLAY
+    function updatePriceDisplay(symbol, price, changePercent) {
+      const card = document.querySelector(`[data-symbol="${symbol}"]`);
+      if (!card) return;
+      
+      const priceEl = card.querySelector('.price');
+      const changeEl = card.querySelector('.change');
+      
+      if (priceEl) priceEl.textContent = formatPrice(price);
+      if (changeEl) {
+        changeEl.textContent = `${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%`;
+        changeEl.style.color = changePercent >= 0 ? 'var(--green)' : 'var(--red)';
+      }
+    }
+
+    // UPDATE CHART WITH NEW CANDLE DATA
+    function updateChartWithCandle(symbol, currentPrice) {
+      if (!charts[symbol]) {
+        console.warn(`No chart found for ${symbol}`);
         return;
       }
-
-      const streams = symbols.map(s => `${binanceMap[s]}@ticker`).join('/');
-      ws = new WebSocket(`wss://stream.binance.com:9443/stream?streams=${streams}`);
-
-      ws.onmessage = ev => {
-        const msg = JSON.parse(ev.data);
-        if (!msg.data) return;
-
-        const t = msg.data;
-        const binanceSym = t.s.toLowerCase();
-        const ourSym = Object.keys(binanceMap).find(k => binanceMap[k] === binanceSym);
-        if (!ourSym || !charts[ourSym]) return;
-
-        const price = parseFloat(t.c);
-        const change = parseFloat(t.P);
-        const { chart, series, data, lastBar } = charts[ourSym];
-
-        // Update header
-        const card = document.querySelector(`.chart-card[data-symbol="${ourSym}"]`);
-        card.querySelector('.price').textContent = price.toFixed(2);
-        const chgEl = card.querySelector('.change');
-        chgEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
-        chgEl.style.color = change >= 0 ? '#26a69a' : '#ef5350';
-
-        // Update candlestick (1-min aggregation)
-        const nowMinute = Math.floor(Date.now() / 60000) * 60;
-        if (!lastBar || lastBar.time < nowMinute) {
-          const newBar = { time: nowMinute, open: price, high: price, low: price, close: price };
-          data.push(newBar);
-          charts[ourSym].lastBar = newBar;
-          if (data.length > 50) data.shift();
-          series.setData(data);
-        } else {
-          lastBar.close = price;
-          lastBar.high = Math.max(lastBar.high, price);
-          lastBar.low = Math.min(lastBar.low, price);
-          series.update(lastBar);
+      
+      const { candlestickSeries, trendlineSeries, candleData } = charts[symbol];
+      const now = Math.floor(Date.now() / 1000);
+      const currentInterval = Math.floor(now / 900) * 900; // 15-minute intervals
+      
+      // Get the last candle
+      const lastCandle = candleData[candleData.length - 1];
+      
+      if (lastCandle && Math.floor(lastCandle.time / 900) * 900 === currentInterval) {
+        // Update current 15-minute candle
+        lastCandle.close = currentPrice;
+        lastCandle.high = Math.max(lastCandle.high, currentPrice);
+        lastCandle.low = Math.min(lastCandle.low, currentPrice);
+        
+        candlestickSeries.update(lastCandle);
+      } else {
+        // Create new 15-minute candle
+        const newCandle = {
+          time: currentInterval,
+          open: lastCandle ? lastCandle.close : currentPrice,
+          high: currentPrice,
+          low: currentPrice,
+          close: currentPrice
+        };
+        
+        candleData.push(newCandle);
+        
+        // Keep only last 10 candles for optimal display
+        if (candleData.length > 10) {
+          candleData.shift();
         }
-      };
-
-      ws.onclose = () => setTimeout(connectWS, 3000);
-      ws.onerror = err => console.error('WS error:', err);
+        
+        candlestickSeries.setData(candleData);
+      }
+      
+      // Update trendline
+      const newTrendline = calculateTrendline(candleData);
+      trendlineSeries.setData(newTrendline);
+      
+      console.log(`📊 Updated ${symbol} chart with ${candleData.length} proper candles`);
     }
 
-    // ---- Start everything ----
-    waitForLW();
+    // FORMAT PRICE
+    function formatPrice(price) {
+      if (price < 1) return price.toFixed(4);
+      if (price < 10) return price.toFixed(3);
+      if (price < 1000) return price.toFixed(2);
+      return price.toLocaleString('en-US', { 
+        minimumFractionDigits: 2, 
+        maximumFractionDigits: 2 
+      });
+    }
+
+    // UPDATE CONNECTION STATUS
+    function updateConnectionStatus(status) {
+      const indicator = document.querySelector('#connection-status .status-indicator');
+      const text = document.querySelector('#connection-status span:last-child');
+      
+      switch(status) {
+        case 'connected':
+          indicator.className = 'status-indicator status-connected';
+          text.textContent = 'Live';
+          break;
+        case 'connecting':
+          indicator.className = 'status-indicator status-connecting';
+          text.textContent = 'Connecting...';
+          break;
+        case 'error':
+          indicator.className = 'status-indicator status-disconnected';
+          text.textContent = 'Connection Error';
+          break;
+      }
+    }
+
+    // THEME TOGGLE
+    document.getElementById('theme-toggle').addEventListener('click', () => {
+      const isDark = document.body.getAttribute('data-theme') === 'dark';
+      document.body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+      localStorage.setItem('theme', isDark ? 'light' : 'dark');
+    });
+
+    // SEARCH FUNCTIONALITY
+    document.getElementById('search-btn').addEventListener('click', () => {
+      const query = document.getElementById('symbol-search').value.trim().toUpperCase();
+      if (query) {
+        alert(`Searching for: ${query}`);
+      }
+    });
+
+    // RESIZE HANDLER
+    window.addEventListener('resize', () => {
+      Object.values(charts).forEach(({ chart }) => {
+        const container = chart.chartElement.parentElement;
+        if (container && container.clientWidth > 0) {
+          chart.applyOptions({
+            width: container.clientWidth,
+            height: container.clientHeight
+          });
+        }
+      });
+    });
+
+    // INITIALIZE EVERYTHING WHEN PAGE LOADS
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('🚀 PAGE LOADED - Starting PROPERLY SCALED chart initialization...');
+      
+      setTimeout(() => {
+        initializeAllCharts();
+      }, 100);
+    });
+
+    // CLEANUP
+    window.addEventListener('beforeunload', () => {
+      if (ws) ws.close();
+    });
   </script>
 </body>
 </html>
