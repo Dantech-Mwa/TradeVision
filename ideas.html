@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ideas - TradeVision</title>
+  <link rel="icon" href="assets/icons/chart.svg" type="image/svg+xml">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link id="theme-style" rel="stylesheet" href="assets/css/main.css">
+  <link rel="stylesheet" href="assets/css/dark-theme.css">
+  <style>
+    :root{--bg:#141518;--bg-light:#1e222d;--text:#d1d4dc;--text-light:#9ea1b5;--accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#2d313e;--card:#1e222d;}
+    [data-theme="light"]{--bg:#ffffff;--bg-light:#f8f9fa;--text:#2d3748;--text-light:#718096;--accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#e2e8f0;--card:#ffffff;}
+    body{margin:0;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);}
+    a{color:var(--accent);text-decoration:none;}
+    .container{max-width:1200px;margin:0 auto;padding:2rem 1rem;}
+    .header{background:var(--bg-light);border-bottom:1px solid var(--border);padding:0.75rem 0;position:sticky;top:0;z-index:100;}
+    .flex-between{display:flex;justify-content:space-between;align-items:center;}
+    .logo{font-weight:700;font-size:1.4rem;color:var(--accent);}
+    .logo i{font-size:1.5rem;}
+    .nav-links a{margin:0 0.75rem;font-weight:500;}
+    .icon-btn{background:none;border:none;color:var(--text-light);font-size:1.2rem;cursor:pointer;padding:0.5rem;}
+    .idea-form{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1.5rem;margin-bottom:2rem;}
+    .form-group{margin-bottom:1rem;}
+    .form-group label{display:block;margin-bottom:0.25rem;}
+    .form-group input,.form-group textarea{width:100%;padding:0.5rem;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text);}
+    button.primary{background:var(--accent);color:white;padding:0.75rem 1.5rem;border:none;border-radius:4px;cursor:pointer;}
+    .ideas-grid{display:grid;gap:1.5rem;}
+    .idea-card{background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden;}
+    .idea-header{padding:1rem;display:flex;justify-content:space-between;align-items:center;background:var(--bg-light);}
+    .idea-author{font-weight:600;}
+    .idea-date{font-size:0.85rem;color:var(--text-light);}
+    .idea-body{padding:1rem;}
+    .idea-body img{max-width:100%;border-radius:4px;margin:0.5rem 0;}
+    .idea-actions{padding:0.75rem 1rem;background:var(--bg-light);display:flex;gap:1rem;font-size:0.9rem;}
+    .idea-actions i{margin-right:0.25rem;}
+    .footer{background:var(--bg-light);border-top:1px solid var(--border);padding:1rem 0;font-size:0.8rem;text-align:center;color:var(--text-light);}
+  </style>
+</head>
+<body data-theme="dark">
+  <header class="header">
+    <div class="container flex-between">
+      <div class="logo"><a href="index.html" class="flex-center"><i class="fas fa-chart-line"></i><span>TradeVision</span></a></div>
+      <nav class="nav-links">
+        <a href="chart.html">Chart</a>
+        <a href="watchlist.html">Watchlist</a>
+        <a href="screener.html">Screener</a>
+        <a href="ideas.html">Ideas</a>
+        <a href="alerts.html">Alerts</a>
+        <a href="trading.html">Trade</a>
+        <a href="backtest.html">Backtest</a>
+      </nav>
+      <div class="header-actions">
+        <button id="theme-toggle" class="icon-btn"><i class="fas fa-moon"></i></button>
+        <a href="profile.html" class="icon-btn"><i class="fas fa-user"></i></a>
+        <a href="settings.html" class="icon-btn"><i class="fas fa-cog"></i></a>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <h1>Trading Ideas</h1>
+
+    <div class="idea-form">
+      <div class="form-group">
+        <label>Title</label>
+        <input type="text" id="idea-title" placeholder="e.g. AAPL Bullish Breakout">
+      </div>
+      <div class="form-group">
+        <label>Symbol</label>
+        <input type="text" id="idea-symbol" placeholder="AAPL">
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea id="idea-desc" rows="4" placeholder="Explain your idea..."></textarea>
+      </div>
+      <button class="primary" id="publish-idea">Publish Idea</button>
+    </div>
+
+    <div class="ideas-grid" id="ideas-container">
+      <!-- Filled by JS -->
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container">© 2025 TradeVision. Open Source.</div>
+  </footer>
+
+  <script>
+    const themeToggle = document.getElementById('theme-toggle');
+    const body = document.body;
+    const themeIcon = themeToggle.querySelector('i');
+    themeToggle.addEventListener('click', () => {
+      const isDark = body.getAttribute('data-theme') === 'dark';
+      body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+      themeIcon.classList.toggle('fa-moon'); themeIcon.classList.toggle('fa-sun');
+      localStorage.setItem('theme', isDark ? 'light' : 'dark');
+    });
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    body.setAttribute('data-theme', savedTheme);
+    if (savedTheme === 'light') themeIcon.classList.replace('fa-moon', 'fa-sun');
+
+    const ideasContainer = document.getElementById('ideas-container');
+    let ideas = JSON.parse(localStorage.getItem('ideas')) || [];
+
+    function renderIdeas() {
+      ideasContainer.innerHTML = '';
+      ideas.forEach((idea, i) => {
+        const div = document.createElement('div');
+        div.className = 'idea-card';
+        div.innerHTML = `
+          <div class="idea-header">
+            <div>
+              <div class="idea-author">${idea.author}</div>
+              <div class="idea-date">${new Date(idea.date).toLocaleString()}</div>
+            </div>
+            <a href="chart.html?symbol=${idea.symbol}" class="symbol">${idea.symbol}</a>
+          </div>
+          <div class="idea-body">
+            <h3>${idea.title}</h3>
+            <p>${idea.desc}</p>
+            <img src="https://via.placeholder.com/600x300?text=Chart+Snapshot" alt="chart">
+          </div>
+          <div class="idea-actions">
+            <span><i class="fas fa-thumbs-up"></i> 12</span>
+            <span><i class="fas fa-comment"></i> 3</span>
+            <span><i class="fas fa-share"></i> Share</span>
+          </div>
+        `;
+        ideasContainer.appendChild(div);
+      });
+    }
+
+    document.getElementById('publish-idea').addEventListener('click', () => {
+      const title = document.getElementById('idea-title').value.trim();
+      const symbol = document.getElementById('idea-symbol').value.trim().toUpperCase();
+      const desc = document.getElementById('idea-desc').value.trim();
+      if (title && symbol && desc) {
+        ideas.unshift({
+          title, symbol, desc,
+          author: 'You',
+          date: new Date().toISOString()
+        });
+        localStorage.setItem('ideas', JSON.stringify(ideas));
+        renderIdeas();
+        document.getElementById('idea-title').value = '';
+        document.getElementById('idea-symbol').value = '';
+        document.getElementById('idea-desc').value = '';
+      }
+    });
+
+    renderIdeas();
+  </script>
+</body>
+</html>
