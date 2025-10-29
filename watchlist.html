@@ -84,81 +84,74 @@
   </footer>
 
   <script>
-    const themeToggle = document.getElementById('theme-toggle');
-    const body = document.body;
-    const themeIcon = themeToggle.querySelector('i');
-    themeToggle.addEventListener('click', () => {
-      const isDark = body.getAttribute('data-theme') === 'dark';
-      body.setAttribute('data-theme', isDark ? 'light' : 'dark');
-      themeIcon.classList.toggle('fa-moon'); themeIcon.classList.toggle('fa-sun');
-      localStorage.setItem('theme', isDark ? 'light' : 'dark');
+  const themeToggle = document.getElementById('theme-toggle');
+  const body = document.body;
+  const themeIcon = themeToggle.querySelector('i');
+  themeToggle.addEventListener('click', () => {
+    const isDark = body.getAttribute('data-theme') === 'dark';
+    body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+    themeIcon.classList.toggle('fa-moon'); themeIcon.classList.toggle('fa-sun');
+    localStorage.setItem('theme', isDark ? 'light' : 'dark');
+  });
+  const savedTheme = localStorage.getItem('theme') || 'dark';
+  body.setAttribute('data-theme', savedTheme);
+  if (savedTheme === 'light') themeIcon.classList.replace('fa-moon', 'fa-sun');
+
+  // Load watchlist
+  let watchlist = JSON.parse(localStorage.getItem('watchlist')) || ['BTCUSD', 'AAPL', 'TSLA'];
+  const binanceMap = { 'BTCUSD': 'btcusdt', 'AAPL': 'aaplusdt', 'TSLA': 'tslausdt' };
+  let ws;
+
+  function render() {
+    const tbody = document.querySelector('#watchlist-table tbody');
+    tbody.innerHTML = '';
+    watchlist.forEach(sym => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><a href="chart.html?symbol=${sym}">${sym}</a></td>
+        <td class="price">—</td>
+        <td class="change">—</td>
+        <td><button class="remove-btn" data-sym="${sym}">Remove</button></td>
+      `;
+      tbody.appendChild(tr);
     });
-    const savedTheme = localStorage.getItem('theme') || 'dark';
-    body.setAttribute('data-theme', savedTheme);
-    if (savedTheme === 'light') themeIcon.classList.replace('fa-moon', 'fa-sun');
+  }
 
-    const tableBody = document.querySelector('#watchlist-table tbody');
-    const addInput = document.getElementById('add-symbol');
-    const addBtn = document.getElementById('add-btn');
+  function connectWS() {
+    const streams = watchlist.map(s => `${binanceMap[s] || s.toLowerCase() + 'usdt'}@ticker`).join('/');
+    ws = new WebSocket(`wss://stream.binance.com:9443/stream?streams=${streams}`);
 
-    let watchlist = JSON.parse(localStorage.getItem('watchlist')) || ['AAPL', 'TSLA', 'BTCUSD'];
+    ws.onmessage = (e) => {
+      const msg = JSON.parse(e.data);
+      if (!msg.data) return;
+      const t = msg.data;
+      const sym = Object.keys(binanceMap).find(k => binanceMap[k] === t.s.toLowerCase()) || t.s.replace('USDT', 'USD').toUpperCase();
 
-    function render() {
-      tableBody.innerHTML = '';
-      watchlist.forEach(symbol => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td class="symbol"><a href="chart.html?symbol=${symbol}">${symbol}</a></td>
-          <td class="price" data-symbol="${symbol}">--</td>
-          <td class="change" data-symbol="${symbol}">--</td>
-          <td>--</td>
-          <td><i class="fas fa-trash remove-btn" data-symbol="${symbol}"></i></td>
-        `;
-        tableBody.appendChild(row);
-        fetchPrice(symbol);
-      });
+      const row = document.querySelector(`tr td a[href*="symbol=${sym}"]`)?.parentElement?.parentElement;
+      if (row) {
+        row.querySelector('.price').textContent = parseFloat(t.c).toFixed(2);
+        const change = parseFloat(t.P);
+        const chgEl = row.querySelector('.change');
+        chgEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
+        chgEl.style.color = change >= 0 ? 'var(--green)' : 'var(--red)';
+      }
+    };
+
+    ws.onclose = () => setTimeout(connectWS, 3000);
+  }
+
+  document.getElementById('watchlist-table').addEventListener('click', e => {
+    if (e.target.classList.contains('remove-btn')) {
+      watchlist = watchlist.filter(s => s !== e.target.dataset.sym);
+      localStorage.setItem('watchlist', JSON.stringify(watchlist));
+      render();
+      ws.close();
+      connectWS();
     }
+  });
 
-    async function fetchPrice(symbol) {
-      let price = 0;
-      if (symbol === 'BTCUSD') {
-        const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd');
-        const data = await res.json();
-        price = data.bitcoin.usd;
-      } else {
-        price = symbol === 'AAPL' ? 180 + Math.random()*10 : 250 + Math.random()*20;
-      }
-      const priceEl = document.querySelector(`.price[data-symbol="${symbol}"]`);
-      const changeEl = document.querySelector(`.change[data-symbol="${symbol}"]`);
-      if (priceEl) priceEl.textContent = price.toFixed(2);
-      if (changeEl) {
-        const change = (Math.random() - 0.5) * 5;
-        changeEl.textContent = (change > 0 ? '+' : '') + change.toFixed(2) + '%';
-        changeEl.className = change >= 0 ? 'change' : 'change negative';
-      }
-    }
-
-    addBtn.addEventListener('click', () => {
-      const sym = addInput.value.trim().toUpperCase();
-      if (sym && !watchlist.includes(sym)) {
-        watchlist.push(sym);
-        localStorage.setItem('watchlist', JSON.stringify(watchlist));
-        render();
-        addInput.value = '';
-      }
-    });
-
-    tableBody.addEventListener('click', e => {
-      if (e.target.classList.contains('remove-btn')) {
-        const sym = e.target.dataset.symbol;
-        watchlist = watchlist.filter(s => s !== sym);
-        localStorage.setItem('watchlist', JSON.stringify(watchlist));
-        render();
-      }
-    });
-
-    render();
-    setInterval(() => watchlist.forEach(fetchPrice), 10000);
-  </script>
+  render();
+  connectWS();
+</script>
 </body>
 </html>
