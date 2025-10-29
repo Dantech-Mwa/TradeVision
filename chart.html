@@ -130,16 +130,16 @@
 
   <div class="chart-layout">
     <!-- LEFT: Tools -->
-    <div class="sidebar-left">
-      <button data-tool="cursor" class="active"><i class="fas fa-mouse-pointer"></i><span>Cursor</span></button>
-      <button data-tool="line"><i class="fas fa-minus"></i><span>Line</span></button>
-      <button data-tool="trendline"><i class="fas fa-chart-line"></i><span>Trend</span></button>
-      <button data-tool="horizontal"><i class="fas fa-grip-lines"></i><span>H-Line</span></button>
-      <button data-tool="fib"><i class="fas fa-ruler"></i><span>Fib</span></button>
-      <button data-tool="rectangle"><i class="fas fa-square"></i><span>Rect</span></button>
-      <button data-tool="text"><i class="fas fa-font"></i><span>Text</span></button>
-      <button data-tool="arrow"><i class="fas fa-arrow-up"></i><span>Arrow</span></button>
-    </div>
+<div class="sidebar-left">
+  <button data-tool="cursor" class="active"><i class="fas fa-mouse-pointer"></i><span>Select</span></button>
+  <button data-tool="line"><i class="fas fa-minus"></i><span>Line</span></button>
+  <button data-tool="horizontal"><i class="fas fa-grip-lines"></i><span>H-Line</span></button>
+  <button data-tool="fib-retracement"><i class="fas fa-ruler"></i><span>Fib</span></button>
+  <button data-tool="rectangle"><i class="fas fa-square"></i><span>Rect</span></button>
+  <button data-tool="text"><i class="fas fa-font"></i><span>Text</span></button>
+  <button data-tool="arrow"><i class="fas fa-arrow-up"></i><span>Arrow</span></button>
+  <button data-tool="eraser"><i class="fas fa-eraser"></i><span>Eraser</span></button>
+</div>
 
     <!-- CENTER: Chart + Volume -->
     <div class="main-chart">
@@ -466,60 +466,415 @@
       });
     }
 
-    // === DRAWING ===
-    let isDrawing = false;
-    let startPoint = null;
-    const canvas = document.getElementById('drawing-canvas');
-    const ctx = canvas.getContext('2d');
-    let currentTool = 'cursor';
+    // === DRAWING SYSTEM ===
+let isDrawing = false;
+let startPoint = null;
+let currentPoints = [];
+const canvas = document.getElementById('drawing-canvas');
+const ctx = canvas.getContext('2d');
+let currentTool = 'cursor';
+let drawings = [];
+let selectedDrawing = null;
+let isDragging = false;
+let dragOffset = { x: 0, y: 0 };
 
-    function initDrawing() {
-      const resizeCanvas = () => {
+function initDrawing() {
+    const resizeCanvas = () => {
         canvas.width = canvas.parentElement.clientWidth;
         canvas.height = canvas.parentElement.clientHeight;
-      };
-      resizeCanvas();
-      window.addEventListener('resize', resizeCanvas);
+        redrawAll();
+    };
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
 
-      document.querySelectorAll('[data-tool]').forEach(btn => {
+    // Sync with drawing.html
+    const savedTool = localStorage.getItem('selectedDrawingTool');
+    if (savedTool) {
+        currentTool = savedTool;
+        updateToolUI();
+    }
+
+    if (localStorage.getItem('clearDrawings') === 'true') {
+        clearAllDrawings();
+        localStorage.removeItem('clearDrawings');
+    }
+
+    document.querySelectorAll('[data-tool]').forEach(btn => {
         btn.addEventListener('click', () => {
-          document.querySelectorAll('[data-tool]').forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          currentTool = btn.dataset.tool;
-          canvas.style.pointerEvents = currentTool === 'cursor' ? 'none' : 'auto';
+            currentTool = btn.dataset.tool;
+            localStorage.setItem('selectedDrawingTool', currentTool);
+            updateToolUI();
+            canvas.style.cursor = getCursorForTool(currentTool);
         });
-      });
+    });
 
-      canvas.addEventListener('mousedown', e => {
-        if (currentTool === 'cursor') return;
+    canvas.addEventListener('mousedown', handleMouseDown);
+    canvas.addEventListener('mousemove', handleMouseMove);
+    canvas.addEventListener('mouseup', handleMouseUp);
+    canvas.addEventListener('dblclick', handleDoubleClick);
+}
+
+function updateToolUI() {
+    document.querySelectorAll('[data-tool]').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.tool === currentTool) {
+            btn.classList.add('active');
+        }
+    });
+}
+
+function getCursorForTool(tool) {
+    const cursors = {
+        'cursor': 'default',
+        'pencil': 'crosshair',
+        'eraser': 'not-allowed',
+        'text': 'text'
+    };
+    return cursors[tool] || 'crosshair';
+}
+
+function handleMouseDown(e) {
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    if (currentTool === 'cursor') {
+        selectedDrawing = getDrawingAtPoint(x, y);
+        if (selectedDrawing) {
+            isDragging = true;
+            dragOffset.x = x - selectedDrawing.start.x;
+            dragOffset.y = y - selectedDrawing.start.y;
+        }
+        return;
+    }
+    
+    if (currentTool === 'eraser') {
+        removeDrawingAtPoint(x, y);
+        return;
+    }
+
+    if (currentTool === 'pencil') {
+        currentPoints = [{x, y}];
         isDrawing = true;
-        startPoint = { x: e.offsetX, y: e.offsetY };
-      });
+        return;
+    }
 
-      canvas.addEventListener('mousemove', e => {
-        if (!isDrawing) return;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        const end = { x: e.offsetX, y: e.offsetY };
-        ctx.strokeStyle = '#2962ff';
-        ctx.lineWidth = 2;
+    if (currentTool === 'text') {
+        showTextInput(x, y);
+        return;
+    }
+
+    isDrawing = true;
+    startPoint = { x, y };
+    currentPoints = [startPoint];
+}
+
+function handleMouseMove(e) {
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    if (isDragging && selectedDrawing) {
+        selectedDrawing.start.x = x - dragOffset.x;
+        selectedDrawing.start.y = y - dragOffset.y;
+        if (selectedDrawing.end) {
+            selectedDrawing.end.x = x - dragOffset.x + (selectedDrawing.end.x - selectedDrawing.start.x);
+            selectedDrawing.end.y = y - dragOffset.y + (selectedDrawing.end.y - selectedDrawing.start.y);
+        }
+        redrawAll();
+        return;
+    }
+
+    if (!isDrawing) return;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    redrawAll();
+    
+    ctx.strokeStyle = '#2962ff';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+
+    switch(currentTool) {
+        case 'line':
+        case 'trendline':
+            ctx.moveTo(startPoint.x, startPoint.y);
+            ctx.lineTo(x, y);
+            break;
+        case 'ray':
+            ctx.moveTo(startPoint.x, startPoint.y);
+            const slope = (y - startPoint.y) / (x - startPoint.x);
+            const endX = canvas.width;
+            const endY = startPoint.y + slope * (endX - startPoint.x);
+            ctx.lineTo(endX, endY);
+            break;
+        case 'horizontal':
+            ctx.moveTo(0, startPoint.y);
+            ctx.lineTo(canvas.width, startPoint.y);
+            break;
+        case 'vertical':
+            ctx.moveTo(startPoint.x, 0);
+            ctx.lineTo(startPoint.x, canvas.height);
+            break;
+        case 'channel':
+            drawChannel(ctx, startPoint.x, startPoint.y, x, y);
+            break;
+        case 'rectangle':
+            ctx.rect(startPoint.x, startPoint.y, x - startPoint.x, y - startPoint.y);
+            break;
+        case 'ellipse':
+            drawEllipse(ctx, startPoint.x, startPoint.y, x, y);
+            break;
+        case 'triangle':
+            drawTriangle(ctx, startPoint.x, startPoint.y, x, y);
+            break;
+        case 'arrow':
+            drawArrow(ctx, startPoint.x, startPoint.y, x, y);
+            break;
+        case 'callout':
+            drawCallout(ctx, startPoint.x, startPoint.y, x, y);
+            break;
+        case 'fib-retracement':
+            drawFibonacciRetracement(ctx, startPoint.x, startPoint.y, x, y);
+            break;
+        case 'fib-extension':
+            drawFibonacciExtension(ctx, startPoint.x, startPoint.y, x, y);
+            break;
+        case 'fib-time':
+            drawFibonacciTime(ctx, startPoint.x, startPoint.y, x, y);
+            break;
+        case 'measure':
+            drawMeasure(ctx, startPoint.x, startPoint.y, x, y);
+            break;
+        case 'pencil':
+            ctx.moveTo(currentPoints[0].x, currentPoints[0].y);
+            currentPoints.forEach(point => ctx.lineTo(point.x, point.y));
+            ctx.lineTo(x, y);
+            break;
+    }
+    ctx.stroke();
+    
+    // Add current point for freehand drawing
+    if (currentTool === 'pencil') {
+        currentPoints.push({x, y});
+    }
+}
+
+function handleMouseUp(e) {
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    if (isDragging) {
+        isDragging = false;
+        return;
+    }
+
+    if (!isDrawing) return;
+
+    const drawing = {
+        type: currentTool,
+        start: { ...startPoint },
+        end: { x, y },
+        points: [...currentPoints],
+        color: '#2962ff',
+        lineWidth: 2
+    };
+
+    drawings.push(drawing);
+    isDrawing = false;
+    redrawAll();
+}
+
+function handleDoubleClick(e) {
+    if (currentTool === 'polygon' && currentPoints.length > 0) {
+        // Complete polygon
+        const drawing = {
+            type: 'polygon',
+            points: [...currentPoints],
+            color: '#2962ff',
+            lineWidth: 2
+        };
+        drawings.push(drawing);
+        currentPoints = [];
+        redrawAll();
+    }
+}
+
+// DRAWING FUNCTIONS FOR ALL TOOLS
+function drawChannel(ctx, x1, y1, x2, y2) {
+    const width = x2 - x1;
+    const channelHeight = 50; // Fixed channel height
+    
+    // Main trend line
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    
+    // Parallel lines
+    ctx.moveTo(x1, y1 + channelHeight);
+    ctx.lineTo(x2, y2 + channelHeight);
+    
+    ctx.moveTo(x1, y1 - channelHeight);
+    ctx.lineTo(x2, y2 - channelHeight);
+}
+
+function drawTriangle(ctx, x1, y1, x2, y2) {
+    const centerX = (x1 + x2) / 2;
+    ctx.moveTo(centerX, y1);
+    ctx.lineTo(x1, y2);
+    ctx.lineTo(x2, y2);
+    ctx.lineTo(centerX, y1);
+}
+
+function drawCallout(ctx, x1, y1, x2, y2) {
+    // Callout box
+    const boxWidth = 100;
+    const boxHeight = 60;
+    ctx.rect(x2, y2, boxWidth, boxHeight);
+    
+    // Arrow to point
+    ctx.moveTo(x2 + boxWidth/2, y2);
+    ctx.lineTo(x1, y1);
+}
+
+function drawFibonacciRetracement(ctx, x1, y1, x2, y2) {
+    const levels = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1];
+    const height = Math.abs(y2 - y1);
+    const startY = Math.min(y1, y2);
+    
+    levels.forEach(level => {
+        const y = startY + height * level;
+        ctx.moveTo(x1, y);
+        ctx.lineTo(x2, y);
+        ctx.fillText(`${(level * 100).toFixed(1)}%`, x1 + 5, y - 5);
+    });
+}
+
+function drawFibonacciExtension(ctx, x1, y1, x2, y2) {
+    const levels = [0, 0.618, 1, 1.618, 2.618];
+    const height = Math.abs(y2 - y1);
+    const startY = Math.min(y1, y2);
+    
+    levels.forEach(level => {
+        const y = startY + height * level;
+        ctx.moveTo(x1, y);
+        ctx.lineTo(x2, y);
+        ctx.fillText(`${(level * 100).toFixed(1)}%`, x1 + 5, y - 5);
+    });
+}
+
+function drawFibonacciTime(ctx, x1, y1, x2, y2) {
+    const levels = [0, 1, 2, 3, 5, 8, 13];
+    const width = Math.abs(x2 - x1);
+    const startX = Math.min(x1, x2);
+    
+    levels.forEach(level => {
+        const x = startX + width * (level / 13);
+        ctx.moveTo(x, y1);
+        ctx.lineTo(x, y2);
+        ctx.fillText(`${level}`, x + 5, y1 + 15);
+    });
+}
+
+function drawMeasure(ctx, x1, y1, x2, y2) {
+    // Line with measurement text
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    
+    const distance = Math.sqrt(Math.pow(x2-x1, 2) + Math.pow(y2-y1, 2));
+    const centerX = (x1 + x2) / 2;
+    const centerY = (y1 + y2) / 2;
+    
+    ctx.fillText(`${Math.round(distance)}px`, centerX, centerY - 10);
+}
+
+// Keep the existing helper functions (redrawAll, drawEllipse, drawArrow, etc.)
+// and add the new ones above...
+
+function redrawAll() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = '#2962ff';
+    ctx.lineWidth = 2;
+    ctx.fillStyle = '#2962ff';
+    ctx.font = '12px Inter';
+    
+    drawings.forEach(drawing => {
         ctx.beginPath();
-        if (['line', 'trendline'].includes(currentTool)) {
-          ctx.moveTo(startPoint.x, startPoint.y);
-          ctx.lineTo(end.x, end.y);
-        } else if (currentTool === 'horizontal') {
-          ctx.moveTo(0, startPoint.y);
-          ctx.lineTo(canvas.width, startPoint.y);
+        ctx.strokeStyle = drawing.color;
+        ctx.lineWidth = drawing.lineWidth;
+        
+        switch(drawing.type) {
+            case 'line':
+            case 'trendline':
+                ctx.moveTo(drawing.start.x, drawing.start.y);
+                ctx.lineTo(drawing.end.x, drawing.end.end);
+                break;
+            case 'ray':
+                ctx.moveTo(drawing.start.x, drawing.start.y);
+                const slope = (drawing.end.y - drawing.start.y) / (drawing.end.x - drawing.start.x);
+                const endX = canvas.width;
+                const endY = drawing.start.y + slope * (endX - drawing.start.x);
+                ctx.lineTo(endX, endY);
+                break;
+            case 'horizontal':
+                ctx.moveTo(0, drawing.start.y);
+                ctx.lineTo(canvas.width, drawing.start.y);
+                break;
+            case 'vertical':
+                ctx.moveTo(drawing.start.x, 0);
+                ctx.lineTo(drawing.start.x, canvas.height);
+                break;
+            case 'channel':
+                drawChannel(ctx, drawing.start.x, drawing.start.y, drawing.end.x, drawing.end.y);
+                break;
+            case 'rectangle':
+                ctx.rect(drawing.start.x, drawing.start.y, 
+                        drawing.end.x - drawing.start.x, 
+                        drawing.end.y - drawing.start.y);
+                break;
+            case 'ellipse':
+                drawEllipse(ctx, drawing.start.x, drawing.start.y, drawing.end.x, drawing.end.y);
+                break;
+            case 'triangle':
+                drawTriangle(ctx, drawing.start.x, drawing.start.y, drawing.end.x, drawing.end.y);
+                break;
+            case 'arrow':
+                drawArrow(ctx, drawing.start.x, drawing.start.y, drawing.end.x, drawing.end.y);
+                break;
+            case 'callout':
+                drawCallout(ctx, drawing.start.x, drawing.start.y, drawing.end.x, drawing.end.y);
+                break;
+            case 'fib-retracement':
+                drawFibonacciRetracement(ctx, drawing.start.x, drawing.start.y, drawing.end.x, drawing.end.y);
+                break;
+            case 'fib-extension':
+                drawFibonacciExtension(ctx, drawing.start.x, drawing.start.y, drawing.end.x, drawing.end.y);
+                break;
+            case 'fib-time':
+                drawFibonacciTime(ctx, drawing.start.x, drawing.start.y, drawing.end.x, drawing.end.y);
+                break;
+            case 'measure':
+                drawMeasure(ctx, drawing.start.x, drawing.start.y, drawing.end.x, drawing.end.y);
+                break;
+            case 'pencil':
+                if (drawing.points.length > 0) {
+                    ctx.moveTo(drawing.points[0].x, drawing.points[0].y);
+                    drawing.points.forEach(point => ctx.lineTo(point.x, point.y));
+                }
+                break;
+            case 'text':
+                ctx.fillText(drawing.text, drawing.x, drawing.y);
+                break;
         }
         ctx.stroke();
-      });
+    });
+}
 
-      canvas.addEventListener('mouseup', () => {
-        if (isDrawing) {
-          isDrawing = false;
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-        }
-      });
-    }
+
+
+
+
+
+
     
 // === SYMBOL SEARCH ===
 document.getElementById('search-go').addEventListener('click', () => {
