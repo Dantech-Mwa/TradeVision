@@ -8,74 +8,455 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4/dist/lightweight-charts.standalone.production.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/technicalindicators/dist/technicalindicators.min.js"></script>
   <style>
-    :root{--bg:#141518;--bg-light:#1e222d;--text:#d1d4dc;--text-light:#9ea1b5;--accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#2d313e;--card:#1e222d;}
-    [data-theme="light"]{--bg:#ffffff;--bg-light:#f8f9fa;--text:#2d3748;--text-light:#718096;--accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#e2e8f0;--card:#ffffff;}
-    *,*::before,*::after{box-sizing:border-box;}
-    body{margin:0;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);}
-    a{color:var(--accent);text-decoration:none;}
-    .container{max-width:1400px;margin:0 auto;padding:0 1rem;}
-    .flex-between{display:flex;justify-content:space-between;align-items:center;}
-    .header{background:var(--bg-light);border-bottom:1px solid var(--border);padding:.75rem 0;position:sticky;top:0;z-index:100;}
-    .logo{font-weight:700;font-size:1.4rem;color:var(--accent);}
-    .logo i{font-size:1.5rem;}
-    .nav-links a{margin:0 .75rem;font-weight:500;}
-    .icon-btn{background:none;border:none;color:var(--text-light);font-size:1.2rem;cursor:pointer;padding:.5rem;}
+    :root {
+      --bg: #141518;
+      --bg-light: #1e222d;
+      --text: #d1d4dc;
+      --text-light: #9ea1b5;
+      --accent: #2962ff;
+      --accent-hover: #1e53e5;
+      --green: #26a69a;
+      --green-light: rgba(38, 166, 154, 0.1);
+      --red: #ef5350;
+      --red-light: rgba(239, 83, 80, 0.1);
+      --border: #2d313e;
+      --card: #1e222d;
+      --card-hover: #252a38;
+    }
+    
+    [data-theme="light"] {
+      --bg: #ffffff;
+      --bg-light: #f8f9fa;
+      --text: #2d3748;
+      --text-light: #718096;
+      --accent: #2962ff;
+      --accent-hover: #1e53e5;
+      --green: #26a69a;
+      --green-light: rgba(38, 166, 154, 0.05);
+      --red: #ef5350;
+      --red-light: rgba(239, 83, 80, 0.05);
+      --border: #e2e8f0;
+      --card: #ffffff;
+      --card-hover: #f8f9fa;
+    }
+    
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+    
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      transition: background-color 0.3s, color 0.3s;
+    }
+    
+    a {
+      color: var(--accent);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    
+    a:hover {
+      color: var(--accent-hover);
+    }
+    
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+    
+    .flex-between {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .header {
+      background: var(--bg-light);
+      border-bottom: 1px solid var(--border);
+      padding: .75rem 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      transition: background-color 0.3s, border-color 0.3s;
+    }
+    
+    .logo {
+      font-weight: 700;
+      font-size: 1.4rem;
+      color: var(--accent);
+    }
+    
+    .logo i {
+      font-size: 1.5rem;
+      margin-right: 0.5rem;
+    }
+    
+    .nav-links a {
+      margin: 0 .75rem;
+      font-weight: 500;
+      position: relative;
+    }
+    
+    .nav-links a:hover::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: var(--accent);
+    }
+    
+    .icon-btn {
+      background: none;
+      border: none;
+      color: var(--text-light);
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: .5rem;
+      border-radius: 50%;
+      transition: background-color 0.2s, color 0.2s;
+    }
+    
+    .icon-btn:hover {
+      background: var(--border);
+      color: var(--text);
+    }
 
-    .chart-layout{display:grid;grid-template-columns:80px 1fr 280px;gap:0;height:calc(100vh - 60px);}
-    .sidebar-left{background:var(--bg-light);border-right:1px solid var(--border);overflow-y:auto;padding:.75rem .5rem;}
-    .sidebar-left button{width:100%;padding:.75rem 0;border:none;background:none;color:var(--text-light);cursor:pointer;text-align:center;font-size:.85rem;border-radius:6px;margin:.25rem 0;transition:.2s;}
-    .sidebar-left button:hover,.sidebar-left button.active{background:var(--accent);color:white;}
-    .sidebar-left i{font-size:1.3rem;display:block;margin-bottom:.3rem;}
+    .chart-layout {
+      display: grid;
+      grid-template-columns: 80px 1fr 280px;
+      gap: 0;
+      height: calc(100vh - 60px);
+    }
+    
+    .sidebar-left {
+      background: var(--bg-light);
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      padding: .75rem .5rem;
+      z-index: 20;
+      position: relative;
+    }
+    
+    .sidebar-left button {
+      width: 100%;
+      padding: .75rem 0;
+      border: none;
+      background: none;
+      color: var(--text-light);
+      cursor: pointer;
+      text-align: center;
+      font-size: .85rem;
+      border-radius: 6px;
+      margin: .25rem 0;
+      transition: .2s;
+    }
+    
+    .sidebar-left button:hover, .sidebar-left button.active {
+      background: var(--accent);
+      color: white;
+    }
+    
+    .sidebar-left i {
+      font-size: 1.3rem;
+      display: block;
+      margin-bottom: .3rem;
+    }
 
-    .main-chart{display:flex;flex-direction:column;overflow:hidden;}
-    #chart-container{flex:1;position:relative;width:100%;height:100%;pointer-events:none;}
-    #chart{width:100%;height:100%;}
-    #volume-container{height:80px;position:relative;background:var(--bg-light);border-top:1px solid var(--border);}
-    #volume{width:100%;height:100%;}
+    .main-chart {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+    
+    #chart-container {
+      flex: 1;
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+    
+    #chart {
+      width: 100%;
+      height: 100%;
+    }
+    
+    #volume-container {
+      height: 80px;
+      position: relative;
+      background: var(--bg-light);
+      border-top: 1px solid var(--border);
+    }
+    
+    #volume {
+      width: 100%;
+      height: 100%;
+    }
 
-    .sidebar-right{background:var(--bg-light);border-left:1px solid var(--border);padding:1rem;overflow-y:auto;}
-    .panel-title{font-weight:600;margin:1rem 0 .5rem;font-size:1rem;}
-    .symbol-info{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;}
-    .symbol-info h2{font-size:1.3rem;margin:0;}
-    .symbol-info .price{font-size:1.2rem;font-weight:600;}
-    .change{color:var(--green);}
-    .change.negative{color:var(--red);}
-    .timeframe-bar,.chart-type-bar{margin-bottom:1rem;display:flex;flex-wrap:wrap;gap:.5rem;}
-    .timeframe-btn,.chart-type-btn{padding:.4rem .8rem;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:4px;font-size:.85rem;cursor:pointer;transition:.2s;}
-    .timeframe-btn.active,.chart-type-btn.active{background:var(--accent);color:white;border-color:var(--accent);}
+    .sidebar-right {
+      background: var(--bg-light);
+      border-left: 1px solid var(--border);
+      padding: 1rem;
+      overflow-y: auto;
+      z-index: 20;
+      position: relative;
+    }
+    
+    .panel-title {
+      font-weight: 600;
+      margin: 1rem 0 .5rem;
+      font-size: 1rem;
+    }
+    
+    .symbol-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    
+    .symbol-info h2 {
+      font-size: 1.3rem;
+      margin: 0;
+    }
+    
+    .symbol-info .price {
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+    
+    .change {
+      color: var(--green);
+    }
+    
+    .change.negative {
+      color: var(--red);
+    }
+    
+    .timeframe-bar, .chart-type-bar {
+      margin-bottom: 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: .5rem;
+    }
+    
+    .timeframe-btn, .chart-type-btn {
+      padding: .4rem .8rem;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      border-radius: 4px;
+      font-size: .85rem;
+      cursor: pointer;
+      transition: .2s;
+    }
+    
+    .timeframe-btn.active, .chart-type-btn.active {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+    
+    .timeframe-btn:hover, .chart-type-btn:hover {
+      background: var(--card-hover);
+    }
 
-    .indicator-panel{margin-top:1rem;}
-    .add-btn{width:100%;padding:.6rem;background:var(--accent);color:white;border:none;border-radius:6px;cursor:pointer;font-size:.95rem;margin-bottom:.5rem;}
-    .add-btn:hover{background:#1a4fd6;}
-    .search-container input{width:100%;padding:.5rem .8rem;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--text);font-size:.9rem;}
-    .dropdown-list{position:absolute;top:100%;left:0;right:0;max-height:200px;overflow-y:auto;background:var(--card);border:1px solid var(--border);border-top:none;border-radius:0 0 6px 6px;z-index:10;}
-    .dropdown-item{padding:.6rem .8rem;cursor:pointer;font-size:.9rem;border-bottom:1px solid var(--border);}
-    .dropdown-item:hover{background:var(--bg-light);}
-    .dropdown-item:last-child{border-bottom:none;}
-    .indicator-item{display:flex;justify-content:space-between;align-items:center;padding:.5rem .7rem;background:var(--bg-light);border-radius:6px;margin-bottom:.4rem;font-size:.9rem;}
-    .indicator-item .name{font-weight:500;}
-    .indicator-item .remove{color:var(--red);cursor:pointer;font-size:1.1rem;}
-    .indicator-item .remove:hover{color:#d32f2f;}
+    .indicator-panel {
+      margin-top: 1rem;
+    }
+    
+    .add-btn {
+      width: 100%;
+      padding: .6rem;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: .95rem;
+      margin-bottom: .5rem;
+      transition: background-color 0.2s;
+    }
+    
+    .add-btn:hover {
+      background: var(--accent-hover);
+    }
+    
+    .search-container {
+      position: relative;
+    }
+    
+    .search-container input {
+      width: 100%;
+      padding: .5rem .8rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--card);
+      color: var(--text);
+      font-size: .9rem;
+      transition: border-color 0.2s;
+    }
+    
+    .search-container input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(41, 98, 255, 0.2);
+    }
+    
+    .dropdown-list {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      max-height: 200px;
+      overflow-y: auto;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 6px 6px;
+      z-index: 30;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .dropdown-item {
+      padding: .6rem .8rem;
+      cursor: pointer;
+      font-size: .9rem;
+      border-bottom: 1px solid var(--border);
+      transition: background-color 0.2s;
+    }
+    
+    .dropdown-item:hover {
+      background: var(--bg-light);
+    }
+    
+    .dropdown-item:last-child {
+      border-bottom: none;
+    }
+    
+    .indicator-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: .5rem .7rem;
+      background: var(--bg-light);
+      border-radius: 6px;
+      margin-bottom: .4rem;
+      font-size: .9rem;
+    }
+    
+    .indicator-item .name {
+      font-weight: 500;
+    }
+    
+    .indicator-item .remove {
+      color: var(--red);
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: color 0.2s;
+    }
+    
+    .indicator-item .remove:hover {
+      color: #d32f2f;
+    }
 
-    .footer{background:var(--bg-light);border-top:1px solid var(--border);padding:.75rem 0;font-size:.8rem;text-align:center;color:var(--text-light);}
-    @media(max-width:992px){.chart-layout{grid-template-columns:1fr;}.sidebar-left,.sidebar-right{display:none;}}
+    .footer {
+      background: var(--bg-light);
+      border-top: 1px solid var(--border);
+      padding: .75rem 0;
+      font-size: .8rem;
+      text-align: center;
+      color: var(--text-light);
+      transition: background-color 0.3s, border-color 0.3s;
+    }
+    
+    @media (max-width: 992px) {
+      .chart-layout {
+        grid-template-columns: 1fr;
+      }
+      
+      .sidebar-left, .sidebar-right {
+        display: none;
+      }
+    }
 
-    #drawing-canvas{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:auto;z-index:10;}
+    #drawing-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 10;
+      pointer-events: auto;
+    }
 
-    /* FIXED: Make buttons clickable */
-    #chart-container{pointer-events:none;}
-    .sidebar-right{position:relative;z-index:30;}
-    .timeframe-bar,.chart-type-bar,.indicator-panel{position:relative;z-index:31;}
-    .add-btn{position:relative;z-index:32;}
-
-  /* ──────── CLICK-THROUGH FIX ──────── */
-  #chart-container { pointer-events: none; }
-  #drawing-canvas  { pointer-events: auto; }
-
-  /* optional – make sure sidebar is above canvas */
-  .sidebar-right   { position: relative; z-index: 30; }
-
+    /* Price flash animations */
+    .flash-green {
+      animation: flashGreen 0.8s ease;
+    }
+    
+    .flash-red {
+      animation: flashRed 0.8s ease;
+    }
+    
+    @keyframes flashGreen {
+      0%, 100% { color: var(--text); }
+      50% { color: var(--green); }
+    }
+    
+    @keyframes flashRed {
+      0%, 100% { color: var(--text); }
+      50% { color: var(--red); }
+    }
+    
+    /* Search bar in header */
+    .search-bar {
+      margin-left: auto;
+      max-width: 200px;
+      position: relative;
+    }
+    
+    .search-bar input {
+      width: 100%;
+      padding: .5rem 2.5rem .5rem .8rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--bg);
+      color: var(--text);
+      font-size: .9rem;
+      transition: border-color 0.2s;
+    }
+    
+    .search-bar input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(41, 98, 255, 0.2);
+    }
+    
+    #search-go {
+      position: absolute;
+      right: .5rem;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--accent);
+      cursor: pointer;
+      font-size: .9rem;
+      transition: color 0.2s;
+    }
+    
+    #search-go:hover {
+      color: var(--accent-hover);
+    }
   </style>
 </head>
 
@@ -84,16 +465,19 @@
     <div class="container flex-between">
       <div class="logo"><a href="index.html" class="flex-center"><i class="fas fa-chart-line"></i><span>TradeVision</span></a></div>
       <nav class="nav-links">
-        <a href="chart.html">Chart</a><a href="watchlist.html">Watchlist</a><a href="screener.html">Screener</a>
-        <a href="ideas.html">Ideas</a><a href="alerts.html">Alerts</a>
+        <a href="chart.html">Chart</a>
+        <a href="watchlist.html">Watchlist</a>
+        <a href="screener.html">Screener</a>
+        <a href="ideas.html">Ideas</a>
+        <a href="alerts.html">Alerts</a>
       </nav>
+      <div class="search-bar">
+        <input type="text" id="symbol-search" placeholder="e.g. ETHUSD, AAPL">
+        <button id="search-go"><i class="fas fa-search"></i></button>
+      </div>
       <div class="header-actions">
         <button id="theme-toggle" class="icon-btn"><i class="fas fa-moon"></i></button>
       </div>
-    </div>
-    <div class="search-bar" style="margin-left:auto;max-width:200px;position:relative;">
-      <input type="text" id="symbol-search" placeholder="e.g. ETHUSD, AAPL">
-      <button id="search-go" style="position:absolute;right:.5rem;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--accent);cursor:pointer;">Go</button>
     </div>
   </header>
 
@@ -112,15 +496,26 @@
 
     <!-- CENTER CHART + VOLUME -->
     <div class="main-chart">
-      <div id="chart-container"><div id="chart"></div><canvas id="drawing-canvas"></canvas></div>
-      <div id="volume-container"><div id="volume"></div></div>
+      <div id="chart-container">
+        <div id="chart"></div>
+        <canvas id="drawing-canvas"></canvas>
+      </div>
+      <div id="volume-container">
+        <div id="volume"></div>
+      </div>
     </div>
 
     <!-- RIGHT PANEL -->
     <div class="sidebar-right">
       <div class="symbol-info">
-        <div><h2 id="symbol-name">BTCUSD</h2><div id="symbol-exchange">CRYPTO</div></div>
-        <div><div class="price" id="current-price">--</div><div class="change" id="price-change">--</div></div>
+        <div>
+          <h2 id="symbol-name">BTCUSD</h2>
+          <div id="symbol-exchange">CRYPTO</div>
+        </div>
+        <div>
+          <div class="price" id="current-price">--</div>
+          <div class="change" id="price-change">--</div>
+        </div>
       </div>
 
       <div class="timeframe-bar">
@@ -139,7 +534,7 @@
         <button class="chart-type-btn" data-type="bar">Bars</button>
       </div>
 
-      <!-- ==== INDICATOR PANEL ==== -->
+      <!-- INDICATOR PANEL -->
       <div class="indicator-panel">
         <div class="panel-title">Indicators (120+)</div>
         <button id="add-indicator-btn" class="add-btn">+ Add Indicator</button>
@@ -154,11 +549,10 @@
     </div>
   </div>
 
-  <footer class="footer"><div class="container">© 2025 TradeVision. Open Source.</div></footer>
+  <footer class="footer">
+    <div class="container">© 2025 TradeVision. Open Source.</div>
+  </footer>
 
-  <!-- ────────────────────────────────────────
-       MAIN LOGIC (replace everything from here)
-       ──────────────────────────────────────── -->
   <script>
     // ───── GLOBALS ─────
     const urlParams = new URLSearchParams(location.search);
@@ -169,11 +563,12 @@
     document.getElementById('symbol-exchange').textContent = symbol.includes('USD') ? 'CRYPTO' : 'NASDAQ';
 
     let chart, priceSeries, volumeSeries, volumeChart;
-    let priceData = [];               // <-- this is the global candles array
+    let priceData = [];
     let klineWs, tickerWs;
     let currentInterval = '15m';
     let currentChartType = 'candlestick';
     let lastPrice = 0;
+    let activeTool = 'cursor';
 
     // ───── CHART INITIALISATION ─────
     function initChart() {
@@ -325,12 +720,13 @@
 
       chart.timeScale().fitContent();
 
-      // **NOW** we have a valid `priceData` array → safe to plot indicators
+      // Re-apply indicators if any
       if (window.applyIndicatorsToChart) window.applyIndicatorsToChart();
     }
 
     // ───── TOOLBARS ─────
     function initToolbars() {
+      // Timeframe buttons
       document.querySelectorAll('.timeframe-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           document.querySelectorAll('.timeframe-btn').forEach(b => b.classList.remove('active'));
@@ -341,6 +737,7 @@
         });
       });
 
+      // Chart type buttons
       document.querySelectorAll('.chart-type-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           document.querySelectorAll('.chart-type-btn').forEach(b => b.classList.remove('active'));
@@ -349,10 +746,61 @@
           updateChartSeries();
         });
       });
+
+      // Drawing tools
+      document.querySelectorAll('.sidebar-left button').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.sidebar-left button').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          activeTool = btn.dataset.tool;
+          // Drawing tool logic would go here
+          console.log(`Selected tool: ${activeTool}`);
+        });
+      });
     }
 
-    // ───── DRAWING SYSTEM (unchanged) ─────
-    /* … (your existing drawing code – keep it exactly as you posted) … */
+    // ───── DRAWING SYSTEM ─────
+    function initDrawing() {
+      const canvas = document.getElementById('drawing-canvas');
+      const ctx = canvas.getContext('2d');
+      
+      // Set canvas size to match chart
+      function resizeCanvas() {
+        canvas.width = canvas.clientWidth;
+        canvas.height = canvas.clientHeight;
+      }
+      
+      resizeCanvas();
+      window.addEventListener('resize', resizeCanvas);
+      
+      // Basic drawing state
+      let isDrawing = false;
+      let startX, startY;
+      
+      canvas.addEventListener('mousedown', (e) => {
+        if (activeTool === 'cursor') return;
+        
+        isDrawing = true;
+        startX = e.offsetX;
+        startY = e.offsetY;
+      });
+      
+      canvas.addEventListener('mousemove', (e) => {
+        if (!isDrawing) return;
+        
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.beginPath();
+        ctx.moveTo(startX, startY);
+        ctx.lineTo(e.offsetX, e.offsetY);
+        ctx.strokeStyle = '#2962ff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      });
+      
+      canvas.addEventListener('mouseup', () => {
+        isDrawing = false;
+      });
+    }
 
     // ───── SYMBOL SEARCH ─────
     document.getElementById('search-go').addEventListener('click', () => {
@@ -362,6 +810,7 @@
       url.searchParams.set('symbol', input);
       location.href = url;
     });
+    
     document.getElementById('symbol-search').addEventListener('keypress', e => {
       if (e.key === 'Enter') document.getElementById('search-go').click();
     });
@@ -370,14 +819,28 @@
     document.getElementById('theme-toggle').addEventListener('click', () => {
       const isDark = document.body.getAttribute('data-theme') === 'dark';
       document.body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+      const themeIcon = document.querySelector('#theme-toggle i');
+      themeIcon.classList.toggle('fa-moon');
+      themeIcon.classList.toggle('fa-sun');
       localStorage.setItem('theme', isDark ? 'light' : 'dark');
     });
+    
+    // Apply saved theme
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.body.setAttribute('data-theme', savedTheme);
+    if (savedTheme === 'light') {
+      document.querySelector('#theme-toggle i').classList.replace('fa-moon', 'fa-sun');
+    }
 
     // ───── START ─────
-    if (typeof LightweightCharts !== 'undefined') initChart();
-    else {
+    if (typeof LightweightCharts !== 'undefined') {
+      initChart();
+    } else {
       const check = setInterval(() => {
-        if (typeof LightweightCharts !== 'undefined') { clearInterval(check); initChart(); }
+        if (typeof LightweightCharts !== 'undefined') {
+          clearInterval(check);
+          initChart();
+        }
       }, 50);
     }
 
@@ -385,7 +848,7 @@
     //  INDICATOR PANEL (120+ indicators, live on chart)
     // ─────────────────────────────────────────────────────
     (async function initIndicatorPanel() {
-      // wait for technicalindicators
+      // Wait for technicalindicators
       while (!window.TI) await new Promise(r => setTimeout(r, 50));
       const TI = window.TI;
 
@@ -420,14 +883,18 @@
       const add = name => {
         if (activeIndicators.includes(name)) return;
         activeIndicators.push(name);
-        save(); render(); applyIndicatorsToChart();
+        save();
+        render();
+        applyIndicatorsToChart();
       };
 
       list.addEventListener('click', e => {
         if (e.target.classList.contains('remove')) {
           const name = e.target.dataset.name;
           activeIndicators = activeIndicators.filter(n => n !== name);
-          save(); render(); applyIndicatorsToChart();
+          save();
+          render();
+          applyIndicatorsToChart();
         }
       });
 
@@ -450,7 +917,11 @@
             const el = document.createElement('div');
             el.className = 'dropdown-item';
             el.textContent = i.name;
-            el.onclick = () => { add(i.name); searchInput.value = ''; searchContainer.style.display = 'none'; };
+            el.onclick = () => {
+              add(i.name);
+              searchInput.value = '';
+              searchContainer.style.display = 'none';
+            };
             dropdown.appendChild(el);
           });
         }
@@ -468,15 +939,17 @@
       window.applyIndicatorsToChart = function () {
         if (!priceData?.length) return;
 
-        // remove old indicator series
-        chart._indicatorSeries?.forEach(s => chart.removeSeries(s));
+        // Remove old indicator series
+        if (chart._indicatorSeries) {
+          chart._indicatorSeries.forEach(s => chart.removeSeries(s));
+        }
         chart._indicatorSeries = [];
 
         const close = priceData.map(c => c.close);
-        const high  = priceData.map(c => c.high);
-        const low   = priceData.map(c => c.low);
-        const open  = priceData.map(c => c.open);
-        const volume= priceData.map(c => c.volume);
+        const high = priceData.map(c => c.high);
+        const low = priceData.map(c => c.low);
+        const open = priceData.map(c => c.open);
+        const volume = priceData.map(c => c.volume);
 
         const colors = ['#2962ff', '#ff9800', '#26a69a', '#ef5350', '#ab47bc'];
 
@@ -520,7 +993,7 @@
         });
       };
 
-      // first plot (if any saved)
+      // First plot (if any saved)
       applyIndicatorsToChart();
     })();
   </script>
