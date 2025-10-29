@@ -43,8 +43,10 @@
     .sidebar-left i{font-size:1.3rem;display:block;margin-bottom:0.3rem;}
 
     .main-chart{display:flex;flex-direction:column;overflow:hidden;}
-    #chart-container{flex:1;position:relative;}
+    #chart-container{flex:1;position:relative;width:100%;height:100%;}
+    #chart{width:100%;height:100%;}
     #volume-container{height:80px;position:relative;background:var(--bg-light);border-top:1px solid var(--border);}
+    #volume{width:100%;height:100%;}
 
     .sidebar-right{
       background:var(--bg-light);border-left:1px solid var(--border);padding:1rem;overflow-y:auto;
@@ -169,7 +171,7 @@
     document.getElementById('symbol-name').textContent = symbol;
     document.getElementById('symbol-exchange').textContent = symbol.includes('USD') ? 'CRYPTO' : 'NASDAQ';
 
-    let chart, priceSeries, volumeSeries;
+    let chart, priceSeries, volumeSeries, volumeChart;
     let priceData = [];
     let klineWs, tickerWs;
     let currentInterval = '15m';
@@ -177,39 +179,42 @@
 
     // === CHART INIT ===
     function initChart() {
-  const container = document.getElementById('chart');
-  chart = LightweightCharts.createChart(container, {
-    width: container.clientWidth,
-    height: container.clientHeight,
-    layout: { background: { color: 'transparent' }, textColor: '#d1d4dc' },
-    grid: { vertLines: { color: '#2d313e' }, horzLines: { color: '#2d313e' } },
-    timeScale: { borderColor: '#2d313e' }
-  });
+      // Initialize main price chart
+      const container = document.getElementById('chart');
+      chart = LightweightCharts.createChart(container, {
+        width: container.clientWidth,
+        height: container.clientHeight,
+        layout: { background: { color: 'transparent' }, textColor: '#d1d4dc' },
+        grid: { vertLines: { color: '#2d313e' }, horzLines: { color: '#2d313e' } },
+        timeScale: { borderColor: '#2d313e', timeVisible: true, secondsVisible: false }
+      });
 
-  priceSeries = chart.addCandlestickSeries({
-    upColor: '#26a69a', downColor: '#ef5350',
-    wickUpColor: '#26a69a', wickDownColor: '#ef5350'
-  });
+      priceSeries = chart.addCandlestickSeries({
+        upColor: '#26a69a', downColor: '#ef5350',
+        wickUpColor: '#26a69a', wickDownColor: '#ef5350'
+      });
 
-  // Volume chart - keep this separate
-  const volumeChart = LightweightCharts.createChart(document.getElementById('volume'), {
-    width: container.clientWidth,
-    height: 80,
-    layout: { background: { color: 'transparent' }, textColor: '#9ea1b5' },
-    grid: { vertLines: { visible: false }, horzLines: { visible: false } },
-    timeScale: { visible: false }
-  });
+      // Initialize volume chart separately
+      const volumeContainer = document.getElementById('volume');
+      volumeChart = LightweightCharts.createChart(volumeContainer, {
+        width: volumeContainer.clientWidth,
+        height: 80,
+        layout: { background: { color: 'transparent' }, textColor: '#9ea1b5' },
+        grid: { vertLines: { visible: false }, horzLines: { visible: false } },
+        timeScale: { visible: false }
+      });
 
-  volumeSeries = volumeChart.addHistogramSeries({
-    color: '#26a69a80', priceFormat: { type: 'volume' }
-  });
+      volumeSeries = volumeChart.addHistogramSeries({
+        color: '#26a69a80', priceFormat: { type: 'volume' }
+      });
 
-  loadHistory(currentInterval);
-  connectTicker();
-  connectKline(currentInterval);
-  initDrawing();
-  initToolbars();
-}
+      loadHistory(currentInterval);
+      connectTicker();
+      connectKline(currentInterval);
+      initDrawing();
+      initToolbars();
+    }
+
     // === HISTORY ===
     async function loadHistory(interval) {
       const limit = 200;
@@ -274,6 +279,7 @@
     function updateChartSeries() {
       const data = priceData.map(d => ({ time: d.time, open: d.open, high: d.high, low: d.low, close: d.close }));
       chart.removeSeries(priceSeries);
+      
       if (currentChartType === 'line') {
         priceSeries = chart.addLineSeries({ color: '#2962ff' });
         priceSeries.setData(priceData.map(d => ({ time: d.time, value: d.close })));
@@ -287,6 +293,7 @@
         priceSeries = chart.addCandlestickSeries({ upColor: '#26a69a', downColor: '#ef5350', wickUpColor: '#26a69a', wickDownColor: '#ef5350' });
         priceSeries.setData(data);
       }
+      
       volumeSeries.setData(priceData.map(d => ({ time: d.time, value: d.volume, color: d.close >= d.open ? '#26a69a80' : '#ef535080' })));
     }
 
