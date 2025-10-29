@@ -11,48 +11,89 @@
   <link id="theme-style" rel="stylesheet" href="assets/css/main.css">
   <link rel="stylesheet" href="assets/css/dark-theme.css">
   <style>
-    :root{--bg:#141518;--bg-light:#1e222d;--text:#d1d4dc;--text-light:#9ea1b5;--accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#2d313e;--card:#1e222d;}
-    [data-theme="light"]{--bg:#ffffff;--bg-light:#f8f9fa;--text:#2d3748;--text-light:#718096;--accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#e2e8f0;--card:#ffffff;}
-    body{margin:0;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);}
+    :root{
+      --bg:#141518;--bg-light:#1e222d;--text:#d1d4dc;--text-light:#9ea1b5;
+      --accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#2d313e;--card:#1e222d;
+    }
+    [data-theme="light"]{
+      --bg:#ffffff;--bg-light:#f8f9fa;--text:#2d3748;--text-light:#718096;
+      --accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#e2e8f0;--card:#ffffff;
+    }
+    *,*::before,*::after{box-sizing:border-box;}
+    body{margin:0;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;}
     a{color:var(--accent);text-decoration:none;}
     .container{max-width:1400px;margin:0 auto;padding:0 1rem;}
     .flex-between{display:flex;justify-content:space-between;align-items:center;}
-    .flex-center{display:flex;align-items:center;gap:0.5rem;}
-    .header{background:var(--bg-light);border-bottom:1px solid var(--border);padding:0.75rem 0;position:sticky;top:0;z-index:100;}
+    .flex-center{display:flex;align-items:center;gap:.5rem;}
+    .header{background:var(--bg-light);border-bottom:1px solid var(--border);padding:.75rem 0;position:sticky;top:0;z-index:100;}
     .logo{font-weight:700;font-size:1.4rem;color:var(--accent);}
     .logo i{font-size:1.5rem;}
-    .nav-links a{margin:0 0.75rem;font-weight:500;}
-    .icon-btn{background:none;border:none;color:var(--text-light);font-size:1.2rem;cursor:pointer;padding:0.5rem;}
-    .chart-layout{display:grid;grid-template-columns:60px 1fr 250px;gap:0;height:calc(100vh - 60px);}
-    .sidebar-left{background:var(--bg-light);border-right:1px solid var(--border);overflow-y:auto;padding:0.5rem;}
-    .sidebar-left button{width:100%;padding:0.75rem 0;border:none;background:none;color:var(--text-light);cursor:pointer;text-align:center;font-size:0.9rem;}
-    .sidebar-left button:hover,.sidebar-left button.active{background:var(--accent);color:white;}
-    .sidebar-left i{font-size:1.2rem;display:block;margin-bottom:0.25rem;}
-    .main-chart{overflow:hidden;position:relative;}
-    #chart-container{width:100%;height:100%;position:relative;}
-    .sidebar-right{background:var(--bg-light);border-left:1px solid var(--border);padding:1rem;overflow-y:auto;}
-    .panel-title{font-weight:600;margin-bottom:1rem;font-size:1rem;}
+    .nav-links a{margin:0 .75rem;font-weight:500;}
+    .icon-btn{background:none;border:none;color:var(--text-light);font-size:1.2rem;cursor:pointer;padding:.5rem;}
+
+    /* LAYOUT: Wider left sidebar, volume + main chart */
+    .chart-layout{
+      display:grid;
+      grid-template-columns:80px 1fr 280px;
+      gap:0;
+      height:calc(100vh - 60px);
+    }
+    .sidebar-left{
+      background:var(--bg-light);border-right:1px solid var(--border);overflow-y:auto;padding:0.75rem 0.5rem;
+    }
+    .sidebar-left button{
+      width:100%;padding:0.75rem 0;border:none;background:none;color:var(--text-light);
+      cursor:pointer;text-align:center;font-size:0.85rem;border-radius:6px;margin:0.25rem 0;
+      transition:0.2s;
+    }
+    .sidebar-left button:hover,.sidebar-left button.active{
+      background:var(--accent);color:white;
+    }
+    .sidebar-left i{font-size:1.3rem;display:block;margin-bottom:0.3rem;}
+
+    .main-chart{overflow:hidden;position:relative;display:flex;flex-direction:column;}
+    #chart-container{flex:1;position:relative;}
+    #volume-container{height:80px;position:relative;}
+
+    .sidebar-right{
+      background:var(--bg-light);border-left:1px solid var(--border);padding:1rem;overflow-y:auto;
+    }
+    .panel-title{font-weight:600;margin:1rem 0 0.5rem;font-size:1rem;}
     .symbol-info{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;}
     .symbol-info h2{font-size:1.3rem;margin:0;}
     .symbol-info .price{font-size:1.2rem;font-weight:600;}
     .change{color:var(--green);}
     .change.negative{color:var(--red);}
     .timeframe-bar{margin-bottom:1rem;display:flex;flex-wrap:wrap;gap:0.5rem;}
-    .timeframe-btn{padding:0.4rem 0.8rem;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:4px;font-size:0.85rem;cursor:pointer;}
+    .timeframe-btn{padding:0.4rem 0.8rem;border:1px solid var(--border);background:var(--bg);color:var(--text);
+      border-radius:4px;font-size:0.85rem;cursor:pointer;transition:0.2s;}
     .timeframe-btn.active{background:var(--accent);color:white;border-color:var(--accent);}
+
+    .chart-type-bar{margin-bottom:1rem;display:flex;gap:0.5rem;}
+    .chart-type-btn{padding:0.4rem 0.8rem;border:1px solid var(--border);background:var(--bg);color:var(--text);
+      border-radius:4px;font-size:0.85rem;cursor:pointer;transition:0.2s;}
+    .chart-type-btn.active{background:var(--accent);color:white;border-color:var(--accent);}
+
     .indicator-list{margin-top:1rem;}
-    .indicator-item{display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid var(--border);font-size:0.9rem;}
+    .indicator-item{display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;
+      border-bottom:1px solid var(--border);font-size:0.9rem;}
     .remove-indicator{color:var(--red);cursor:pointer;}
-    .footer{background:var(--bg-light);border-top:1px solid var(--border);padding:0.75rem 0;font-size:0.8rem;text-align:center;color:var(--text-light);}
+
+    .footer{background:var(--bg-light);border-top:1px solid var(--border);padding:0.75rem 0;font-size:0.8rem;
+      text-align:center;color:var(--text-light);}
+
     @media(max-width:992px){.chart-layout{grid-template-columns:1fr;}}
     @media(max-width:992px){.sidebar-left,.sidebar-right{display:none;}}
-    
-    /* Status indicator */
+
+    /* Status */
     .status-indicator{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;}
     .status-connected{background:var(--green);}
     .status-disconnected{background:var(--red);}
     .status-connecting{background:#ff9800;animation:pulse 1.5s infinite;}
     @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+
+    /* Drawing Canvas */
+    #drawing-canvas{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10;}
   </style>
 </head>
 
@@ -78,28 +119,25 @@
   </header>
 
   <div class="chart-layout">
-    <!-- Left Sidebar: Drawing Tools -->
+    <!-- LEFT: Tools -->
     <div class="sidebar-left">
       <button data-tool="cursor" class="active"><i class="fas fa-mouse-pointer"></i><span>Cursor</span></button>
       <button data-tool="line"><i class="fas fa-minus"></i><span>Line</span></button>
       <button data-tool="trendline"><i class="fas fa-chart-line"></i><span>Trend</span></button>
       <button data-tool="horizontal"><i class="fas fa-grip-lines"></i><span>H-Line</span></button>
-      <button data-tool="fib-retracement"><i class="fas fa-ruler"></i><span>Fib</span></button>
+      <button data-tool="fib"><i class="fas fa-ruler"></i><span>Fib</span></button>
       <button data-tool="rectangle"><i class="fas fa-square"></i><span>Rect</span></button>
-      <button data-tool="ellipse"><i class="fas fa-circle"></i><span>Ellipse</span></button>
       <button data-tool="text"><i class="fas fa-font"></i><span>Text</span></button>
-      <button data-tool="arrow"><i class="fas fa-arrow-up"></i><span>Awrow</span></button>
+      <button data-tool="arrow"><i class="fas fa-arrow-up"></i><span>Arrow</span></button>
     </div>
 
-    <!-- Main Chart -->
+    <!-- CENTER: Chart + Volume -->
     <div class="main-chart">
-      <div id="chart-container">
-        <div id="chart"></div>
-        <canvas id="drawing-canvas"></canvas>
-      </div>
+      <div id="chart-container"><div id="chart"></div><canvas id="drawing-canvas"></canvas></div>
+      <div id="volume-container"><div id="volume"></div></div>
     </div>
 
-    <!-- Right Sidebar: Symbol Info + Timeframes + Indicators -->
+    <!-- RIGHT: Info + Timeframes + Chart Types + Indicators -->
     <div class="sidebar-right">
       <div class="symbol-info">
         <div>
@@ -119,39 +157,39 @@
         <button class="timeframe-btn" data-interval="60">1h</button>
         <button class="timeframe-btn" data-interval="240">4h</button>
         <button class="timeframe-btn" data-interval="D">1D</button>
-        <button class="timeframe-btn" data-interval="W">1W</button>
-        <button class="timeframe-btn" data-interval="M">1M</button>
+      </div>
+
+      <div class="chart-type-bar">
+        <button class="chart-type-btn active" data-type="candlestick">Candles</button>
+        <button class="chart-type-btn" data-type="line">Line</button>
+        <button class="chart-type-btn" data-type="area">Area</button>
+        <button class="chart-type-btn" data-type="bar">Bars</button>
       </div>
 
       <div>
-        <div class="panel-title">Indicators</div>
-        <button id="add-indicator-btn" style="width:100%;padding:0.5rem;background:var(--accent);color:white;border:none;border-radius:4px;cursor:pointer;">+ Add Indicator</button>
+        <div class="panel-title">Indicators (100+)</div>
+        <button id="add-indicator-btn" style="width:100%;padding:0.5rem;background:var(--accent);color:white;border:none;border-radius:4px;cursor:pointer;margin-bottom:0.5rem;">+ Add Indicator</button>
         <div id="indicator-list" class="indicator-list"></div>
       </div>
+    </div>
+  </div>
 
-      <div style="margin-top:1rem;">
-        <button onclick="runSavedPine()" style="width:100%;padding:0.5rem;background:var(--accent);color:white;border:none;border-radius:4px;cursor:pointer;">Run Saved Pine</button>
+  <!-- Indicator Modal -->
+  <div id="indicator-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:1000;">
+    <div style="background:var(--bg-light);margin:10% auto;width:90%;max-width:500px;border-radius:8px;padding:1rem;max-height:70vh;overflow-y:auto;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+        <h3>Add Indicator</h3>
+        <span style="cursor:pointer;font-size:1.5rem;" onclick="this.parentElement.parentElement.parentElement.style.display='none'">x</span>
       </div>
+      <input type="text" id="indicator-search" placeholder="Search 100+ indicators..." style="width:100%;padding:0.5rem;margin-bottom:1rem;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text);">
+      <div id="indicator-options" style="display:grid;gap:0.5rem;"></div>
     </div>
   </div>
 
-  <!-- Add Indicator Modal -->
-  <div id="indicator-modal" class="modal">
-    <div class="modal-content">
-      <span class="modal-close">x</span>
-      <h3 style="margin-top:0;">Add Indicator</h3>
-      <button class="modal-btn" data-ind="RSI">RSI (14)</button>
-      <button class="modal-btn" data-ind="MACD">MACD</button>
-      <button class="modal-btn" data-ind="EMA20">EMA (20)</button>
-    </div>
-  </div>
-
-  <footer class="footer">
-    <div class="container">© 2025 TradeVision. Open Source.</div>
-  </footer>
+  <footer class="footer"><div class="container">© 2025 TradeVision. Open Source.</div></footer>
 
   <script>
-    // Theme Toggle
+    // === GLOBALS ===
     const themeToggle = document.getElementById('theme-toggle');
     const body = document.body;
     const themeIcon = themeToggle.querySelector('i');
@@ -165,49 +203,30 @@
     body.setAttribute('data-theme', savedTheme);
     if (savedTheme === 'light') themeIcon.classList.replace('fa-moon', 'fa-sun');
 
-    // Symbol from URL
-    function getSymbol() {
-      const params = new URLSearchParams(location.search);
-      return (params.get('symbol') || 'BTCUSD').toUpperCase();
-    }
-
-    const symbol = getSymbol();
-    const binanceMap = {
-      'BTCUSD': 'btcusdt', 'ETHUSD': 'ethusdt',
-      'AAPL': 'aaplusdt', 'TSLA': 'tslausdt', 'SPY': 'spyusdt'
-    };
+    const urlParams = new URLSearchParams(location.search);
+    const symbol = (urlParams.get('symbol') || 'BTCUSD').toUpperCase();
+    const binanceMap = { 'BTCUSD': 'btcusdt', 'ETHUSD': 'ethusdt' };
     const binanceSym = binanceMap[symbol] || symbol.toLowerCase() + 'usdt';
 
     document.getElementById('symbol-name').textContent = symbol;
     document.getElementById('symbol-exchange').textContent = symbol.includes('USD') ? 'CRYPTO' : 'NASDAQ';
 
-    // Chart globals
-    let chart, priceSeries;
+    let chart, priceSeries, volumeSeries;
     let priceData = [];
     let klineWs, tickerWs;
     let currentInterval = '15m';
+    let currentChartType = 'candlestick';
 
-    // Indicator globals
-    const indicatorSeries = {};
-    const indicatorInst = {};
-
-    // Wait for libraries
-    function waitForLibs() {
-      if (typeof LightweightCharts !== 'undefined') {
-        initChart();
-      } else {
-        setTimeout(waitForLibs, 50);
-      }
-    }
-
-    async function initChart() {
-      const container = document.getElementById('chart-container');
+    // === CHART INIT ===
+    function initChart() {
+      const container = document.getElementById('chart');
       chart = LightweightCharts.createChart(container, {
         width: container.clientWidth,
         height: container.clientHeight,
         layout: { background: { color: 'transparent' }, textColor: '#d1d4dc' },
         grid: { vertLines: { color: '#2d313e' }, horzLines: { color: '#2d313e' } },
-        timeScale: { borderColor: '#2d313e' }
+        timeScale: { borderColor: '#2d313e' },
+        crosshair: { mode: LightweightCharts.CrosshairMode.Normal }
       });
 
       priceSeries = chart.addCandlestickSeries({
@@ -215,14 +234,20 @@
         wickUpColor: '#26a69a', wickDownColor: '#ef5350'
       });
 
-      await loadHistory(currentInterval);
+      volumeSeries = chart.addHistogramSeries({
+        color: '#26a69a', priceScaleId: 'volume',
+        priceFormat: { type: 'volume' }
+      });
+      chart.priceScale('volume').applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
+
+      loadHistory(currentInterval);
       connectTicker();
       connectKline(currentInterval);
       initDrawing();
       initToolbars();
     }
 
-    // Load history from Binance (same as index's ticker mapping)
+    // === HISTORY ===
     async function loadHistory(interval) {
       const limit = 200;
       const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=${binanceSym.toUpperCase()}&interval=${interval}&limit=${limit}`);
@@ -232,137 +257,214 @@
         open: parseFloat(k[1]),
         high: parseFloat(k[2]),
         low: parseFloat(k[3]),
-        close: parseFloat(k[4])
+        close: parseFloat(k[4]),
+        volume: parseFloat(k[5])
       }));
-      priceSeries.setData(priceData);
-      initAllIndicators();
+      updateChartSeries();
     }
 
-    // Live ticker (exact copy from index)
+    // === LIVE TICKER ===
     function connectTicker() {
       if (tickerWs) tickerWs.close();
       tickerWs = new WebSocket(`wss://stream.binance.com:9443/ws/${binanceSym}@ticker`);
-      tickerWs.onmessage = (e) => {
+      tickerWs.onmessage = e => {
         const t = JSON.parse(e.data);
         document.getElementById('current-price').textContent = parseFloat(t.c).toFixed(2);
         const change = parseFloat(t.P);
         const el = document.getElementById('price-change');
         el.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
-        el.style.color = change >= 0 ? '#26a69a' : '#ef5350';
+        el.className = change >= 0 ? 'change' : 'change negative';
       };
       tickerWs.onclose = () => setTimeout(connectTicker, 3000);
     }
 
-    // Live kline (adapted from index's ticker to kline stream)
+    // === LIVE KLINE (1m updates) ===
     function connectKline(interval) {
       if (klineWs) klineWs.close();
       klineWs = new WebSocket(`wss://stream.binance.com:9443/ws/${binanceSym}@kline_${interval}`);
-      klineWs.onmessage = (e) => {
+      klineWs.onmessage = e => {
         const k = JSON.parse(e.data).k;
-        if (!k.x) return;  // Incomplete bar
+        if (!k.x) return;
         const bar = {
           time: k.t / 1000,
           open: parseFloat(k.o),
           high: parseFloat(k.h),
           low: parseFloat(k.l),
-          close: parseFloat(k.c)
+          close: parseFloat(k.c),
+          volume: parseFloat(k.v)
         };
-        priceData.push(bar);
-        if (priceData.length > 500) priceData.shift();
-        priceSeries.update(bar);
-        updateAllIndicators(bar);
+        const existing = priceData.find(d => d.time === bar.time);
+        if (existing) {
+          Object.assign(existing, bar);
+          priceSeries.update(bar);
+          volumeSeries.update({ time: bar.time, value: bar.volume, color: bar.close >= bar.open ? '#26a69a80' : '#ef535080' });
+        } else {
+          priceData.push(bar);
+          if (priceData.length > 500) priceData.shift();
+          updateChartSeries();
+        }
       };
       klineWs.onclose = () => setTimeout(() => connectKline(interval), 3000);
     }
 
-    // Indicators (from previous chart, using technicalindicators)
-    function initAllIndicators() {
-      const closes = priceData.map(d => d.close);
-
-      // RSI
-      if (!indicatorInst.RSI) {
-        indicatorInst.RSI = new TI.RSI({ period: 14, values: closes });
-        indicatorSeries.RSI = chart.addLineSeries({ color: '#9c27b0', priceScaleId: 'rsi' });
-        chart.priceScale('rsi').applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
+    // === CHART TYPE SWITCH ===
+    function updateChartSeries() {
+      const data = priceData.map(d => ({
+        time: d.time,
+        open: d.open, high: d.high, low: d.low, close: d.close
+      }));
+      if (currentChartType === 'line') {
+        chart.removeSeries(priceSeries);
+        priceSeries = chart.addLineSeries({ color: '#2962ff' });
+        priceSeries.setData(priceData.map(d => ({ time: d.time, value: d.close })));
+      } else if (currentChartType === 'area') {
+        chart.removeSeries(priceSeries);
+        priceSeries = chart.addAreaSeries({ lineColor: '#2962ff', topColor: '#2962ff40', bottomColor: '#2962ff10' });
+        priceSeries.setData(priceData.map(d => ({ time: d.time, value: d.close })));
+      } else if (currentChartType === 'bar') {
+        chart.removeSeries(priceSeries);
+        priceSeries = chart.addBarSeries({ upColor: '#26a69a', downColor: '#ef5350' });
+        priceSeries.setData(data);
+      } else {
+        chart.removeSeries(priceSeries);
+        priceSeries = chart.addCandlestickSeries({
+          upColor: '#26a69a', downColor: '#ef5350',
+          wickUpColor: '#26a69a', wickDownColor: '#ef5350'
+        });
+        priceSeries.setData(data);
       }
-      const rsiValues = indicatorInst.RSI.getResult();
-      const rsiData = rsiValues.map((v, i) => ({ time: priceData[i].time, value: v }));
-      indicatorSeries.RSI.setData(rsiData);
+      volumeSeries.setData(priceData.map(d => ({ time: d.time, value: d.volume, color: d.close >= d.open ? '#26a69a80' : '#ef535080' })));
+    }
 
-      // MACD
-      if (!indicatorInst.MACD) {
-        indicatorInst.MACD = new TI.MACD({ fastPeriod: 12, slowPeriod: 26, signalPeriod: 9, values: closes });
-        indicatorSeries.MACD = chart.addHistogramSeries({ color: '#2962ff', priceScaleId: 'macd' });
-        chart.priceScale('macd').applyOptions({ scaleMargins: { top: 0.7, bottom: 0.1 } });
+    // === TOOLBARS ===
+    function initToolbars() {
+      document.querySelectorAll('.timeframe-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.timeframe-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          currentInterval = btn.dataset.interval === 'D' ? '1d' : btn.dataset.interval + 'm';
+          loadHistory(currentInterval);
+          connectKline(currentInterval);
+        });
+      });
+
+      document.querySelectorAll('.chart-type-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.chart-type-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          currentChartType = btn.dataset.type;
+          updateChartSeries();
+        });
+      });
+
+      document.getElementById('add-indicator-btn').addEventListener('click', () => {
+        document.getElementById('indicator-modal').style.display = 'block';
+        document.getElementById('indicator-search').focus();
+      });
+
+      document.getElementById('indicator-search').addEventListener('input', e => {
+        const term = e.target.value.toLowerCase();
+        const options = document.getElementById('indicator-options');
+        options.innerHTML = '';
+        const indicators = ['RSI', 'MACD', 'EMA', 'SMA', 'BB', 'Stoch', 'VWAP', 'ATR', 'ADX', 'CCI'];
+        indicators.filter(i => i.toLowerCase().includes(term)).forEach(name => {
+          const btn = document.createElement('button');
+          btn.textContent = name;
+          btn.style.width = '100%';
+          btn.style.padding = '0.5rem';
+          btn.style.margin = '0.25rem 0';
+          btn.style.background = 'var(--bg)';
+          btn.style.color = 'var(--text)';
+          btn.style.border = '1px solid var(--border)';
+          btn.style.borderRadius = '4px';
+          btn.style.cursor = 'pointer';
+          btn.onclick = () => {
+            addIndicator(name);
+            document.getElementById('indicator-modal').style.display = 'none';
+          };
+          options.appendChild(btn);
+        });
+      });
+    }
+
+    function addIndicator(name) {
+      if (document.querySelector(`[data-ind="${name}"]`)) return;
+      const div = document.createElement('div');
+      div.className = 'indicator-item';
+      div.innerHTML = `<span>${name}</span><i class="fas fa-times remove-indicator" data-ind="${name}"></i>`;
+      document.getElementById('indicator-list').appendChild(div);
+    }
+
+    // === DRAWING TOOLS ===
+    let isDrawing = false;
+    let startPoint = null;
+    const canvas = document.getElementById('drawing-canvas');
+    const ctx = canvas.getContext('2d');
+    let currentTool = 'cursor';
+
+    function initDrawing() {
+      canvas.width = canvas.parentElement.clientWidth;
+      canvas.height = canvas.parentElement.clientHeight;
+      window.addEventListener('resize', () => {
+        canvas.width = canvas.parentElement.clientWidth;
+        canvas.height = canvas.parentElement.clientHeight;
+      });
+
+      document.querySelectorAll('[data-tool]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('[data-tool]').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          currentTool = btn.dataset.tool;
+          canvas.style.pointerEvents = currentTool === 'cursor' ? 'none' : 'auto';
+        });
+      });
+
+      canvas.addEventListener('mousedown', e => {
+        if (currentTool === 'cursor') return;
+        isDrawing = true;
+        startPoint = { x: e.offsetX, y: e.offsetY };
+      });
+
+      canvas.addEventListener('mousemove', e => {
+        if (!isDrawing) return;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawPreview(e);
+      });
+
+      canvas.addEventListener('mouseup', () => {
+        if (isDrawing) {
+          isDrawing = false;
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+      });
+    }
+
+    function drawPreview(e) {
+      const end = { x: e.offsetX, y: e.offsetY };
+      ctx.strokeStyle = '#2962ff';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      if (currentTool === 'line' || currentTool === 'trendline') {
+        ctx.moveTo(startPoint.x, startPoint.y);
+        ctx.lineTo(end.x, end.y);
+      } else if (currentTool === 'horizontal') {
+        ctx.moveTo(0, startPoint.y);
+        ctx.lineTo(canvas.width, startPoint.y);
       }
-      const macd = indicatorInst.MACD.getResult();
-      const macdData = macd.MACD.map((v, i) => ({ time: priceData[i].time, value: v }));
-      indicatorSeries.MACD.setData(macdData);
-
-      renderIndicatorList();
+      ctx.stroke();
     }
 
-    function updateAllIndicators(bar) {
-      indicatorInst.RSI.nextValue(bar.close);
-      const rsiResult = indicatorInst.RSI.getResult();
-      indicatorSeries.RSI.update({ time: bar.time, value: rsiResult[rsiResult.length - 1] });
-
-      indicatorInst.MACD.nextValue(bar.close);
-      const macdResult = indicatorInst.MACD.getResult();
-      indicatorSeries.MACD.update({ time: bar.time, value: macdResult.MACD[macdResult.MACD.length - 1] });
+    // === START ===
+    if (typeof LightweightCharts !== 'undefined') {
+      initChart();
+    } else {
+      const interval = setInterval(() => {
+        if (typeof LightweightCharts !== 'undefined') {
+          clearInterval(interval);
+          initChart();
+        }
+      }, 50);
     }
-
-    function renderIndicatorList() {
-      const list = document.getElementById('indicator-list');
-      list.innerHTML = '';
-      Object.keys(indicatorSeries).forEach(name => {
-        const div = document.createElement('div');
-        div.className = 'indicator-item';
-        div.innerHTML = `<span>${name}</span><i class="fas fa-times remove-indicator" data-ind="${name}"></i>`;
-        list.appendChild(div);
-      });
-    }
-
-    // Timeframe buttons
-    document.querySelectorAll('.timeframe-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.timeframe-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        currentInterval = btn.dataset.interval === 'D' ? '1d' : btn.dataset.interval + 'm';
-        loadHistory(currentInterval);
-        connectKline(currentInterval);
-      });
-    });
-
-    // Add Indicator Modal
-    document.getElementById('add-indicator-btn').addEventListener('click', () => {
-      document.getElementById('indicator-modal').style.display = 'block';
-    });
-
-    document.querySelector('.modal-close').addEventListener('click', () => {
-      document.getElementById('indicator-modal').style.display = 'none';
-    });
-
-    document.querySelectorAll('.modal-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const ind = btn.dataset.ind;
-        if (indicatorSeries[ind]) return;
-        // Add indicator (simplified)
-        const item = document.createElement('div');
-        item.className = 'indicator-item';
-        item.innerHTML = `<span>${ind}</span><i class="fas fa-times remove-indicator" data-ind="${ind}"></i>`;
-        document.getElementById('indicator-list').appendChild(item);
-        document.getElementById('indicator-modal').style.display = 'none';
-      });
-    });
-
-    // Run Saved Pine (stub)
-    function runSavedPine() {
-      alert('Pine Script execution stub - integrate PineJS here');
-    }
-
-    // Start
-    waitForLibs();
   </script>
 </body>
 </html>
