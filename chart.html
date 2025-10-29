@@ -10,7 +10,7 @@
   <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4/dist/lightweight-charts.standalone.production.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/technicalindicators@3"></script>
   <style>
-    /* ──────────────────────────────────────────────
+      /* ──────────────────────────────────────────────
        ALL YOUR ORIGINAL CSS (unchanged)
        ────────────────────────────────────────────── */
     :root{--bg:#141518;--bg-light:#1e222d;--text:#d1d4dc;--text-light:#9ea1b5;--accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#2d313e;--card:#1e222d;}
@@ -72,6 +72,26 @@
     .flash-red{animation:flashRed .8s ease-in-out;}
     @keyframes flashGreen{0%{background-color:transparent}30%{background-color:rgba(38,166,154,.3)}100%{background-color:transparent}}
     @keyframes flashRed{0%{background-color:transparent}30%{background-color:rgba(239,83,80,.3)}100%{background-color:transparent}}
+
+    /* ──────────────────────────────────────────────
+       CRITICAL FIXES (ADDED AT END – DO NOT REMOVE)
+       ────────────────────────────────────────────── */
+    #chart-container {
+      pointer-events: none; /* Let clicks pass through to buttons */
+    }
+    #drawing-canvas {
+      pointer-events: auto; /* Only canvas gets drawing events */
+    }
+    .sidebar-right,
+    .timeframe-bar,
+    .chart-type-bar,
+    .indicator-panel,
+    .add-btn,
+    .search-container,
+    .dropdown-list {
+      position: relative;
+      z-index: 30; /* Above canvas */
+    }
   </style>
 </head>
 
