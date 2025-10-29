@@ -14,45 +14,69 @@
   <!-- Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-  <!-- Lightweight Charts -->
-  <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
-
-  <!-- Styles -->
-  <link id="theme-style" rel="stylesheet" href="assets/css/main.css">
-  <link rel="stylesheet" href="assets/css/dark-theme.css">
+  <!-- Lightweight Charts – stable CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4/dist/lightweight-charts.standalone.production.js"></script>
 
   <style>
-    :root {
-      --bg: #141518;
-      --bg-light: #1e222d;
-      --text: #d1d4dc;
-      --text-light: #9ea1b5;
-      --accent: #2962ff;
-      --green: #26a69a;
-      --red: #ef5350;
-      --border: #2d313e;
-      --card: #1e222d;
+    :root{
+      --bg:#141518;--bg-light:#1e222d;--text:#d1d4dc;--text-light:#9ea1b5;
+      --accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#2d313e;--card:#1e222d;
     }
-    [data-theme="light"] {
-      --bg: #ffffff;
-      --bg-light: #f8f9fa;
-      --text: #2d3748;
-      --text-light: #718096;
-      --accent: #2962ff;
-      --green: #26a69a;
-      --red: #ef5350;
-      --border: #e2e8f0;
-      --card: #ffffff;
+    [data-theme="light"]{
+      --bg:#ffffff;--bg-light:#f8f9fa;--text:#2d3748;--text-light:#718096;
+      --accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#e2e8f0;--card:#ffffff;
     }
-    body {
-      margin: 0;
-      font-family: 'Inter', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.6;
-    }
-    a { color: var(--accent); text-decoration: none; }
-    .container { max-width: 1400px; margin: 0 auto; padding: 0 1rem; }
+    *,*::before,*::after{box-sizing:border-box;}
+    body{margin:0;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;}
+    a{color:var(--accent);text-decoration:none;}
+    .container{max-width:1400px;margin:0 auto;padding:0 1rem;}
+
+    /* Layout */
+    .flex-between{display:flex;justify-content:space-between;align-items:center;}
+    .flex-center{display:flex;align-items:center;gap:.5rem;}
+    .grid-2x2{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;}
+    .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;}
+    @media(max-width:768px){.grid-2x2,.grid-3{grid-template-columns:1fr;}}
+
+    /* Header */
+    .header{background:var(--bg-light);border-bottom:1px solid var(--border);padding:.75rem 0;position:sticky;top:0;z-index:100;}
+    .logo{font-weight:700;font-size:1.4rem;color:var(--accent);}
+    .logo i{font-size:1.5rem;}
+    .search-bar{position:relative;max-width:300px;width:100%;}
+    .search-bar input{width:100%;padding:.5rem 2.5rem .5rem 1rem;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);}
+    .search-bar button{position:absolute;right:.5rem;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-light);cursor:pointer;}
+    .nav-links a{margin:0 .75rem;font-weight:500;}
+    .icon-btn{background:none;border:none;color:var(--text-light);font-size:1.2rem;cursor:pointer;padding:.5rem;}
+
+    /* Hero */
+    .hero{text-align:center;padding:3rem 0;}
+    .hero h1{font-size:2.5rem;margin:0 0 1rem;}
+    .gradient{background:linear-gradient(90deg,#2962ff,#00bfa5);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+    .hero p{font-size:1.1rem;color:var(--text-light);max-width:600px;margin:0 auto 2rem;}
+    .btn-primary,.btn-secondary{display:inline-block;padding:.75rem 1.5rem;border-radius:6px;font-weight:600;margin:0 .5rem;}
+    .btn-primary{background:var(--accent);color:white;}
+    .btn-secondary{background:var(--bg-light);color:var(--text);border:1px solid var(--border);}
+
+    /* Cards */
+    .chart-card,.link-card{background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden;}
+    .card-header{padding:.75rem 1rem;display:flex;justify-content:space-between;font-size:.9rem;background:var(--bg-light);}
+    .symbol{font-weight:600;}
+    .chart-container{height:120px;}
+    .link-card{padding:1.5rem;text-align:center;transition:.2s;}
+    .link-card:hover{background:var(--bg-light);}
+    .link-card i{font-size:1.8rem;margin-bottom:.5rem;color:var(--accent);}
+
+    /* Sections */
+    .mini-charts-grid,.quick-links{margin:3rem 0;}
+    h2{font-size:1.5rem;margin-bottom:1rem;}
+
+    /* Footer */
+    .footer{background:var(--bg-light);border-top:1px solid var(--border);padding:2rem 0 1rem;font-size:.9rem;}
+    .footer-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2rem;margin-bottom:1.5rem;}
+    .footer-grid a{display:block;margin:.4rem 0;color:var(--text-light);}
+    .footer-bottom{text-align:center;color:var(--text-light);}
+
+    @media(max-width:992px){.nav-links,.header-actions>a{display:none;}}
   </style>
 </head>
 
@@ -61,20 +85,13 @@
   <!-- HEADER -->
   <header class="header">
     <div class="container flex-between">
-      <div class="logo">
-        <a href="index.html" class="flex-center">
-          <i class="fas fa-chart-line"></i>
-          <span>TradeVision</span>
-        </a>
-      </div>
+      <div class="logo"><a href="index.html" class="flex-center"><i class="fas fa-chart-line"></i><span>TradeVision</span></a></div>
 
-      <!-- Search Bar -->
       <div class="search-bar">
         <input type="text" id="symbol-search" placeholder="Search symbol (e.g. AAPL, BTC)" />
         <button id="search-btn"><i class="fas fa-search"></i></button>
       </div>
 
-      <!-- Nav Links -->
       <nav class="nav-links">
         <a href="chart.html">Chart</a>
         <a href="watchlist.html">Watchlist</a>
@@ -85,7 +102,6 @@
         <a href="backtest.html">Backtest</a>
       </nav>
 
-      <!-- Right Actions -->
       <div class="header-actions">
         <button id="theme-toggle" class="icon-btn"><i class="fas fa-moon"></i></button>
         <a href="profile.html" class="icon-btn"><i class="fas fa-user"></i></a>
@@ -94,11 +110,11 @@
     </div>
   </header>
 
-  <!-- MAIN CONTENT -->
+  <!-- MAIN -->
   <main class="main-content">
     <div class="container">
 
-      <!-- Hero Section -->
+      <!-- Hero -->
       <section class="hero">
         <h1>Professional Charts. <span class="gradient">Open Source.</span></h1>
         <p>Analyze markets with 100+ indicators, drawing tools, real-time data, and social ideas.</p>
@@ -108,40 +124,24 @@
         </div>
       </section>
 
-      <!-- Live Mini Charts Grid -->
+      <!-- Mini-Charts -->
       <section class="mini-charts-grid">
         <h2>Live Markets</h2>
         <div class="grid-2x2">
           <div class="chart-card" data-symbol="AAPL">
-            <div class="card-header">
-              <span class="symbol">AAPL</span>
-              <span class="price">--</span>
-              <span class="change">--</span>
-            </div>
+            <div class="card-header"><span class="symbol">AAPL</span><span class="price">--</span><span class="change">--</span></div>
             <div class="chart-container" id="chart-aapl"></div>
           </div>
           <div class="chart-card" data-symbol="BTCUSD">
-            <div class="card-header">
-              <span class="symbol">BTC/USD</span>
-              <span class="price">--</span>
-              <span class="change">--</span>
-            </div>
+            <div class="card-header"><span class="symbol">BTC/USD</span><span class="price">--</span><span class="change">--</span></div>
             <div class="chart-container" id="chart-btc"></div>
           </div>
           <div class="chart-card" data-symbol="TSLA">
-            <div class="card-header">
-              <span class="symbol">TSLA</span>
-              <span class="price">--</span>
-              <span class="change">--</span>
-            </div>
+            <div class="card-header"><span class="symbol">TSLA</span><span class="price">--</span><span class="change">--</span></div>
             <div class="chart-container" id="chart-tsla"></div>
           </div>
           <div class="chart-card" data-symbol="SPY">
-            <div class="card-header">
-              <span class="symbol">SPY</span>
-              <span class="price">--</span>
-              <span class="change">--</span>
-            </div>
+            <div class="card-header"><span class="symbol">SPY</span><span class="price">--</span><span class="change">--</span></div>
             <div class="chart-container" id="chart-spy"></div>
           </div>
         </div>
@@ -151,18 +151,9 @@
       <section class="quick-links">
         <h2>Explore</h2>
         <div class="grid-3">
-          <a href="indicators.html" class="link-card">
-            <i class="fas fa-wave-square"></i>
-            <span>100+ Indicators</span>
-          </a>
-          <a href="drawings.html" class="link-card">
-            <i class="fas fa-pencil-ruler"></i>
-            <span>70+ Drawing Tools</span>
-          </a>
-          <a href="pine-editor.html" class="link-card">
-            <i class="fas fa-code"></i>
-            <span>Pine Script Editor</span>
-          </a>
+          <a href="indicators.html" class="link-card"><i class="fas fa-wave-square"></i><span>100+ Indicators</span></a>
+          <a href="drawings.html" class="link-card"><i class="fas fa-pencil-ruler"></i><span>70+ Drawing Tools</span></a>
+          <a href="pine-editor.html" class="link-card"><i class="fas fa-code"></i><span>Pine Script Editor</span></a>
         </div>
       </section>
 
@@ -173,206 +164,155 @@
   <footer class="footer">
     <div class="container">
       <div class="footer-grid">
-        <div>
-          <h4>TradeVision</h4>
-          <p>Open-source TradingView alternative.</p>
-        </div>
-        <div>
-          <h4>Pages</h4>
-          <a href="about.html">About</a>
-          <a href="help.html">Help</a>
-          <a href="privacy.html">Privacy</a>
-          <a href="terms.html">Terms</a>
-        </div>
-        <div>
-          <h4>Community</h4>
-          <a href="https://github.com/yourusername/tradingview-clone">GitHub</a>
-          <a href="ideas.html">Ideas</a>
-        </div>
+        <div><h4>TradeVision</h4><p>Open-source TradingView alternative.</p></div>
+        <div><h4>Pages</h4><a href="about.html">About</a><a href="help.html">Help</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a></div>
+        <div><h4>Community</h4><a href="https://github.com/dantech-mwa/TradeVision">GitHub</a><a href="ideas.html">Ideas</a></div>
       </div>
-      <div class="footer-bottom">
-        <p>&copy; 2025 TradeVision. MIT Licensed.</p>
-      </div>
+      <div class="footer-bottom"><p>&copy; 2025 TradeVision. MIT Licensed.</p></div>
     </div>
   </footer>
 
-  <!-- Scripts -->
+  <!-- MAIN SCRIPT -->
   <script>
-  // Theme toggle (unchanged)
-  const themeToggle = document.getElementById('theme-toggle');
-  const body = document.body;
-  const themeIcon = themeToggle.querySelector('i');
-  themeToggle.addEventListener('click', () => {
-    const isDark = body.getAttribute('data-theme') === 'dark';
-    body.setAttribute('data-theme', isDark ? 'light' : 'dark');
-    themeIcon.classList.toggle('fa-moon'); themeIcon.classList.toggle('fa-sun');
-    localStorage.setItem('theme', isDark ? 'light' : 'dark');
-  });
-  const savedTheme = localStorage.getItem('theme') || 'dark';
-  body.setAttribute('data-theme', savedTheme);
-  if (savedTheme === 'light') themeIcon.classList.replace('fa-moon', 'fa-sun');
+    /* -------------------------------------------------
+       1. Theme toggle (persisted)
+       ------------------------------------------------- */
+    const themeToggle = document.getElementById('theme-toggle');
+    const body = document.body;
+    const themeIcon = themeToggle.querySelector('i');
 
-  // Search
-  document.getElementById('search-btn').addEventListener('click', () => {
-    const q = document.getElementById('symbol-search').value.trim().toUpperCase();
-    if (q) location.href = `chart.html?symbol=${q}`;
-  });
-  document.getElementById('symbol-search').addEventListener('keypress', e => e.key === 'Enter' && document.getElementById('search-btn').click());
+    function setTheme(isDark) {
+      body.setAttribute('data-theme', isDark ? 'dark' : 'light');
+      themeIcon.classList.toggle('fa-moon', isDark);
+      themeIcon.classList.toggle('fa-sun', !isDark);
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    }
 
-  // Binance WebSocket Manager
-  const symbols = ['AAPL', 'BTCUSD', 'TSLA', 'SPY'];
-  const binanceMap = {
-    'AAPL': 'aaplusdt', 'TSLA': 'tslausdt', 'SPY': 'spyusdt',
-    'BTCUSD': 'btcusdt', 'ETHUSD': 'ethusdt'
-  };
-  const charts = {};
-  let ws;
-
-  // Initialize charts
-  symbols.forEach(sym => {
-    const el = document.getElementById(`chart-${sym.toLowerCase()}`);
-    if (!el) return;
-    const chart = LightweightCharts.createChart(el, {
-      width: el.clientWidth, height: 120,
-      layout: { background: { color: 'transparent' }, textColor: 'var(--text-light)' },
-      grid: { vertLines: { color: 'var(--border)' }, horzLines: { color: 'var(--border)' } },
-      timeScale: { timeVisible: true, secondsVisible: false }
+    themeToggle.addEventListener('click', () => {
+      const cur = body.getAttribute('data-theme') === 'dark';
+      setTheme(!cur);
     });
-    const series = chart.addCandlestickSeries({
-      upColor: 'var(--green)', downColor: 'var(--red)',
-      wickUpColor: 'var(--green)', wickDownColor: 'var(--red)'
+
+    const saved = localStorage.getItem('theme') || 'dark';
+    setTheme(saved === 'dark');
+
+    /* -------------------------------------------------
+       2. Search
+       ------------------------------------------------- */
+    document.getElementById('search-btn').addEventListener('click', () => {
+      const q = document.getElementById('symbol-search').value.trim().toUpperCase();
+      if (q) location.href = `chart.html?symbol=${q}`;
     });
-    charts[sym] = { chart, series, data: [], lastBar: null };
-    // Seed with empty bar
-    const now = Math.floor(Date.now() / 1000);
-    const empty = { time: now - 3600, open: 0, high: 0, low: 0, close: 0 };
-    series.setData([empty]);
-  });
+    document.getElementById('symbol-search').addEventListener('keypress', e => {
+      if (e.key === 'Enter') document.getElementById('search-btn').click();
+    });
 
-  // Connect to Binance
-  function connectWS() {
-    const streams = symbols.map(s => `${binanceMap[s]}@ticker`).join('/');
-    ws = new WebSocket(`wss://stream.binance.com:9443/stream?streams=${streams}`);
-
-    ws.onmessage = (event) => {
-      const msg = JSON.parse(event.data);
-      if (!msg.data) return;
-      const s = msg.data.s.toUpperCase();
-      const ticker = msg.data;
-
-      // Map back to our symbol
-      const ourSym = Object.keys(binanceMap).find(k => binanceMap[k] === s.toLowerCase());
-      if (!ourSym || !charts[ourSym]) return;
-
-      const price = parseFloat(ticker.c);
-      const change = parseFloat(ticker.P);
-      const { series, data, lastBar } = charts[ourSym];
-
-      // Update price header
-      const card = document.querySelector(`.chart-card[data-symbol="${ourSym}"]`);
-      card.querySelector('.price').textContent = price.toFixed(2);
-      const chgEl = card.querySelector('.change');
-      chgEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
-      chgEl.style.color = change >= 0 ? 'var(--green)' : 'var(--red)';
-
-      // Update chart (aggregate into 1min bars)
-      const now = Math.floor(Date.now() / 60000) * 60; // Current minute
-      if (!lastBar || lastBar.time < now) {
-        // New bar
-        const newBar = { time: now, open: price, high: price, low: price, close: price };
-        data.push(newBar);
-        charts[ourSym].lastBar = newBar;
-        if (data.length > 50) data.shift();
-        series.setData(data);
-      } else {
-        // Update current bar
-        lastBar.close = price;
-        lastBar.high = Math.max(lastBar.high, price);
-        lastBar.low = Math.min(lastBar.low, price);
-        series.update(lastBar);
-      }
+    /* -------------------------------------------------
+       3. Binance real-time ticker → mini-charts
+       ------------------------------------------------- */
+    const symbols = ['AAPL', 'BTCUSD', 'TSLA', 'SPY'];
+    const binanceMap = {
+      AAPL: 'aaplusdt', TSLA: 'tslausdt', SPY: 'spyusdt',
+      BTCUSD: 'btcusdt'
     };
+    const charts = {};   // {sym: {chart, series, data[], lastBar}}
 
-    ws.onclose = () => setTimeout(connectWS, 3000);
-    ws.onerror = (e) => console.error('WS Error:', e);
-  }
+    // ---- create all charts (runs after LW Charts is loaded) ----
+    function initCharts() {
+      symbols.forEach(sym => {
+        const container = document.getElementById(`chart-${sym.toLowerCase()}`);
+        if (!container) return;
 
-  connectWS();
+        const chart = LightweightCharts.createChart(container, {
+          width: container.clientWidth,
+          height: 120,
+          layout: { background: { color: 'transparent' }, textColor: 'var(--text-light)' },
+          grid: { vertLines: { color: 'var(--border)' }, horzLines: { color: 'var(--border)' } },
+          timeScale: { timeVisible: true, secondsVisible: false }
+        });
 
-  // Resize
-  window.addEventListener('resize', () => {
-    Object.values(charts).forEach(c => c.chart.resize(c.chart.container.clientWidth, 120));
-  });
-</script>
+        const series = chart.addCandlestickSeries({
+          upColor: 'var(--green)', downColor: 'var(--red)',
+          wickUpColor: 'var(--green)', wickDownColor: 'var(--red)'
+        });
 
-  <!-- CSS (Embedded for GitHub Pages) -->
-  <style>
-    /* Layout */
-    .flex-between { display: flex; justify-content: space-between; align-items: center; }
-    .flex-center { display: flex; align-items: center; gap: 0.5rem; }
-    .grid-2x2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
-    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
-    @media (max-width: 768px) { .grid-2x2, .grid-3 { grid-template-columns: 1fr; } }
+        // seed with a single empty bar so the chart has a scale
+        const now = Math.floor(Date.now() / 1000);
+        const seed = { time: now - 3600, open: 0, high: 0, low: 0, close: 0 };
+        series.setData([seed]);
 
-    /* Header */
-    .header {
-      background: var(--bg-light);
-      border-bottom: 1px solid var(--border);
-      padding: 0.75rem 0;
-      position: sticky; top: 0; z-index: 100;
+        charts[sym] = { chart, series, data: [], lastBar: null };
+      });
     }
-    .logo { font-weight: 700; font-size: 1.4rem; color: var(--accent); }
-    .logo i { font-size: 1.5rem; }
-    .search-bar {
-      position: relative; max-width: 300px; width: 100%;
-    }
-    .search-bar input {
-      width: 100%; padding: 0.5rem 2.5rem 0.5rem 1rem;
-      border: 1px solid var(--border); border-radius: 6px;
-      background: var(--bg); color: var(--text);
-    }
-    .search-bar button {
-      position: absolute; right: 0.5rem; top: 50%; transform: translateY(-50%);
-      background: none; border: none; color: var(--text-light); cursor: pointer;
-    }
-    .nav-links a { margin: 0 0.75rem; font-weight: 500; }
-    .icon-btn { background: none; border: none; color: var(--text-light); font-size: 1.2rem; cursor: pointer; padding: 0.5rem; }
 
-    /* Hero */
-    .hero { text-align: center; padding: 3rem 0; }
-    .hero h1 { font-size: 2.5rem; margin: 0 0 1rem; }
-    .gradient { background: linear-gradient(90deg, #2962ff, #00bfa5); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .hero p { font-size: 1.1rem; color: var(--text-light); max-width: 600px; margin: 0 auto 2rem; }
-    .btn-primary, .btn-secondary {
-      display: inline-block; padding: 0.75rem 1.5rem; border-radius: 6px; font-weight: 600; margin: 0 0.5rem;
+    // ---- Binance WS -------------------------------------------------
+    let ws;
+    function connectWS() {
+      const streams = symbols.map(s => `${binanceMap[s]}@ticker`).join('/');
+      ws = new WebSocket(`wss://stream.binance.com:9443/stream?streams=${streams}`);
+
+      ws.onmessage = ev => {
+        const msg = JSON.parse(ev.data);
+        if (!msg.data) return;
+        const t = msg.data;
+        const binanceSym = t.s.toLowerCase();
+        const ourSym = Object.keys(binanceMap).find(k => binanceMap[k] === binanceSym);
+        if (!ourSym) return;
+
+        const price = parseFloat(t.c);
+        const change = parseFloat(t.P);
+        const { chart, series, data, lastBar } = charts[ourSym];
+
+        // ----- update header -----
+        const card = document.querySelector(`.chart-card[data-symbol="${ourSym}"]`);
+        card.querySelector('.price').textContent = price.toFixed(2);
+        const chgEl = card.querySelector('.change');
+        chgEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
+        chgEl.style.color = change >= 0 ? 'var(--green)' : 'var(--red)';
+
+        // ----- update candlestick (1-minute aggregation) -----
+        const nowMinute = Math.floor(Date.now() / 60000) * 60;
+        if (!lastBar || lastBar.time < nowMinute) {
+          // new minute bar
+          const newBar = { time: nowMinute, open: price, high: price, low: price, close: price };
+          data.push(newBar);
+          charts[ourSym].lastBar = newBar;
+          if (data.length > 50) data.shift();
+          series.setData(data);
+        } else {
+          // update current bar
+          lastBar.close = price;
+          lastBar.high = Math.max(lastBar.high, price);
+          lastBar.low = Math.min(lastBar.low, price);
+          series.update(lastBar);
+        }
+      };
+
+      ws.onclose = () => setTimeout(connectWS, 3000);
+      ws.onerror = err => console.error('WS error:', err);
     }
-    .btn-primary { background: var(--accent); color: white; }
-    .btn-secondary { background: var(--bg-light); color: var(--text); border: 1px solid var(--border); }
 
-    /* Cards */
-    .chart-card, .link-card {
-      background: var(--card); border: 1px solid var(--border); border-radius: 8px; overflow: hidden;
+    // ---- Resize handler ------------------------------------------------
+    function resizeAll() {
+      Object.values(charts).forEach(c => {
+        const container = c.chart.getContainer();
+        c.chart.applyOptions({ width: container.clientWidth, height: 120 });
+      });
     }
-    .card-header {
-      padding: 0.75rem 1rem; display: flex; justify-content: space-between; font-size: 0.9rem; background: var(--bg-light);
+    window.addEventListener('resize', resizeAll);
+
+    // ---- Start everything ------------------------------------------------
+    // Wait for LightweightCharts to be defined
+    function waitForLW() {
+      if (typeof LightweightCharts !== 'undefined') {
+        initCharts();
+        connectWS();
+        resizeAll();
+      } else {
+        setTimeout(waitForLW, 50);
+      }
     }
-    .symbol { font-weight: 600; }
-    .chart-container { height: 120px; }
-    .link-card { padding: 1.5rem; text-align: center; transition: 0.2s; }
-    .link-card:hover { background: var(--bg-light); }
-    .link-card i { font-size: 1.8rem; margin-bottom: 0.5rem; color: var(--accent); }
-
-    /* Sections */
-    .mini-charts-grid, .quick-links { margin: 3rem 0; }
-    h2 { font-size: 1.5rem; margin-bottom: 1rem; }
-
-    /* Footer */
-    .footer { background: var(--bg-light); border-top: 1px solid var(--border); padding: 2rem 0 1rem; font-size: 0.9rem; }
-    .footer-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; margin-bottom: 1.5rem; }
-    .footer-grid a { display: block; margin: 0.4rem 0; color: var(--text-light); }
-    .footer-bottom { text-align: center; color: var(--text-light); }
-
-    @media (max-width: 992px) { .nav-links, .header-actions > a { display: none; } }
-  </style>
+    waitForLW();
+  </script>
 </body>
 </html>
