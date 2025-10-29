@@ -123,119 +123,110 @@
   <footer class="footer">
     <div class="container">© 2025 TradeVision. Open Source.</div>
   </footer>
+<script>
+  // Theme Toggle
+  const themeToggle = document.getElementById('theme-toggle');
+  const body = document.body;
+  const themeIcon = themeToggle.querySelector('i');
+  themeToggle.addEventListener('click', () => {
+    const isDark = body.getAttribute('data-theme') === 'dark';
+    body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+    themeIcon.classList.toggle('fa-moon'); themeIcon.classList.toggle('fa-sun');
+    localStorage.setItem('theme', isDark ? 'light' : 'dark');
+  });
+  const savedTheme = localStorage.getItem('theme') || 'dark';
+  body.setAttribute('data-theme', savedTheme);
+  if (savedTheme === 'light') themeIcon.classList.replace('fa-moon', 'fa-sun');
 
-  <script>
-    // Theme
-    const themeToggle = document.getElementById('theme-toggle');
-    const body = document.body;
-    const themeIcon = themeToggle.querySelector('i');
-    themeToggle.addEventListener('click', () => {
-      const isDark = body.getAttribute('data-theme') === 'dark';
-      body.setAttribute('data-theme', isDark ? 'light' : 'dark');
-      themeIcon.classList.toggle('fa-moon'); themeIcon.classList.toggle('fa-sun');
-      localStorage.setItem('theme', isDark ? 'light' : 'dark');
-    });
-    const savedTheme = localStorage.getItem('theme') || 'dark';
-    body.setAttribute('data-theme', savedTheme);
-    if (savedTheme === 'light') themeIcon.classList.replace('fa-moon', 'fa-sun');
+  // Symbol from URL
+  function getSymbol() {
+    const params = new URLSearchParams(location.search);
+    let sym = params.get('symbol') || 'BTCUSD';
+    return sym.toUpperCase();
+  }
 
-    // Chart Setup
-    let chart, series;
-    const chartContainer = document.getElementById('chart-container');
-    function initChart() {
-      chart = LightweightCharts.createChart(chartContainer, {
-        width: chartContainer.clientWidth,
-        height: chartContainer.clientHeight,
-        layout: { background: { color: 'transparent' }, textColor: 'var(--text-light)' },
-        grid: { vertLines: { color: 'var(--border)' }, horzLines: { color: 'var(--border)' } },
-        crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
-        rightPriceScale: { borderColor: 'var(--border)' },
-        timeScale: { borderColor: 'var(--border)' },
-      });
-      series = chart.addCandlestickSeries({
-        upColor: 'var(--green)', downColor: 'var(--red)',
-        borderUpColor: 'var(--green)', borderDownColor: 'var(--red)',
-        wickUpColor: 'var(--green)', wickDownColor: 'var(--red)',
-      });
-    }
-    initChart();
-    window.addEventListener('resize', () => chart.resize(chartContainer.clientWidth, chartContainer.clientHeight));
+  // Binance Symbol Map
+  const binanceMap = {
+    'BTCUSD': 'btcusdt', 'ETHUSD': 'ethusdt',
+    'AAPL': 'aaplusdt', 'TSLA': 'tslausdt', 'SPY': 'spyusdt',
+    'NVDA': 'nvdausdt', 'MSFT': 'msftusdt'
+  };
 
-    // URL Symbol
-    const urlParams = new URLSearchParams(window.location.search);
-    let currentSymbol = urlParams.get('symbol') || 'AAPL';
-    let currentInterval = '15';
+  let chart, series, tickerWs, klineWs;
 
-    document.getElementById('symbol-name').textContent = currentSymbol;
-    loadData(currentSymbol, currentInterval);
+  async function initChart() {
+    const symbol = getSymbol();
+    const binanceSym = binanceMap[symbol] || symbol.toLowerCase() + 'usdt';
 
-    // Timeframe Buttons
-    document.querySelectorAll('.timeframe-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.timeframe-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        currentInterval = btn.dataset.interval;
-        loadData(currentSymbol, currentInterval);
-      });
+    // Create Chart
+    chart = LightweightCharts.createChart(document.getElementById('chart'), {
+      width: document.getElementById('chart').clientWidth,
+      height: 500,
+      layout: { background: { color: 'transparent' }, textColor: 'var(--text)' },
+      grid: { vertLines: { color: 'var(--border)' }, horzLines: { color: 'var(--border)' } },
+      crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
+      timeScale: { borderColor: 'var(--border)', timeVisible: true, secondsVisible: true }
     });
 
-    // Load Data
-    async function loadData(symbol, interval) {
-      let data = [];
-      if (symbol === 'BTCUSD') {
-        const res = await fetch(`https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=${interval === 'D' ? 30 : 1}`);
-        const json = await res.json();
-        data = json.prices.map((p, i) => ({
-          time: Math.floor(p[0] / 1000),
-          open: p[1], high: p[1]*1.01, low: p[1]*0.99, close: p[1]
-        }));
-      } else {
-        const base = symbol === 'AAPL' ? 180 : symbol === 'TSLA' ? 250 : 450;
-        const days = interval === 'D' ? 30 : 1;
-        data = Array.from({length: 50}, (_, i) => {
-          const close = base + Math.sin(i/5)*10;
-          return { time: Math.floor(Date.now()/1000) - (50-i)*3600, open: close, high: close*1.01, low: close*0.99, close };
-        });
-      }
-      series.setData(data.slice(-100));
-      updatePrice(data[data.length-1], data[data.length-2]);
-    }
+    series = chart.addCandlestickSeries({
+      upColor: 'var(--green)', downColor: 'var(--red)',
+      borderUpColor: 'var(--green)', borderDownColor: 'var(--red)',
+      wickUpColor: 'var(--green)', wickDownColor: 'var(--red)'
+    });
 
-    function updatePrice(latest, prev) {
-      document.getElementById('current-price').textContent = latest.close.toFixed(2);
-      const change = ((latest.close - prev.close)/prev.close*100).toFixed(2);
-      const changeEl = document.getElementById('price-change');
-      changeEl.textContent = (change > 0 ? '+' : '') + change + '%';
-      changeEl.className = change >= 0 ? 'change' : 'change negative';
-    }
-
-    // Indicator Modal
-    const indicatorBtn = document.getElementById('add-indicator-btn');
-    const indicatorList = document.getElementById('indicator-list');
-    const indicators = ['SMA', 'EMA', 'RSI', 'MACD', 'Bollinger', 'Volume'];
-    indicatorBtn.addEventListener('click', () => {
-      const modal = document.createElement('div');
-      modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:1000;';
-      modal.innerHTML = `<div style="background:var(--card);padding:1.5rem;border-radius:8px;width:300px;">
-        <h3 style="margin-top:0;">Add Indicator</h3>
-        ${indicators.map(i => `<button style="display:block;width:100%;padding:0.5rem;margin:0.25rem 0;background:var(--bg-light);border:1px solid var(--border);border-radius:4px;cursor:pointer;" data-ind="${i}">${i}</button>`).join('')}
-        <button id="close-modal" style="margin-top:1rem;width:100%;padding:0.5rem;background:var(--red);color:white;border:none;border-radius:4px;cursor:pointer;">Close</button>
-      </div>`;
-      document.body.appendChild(modal);
-      modal.querySelectorAll('[data-ind]').forEach(b => b.addEventListener('click', () => {
-        addIndicator(b.dataset.ind);
-        modal.remove();
+    // Load last 100 klines via REST (once)
+    try {
+      const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=${binanceSym.toUpperCase()}&interval=1m&limit=100`);
+      const data = await res.json();
+      const bars = data.map(d => ({
+        time: d[0] / 1000,
+        open: parseFloat(d[1]),
+        high: parseFloat(d[2]),
+        low: parseFloat(d[3]),
+        close: parseFloat(d[4])
       }));
-      modal.querySelector('#close-modal').addEventListener('click', () => modal.remove());
-    });
-
-    function addIndicator(name) {
-      const item = document.createElement('div');
-      item.className = 'indicator-item';
-      item.innerHTML = `<span>${name}</span><i class="fas fa-times remove-indicator"></i>`;
-      indicatorList.appendChild(item);
-      item.querySelector('.remove-indicator').addEventListener('click', () => item.remove());
+      series.setData(bars);
+    } catch (e) {
+      console.error('Failed to load history:', e);
     }
-  </script>
+
+    // WebSocket: Kline 1m (live bars)
+    klineWs = new WebSocket(`wss://stream.binance.com:9443/ws/${binanceSym}@kline_1m`);
+    klineWs.onmessage = (e) => {
+      const msg = JSON.parse(e.data);
+      const k = msg.k;
+      if (!k.x) return; // Incomplete bar
+
+      const bar = {
+        time: k.t / 1000,
+        open: parseFloat(k.o),
+        high: parseFloat(k.h),
+        low: parseFloat(k.l),
+        close: parseFloat(k.c)
+      };
+      series.update(bar);
+    };
+
+    // WebSocket: Ticker (live price)
+    tickerWs = new WebSocket(`wss://stream.binance.com:9443/ws/${binanceSym}@ticker`);
+    tickerWs.onmessage = (e) => {
+      const t = JSON.parse(e.data);
+      document.getElementById('current-price').textContent = parseFloat(t.c).toFixed(2);
+      const change = parseFloat(t.P);
+      const changeEl = document.getElementById('price-change');
+      changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
+      changeEl.style.color = change >= 0 ? 'var(--green)' : 'var(--red)';
+    };
+  }
+
+  // Resize
+  window.addEventListener('resize', () => {
+    if (chart) chart.resize(document.getElementById('chart').clientWidth, 500);
+  });
+
+  // Start
+  initChart();
+</script>
+  
 </body>
 </html>
