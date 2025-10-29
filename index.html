@@ -240,16 +240,16 @@
       'DOTUSDT': 7
     };
 
-    // CHART INITIALIZATION WITH PROPER PRICE SCALING
+    // CHART INITIALIZATION WITH 5-MINUTE CANDLES
     function initializeAllCharts() {
-      console.log('INITIALIZING PROPERLY SCALED CANDLESTICK CHARTS...');
+      console.log('🔄 INITIALIZING 5-MINUTE CANDLESTICK CHARTS...');
       
       symbols.forEach(symbol => {
         const chartId = `chart-${symbol.toLowerCase().replace('usdt', '')}`;
         const container = document.getElementById(chartId);
         
         if (!container) {
-          console.error('Chart container not found:', chartId);
+          console.error('❌ Chart container not found:', chartId);
           return;
         }
 
@@ -257,7 +257,7 @@
         container.innerHTML = '';
         
         try {
-          // Create chart WITH VISIBLE PRICE SCALE (this fixes stretching)
+          // Create chart with proper configuration for 5-minute candles
           const chart = LightweightCharts.createChart(container, {
             width: container.clientWidth,
             height: container.clientHeight,
@@ -273,18 +273,18 @@
               visible: false,
               borderVisible: false,
               timeVisible: false,
-              rightOffset: 0,
-              barSpacing: 8, // Good spacing for candles
-              minBarSpacing: 4,
+              rightOffset: 1,
+              barSpacing: 3, // Tighter spacing for more candles
+              minBarSpacing: 1,
               fixLeftEdge: true,
               fixRightEdge: true,
             },
             rightPriceScale: {
-              visible: true, // MUST BE VISIBLE FOR PROPER SCALING
+              visible: true,
               borderVisible: false,
               scaleMargins: {
-                top: 0.05,    // 5% margin top
-                bottom: 0.05, // 5% margin bottom
+                top: 0.1,
+                bottom: 0.1,
               },
               entireTextOnly: true,
             },
@@ -321,8 +321,8 @@
             priceLineVisible: false,
           });
 
-          // Generate proper candlestick data
-          const sampleCandles = generateProperCandles(10, symbol); // Fewer candles = better visibility
+          // Generate 5-minute candlestick data with MORE candles
+          const sampleCandles = generate5MinuteCandles(20, symbol); // 20 candles = 100 minutes
           const trendlineData = calculateTrendline(sampleCandles);
           
           // Set data
@@ -338,10 +338,10 @@
             trendlineData: trendlineData
           };
           
-          console.log(`PROPERLY SCALED Chart initialized: ${symbol}`);
+          console.log(`✅ 5-MINUTE Chart initialized: ${symbol} - 20 candles (100 minutes)`);
           
         } catch (error) {
-          console.error(`Failed to create chart for ${symbol}:`, error);
+          console.error(`❌ Failed to create chart for ${symbol}:`, error);
         }
       });
       
@@ -349,36 +349,33 @@
       setTimeout(connectWebSocket, 500);
     }
 
-    // GENERATE PROPER CANDLESTICK DATA
-    function generateProperCandles(count, symbol) {
+    // GENERATE 5-MINUTE CANDLESTICK DATA
+    function generate5MinuteCandles(count, symbol) {
       const candles = [];
       const now = Math.floor(Date.now() / 1000);
       const basePrice = basePrices[symbol];
       let currentPrice = basePrice;
       
-      // Realistic price ranges for each symbol
-      const priceRanges = {
-        'BTCUSDT': { min: 40000, max: 50000, volatility: 0.015 },
-        'ETHUSDT': { min: 2000, max: 3000, volatility: 0.02 },
-        'ADAUSDT': { min: 0.4, max: 0.6, volatility: 0.03 },
-        'DOTUSDT': { min: 6, max: 8, volatility: 0.025 }
+      // Asset-specific volatility for 5-minute timeframe
+      const volatilities = {
+        'BTCUSDT': 0.003,  // 0.3% volatility for 5min (BTC is more stable)
+        'ETHUSDT': 0.004,  // 0.4% volatility for 5min
+        'ADAUSDT': 0.008,  // 0.8% volatility for 5min (ADA is more volatile)
+        'DOTUSDT': 0.006   // 0.6% volatility for 5min
       };
       
-      const range = priceRanges[symbol];
+      const volatility = volatilities[symbol];
       
       for (let i = count - 1; i >= 0; i--) {
-        const time = now - i * 60 * 15; // 15-minute intervals
+        const time = now - i * 60 * 5; // 5-minute intervals
         
-        // Realistic price movement within range
-        const priceChange = (Math.random() - 0.5) * 2 * range.volatility * currentPrice;
+        // Realistic 5-minute price movement
+        const priceChange = (Math.random() - 0.5) * 2 * volatility * currentPrice;
         const open = currentPrice;
-        let close = open + priceChange;
+        const close = open + priceChange;
         
-        // Keep within realistic range
-        close = Math.max(range.min, Math.min(range.max, close));
-        
-        // Realistic high/low with proper wicks
-        const wickSize = range.volatility * currentPrice * 0.6;
+        // Realistic high/low with proper wicks for 5-minute candles
+        const wickSize = volatility * currentPrice * 0.8;
         const high = Math.max(open, close) + Math.random() * wickSize;
         const low = Math.min(open, close) - Math.random() * wickSize;
         
@@ -416,7 +413,7 @@
 
     // WEB SOCKET CONNECTION
     function connectWebSocket() {
-      console.log('Connecting to WebSocket...');
+      console.log('🔌 Connecting to WebSocket...');
       updateConnectionStatus('connecting');
       
       if (ws) {
@@ -428,7 +425,7 @@
         ws = new WebSocket(`wss://stream.binance.com:9443/stream?streams=${streams}`);
 
         ws.onopen = () => {
-          console.log('WebSocket CONNECTED');
+          console.log('✅ WebSocket CONNECTED');
           updateConnectionStatus('connected');
           connectionAttempts = 0;
         };
@@ -445,12 +442,12 @@
         };
 
         ws.onerror = (error) => {
-          console.error('WebSocket error:', error);
+          console.error('❌ WebSocket error:', error);
           updateConnectionStatus('error');
         };
 
         ws.onclose = (event) => {
-          console.log('WebSocket closed:', event.code, event.reason);
+          console.log('🔌 WebSocket closed:', event.code, event.reason);
           updateConnectionStatus('connecting');
           
           // Auto-reconnect
@@ -474,13 +471,13 @@
       const price = parseFloat(ticker.c);
       const changePercent = parseFloat(ticker.P);
       
-      console.log(`${symbol}: $${price} (${changePercent}%)`);
+      console.log(`📈 ${symbol}: $${price} (${changePercent}%)`);
       
       // Update price display
       updatePriceDisplay(symbol, price, changePercent);
       
-      // Update chart with new candle data
-      updateChartWithCandle(symbol, price);
+      // Update chart with new 5-minute candle data
+      updateChartWith5MinuteCandle(symbol, price);
     }
 
     // UPDATE PRICE DISPLAY
@@ -498,8 +495,8 @@
       }
     }
 
-    // UPDATE CHART WITH NEW CANDLE DATA
-    function updateChartWithCandle(symbol, currentPrice) {
+    // UPDATE CHART WITH NEW 5-MINUTE CANDLE DATA
+    function updateChartWith5MinuteCandle(symbol, currentPrice) {
       if (!charts[symbol]) {
         console.warn(`No chart found for ${symbol}`);
         return;
@@ -507,20 +504,20 @@
       
       const { candlestickSeries, trendlineSeries, candleData } = charts[symbol];
       const now = Math.floor(Date.now() / 1000);
-      const currentInterval = Math.floor(now / 900) * 900; // 15-minute intervals
+      const currentInterval = Math.floor(now / 300) * 300; // 5-minute intervals (300 seconds)
       
       // Get the last candle
       const lastCandle = candleData[candleData.length - 1];
       
-      if (lastCandle && Math.floor(lastCandle.time / 900) * 900 === currentInterval) {
-        // Update current 15-minute candle
+      if (lastCandle && Math.floor(lastCandle.time / 300) * 300 === currentInterval) {
+        // Update current 5-minute candle
         lastCandle.close = currentPrice;
         lastCandle.high = Math.max(lastCandle.high, currentPrice);
         lastCandle.low = Math.min(lastCandle.low, currentPrice);
         
         candlestickSeries.update(lastCandle);
       } else {
-        // Create new 15-minute candle
+        // Create new 5-minute candle
         const newCandle = {
           time: currentInterval,
           open: lastCandle ? lastCandle.close : currentPrice,
@@ -531,8 +528,8 @@
         
         candleData.push(newCandle);
         
-        // Keep only last 10 candles for optimal display
-        if (candleData.length > 10) {
+        // Keep only last 20 candles (100 minutes total)
+        if (candleData.length > 20) {
           candleData.shift();
         }
         
@@ -543,7 +540,7 @@
       const newTrendline = calculateTrendline(candleData);
       trendlineSeries.setData(newTrendline);
       
-      console.log(`Updated ${symbol} chart with ${candleData.length} proper candles`);
+      console.log(`📊 Updated ${symbol} chart with ${candleData.length} 5-minute candles`);
     }
 
     // FORMAT PRICE
@@ -608,7 +605,7 @@
 
     // INITIALIZE EVERYTHING WHEN PAGE LOADS
     document.addEventListener('DOMContentLoaded', () => {
-      console.log('PAGE LOADED - Starting PROPERLY SCALED chart initialization...');
+      console.log('🚀 PAGE LOADED - Starting 5-MINUTE chart initialization...');
       
       setTimeout(() => {
         initializeAllCharts();
