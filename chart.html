@@ -420,6 +420,7 @@
       }, 100);
     }
 
+
     // === TOOLBARS ===
     function initToolbars() {
       document.querySelectorAll('.timeframe-btn').forEach(btn => {
@@ -806,5 +807,91 @@ document.getElementById('symbol-search').addEventListener('keypress', e => {
       }, 50);
     }
   </script>
+  <!-- 1. Load the library (once, anywhere in <head> or before this block) -->
+<script src="https://cdn.jsdelivr.net/npm/technicalindicators@3"></script>
+
+<script>
+/* --------------------------------------------------------------
+   2. INDICATOR INTEGRATION – safe, async-ready version
+   -------------------------------------------------------------- */
+(async function applyStoredIndicators() {
+  // ---- wait for the library to expose the global TI object ----
+  while (!window.TI) await new Promise(r => setTimeout(r, 50));
+
+  const TI = window.TI;
+  const stored = JSON.parse(localStorage.getItem('chartIndicators') || '[]');
+  if (!Array.isArray(stored) || stored.length === 0) return;
+
+  // ---- we already have the candles array in the global scope ----
+  // (the variable you use to feed the main candlestick series)
+  if (typeof candles === 'undefined' || !Array.isArray(candles) || candles.length === 0) {
+    console.warn('No candle data yet – indicators will be applied later.');
+    return;
+  }
+
+  // ---- helper to extract the needed arrays once ----
+  const close  = candles.map(c => c.close);
+  const high   = candles.map(c => c.high);
+  const low    = candles.map(c => c.low);
+  const open   = candles.map(c => c.open);
+  const volume = candles.map(c => c.volume);
+
+  stored.forEach(name => {
+    try {
+      // ---- some indicators live under TI.IndicatorName, others under TI[name] ----
+      const IndClass = TI[name] || TI[`${name}Indicator`];
+      if (typeof IndClass?.calculate !== 'function') {
+        console.warn(`Indicator ${name} not found in technicalindicators`);
+        return;
+      }
+
+      // ---- build the input object – most indicators need only a subset ----
+      const input = {
+        open, high, low, close, volume,
+        period: 14               // default – you can make this configurable later
+      };
+
+      const result = IndClass.calculate(input);   // array of numbers (or objects)
+
+      // ---- turn the raw result into Lightweight-Charts format ----
+      let seriesData = [];
+
+      if (Array.isArray(result)) {
+        // Simple array → one value per candle
+        seriesData = candles.map((c, i) => ({
+          time: c.time,
+          value: result[i] !== undefined && result[i] !== null ? result[i] : null
+        })).filter(d => d.value !== null);
+      } else if (result && typeof result === 'object') {
+        // Some indicators return an object with multiple series (e.g. MACD → signal, histogram)
+        // For simplicity we plot only the first numeric array we find
+        const firstKey = Object.keys(result).find(k => Array.isArray(result[k]));
+        if (firstKey) {
+          seriesData = candles.map((c, i) => ({
+            time: c.time,
+            value: result[firstKey][i] !== undefined ? result[firstKey][i] : null
+          })).filter(d => d.value !== null);
+        }
+      }
+
+      if (seriesData.length === 0) return;   // nothing to plot
+
+      // ---- create a new line series (you can change colour per indicator) ----
+      const colors = ['#2962ff', '#ff9800', '#26a69a', '#ef5350', '#ab47bc'];
+      const indSeries = chart.addLineSeries({
+        title: name,
+        color: colors[stored.indexOf(name) % colors.length] || '#2962ff',
+        lineWidth: 2,
+        priceLineVisible: false,
+        lastValueVisible: false
+      });
+      indSeries.setData(seriesData);
+
+    } catch (err) {
+      console.warn(`Indicator ${name} failed:`, err);
+    }
+  });
+})();
+</script>
 </body>
 </html>
