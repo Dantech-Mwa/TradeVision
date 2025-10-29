@@ -17,8 +17,8 @@
   <!-- Lightweight Charts (stable) -->
   <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4/dist/lightweight-charts.standalone.production.js"></script>
 
-  <!-- Technical Indicators -->
-  <script src="https://cdn.jsdelivr.net/npm/technicalindicators@3"></script>
+  <!-- Technical Indicators (UMD build – works in browser) -->
+  <script src="https://cdn.jsdelivr.net/npm/technicalindicators@3/dist/technicalindicators.js"></script>
 
   <style>
     :root{
@@ -41,7 +41,6 @@
     .nav-links a{margin:0 .75rem;font-weight:500;}
     .icon-btn{background:none;border:none;color:var(--text-light);font-size:1.2rem;cursor:pointer;padding:.5rem;}
 
-    /* Layout */
     .chart-layout{display:grid;grid-template-columns:60px 1fr 250px;gap:0;height:calc(100vh - 60px);}
     .sidebar-left{background:var(--bg-light);border-right:1px solid var(--border);overflow-y:auto;padding:.5rem;}
     .sidebar-left button{width:100%;padding:.75rem 0;border:none;background:none;color:var(--text-light);cursor:pointer;text-align:center;font-size:.9rem;}
@@ -56,8 +55,8 @@
     .symbol-info{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;}
     .symbol-info h2{font-size:1.3rem;margin:0;}
     .symbol-info .price{font-size:1.2rem;font-weight:600;}
-    .change{color:var(--green);}
-    .change.negative{color:var(--red);}
+    .change{color:#26a69a;}
+    .change.negative{color:#ef5350;}
     .timeframe-bar{margin-bottom:1rem;display:flex;flex-wrap:wrap;gap:.5rem;}
     .timeframe-btn{padding:.4rem .8rem;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:4px;font-size:.85rem;cursor:pointer;}
     .timeframe-btn.active{background:var(--accent);color:white;border-color:var(--accent);}
@@ -66,16 +65,15 @@
     .remove-indicator{color:var(--red);cursor:pointer;}
     .footer{background:var(--bg-light);border-top:1px solid var(--border);padding:.75rem 0;font-size:.8rem;text-align:center;color:var(--text-light);}
 
-    /* Drawing toolbar (top) */
     #drawing-tools{margin:1rem 0;display:flex;gap:.5rem;flex-wrap:wrap;}
     #drawing-tools button{padding:.5rem 1rem;background:var(--card);border:1px solid var(--border);border-radius:4px;color:var(--text);cursor:pointer;}
     #drawing-tools button.active{background:var(--accent);color:white;}
 
-    /* Modal (Add Indicator) */
     .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);align-items:center;justify-content:center;z-index:1000;}
     .modal.active{display:flex;}
     .modal-content{background:var(--card);padding:1.5rem;border-radius:8px;width:90%;max-width:400px;}
     .modal-close{float:right;cursor:pointer;color:var(--text-light);}
+    .modal-btn{width:100%;margin:0.5rem 0;padding:0.5rem;background:var(--bg-light);border:1px solid var(--border);border-radius:4px;cursor:pointer;text-align:left;}
 
     @media(max-width:992px){
       .chart-layout{grid-template-columns:1fr;}
@@ -107,13 +105,11 @@
     </div>
   </header>
 
-  <!-- Drawing Toolbar (top) -->
+  <!-- Drawing Toolbar -->
   <div id="drawing-tools" class="container"></div>
 
-  <!-- Main Layout -->
+  <!-- Layout -->
   <div class="chart-layout">
-
-    <!-- Left Sidebar – Drawing Tools -->
     <div class="sidebar-left">
       <button data-tool="cursor" class="active"><i class="fas fa-mouse-pointer"></i><span>Cursor</span></button>
       <button data-tool="line"><i class="fas fa-minus"></i><span>Line</span></button>
@@ -126,7 +122,6 @@
       <button data-tool="arrow"><i class="fas fa-arrow-up"></i><span>Arrow</span></button>
     </div>
 
-    <!-- Main Chart -->
     <div class="main-chart">
       <div id="chart-container">
         <div id="chart"></div>
@@ -134,12 +129,11 @@
       </div>
     </div>
 
-    <!-- Right Sidebar -->
     <div class="sidebar-right">
       <div class="symbol-info">
         <div>
-          <h2 id="symbol-name">AAPL</h2>
-          <div id="symbol-exchange">NASDAQ</div>
+          <h2 id="symbol-name">BTCUSD</h2>
+          <div id="symbol-exchange">CRYPTO</div>
         </div>
         <div>
           <div class="price" id="current-price">--</div>
@@ -160,21 +154,21 @@
 
       <div>
         <div class="panel-title">Indicators</div>
-        <button id="add-indicator-btn" style="width:100%;padding:.5rem;background:var(--accent);color:white;border:none;border-radius:4px;cursor:pointer;">+ Add Indicator</button>
+        <button id="add-indicator-btn">+ Add Indicator</button>
         <div id="indicator-list" class="indicator-list"></div>
       </div>
 
       <div style="margin-top:1rem;">
-        <button onclick="runSavedPine()" style="width:100%;padding:.5rem;background:var(--accent);color:white;border:none;border-radius:4px;cursor:pointer;">Run Saved Pine</button>
+        <button onclick="runSavedPine()">Run Saved Pine</button>
       </div>
     </div>
   </div>
 
-  <!-- Add Indicator Modal -->
+  <!-- Modal -->
   <div id="indicator-modal" class="modal">
     <div class="modal-content">
       <span class="modal-close">x</span>
-      <h3 style="margin-top:0;">Add Indicator</h3>
+      <h3>Add Indicator</h3>
       <button class="modal-btn" data-ind="RSI">RSI (14)</button>
       <button class="modal-btn" data-ind="MACD">MACD</button>
       <button class="modal-btn" data-ind="EMA20">EMA (20)</button>
@@ -183,11 +177,9 @@
 
   <footer class="footer"><div class="container">© 2025 TradeVision. Open Source.</div></footer>
 
-  <!-- MAIN SCRIPT -->
+  <!-- SCRIPT -->
   <script>
-    /* -------------------------------------------------
-       1. Theme toggle (persisted)
-       ------------------------------------------------- */
+    // 1. Theme
     const themeToggle = document.getElementById('theme-toggle');
     const body = document.body;
     const themeIcon = themeToggle.querySelector('i');
@@ -200,38 +192,25 @@
     themeToggle.addEventListener('click', () => setTheme(body.getAttribute('data-theme') !== 'dark'));
     setTheme(localStorage.getItem('theme') !== 'light');
 
-    /* -------------------------------------------------
-       2. Symbol & Binance mapping
-       ------------------------------------------------- */
-    function getSymbol() {
-      return new URLSearchParams(location.search).get('symbol')?.toUpperCase() || 'BTCUSD';
-    }
-    const binanceMap = {
-      BTCUSD:'btcusdt',ETHUSD:'ethusdt',AAPL:'aaplusdt',TSLA:'tslausdt',SPY:'spyusdt',
-      NVDA:'nvdausdt',MSFT:'msftusdt',GOOGL:'googlusdt',AMZN:'amznusdt'
-    };
-    const symbol = getSymbol();
+    // 2. Symbol
+    const urlParams = new URLSearchParams(location.search);
+    const symbol = (urlParams.get('symbol') || 'BTCUSD').toUpperCase();
+    const binanceMap = { BTCUSD:'btcusdt',ETHUSD:'ethusdt',AAPL:'aaplusdt',TSLA:'tslausdt',SPY:'spyusdt' };
     const binanceSym = binanceMap[symbol] || symbol.toLowerCase() + 'usdt';
     document.getElementById('symbol-name').textContent = symbol;
-    document.getElementById('symbol-exchange').textContent = symbol.match(/USD$/) ? 'CRYPTO' : 'NASDAQ';
+    document.getElementById('symbol-exchange').textContent = symbol.endsWith('USD') ? 'CRYPTO' : 'NASDAQ';
 
-    /* -------------------------------------------------
-       3. Chart & WebSocket globals
-       ------------------------------------------------- */
+    // 3. Chart globals
     let chart, priceSeries;
     let priceData = [];
     let klineWs, tickerWs;
-    let currentInterval = '1m';
+    let currentInterval = '15m';
+    const indicatorSeries = {}, indicatorInst = {};
 
-    const indicatorSeries = {};   // name → series
-    const indicatorInst   = {};   // name → TI instance
-
-    /* -------------------------------------------------
-       4. Wait for LightweightCharts then init
-       ------------------------------------------------- */
-    function waitForLW() {
-      if (typeof LightweightCharts !== 'undefined') initAll();
-      else setTimeout(waitForLW, 50);
+    // 4. Wait for LW + TI
+    function waitForLibs() {
+      if (typeof LightweightCharts !== 'undefined' && typeof TI !== 'undefined') initAll();
+      else setTimeout(waitForLibs, 50);
     }
 
     async function initAll() {
@@ -243,67 +222,50 @@
       initIndicatorsModal();
     }
 
-    /* -------------------------------------------------
-       5. Create chart
-       ------------------------------------------------- */
+    // 5. Create chart (HEX colors only!)
     async function createChart() {
       const container = document.getElementById('chart');
       chart = LightweightCharts.createChart(container, {
         width: container.clientWidth,
         height: container.clientHeight,
-        layout: { background: { color: 'transparent' }, textColor: 'var(--text)' },
-        grid: { vertLines: { color: 'var(--border)' }, horzLines: { color: 'var(--border)' } },
+        layout: { background: { color: '#141518' }, textColor: '#d1d4dc' },
+        grid: { vertLines: { color: '#2d313e' }, horzLines: { color: '#2d313e' } },
         crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
-        timeScale: { borderColor: 'var(--border)', timeVisible: true, secondsVisible: true }
+        timeScale: { borderColor: '#2d313e' }
       });
 
       priceSeries = chart.addCandlestickSeries({
-        upColor: 'var(--green)', downColor: 'var(--red)',
-        wickUpColor: 'var(--green)', wickDownColor: 'var(--red)'
+        upColor: '#26a69a', downColor: '#ef5350',
+        wickUpColor: '#26a69a', wickDownColor: '#ef5350'
       });
 
-      // resize handling
-      const resizeObserver = new ResizeObserver(() => {
+      new ResizeObserver(() => {
         chart.applyOptions({ width: container.clientWidth, height: container.clientHeight });
         resizeCanvas();
-      });
-      resizeObserver.observe(container);
+      }).observe(container);
     }
 
-    /* -------------------------------------------------
-       6. Load historic klines (REST)
-       ------------------------------------------------- */
+    // 6. Load history
     async function loadHistory(interval) {
-      const limit = interval === '1m' ? 500 : interval === 'D' ? 200 : 300;
+      const limit = interval === '1m' ? 500 : 300;
       const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=${binanceSym.toUpperCase()}&interval=${interval}&limit=${limit}`);
       const raw = await res.json();
       priceData = raw.map(k => ({
         time: k[0] / 1000,
-        open: parseFloat(k[1]),
-        high: parseFloat(k[2]),
-        low: parseFloat(k[3]),
-        close: parseFloat(k[4])
+        open: +k[1], high: +k[2], low: +k[3], close: +k[4]
       }));
       priceSeries.setData(priceData);
-      initAllIndicators();   // recalc after new data
+      initAllIndicators();
     }
 
-    /* -------------------------------------------------
-       7. Live kline WS
-       ------------------------------------------------- */
+    // 7. Live kline
     function connectKline(interval) {
       if (klineWs) klineWs.close();
       klineWs = new WebSocket(`wss://stream.binance.com:9443/ws/${binanceSym}@kline_${interval}`);
       klineWs.onmessage = e => {
         const k = JSON.parse(e.data).k;
-        if (!k.x) return;               // incomplete bar
-        const bar = {
-          time: k.t / 1000,
-          open: parseFloat(k.o),
-          high: parseFloat(k.h),
-          low: parseFloat(k.l),
-          close: parseFloat(k.c)
-        };
+        if (!k.x) return;
+        const bar = { time: k.t/1000, open:+k.o, high:+k.h, low:+k.l, close:+k.c };
         priceData.push(bar);
         if (priceData.length > 1000) priceData.shift();
         priceSeries.update(bar);
@@ -312,16 +274,14 @@
       klineWs.onclose = () => setTimeout(() => connectKline(interval), 3000);
     }
 
-    /* -------------------------------------------------
-       8. Live ticker WS (price header)
-       ------------------------------------------------- */
+    // 8. Ticker
     function connectTicker() {
       if (tickerWs) tickerWs.close();
       tickerWs = new WebSocket(`wss://stream.binance.com:9443/ws/${binanceSym}@ticker`);
       tickerWs.onmessage = e => {
         const t = JSON.parse(e.data);
-        document.getElementById('current-price').textContent = parseFloat(t.c).toFixed(2);
-        const chg = parseFloat(t.P);
+        document.getElementById('current-price').textContent = (+t.c).toFixed(2);
+        const chg = +t.P;
         const el = document.getElementById('price-change');
         el.textContent = (chg >= 0 ? '+' : '') + chg.toFixed(2) + '%';
         el.className = chg >= 0 ? 'change' : 'change negative';
@@ -329,54 +289,49 @@
       tickerWs.onclose = () => setTimeout(connectTicker, 3000);
     }
 
-    /* -------------------------------------------------
-       9. Indicator engine
-       ------------------------------------------------- */
+    // 9. Indicators
     function initAllIndicators() {
       const closes = priceData.map(d => d.close);
       // RSI
       if (!indicatorInst.RSI) {
-        indicatorInst.RSI = new RSI({ period: 14, values: closes });
+        indicatorInst.RSI = new TI.RSI({ period:14, values:closes });
         indicatorSeries.RSI = chart.addLineSeries({ color: '#9c27b0', priceScaleId: 'rsi' });
         chart.priceScale('rsi').applyOptions({ scaleMargins: { top: 0.85, bottom: 0 } });
-      } else indicatorInst.RSI = new RSI({ period: 14, values: closes });
-      const rsiVals = indicatorInst.RSI.getResult();
-      indicatorSeries.RSI.setData(rsiVals.map((v,i)=>({time:priceData[i].time,value:v})));
+      } else indicatorInst.RSI = new TI.RSI({ period:14, values:closes });
+      const rsi = indicatorInst.RSI.getResult();
+      indicatorSeries.RSI.setData(rsi.map((v,i)=>({time:priceData[i].time,value:v})));
 
       // MACD
       if (!indicatorInst.MACD) {
-        indicatorInst.MACD = new MACD({ fastPeriod:12, slowPeriod:26, signalPeriod:9, values:closes,
-                                        SimpleMAOscillator:true, SimpleMASignal:true });
+        indicatorInst.MACD = new TI.MACD({ fastPeriod:12, slowPeriod:26, signalPeriod:9, values:closes,
+                                          SimpleMAOscillator:true, SimpleMASignal:true });
         indicatorSeries.MACD = chart.addHistogramSeries({ color: '#2962ff', priceScaleId: 'macd' });
         chart.priceScale('macd').applyOptions({ scaleMargins: { top: 0.7, bottom: 0.1 } });
-      } else indicatorInst.MACD = new MACD({ fastPeriod:12, slowPeriod:26, signalPeriod:9, values:closes,
-                                            SimpleMAOscillator:true, SimpleMASignal:true });
+      } else indicatorInst.MACD = new TI.MACD({ fastPeriod:12, slowPeriod:26, signalPeriod:9, values:closes,
+                                                SimpleMAOscillator:true, SimpleMASignal:true });
       const macd = indicatorInst.MACD.getResult();
       indicatorSeries.MACD.setData(macd.MACD.map((v,i)=>({time:priceData[i].time,value:v})));
 
       // EMA20
       if (!indicatorInst.EMA20) {
-        indicatorInst.EMA20 = new EMA({ period:20, values:closes });
+        indicatorInst.EMA20 = new TI.EMA({ period:20, values:closes });
         indicatorSeries.EMA20 = chart.addLineSeries({ color: '#ff9800' });
-      } else indicatorInst.EMA20 = new EMA({ period:20, values:closes });
-      const emaVals = indicatorInst.EMA20.getResult();
-      indicatorSeries.EMA20.setData(emaVals.map((v,i)=>({time:priceData[i].time,value:v})));
+      } else indicatorInst.EMA20 = new TI.EMA({ period:20, values:closes });
+      const ema = indicatorInst.EMA20.getResult();
+      indicatorSeries.EMA20.setData(ema.map((v,i)=>({time:priceData[i].time,value:v})));
 
       renderIndicatorList();
     }
 
     function updateAllIndicators(bar) {
-      // RSI
       indicatorInst.RSI?.nextValue(bar.close);
       const rsi = indicatorInst.RSI?.getResult().slice(-1)[0];
       if (rsi !== undefined) indicatorSeries.RSI?.update({ time: bar.time, value: rsi });
 
-      // MACD
       indicatorInst.MACD?.nextValue(bar.close);
       const macd = indicatorInst.MACD?.getResult().MACD.slice(-1)[0];
       if (macd !== undefined) indicatorSeries.MACD?.update({ time: bar.time, value: macd });
 
-      // EMA20
       indicatorInst.EMA20?.nextValue(bar.close);
       const ema = indicatorInst.EMA20?.getResult().slice(-1)[0];
       if (ema !== undefined) indicatorSeries.EMA20?.update({ time: bar.time, value: ema });
@@ -393,50 +348,42 @@
       });
     }
 
-    /* -------------------------------------------------
-       10. Time-frame selector
-       ------------------------------------------------- */
+    // 10. Timeframe
     document.querySelectorAll('.timeframe-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.timeframe-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        const newInt = btn.dataset.interval === 'D' ? '1d' :
-                       btn.dataset.interval === 'W' ? '1w' :
-                       btn.dataset.interval === 'M' ? '1M' : btn.dataset.interval + 'm';
-        currentInterval = newInt;
-        loadHistory(newInt);
-        connectKline(newInt);
+        const int = btn.dataset.interval === 'D' ? '1d' :
+                    btn.dataset.interval === 'W' ? '1w' :
+                    btn.dataset.interval === 'M' ? '1M' : btn.dataset.interval + 'm';
+        currentInterval = int;
+        loadHistory(int);
+        connectKline(int);
       });
     });
 
-    /* -------------------------------------------------
-       11. Add-Indicator modal
-       ------------------------------------------------- */
+    // 11. Add Indicator Modal
     function initIndicatorsModal() {
       const modal = document.getElementById('indicator-modal');
       const close = document.querySelector('.modal-close');
       const addBtn = document.getElementById('add-indicator-btn');
-
       addBtn.onclick = () => modal.classList.add('active');
-      close.onclick = () => modal.classList.remove('active');
-      modal.onclick = e => { if (e.target === modal) modal.classList.remove('active'); };
+      close.onclick = modal.onclick = e => { if (e.target === modal || e.target === close) modal.classList.remove('active'); };
 
       document.querySelectorAll('.modal-btn').forEach(b => {
         b.onclick = () => {
           const ind = b.dataset.ind;
-          if (indicatorSeries[ind]) return;   // already added
-          // add on the fly (will recalc on next bar)
-          if (ind === 'RSI') indicatorInst.RSI = new RSI({ period:14, values: priceData.map(d=>d.close) });
-          if (ind === 'MACD') indicatorInst.MACD = new MACD({ fastPeriod:12, slowPeriod:26, signalPeriod:9,
-                                 values:priceData.map(d=>d.close), SimpleMAOscillator:true, SimpleMASignal:true });
-          if (ind === 'EMA20') indicatorInst.EMA20 = new EMA({ period:20, values: priceData.map(d=>d.close) });
-
-          initAllIndicators();   // rebuild series
+          if (indicatorSeries[ind]) return;
+          const closes = priceData.map(d => d.close);
+          if (ind === 'RSI') indicatorInst.RSI = new TI.RSI({ period:14, values:closes });
+          if (ind === 'MACD') indicatorInst.MACD = new TI.MACD({ fastPeriod:12, slowPeriod:26, signalPeriod:9, values:closes,
+                                                             SimpleMAOscillator:true, SimpleMASignal:true });
+          if (ind === 'EMA20') indicatorInst.EMA20 = new TI.EMA({ period:20, values:closes });
+          initAllIndicators();
           modal.classList.remove('active');
         };
       });
 
-      // remove indicator
       document.getElementById('indicator-list').addEventListener('click', e => {
         if (e.target.classList.contains('remove-indicator')) {
           const name = e.target.dataset.ind;
@@ -448,20 +395,15 @@
       });
     }
 
-    /* -------------------------------------------------
-       12. Drawing tools
-       ------------------------------------------------- */
-    let isDrawing = false;
-    let currentTool = 'cursor';
-    let startPoint = null;
+    // 12. Drawing
+    let isDrawing = false, currentTool = 'cursor', startPoint = null;
     const drawings = [];
     const canvas = document.getElementById('drawing-canvas');
     const ctx = canvas.getContext('2d');
 
     function resizeCanvas() {
       const rect = chart.getContainer().getBoundingClientRect();
-      canvas.width = rect.width;
-      canvas.height = rect.height;
+      canvas.width = rect.width; canvas.height = rect.height;
       redraw();
     }
 
@@ -469,27 +411,23 @@
       resizeCanvas();
       window.addEventListener('resize', resizeCanvas);
 
-      // toolbar (top)
-      const topToolbar = document.getElementById('drawing-tools');
-      topToolbar.innerHTML = `
-        <button data-tool="cursor" class="active">Cursor</button>
-        <button data-tool="line">Line</button>
-        <button data-tool="fib">Fib</button>
-        <button data-tool="text">Text</button>
-        <button id="clear-drawings">Clear</button>
-      `;
-      topToolbar.addEventListener('click', e => {
-        if (e.target.tagName !== 'BUTTON') return;
-        topToolbar.querySelectorAll('button').forEach(b=>b.classList.remove('active'));
+      const top = document.getElementById('drawing-tools');
+      top.innerHTML = `<button data-tool="cursor" class="active">Cursor</button>
+                       <button data-tool="line">Line</button>
+                       <button data-tool="fib">Fib</button>
+                       <button data-tool="text">Text</button>
+                       <button id="clear-drawings">Clear</button>`;
+      top.addEventListener('click', e => {
+        if (!e.target.dataset?.tool && e.target.id !== 'clear-drawings') return;
+        top.querySelectorAll('button').forEach(b => b.classList.remove('active'));
         e.target.classList.add('active');
         currentTool = e.target.dataset.tool || 'cursor';
       });
       document.getElementById('clear-drawings').onclick = () => { drawings.length = 0; redraw(); };
 
-      // left sidebar sync
       document.querySelectorAll('.sidebar-left button').forEach(b => {
         b.addEventListener('click', () => {
-          document.querySelectorAll('.sidebar-left button').forEach(x=>x.classList.remove('active'));
+          document.querySelectorAll('.sidebar-left button').forEach(x => x.classList.remove('active'));
           b.classList.add('active');
           currentTool = b.dataset.tool;
         });
@@ -501,8 +439,7 @@
           startPoint = { x: param.point.x, y: param.point.y, time: param.time };
           isDrawing = true;
         } else {
-          const end = { x: param.point.x, y: param.point.y, time: param.time };
-          drawings.push({ tool: currentTool, start: startPoint, end });
+          drawings.push({ tool: currentTool, start: startPoint, end: { x: param.point.x, y: param.point.y, time: param.time } });
           isDrawing = false;
           redraw();
         }
@@ -521,19 +458,15 @@
       });
     }
 
-    /* -------------------------------------------------
-       13. Run Saved Pine (stub – ready for PineJS)
-       ------------------------------------------------- */
-    async function runSavedPine() {
+    // 13. Pine stub
+    function runSavedPine() {
       const script = localStorage.getItem('pineScript') || '';
-      if (!script) return alert('No Pine script saved. Edit it in pine-editor.html first.');
-      alert('Pine execution stub – plug PineJS here.');
+      if (!script) return alert('No Pine script saved. Edit in pine-editor.html first.');
+      alert('Pine execution stub – ready for PineJS');
     }
 
-    /* -------------------------------------------------
-       14. START
-       ------------------------------------------------- */
-    waitForLW();
+    // 14. Start
+    waitForLibs();
   </script>
 </body>
 </html>
