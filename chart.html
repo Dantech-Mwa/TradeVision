@@ -65,10 +65,33 @@
     .timeframe-btn.active,.chart-type-btn.active{
       background:var(--accent);color:white;border-color:var(--accent);
     }
-    .indicator-list{margin-top:1rem;}
-    .indicator-item{display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;
-      border-bottom:1px solid var(--border);font-size:0.9rem;}
-    .remove-indicator{color:var(--red);cursor:pointer;}
+.indicator-panel { margin-top: 1rem; }
+.panel-title { font-weight: 600; color: var(--accent); margin-bottom: 0.5rem; }
+.add-btn {
+  width: 100%; padding: 0.6rem; background: var(--accent); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.95rem; margin-bottom: 0.5rem;
+}
+.add-btn:hover { background: #1a4fd6; }
+
+.search-container input {
+  width: 100%; padding: 0.5rem 0.8rem; border: 1px solid var(--border); border-radius: 6px; background: var(--card); color: var(--text); font-size: 0.9rem;
+}
+.dropdown-list {
+  position: absolute; top: 100%; left: 0; right: 0; max-height: 200px; overflow-y: auto; background: var(--card); border: 1px solid var(--border); border-top: none; border-radius: 0 0 6px 6px; z-index: 10;
+}
+.dropdown-item {
+  padding: 0.6rem 0.8rem; cursor: pointer; font-size: 0.9rem; border-bottom: 1px solid var(--border);
+}
+.dropdown-item:hover { background: var(--bg-light); }
+.dropdown-item:last-child { border-bottom: none; }
+
+.indicator-item {
+  display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0.7rem; background: var(--bg-light); border-radius: 6px; margin-bottom: 0.4rem; font-size: 0.9rem;
+}
+.indicator-item .name { font-weight: 500; }
+.indicator-item .remove {
+  color: var(--red); cursor: pointer; font-size: 1.1rem;
+}
+.indicator-item .remove:hover { color: #d32f2f; }
     .footer{background:var(--bg-light);border-top:1px solid var(--border);padding:0.75rem 0;font-size:0.8rem;text-align:center;color:var(--text-light);}
     @media(max-width:992px){.chart-layout{grid-template-columns:1fr;}.sidebar-left,.sidebar-right{display:none;}}
 
@@ -170,25 +193,20 @@
         <button class="chart-type-btn" data-type="bar">Bars</button>
       </div>
 
-      <div>
-        <div class="panel-title">Indicators (100+)</div>
-        <button id="add-indicator-btn" style="width:100%;padding:0.5rem;background:var(--accent);color:white;border:none;border-radius:4px;cursor:pointer;margin-bottom:0.5rem;">+ Add Indicator</button>
-        <div id="indicator-list" class="indicator-list"></div>
-      </div>
-    </div>
+   <!-- ======== INDICATORS PANEL (place inside your sidebar or right panel) ======== -->
+<div class="indicator-panel">
+  <div class="panel-title">Indicators (120+)</div>
+  <button id="add-indicator-btn" class="add-btn">+ Add Indicator</button>
+
+  <!-- Searchable dropdown (hidden by default) -->
+  <div id="indicator-search-container" class="search-container" style="display:none;position:relative;">
+    <input type="text" id="indicator-search-input" placeholder="Search RSI, MACD, Bollinger..." autocomplete="off">
+    <div id="indicator-dropdown" class="dropdown-list"></div>
   </div>
 
-  <!-- Indicator Modal -->
-  <div id="indicator-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:1000;">
-    <div style="background:var(--bg-light);margin:10% auto;width:90%;max-width:500px;border-radius:8px;padding:1rem;max-height:70vh;overflow-y:auto;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
-        <h3>Add Indicator</h3>
-        <span style="cursor:pointer;font-size:1.5rem;" onclick="this.parentElement.parentElement.parentElement.style.display='none'">x</span>
-      </div>
-      <input type="text" id="indicator-search" placeholder="Search 100+ indicators..." style="width:100%;padding:0.5rem;margin-bottom:1rem;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text);">
-      <div id="indicator-options" style="display:grid;gap:0.5rem;"></div>
-    </div>
-  </div>
+  <!-- List of active indicators -->
+  <div id="indicator-list" class="indicator-list"></div>
+</div>
 
   <footer class="footer"><div class="container">© 2025 TradeVision. Open Source.</div></footer>
 
@@ -807,90 +825,170 @@ document.getElementById('symbol-search').addEventListener('keypress', e => {
       }, 50);
     }
   </script>
-  <!-- 1. Load the library (once, anywhere in <head> or before this block) -->
 <script src="https://cdn.jsdelivr.net/npm/technicalindicators@3"></script>
-
 <script>
-/* --------------------------------------------------------------
-   2. INDICATOR INTEGRATION – safe, async-ready version
-   -------------------------------------------------------------- */
-(async function applyStoredIndicators() {
-  // ---- wait for the library to expose the global TI object ----
+// ===== INDICATOR PANEL LOGIC =====
+(async function initIndicatorPanel() {
+  // Wait for TI library
   while (!window.TI) await new Promise(r => setTimeout(r, 50));
-
   const TI = window.TI;
-  const stored = JSON.parse(localStorage.getItem('chartIndicators') || '[]');
-  if (!Array.isArray(stored) || stored.length === 0) return;
 
-  // ---- we already have the candles array in the global scope ----
-  // (the variable you use to feed the main candlestick series)
-  if (typeof candles === 'undefined' || !Array.isArray(candles) || candles.length === 0) {
-    console.warn('No candle data yet – indicators will be applied later.');
-    return;
+  // Load all indicators
+  const allIndicators = Object.keys(TI)
+    .filter(k => typeof TI[k] === 'function' && k !== 'Indicator')
+    .map(name => ({ name, description: TI[name].description || `${name} indicator` }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  // DOM elements
+  const addBtn = document.getElementById('add-indicator-btn');
+  const searchContainer = document.getElementById('indicator-search-container');
+  const searchInput = document.getElementById('indicator-search-input');
+  const dropdown = document.getElementById('indicator-dropdown');
+  const list = document.getElementById('indicator-list');
+
+  // Load active indicators
+  let activeIndicators = JSON.parse(localStorage.getItem('chartIndicators') || '[]');
+  function saveActive() {
+    localStorage.setItem('chartIndicators', JSON.stringify(activeIndicators));
   }
 
-  // ---- helper to extract the needed arrays once ----
-  const close  = candles.map(c => c.close);
-  const high   = candles.map(c => c.high);
-  const low    = candles.map(c => c.low);
-  const open   = candles.map(c => c.open);
-  const volume = candles.map(c => c.volume);
+  // Render active list
+  function renderActive() {
+    list.innerHTML = '';
+    if (activeIndicators.length === 0) {
+      list.innerHTML = '<div style="color:var(--text-light);font-size:0.85rem;text-align:center;padding:0.5rem;">No indicators added</div>';
+      return;
+    }
+    activeIndicators.forEach(name => {
+      const div = document.createElement('div');
+      div.className = 'indicator-item';
+      div.innerHTML = `
+        <span class="name">${name}</span>
+        <i class="fas fa-trash remove" data-name="${name}"></i>
+      `;
+      list.appendChild(div);
+    });
+  }
 
-  stored.forEach(name => {
-    try {
-      // ---- some indicators live under TI.IndicatorName, others under TI[name] ----
-      const IndClass = TI[name] || TI[`${name}Indicator`];
-      if (typeof IndClass?.calculate !== 'function') {
-        console.warn(`Indicator ${name} not found in technicalindicators`);
-        return;
-      }
+  // Add indicator to chart
+  function addIndicator(name) {
+    if (activeIndicators.includes(name)) return;
+    activeIndicators.push(name);
+    saveActive();
+    renderActive();
+    applyIndicatorsToChart(); // re-apply all
+  }
 
-      // ---- build the input object – most indicators need only a subset ----
-      const input = {
-        open, high, low, close, volume,
-        period: 14               // default – you can make this configurable later
-      };
-
-      const result = IndClass.calculate(input);   // array of numbers (or objects)
-
-      // ---- turn the raw result into Lightweight-Charts format ----
-      let seriesData = [];
-
-      if (Array.isArray(result)) {
-        // Simple array → one value per candle
-        seriesData = candles.map((c, i) => ({
-          time: c.time,
-          value: result[i] !== undefined && result[i] !== null ? result[i] : null
-        })).filter(d => d.value !== null);
-      } else if (result && typeof result === 'object') {
-        // Some indicators return an object with multiple series (e.g. MACD → signal, histogram)
-        // For simplicity we plot only the first numeric array we find
-        const firstKey = Object.keys(result).find(k => Array.isArray(result[k]));
-        if (firstKey) {
-          seriesData = candles.map((c, i) => ({
-            time: c.time,
-            value: result[firstKey][i] !== undefined ? result[firstKey][i] : null
-          })).filter(d => d.value !== null);
-        }
-      }
-
-      if (seriesData.length === 0) return;   // nothing to plot
-
-      // ---- create a new line series (you can change colour per indicator) ----
-      const colors = ['#2962ff', '#ff9800', '#26a69a', '#ef5350', '#ab47bc'];
-      const indSeries = chart.addLineSeries({
-        title: name,
-        color: colors[stored.indexOf(name) % colors.length] || '#2962ff',
-        lineWidth: 2,
-        priceLineVisible: false,
-        lastValueVisible: false
-      });
-      indSeries.setData(seriesData);
-
-    } catch (err) {
-      console.warn(`Indicator ${name} failed:`, err);
+  // Remove indicator
+  list.addEventListener('click', e => {
+    if (e.target.classList.contains('remove')) {
+      const name = e.target.dataset.name;
+      activeIndicators = activeIndicators.filter(n => n !== name);
+      saveActive();
+      renderActive();
+      applyIndicatorsToChart();
     }
   });
+
+  // Toggle search
+  addBtn.addEventListener('click', () => {
+    const visible = searchContainer.style.display !== 'none';
+    searchContainer.style.display = visible ? 'none' : 'block';
+    if (!visible) searchInput.focus();
+  });
+
+  // Search & dropdown
+  searchInput.addEventListener('input', () => {
+    const term = searchInput.value.toLowerCase();
+    const matches = allIndicators
+      .filter(ind => ind.name.toLowerCase().includes(term) || ind.description.toLowerCase().includes(term))
+      .slice(0, 8);
+
+    dropdown.innerHTML = '';
+    if (matches.length === 0) {
+      dropdown.innerHTML = '<div class="dropdown-item" style="color:var(--text-light);font-style:italic;">No match</div>';
+    } else {
+      matches.forEach(ind => {
+        const item = document.createElement('div');
+        item.className = 'dropdown-item';
+        item.textContent = ind.name;
+        item.onclick = () => {
+          addIndicator(ind.name);
+          searchInput.value = '';
+          searchContainer.style.display = 'none';
+        };
+        dropdown.appendChild(item);
+      });
+    }
+  });
+
+  // Close dropdown on click outside
+  document.addEventListener('click', e => {
+    if (!addBtn.contains(e.target) && !searchContainer.contains(e.target)) {
+      searchContainer.style.display = 'none';
+    }
+  });
+
+  // Initial render
+  renderActive();
+
+  // ===== APPLY INDICATORS TO CHART (same as before, but safe) =====
+  window.applyIndicatorsToChart = function() {
+    if (typeof candles === 'undefined' || !Array.isArray(candles)) return;
+
+    // Clear old indicator series
+    chart._indicatorSeries?.forEach(s => chart.removeSeries(s));
+    chart._indicatorSeries = [];
+
+    const close = candles.map(c => c.close);
+    const high  = candles.map(c => c.high);
+    const low   = candles.map(c => c.low);
+    const open  = candles.map(c => c.open);
+    const volume= candles.map(c => c.volume);
+
+    activeIndicators.forEach((name, idx) => {
+      try {
+        const Ind = TI[name];
+        if (!Ind?.calculate) return;
+
+        const input = { open, high, low, close, volume, period: 14 };
+        const result = Ind.calculate(input);
+
+        let seriesData = [];
+        if (Array.isArray(result)) {
+          seriesData = candles.map((c, i) => ({
+            time: c.time,
+            value: result[i] ?? null
+          })).filter(d => d.value !== null);
+        } else if (result && typeof result === 'object') {
+          const key = Object.keys(result).find(k => Array.isArray(result[k]));
+          if (key) {
+            seriesData = candles.map((c, i) => ({
+              time: c.time,
+              value: result[key][i] ?? null
+            })).filter(d => d.value !== null);
+          }
+        }
+
+        if (seriesData.length === 0) return;
+
+        const colors = ['#2962ff', '#ff9800', '#26a69a', '#ef5350', '#ab47bc'];
+        const series = chart.addLineSeries({
+          title: name,
+          color: colors[idx % colors.length],
+          lineWidth: 2,
+          priceLineVisible: false
+        });
+        series.setData(seriesData);
+        chart._indicatorSeries.push(series);
+      } catch (err) {
+        console.warn(`Failed to plot ${name}:`, err);
+      }
+    });
+  };
+
+  // Apply on load
+  applyIndicatorsToChart();
 })();
 </script>
 </body>
