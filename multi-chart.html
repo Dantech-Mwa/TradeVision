@@ -7,7 +7,7 @@
   <link rel="icon" href="assets/icons/chart.svg" type="image/svg+xml">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.0.1/dist/lightweight-charts.standalone.production.js"></script>
   <style>
     :root{--bg:#141518;--bg-light:#1e222d;--text:#d1d4dc;--text-light:#9ea1b5;--accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#2d313e;--card:#1e222d;}
     [data-theme="light"]{--bg:#ffffff;--bg-light:#f8f9fa;--text:#2d3748;--text-light:#718096;--accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#e2e8f0;--card:#ffffff;}
@@ -25,9 +25,30 @@
     .layout-btn.active{background:var(--accent);color:white;border-color:var(--accent);}
     .chart-grid{display:grid;gap:4px;height:calc(100vh - 140px);}
     .chart-cell{background:var(--card);border:1px solid var(--border);position:relative;overflow:hidden;}
-    .chart-cell canvas{width:100%!important;height:100%!important;}
     .symbol-tag{position:absolute;top:8px;left:8px;background:var(--accent);color:white;padding:0.25rem 0.5rem;border-radius:4px;font-size:0.8rem;z-index:10;}
+    .price-display{position:absolute;top:8px;right:8px;background:rgba(30,34,45,0.9);padding:0.25rem 0.5rem;border-radius:4px;font-size:0.8rem;z-index:10;}
+    .price-up{color:var(--green);}
+    .price-down{color:var(--red);}
+    .chart-controls{position:absolute;top:35px;left:8px;display:flex;gap:4px;z-index:10;}
+    .chart-controls button{padding:0.2rem 0.5rem;border:1px solid var(--border);background:var(--bg-light);color:var(--text);border-radius:3px;font-size:0.7rem;cursor:pointer;}
+    .chart-controls button.active{background:var(--accent);color:white;}
     .footer{background:var(--bg-light);border-top:1px solid var(--border);padding:0.75rem 0;font-size:0.8rem;text-align:center;color:var(--text-light);}
+    .loading{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:var(--text-light);}
+    .error{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:var(--red);font-size:0.8rem;text-align:center;}
+    .status{position:absolute;bottom:8px;left:8px;font-size:0.7rem;color:var(--text-light);}
+    
+    /* FIXED: Ensure chart containers are properly sized and visible */
+    .chart-container {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+    .chart {
+      width: 100% !important;
+      height: 100% !important;
+    }
   </style>
 </head>
 <body data-theme="dark">
@@ -60,7 +81,7 @@
   </div>
 
   <div class="chart-grid container" id="chart-grid">
-    <div class="chart-cell"><div class="symbol-tag">AAPL</div><div class="chart" data-symbol="AAPL"></div></div>
+    <!-- Charts will be dynamically generated -->
   </div>
 
   <footer class="footer">
@@ -68,64 +89,324 @@
   </footer>
 
   <script>
+    // Theme Management
     const themeToggle = document.getElementById('theme-toggle');
     const body = document.body;
     const themeIcon = themeToggle.querySelector('i');
     themeToggle.addEventListener('click', () => {
       const isDark = body.getAttribute('data-theme') === 'dark';
       body.setAttribute('data-theme', isDark ? 'light' : 'dark');
-      themeIcon.classList.toggle('fa-moon'); themeIcon.classList.toggle('fa-sun');
+      themeIcon.classList.toggle('fa-moon');
+      themeIcon.classList.toggle('fa-sun');
       localStorage.setItem('theme', isDark ? 'light' : 'dark');
     });
     const savedTheme = localStorage.getItem('theme') || 'dark';
     body.setAttribute('data-theme', savedTheme);
     if (savedTheme === 'light') themeIcon.classList.replace('fa-moon', 'fa-sun');
 
+    // Multi-Chart System
     const grid = document.getElementById('chart-grid');
     const layoutBtns = document.querySelectorAll('.layout-btn');
     let charts = [];
 
-    function createChart(container, symbol) {
-      const chart = LightweightCharts.createChart(container, {
-        width: container.clientWidth,
-        height: container.clientHeight,
-        layout: { background: { color: 'transparent' }, textColor: 'var(--text-light)' },
-        grid: { vertLines: { color: 'var(--border)' }, horzLines: { color: 'var(--border)' } },
-      });
-      const series = chart.addCandlestickSeries({
-        upColor: 'var(--green)', downColor: 'var(--red)',
-        wickUpColor: 'var(--green)', wickDownColor: 'var(--red)',
-      });
-      const data = Array.from({length: 50}, (_, i) => {
-        const close = 180 + Math.sin(i/5)*10;
-        return { time: Math.floor(Date.now()/1000) - (50-i)*3600, open: close, high: close*1.01, low: close*0.99, close };
-      });
-      series.setData(data.slice(-50));
-      charts.push({ chart, series });
-      return chart;
-    }
+    // Binance symbol configuration
+    const symbolConfig = [
+      { symbol: 'BTCUSDT', name: 'Bitcoin', binanceSym: 'btcusdt' },
+      { symbol: 'ETHUSDT', name: 'Ethereum', binanceSym: 'ethusdt' },
+      { symbol: 'BNBUSDT', name: 'Binance Coin', binanceSym: 'bnbusdt' },
+      { symbol: 'SOLUSDT', name: 'Solana', binanceSym: 'solusdt' },
+      { symbol: 'XRPUSDT', name: 'Ripple', binanceSym: 'xrpusdt' },
+      { symbol: 'ADAUSDT', name: 'Cardano', binanceSym: 'adausdt' },
+      { symbol: 'AVAXUSDT', name: 'Avalanche', binanceSym: 'avaxusdt' },
+      { symbol: 'DOTUSDT', name: 'Polkadot', binanceSym: 'dotusdt' }
+    ];
 
-    function renderLayout(count) {
-      grid.innerHTML = '';
-      grid.style.gridTemplateColumns = `repeat(${count === 1 ? 1 : count === 2 ? 2 : count === 4 ? 2 : count === 6 ? 3 : 4}, 1fr)`;
-      grid.style.gridTemplateRows = `repeat(${count === 1 ? 1 : count === 2 ? 1 : count === 4 ? 2 : count === 6 ? 2 : 2}, 1fr)`;
-      const symbols = ['AAPL', 'MSFT', 'TSLA', 'NVDA', 'GOOGL', 'META', 'BTCUSD', 'ETHUSD'];
-      for (let i = 0; i < count; i++) {
-        const cell = document.createElement('div');
-        cell.className = 'chart-cell';
-        const tag = document.createElement('div');
-        tag.className = 'symbol-tag';
-        tag.textContent = symbols[i % symbols.length];
-        const chartDiv = document.createElement('div');
-        chartDiv.className = 'chart';
-        chartDiv.dataset.symbol = symbols[i % symbols.length];
-        cell.appendChild(tag);
-        cell.appendChild(chartDiv);
-        grid.appendChild(cell);
-        createChart(chartDiv, symbols[i % symbols.length]);
+    // Load History - EXACT same as chart.html
+    async function loadHistory(symbol, interval) {
+      try {
+        const limit = 100;
+        console.log(`Loading history for ${symbol} with interval ${interval}`);
+        const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`);
+        const raw = await res.json();
+        console.log(`Loaded ${raw.length} candles for ${symbol}`);
+        return raw.map(k => ({
+          time: k[0] / 1000,
+          open: parseFloat(k[1]),
+          high: parseFloat(k[2]),
+          low: parseFloat(k[3]),
+          close: parseFloat(k[4]),
+          volume: parseFloat(k[5])
+        }));
+      } catch (error) {
+        console.error(`Error loading history for ${symbol}:`, error);
+        throw error;
       }
     }
 
+    // Connect Kline - EXACT same as chart.html but with better error handling
+    function connectKline(symbol, interval, series, cell, priceData) {
+      const priceDisplay = cell.querySelector('.price-display');
+      const status = cell.querySelector('.status');
+      
+      console.log(`Connecting WebSocket for ${symbol}@${interval}`);
+      
+      const ws = new WebSocket(`wss://stream.binance.com:9443/ws/${symbol}@kline_${interval}`);
+      let lastPrice = 0;
+
+      ws.onopen = () => {
+        console.log(`✅ WebSocket connected for ${symbol}`);
+        status.textContent = `Live ${interval} connected`;
+      };
+
+      ws.onmessage = e => {
+        try {
+          const k = JSON.parse(e.data).k;
+          const bar = {
+            time: k.t / 1000,
+            open: parseFloat(k.o),
+            high: parseFloat(k.h),
+            low: parseFloat(k.l),
+            close: parseFloat(k.c),
+            volume: parseFloat(k.v)
+          };
+
+          // Update the series with the new candle
+          series.update(bar);
+
+          // Update price display
+          const currentPrice = parseFloat(k.c);
+          if (priceDisplay) {
+            priceDisplay.textContent = `$${currentPrice.toFixed(2)}`;
+            priceDisplay.className = `price-display ${currentPrice >= lastPrice ? 'price-up' : 'price-down'}`;
+          }
+          lastPrice = currentPrice;
+
+        } catch (error) {
+          console.error('Error processing WebSocket message:', error);
+        }
+      };
+
+      ws.onclose = (event) => {
+        console.log(`WebSocket closed for ${symbol}, reconnecting...`, event);
+        status.textContent = 'Reconnecting...';
+        setTimeout(() => connectKline(symbol, interval, series, cell, priceData), 3000);
+      };
+
+      ws.onerror = (error) => {
+        console.error(`WebSocket error for ${symbol}:`, error);
+        status.textContent = 'Connection error';
+      };
+
+      return ws;
+    }
+
+    // Create Chart - FIXED container sizing
+    async function createChart(container, symbolConfig, timeframe = '15m') {
+      const { symbol, binanceSym } = symbolConfig;
+      const cell = container.parentElement;
+      const loading = cell.querySelector('.loading');
+      const status = cell.querySelector('.status');
+      
+      try {
+        status.textContent = 'Loading chart data...';
+
+        // FIXED: Ensure container has proper dimensions
+        const rect = container.getBoundingClientRect();
+        console.log(`Creating chart for ${symbol} with size: ${rect.width}x${rect.height}`);
+
+        const chart = LightweightCharts.createChart(container, {
+          width: rect.width,
+          height: rect.height,
+          layout: { 
+            background: { color: 'transparent' }, 
+            textColor: 'var(--text)' 
+          },
+          grid: { 
+            vertLines: { color: 'var(--border)', visible: true }, 
+            horzLines: { color: 'var(--border)', visible: true } 
+          },
+          timeScale: { 
+            borderColor: 'var(--border)',
+            timeVisible: true,
+            secondsVisible: false
+          },
+          crosshair: {
+            mode: LightweightCharts.CrosshairMode.Normal,
+          }
+        });
+
+        const series = chart.addCandlestickSeries({
+          upColor: '#26a69a', 
+          downColor: '#ef5350',
+          wickUpColor: '#26a69a', 
+          wickDownColor: '#ef5350',
+          borderVisible: false
+        });
+
+        // Load historical data
+        const priceData = await loadHistory(symbol, timeframe);
+        console.log(`Setting ${priceData.length} data points for ${symbol}`);
+        series.setData(priceData);
+
+        // Set initial price
+        const priceDisplay = cell.querySelector('.price-display');
+        if (priceDisplay && priceData.length > 0) {
+          const lastClose = priceData[priceData.length - 1].close;
+          priceDisplay.textContent = `$${lastClose.toFixed(2)}`;
+        }
+
+        loading.style.display = 'none';
+        status.textContent = 'Connecting live data...';
+
+        // Connect WebSocket
+        const ws = connectKline(symbol, timeframe, series, cell, priceData);
+
+        // Add timeframe controls
+        const chartControls = cell.querySelector('.chart-controls');
+        if (chartControls) {
+          chartControls.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('click', async () => {
+              chartControls.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+              btn.classList.add('active');
+              await changeTimeframe({ chart, series, symbol, ws, cell }, btn.dataset.timeframe);
+            });
+          });
+        }
+
+        return { 
+          chart, 
+          series, 
+          symbol, 
+          ws,
+          container,
+          cell,
+          timeframe: timeframe,
+          priceData: priceData
+        };
+
+      } catch (error) {
+        console.error(`❌ Failed to create chart for ${symbol}:`, error);
+        loading.style.display = 'none';
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error';
+        errorDiv.innerHTML = `Chart Error<br><small>${error.message}</small>`;
+        cell.appendChild(errorDiv);
+        status.textContent = 'Failed to load chart';
+        return null;
+      }
+    }
+
+    // Change timeframe
+    async function changeTimeframe(chartObj, timeframe) {
+      const status = chartObj.cell.querySelector('.status');
+      const priceDisplay = chartObj.cell.querySelector('.price-display');
+      
+      status.textContent = `Loading ${timeframe} data...`;
+      
+      if (chartObj.ws) {
+        chartObj.ws.close();
+      }
+
+      try {
+        const newData = await loadHistory(chartObj.symbol, timeframe);
+        chartObj.series.setData(newData);
+
+        if (priceDisplay && newData.length > 0) {
+          const lastClose = newData[newData.length - 1].close;
+          priceDisplay.textContent = `$${lastClose.toFixed(2)}`;
+        }
+
+        chartObj.ws = connectKline(chartObj.symbol, timeframe, chartObj.series, chartObj.cell, newData);
+        chartObj.timeframe = timeframe;
+        chartObj.priceData = newData;
+        
+        status.textContent = `Live ${timeframe} connected`;
+
+      } catch (error) {
+        console.error(`Failed to change timeframe for ${chartObj.symbol}:`, error);
+        status.textContent = `Failed to load ${timeframe} data`;
+      }
+    }
+
+    // Render layout with multiple charts
+    async function renderLayout(count) {
+      console.log(`🎯 Rendering ${count} charts...`);
+      
+      // Close existing WebSockets
+      charts.forEach(chartObj => {
+        if (chartObj && chartObj.ws) {
+          chartObj.ws.close();
+        }
+      });
+      
+      charts = [];
+      grid.innerHTML = '';
+
+      // Set grid layout
+      const columns = count === 1 ? 1 : count === 2 ? 2 : count === 4 ? 2 : count === 6 ? 3 : 4;
+      const rows = count === 1 ? 1 : count === 2 ? 1 : count === 4 ? 2 : count === 6 ? 2 : 2;
+      
+      grid.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
+      grid.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+
+      // Create chart cells
+      for (let i = 0; i < count; i++) {
+        const symbolConfigItem = symbolConfig[i % symbolConfig.length];
+        
+        const cell = document.createElement('div');
+        cell.className = 'chart-cell';
+        
+        const symbolTag = document.createElement('div');
+        symbolTag.className = 'symbol-tag';
+        symbolTag.textContent = symbolConfigItem.symbol;
+        
+        const priceDisplay = document.createElement('div');
+        priceDisplay.className = 'price-display';
+        priceDisplay.textContent = '--';
+        
+        const chartControls = document.createElement('div');
+        chartControls.className = 'chart-controls';
+        chartControls.innerHTML = `
+          <button data-timeframe="1m" class="active">1M</button>
+          <button data-timeframe="5m">5M</button>
+          <button data-timeframe="15m">15M</button>
+          <button data-timeframe="1h">1H</button>
+          <button data-timeframe="4h">4H</button>
+        `;
+        
+        const loading = document.createElement('div');
+        loading.className = 'loading';
+        loading.textContent = 'Loading Live Data...';
+        
+        // FIXED: Use proper chart container structure
+        const chartContainer = document.createElement('div');
+        chartContainer.className = 'chart-container';
+        
+        const chartDiv = document.createElement('div');
+        chartDiv.className = 'chart';
+        
+        const status = document.createElement('div');
+        status.className = 'status';
+        status.textContent = 'Initializing...';
+        
+        chartContainer.appendChild(chartDiv);
+        cell.appendChild(symbolTag);
+        cell.appendChild(priceDisplay);
+        cell.appendChild(chartControls);
+        cell.appendChild(loading);
+        cell.appendChild(chartContainer);
+        cell.appendChild(status);
+        grid.appendChild(cell);
+
+        // Create chart
+        const chartObj = await createChart(chartDiv, symbolConfigItem, '15m');
+        if (chartObj) {
+          charts.push(chartObj);
+        }
+      }
+    }
+
+    // Layout controls
     layoutBtns.forEach(btn => {
       btn.addEventListener('click', () => {
         layoutBtns.forEach(b => b.classList.remove('active'));
@@ -135,11 +416,30 @@
       });
     });
 
+    // Handle window resize
     window.addEventListener('resize', () => {
-      charts.forEach(c => c.chart.resize(c.container.clientWidth, c.container.clientHeight));
+      charts.forEach(chartObj => {
+        if (chartObj && chartObj.chart && chartObj.container) {
+          const rect = chartObj.container.getBoundingClientRect();
+          chartObj.chart.applyOptions({
+            width: rect.width,
+            height: rect.height
+          });
+        }
+      });
     });
 
-    renderLayout(1);
+    // Initialize
+    if (typeof LightweightCharts !== 'undefined') {
+      renderLayout(1);
+    } else {
+      const check = setInterval(() => {
+        if (typeof LightweightCharts !== 'undefined') {
+          clearInterval(check);
+          renderLayout(1);
+        }
+      }, 50);
+    }
   </script>
 </body>
 </html>
