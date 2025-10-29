@@ -70,6 +70,8 @@
     </div>
   </header>
 
+  <div id="drawing-tools" style="margin: 1rem 0; display: flex; gap: 0.5rem;"></div>
+  
   <div class="chart-layout">
     <!-- Left Sidebar: Drawing Tools -->
     <div class="sidebar-left" id="drawing-tools">
@@ -272,7 +274,56 @@
     const emaResult = indicators.ema.getResult();
     emaSeries.update({ time: bar.time, value: emaResult[emaResult.length - 1] });
   }
+// === DRAWING TOOLS ===
+let isDrawing = false;
+let currentTool = 'line';
+let startPoint = null;
+let drawings = [];
 
+const canvas = document.getElementById('drawing-canvas');
+const ctx = canvas.getContext('2d');
+
+function resizeCanvas() {
+  canvas.width = chart.getContainer().clientWidth;
+  canvas.height = chart.getContainer().clientHeight;
+  redraw();
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+chart.subscribeClick((param) => {
+  if (currentTool === 'line' && !isDrawing) {
+    startPoint = { x: param.point.x, y: param.point.y, time: param.time };
+    isDrawing = true;
+  } else if (isDrawing) {
+    const endPoint = { x: param.point.x, y: param.point.y, time: param.time };
+    drawings.push({ type: 'line', start: startPoint, end: endPoint });
+    isDrawing = false;
+    redraw();
+  }
+});
+
+function redraw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawings.forEach(d => {
+    if (d.type === 'line') {
+      ctx.beginPath();
+      ctx.moveTo(d.start.x, d.start.y);
+      ctx.lineTo(d.end.x, d.end.y);
+      ctx.strokeStyle = '#2962ff';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+  });
+}
+
+// Toolbar (add to HTML)
+document.getElementById('drawing-tools').innerHTML = `
+  <button onclick="currentTool='line'">Line</button>
+  <button onclick="currentTool='fib'">Fib</button>
+  <button onclick="currentTool='text'">Text</button>
+  <button onclick="drawings=[]">Clear</button>
+`;
   // Resize
   window.addEventListener('resize', () => {
     if (chart) chart.resize(document.getElementById('chart').clientWidth, 500);
