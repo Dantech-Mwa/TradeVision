@@ -7,12 +7,10 @@
   <link rel="icon" href="assets/icons/chart.svg" type="image/svg+xml">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <link id="theme-style" rel="stylesheet" href="assets/css/main.css">
-  <link rel="stylesheet" href="assets/css/dark-theme.css">
   <style>
     :root{--bg:#141518;--bg-light:#1e222d;--text:#d1d4dc;--text-light:#9ea1b5;--accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#2d313e;--card:#1e222d;}
     [data-theme="light"]{--bg:#ffffff;--bg-light:#f8f9fa;--text:#2d3748;--text-light:#718096;--accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#e2e8f0;--card:#ffffff;}
-    body{margin:0;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);}
+    body{margin:0;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;}
     a{color:var(--accent);text-decoration:none;}
     .container{max-width:1200px;margin:0 auto;padding:2rem 1rem;}
     .header{background:var(--bg-light);border-bottom:1px solid var(--border);padding:0.75rem 0;position:sticky;top:0;z-index:100;}
@@ -21,59 +19,90 @@
     .logo i{font-size:1.5rem;}
     .nav-links a{margin:0 0.75rem;font-weight:500;}
     .icon-btn{background:none;border:none;color:var(--text-light);font-size:1.2rem;cursor:pointer;padding:0.5rem;}
-    .watchlist-controls{margin-bottom:1rem;display:flex;gap:0.5rem;}
-    .watchlist-controls input{padding:0.5rem 1rem;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text);flex:1;}
-    .watchlist-controls button{padding:0.5rem 1rem;background:var(--accent);color:white;border:none;border-radius:4px;cursor:pointer;}
-    table{width:100%;border-collapse:collapse;margin-top:1rem;}
-    th,td{padding:0.75rem 1rem;text-align:left;border-bottom:1px solid var(--border);}
-    th{background:var(--bg-light);font-weight:600;}
-    .symbol{font-weight:600;}
-    .price{font-weight:600;}
-    .change{color:var(--green);}
+
+    /* Search Bar */
+    .search-container{position:relative;margin-bottom:1.5rem;}
+    #symbol-search{padding:0.75rem 1rem;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--text);width:100%;font-size:1rem;}
+    #search-dropdown{position:absolute;top:100%;left:0;right:0;background:var(--card);border:1px solid var(--border);border-radius:0 0 8px 8px;max-height:300px;overflow-y:auto;z-index:10;display:none;}
+    .search-item{padding:0.75rem 1rem;cursor:pointer;border-bottom:1px solid var(--border);transition:0.2s;}
+    .search-item:hover{background:var(--bg-light);}
+    .search-item:last-child{border-bottom:none;}
+
+    /* Table */
+    table{width:100%;border-collapse:collapse;background:var(--card);border-radius:12px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.2);}
+    th{background:var(--bg-light);padding:1rem;text-align:left;font-weight:600;font-size:0.95rem;}
+    td{padding:1rem;font-size:0.95rem;}
+    tr{transition:0.2s;}
+    tr:hover{background:var(--bg-light);}
+    .symbol{font-weight:600;color:var(--accent);}
+    .price{font-weight:600;font-size:1.1rem;}
+    .change{font-weight:600;}
+    .change.positive{color:var(--green);}
     .change.negative{color:var(--red);}
-    .remove-btn{color:var(--red);cursor:pointer;}
+    .volume{color:var(--text-light);font-size:0.9rem;}
+    .remove-btn{background:var(--red);color:white;border:none;padding:0.5rem 0.8rem;border-radius:6px;cursor:pointer;font-size:0.8rem;transition:0.2s;}
+    .remove-btn:hover{background:#d32f2f;}
+
+    /* Status */
+    .status{display:flex;align-items:center;gap:0.5rem;margin-bottom:1rem;}
+    .status-indicator{width:10px;height:10px;border-radius:50%;background:#ff9800;animation:pulse 1.5s infinite;}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+    .status.connected .status-indicator{background:var(--green);animation:none;}
+
     .footer{background:var(--bg-light);border-top:1px solid var(--border);padding:1rem 0;font-size:0.8rem;text-align:center;color:var(--text-light);}
+
+    @media(max-width:768px){
+      .search-container{margin-bottom:1rem;}
+      table{font-size:0.9rem;}
+      th,td{padding:0.75rem;}
+    }
   </style>
 </head>
+
 <body data-theme="dark">
   <header class="header">
     <div class="container flex-between">
-      <div class="logo"><a href="index.html" class="flex-center"><i class="fas fa-chart-line"></i><span>TradeVision</span></a></div>
+      <div class="logo"><a href="index.html" class="flex-center"><i class="fas fa-star"></i><span>Watchlist</span></a></div>
       <nav class="nav-links">
         <a href="chart.html">Chart</a>
         <a href="watchlist.html">Watchlist</a>
         <a href="screener.html">Screener</a>
         <a href="ideas.html">Ideas</a>
         <a href="alerts.html">Alerts</a>
-        <a href="trading.html">Trade</a>
-        <a href="backtest.html">Backtest</a>
       </nav>
       <div class="header-actions">
         <button id="theme-toggle" class="icon-btn"><i class="fas fa-moon"></i></button>
-        <a href="profile.html" class="icon-btn"><i class="fas fa-user"></i></a>
-        <a href="settings.html" class="icon-btn"><i class="fas fa-cog"></i></a>
       </div>
     </div>
   </header>
 
   <div class="container">
     <h1>My Watchlist</h1>
-    <div class="watchlist-controls">
-      <input type="text" id="add-symbol" placeholder="Enter symbol (e.g. AAPL)">
-      <button id="add-btn">Add</button>
+
+    <!-- Search -->
+    <div class="search-container">
+      <input type="text" id="symbol-search" placeholder="Search & Add Symbol (e.g. BTC, SOL, AAPL...)">
+      <div id="search-dropdown"></div>
     </div>
 
+    <!-- Status -->
+    <div class="status" id="connection-status">
+      <div class="status-indicator"></div>
+      <span>Connecting to Binance...</span>
+    </div>
+
+    <!-- Table -->
     <table id="watchlist-table">
       <thead>
         <tr>
           <th>Symbol</th>
           <th>Price</th>
-          <th>Change</th>
-          <th>Volume</th>
+          <th>24h Change</th>
+          <th>24h Volume</th>
           <th>Action</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody id="watchlist-body">
         <!-- Filled by JS -->
       </tbody>
     </table>
@@ -84,74 +113,163 @@
   </footer>
 
   <script>
-  const themeToggle = document.getElementById('theme-toggle');
-  const body = document.body;
-  const themeIcon = themeToggle.querySelector('i');
-  themeToggle.addEventListener('click', () => {
-    const isDark = body.getAttribute('data-theme') === 'dark';
-    body.setAttribute('data-theme', isDark ? 'light' : 'dark');
-    themeIcon.classList.toggle('fa-moon'); themeIcon.classList.toggle('fa-sun');
-    localStorage.setItem('theme', isDark ? 'light' : 'dark');
-  });
-  const savedTheme = localStorage.getItem('theme') || 'dark';
-  body.setAttribute('data-theme', savedTheme);
-  if (savedTheme === 'light') themeIcon.classList.replace('fa-moon', 'fa-sun');
-
-  // Load watchlist
-  let watchlist = JSON.parse(localStorage.getItem('watchlist')) || ['BTCUSD', 'AAPL', 'TSLA'];
-  const binanceMap = { 'BTCUSD': 'btcusdt', 'AAPL': 'aaplusdt', 'TSLA': 'tslausdt' };
-  let ws;
-
-  function render() {
-    const tbody = document.querySelector('#watchlist-table tbody');
-    tbody.innerHTML = '';
-    watchlist.forEach(sym => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td><a href="chart.html?symbol=${sym}">${sym}</a></td>
-        <td class="price">—</td>
-        <td class="change">—</td>
-        <td><button class="remove-btn" data-sym="${sym}">Remove</button></td>
-      `;
-      tbody.appendChild(tr);
+    // Theme Toggle
+    const themeToggle = document.getElementById('theme-toggle');
+    const body = document.body;
+    const themeIcon = themeToggle.querySelector('i');
+    themeToggle.addEventListener('click', () => {
+      const isDark = body.getAttribute('data-theme') === 'dark';
+      body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+      themeIcon.classList.toggle('fa-moon'); themeIcon.classList.toggle('fa-sun');
+      localStorage.setItem('theme', isDark ? 'light' : 'dark');
     });
-  }
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    body.setAttribute('data-theme', savedTheme);
+    if (savedTheme === 'light') themeIcon.classList.replace('fa-moon', 'fa-sun');
 
-  function connectWS() {
-    const streams = watchlist.map(s => `${binanceMap[s] || s.toLowerCase() + 'usdt'}@ticker`).join('/');
-    ws = new WebSocket(`wss://stream.binance.com:9443/stream?streams=${streams}`);
+    // Binance API
+    const BINANCE_INFO = 'https://api.binance.com/api/v3/exchangeInfo';
+    const BINANCE_WS = 'wss://stream.binance.com:9443/stream?streams=';
 
-    ws.onmessage = (e) => {
-      const msg = JSON.parse(e.data);
-      if (!msg.data) return;
-      const t = msg.data;
-      const sym = Object.keys(binanceMap).find(k => binanceMap[k] === t.s.toLowerCase()) || t.s.replace('USDT', 'USD').toUpperCase();
+    // Global
+    let watchlist = JSON.parse(localStorage.getItem('watchlist')) || [
+      'BTCUSD', 'ETHUSD', 'BNBUSD', 'SOLUSD', 'ADAUSD',
+      'XRPUSD', 'DOTUSD', 'DOGEUSD', 'AAPL', 'TSLA'
+    ];
+    localStorage.setItem('watchlist', JSON.stringify(watchlist)); // Ensure saved
+    let allSymbols = [];
+    let liveData = {};
+    let ws = null;
 
-      const row = document.querySelector(`tr td a[href*="symbol=${sym}"]`)?.parentElement?.parentElement;
-      if (row) {
-        row.querySelector('.price').textContent = parseFloat(t.c).toFixed(2);
-        const change = parseFloat(t.P);
-        const chgEl = row.querySelector('.change');
-        chgEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
-        chgEl.style.color = change >= 0 ? 'var(--green)' : 'var(--red)';
+    // Fetch All Symbols
+    async function loadSymbols() {
+      try {
+        const res = await fetch(BINANCE_INFO);
+        const data = await res.json();
+        allSymbols = data.symbols
+          .filter(s => s.status === 'TRADING' && s.quoteAsset === 'USDT')
+          .map(s => ({ symbol: s.symbol, base: s.baseAsset }))
+          .sort((a, b) => a.base.localeCompare(b.base));
+        setupSearch();
+      } catch (err) {
+        console.error('Failed to load symbols:', err);
       }
+    }
+
+    // Search Dropdown
+    function setupSearch() {
+      const input = document.getElementById('symbol-search');
+      const dropdown = document.getElementById('search-dropdown');
+
+      input.addEventListener('input', () => {
+        const term = input.value.trim().toUpperCase();
+        if (term.length < 2) {
+          dropdown.style.display = 'none';
+          return;
+        }
+        const matches = allSymbols
+          .filter(s => s.symbol.includes(term) || s.base.includes(term))
+          .slice(0, 10);
+        dropdown.innerHTML = matches.map(s => `
+          <div class="search-item" onclick="addToWatchlist('${s.symbol}')">
+            <strong>${s.symbol}</strong> <small>${s.base}</small>
+          </div>
+        `).join('');
+        dropdown.style.display = matches.length ? 'block' : 'none';
+      });
+
+      // Close on click outside
+      document.addEventListener('click', e => {
+        if (!input.contains(e.target) && !dropdown.contains(e.target)) {
+          dropdown.style.display = 'none';
+        }
+      });
+    }
+
+    // Add to Watchlist
+    window.addToWatchlist = function(symbol) {
+      const normalized = symbol.replace('USDT', 'USD');
+      if (!watchlist.includes(normalized)) {
+        watchlist.push(normalized);
+        localStorage.setItem('watchlist', JSON.stringify(watchlist));
+        renderTable();
+        restartWebSocket();
+      }
+      document.getElementById('symbol-search').value = '';
+      document.getElementById('search-dropdown').style.display = 'none';
     };
 
-    ws.onclose = () => setTimeout(connectWS, 3000);
-  }
-
-  document.getElementById('watchlist-table').addEventListener('click', e => {
-    if (e.target.classList.contains('remove-btn')) {
-      watchlist = watchlist.filter(s => s !== e.target.dataset.sym);
+    // Remove from Watchlist
+    function removeFromWatchlist(symbol) {
+      watchlist = watchlist.filter(s => s !== symbol);
       localStorage.setItem('watchlist', JSON.stringify(watchlist));
-      render();
-      ws.close();
-      connectWS();
+      renderTable();
+      restartWebSocket();
     }
-  });
 
-  render();
-  connectWS();
-</script>
+    // Render Table
+    function renderTable() {
+      const tbody = document.getElementById('watchlist-body');
+      if (watchlist.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--text-light);">Your watchlist is empty. Search and add symbols!</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = watchlist.map(sym => {
+        const live = liveData[sym] || {};
+        const changeClass = live.change >= 0 ? 'change positive' : 'change negative';
+        const changeText = live.change !== undefined ? (live.change >= 0 ? '+' : '') + live.change.toFixed(2) + '%' : '--';
+        const volumeText = live.volume ? (live.volume / 1e6).toFixed(1) + 'M' : '--';
+        return `
+          <tr>
+            <td><a href="chart.html?symbol=${sym}" class="symbol">${sym}</a></td>
+            <td class="price">${live.price ? '$' + live.price.toFixed(4) : '--'}</td>
+            <td class="${changeClass}">${changeText}</td>
+            <td class="volume">${volumeText}</td>
+            <td><button class="remove-btn" onclick="removeFromWatchlist('${sym}')"><i class="fas fa-trash"></i> Remove</button></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // WebSocket
+    function restartWebSocket() {
+      if (ws) ws.close();
+      const streams = watchlist
+        .map(s => {
+          const base = s.replace('USD', '');
+          return `${base.toLowerCase()}usdt@ticker`;
+        })
+        .join('/');
+      if (!streams) return;
+
+      ws = new WebSocket(BINANCE_WS + streams);
+      ws.onopen = () => {
+        document.getElementById('connection-status').className = 'status connected';
+        document.getElementById('connection-status').innerHTML = '<div class="status-indicator"></div><span>Live • ' + watchlist.length + ' assets</span>';
+      };
+      ws.onmessage = (e) => {
+        const msg = JSON.parse(e.data);
+        if (!msg.data) return;
+        const t = msg.data;
+        const base = t.s.replace('USDT', '');
+        const sym = base + 'USD';
+        if (watchlist.includes(sym)) {
+          liveData[sym] = {
+            price: parseFloat(t.c),
+            change: parseFloat(t.P),
+            volume: parseFloat(t.q)
+          };
+          renderTable();
+        }
+      };
+      ws.onclose = () => setTimeout(restartWebSocket, 3000);
+    }
+
+    // Init
+    loadSymbols();
+    renderTable();
+    restartWebSocket();
+  </script>
 </body>
 </html>
