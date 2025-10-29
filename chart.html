@@ -785,7 +785,12 @@ document.getElementById('search-go').addEventListener('click', () => {
 document.getElementById('symbol-search').addEventListener('keypress', e => {
   if (e.key === 'Enter') document.getElementById('search-go').click();
 });
-    
+    // THEME TOGGLE
+    document.getElementById('theme-toggle').addEventListener('click', () => {
+      const isDark = document.body.getAttribute('data-theme') === 'dark';
+      document.body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+      localStorage.setItem('theme', isDark ? 'light' : 'dark');
+    });
     // === START ===
     if (typeof LightweightCharts !== 'undefined') {
       initChart();
