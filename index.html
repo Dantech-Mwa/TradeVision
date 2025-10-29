@@ -14,7 +14,7 @@
   <!-- Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-  <!-- Lightweight Charts – stable CDN -->
+  <!-- Lightweight Charts (stable) -->
   <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4/dist/lightweight-charts.standalone.production.js"></script>
 
   <style>
@@ -168,7 +168,7 @@
         <div><h4>Pages</h4><a href="about.html">About</a><a href="help.html">Help</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a></div>
         <div><h4>Community</h4><a href="https://github.com/dantech-mwa/TradeVision">GitHub</a><a href="ideas.html">Ideas</a></div>
       </div>
-      <div class="footer-bottom"><p>&copy; 2025 TradeVision. MIT Licensed.</p></div>
+      <div class="footer-bottom"><p>© 2025 TradeVision. MIT Licensed.</p></div>
     </div>
   </footer>
 
@@ -217,7 +217,18 @@
     };
     const charts = {};   // {sym: {chart, series, data[], lastBar}}
 
-    // ---- create all charts (runs after LW Charts is loaded) ----
+    // ---- Wait for LightweightCharts ----
+    function waitForLW() {
+      if (typeof LightweightCharts !== 'undefined') {
+        initCharts();
+        connectWS();
+        resizeAll();
+      } else {
+        setTimeout(waitForLW, 50);
+      }
+    }
+
+    // ---- create all charts (HEX colors only!) ----
     function initCharts() {
       symbols.forEach(sym => {
         const container = document.getElementById(`chart-${sym.toLowerCase()}`);
@@ -226,17 +237,23 @@
         const chart = LightweightCharts.createChart(container, {
           width: container.clientWidth,
           height: 120,
-          layout: { background: { color: 'transparent' }, textColor: 'var(--text-light)' },
-          grid: { vertLines: { color: 'var(--border)' }, horzLines: { color: 'var(--border)' } },
+          layout: { 
+            background: { color: '#141518' },   // HEX
+            textColor: '#9ea1b5'               // HEX
+          },
+          grid: { 
+            vertLines: { color: '#2d313e' },   // HEX
+            horzLines: { color: '#2d313e' }    // HEX
+          },
           timeScale: { timeVisible: true, secondsVisible: false }
         });
 
         const series = chart.addCandlestickSeries({
-          upColor: 'var(--green)', downColor: 'var(--red)',
-          wickUpColor: 'var(--green)', wickDownColor: 'var(--red)'
+          upColor: '#26a69a', downColor: '#ef5350',
+          wickUpColor: '#26a69a', wickDownColor: '#ef5350'
         });
 
-        // seed with a single empty bar so the chart has a scale
+        // seed with a single empty bar
         const now = Math.floor(Date.now() / 1000);
         const seed = { time: now - 3600, open: 0, high: 0, low: 0, close: 0 };
         series.setData([seed]);
@@ -268,7 +285,7 @@
         card.querySelector('.price').textContent = price.toFixed(2);
         const chgEl = card.querySelector('.change');
         chgEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
-        chgEl.style.color = change >= 0 ? 'var(--green)' : 'var(--red)';
+        chgEl.style.color = change >= 0 ? '#26a69a' : '#ef5350';
 
         // ----- update candlestick (1-minute aggregation) -----
         const nowMinute = Math.floor(Date.now() / 60000) * 60;
@@ -301,17 +318,7 @@
     }
     window.addEventListener('resize', resizeAll);
 
-    // ---- Start everything ------------------------------------------------
-    // Wait for LightweightCharts to be defined
-    function waitForLW() {
-      if (typeof LightweightCharts !== 'undefined') {
-        initCharts();
-        connectWS();
-        resizeAll();
-      } else {
-        setTimeout(waitForLW, 50);
-      }
-    }
+    // ---- START ------------------------------------------------
     waitForLW();
   </script>
 </body>
