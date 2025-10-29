@@ -8,11 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4/dist/lightweight-charts.standalone.production.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/technicalindicators@3"></script>
   <style>
-      /* ──────────────────────────────────────────────
-       ALL YOUR ORIGINAL CSS (unchanged)
-       ────────────────────────────────────────────── */
     :root{--bg:#141518;--bg-light:#1e222d;--text:#d1d4dc;--text-light:#9ea1b5;--accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#2d313e;--card:#1e222d;}
     [data-theme="light"]{--bg:#ffffff;--bg-light:#f8f9fa;--text:#2d3748;--text-light:#718096;--accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#e2e8f0;--card:#ffffff;}
     *,*::before,*::after{box-sizing:border-box;}
@@ -33,7 +29,7 @@
     .sidebar-left i{font-size:1.3rem;display:block;margin-bottom:.3rem;}
 
     .main-chart{display:flex;flex-direction:column;overflow:hidden;}
-    #chart-container{flex:1;position:relative;width:100%;height:100%;}
+    #chart-container{flex:1;position:relative;width:100%;height:100%;pointer-events:none;}
     #chart{width:100%;height:100%;}
     #volume-container{height:80px;position:relative;background:var(--bg-light);border-top:1px solid var(--border);}
     #volume{width:100%;height:100%;}
@@ -65,33 +61,13 @@
     .footer{background:var(--bg-light);border-top:1px solid var(--border);padding:.75rem 0;font-size:.8rem;text-align:center;color:var(--text-light);}
     @media(max-width:992px){.chart-layout{grid-template-columns:1fr;}.sidebar-left,.sidebar-right{display:none;}}
 
-    #drawing-canvas{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10;}
-    .price-update{animation:pricePulse .6s ease-in-out;}
-    @keyframes pricePulse{0%{transform:scale(1)}50%{transform:scale(1.05)}100%{transform:scale(1)}}
-    .flash-green{animation:flashGreen .8s ease-in-out;}
-    .flash-red{animation:flashRed .8s ease-in-out;}
-    @keyframes flashGreen{0%{background-color:transparent}30%{background-color:rgba(38,166,154,.3)}100%{background-color:transparent}}
-    @keyframes flashRed{0%{background-color:transparent}30%{background-color:rgba(239,83,80,.3)}100%{background-color:transparent}}
+    #drawing-canvas{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:auto;z-index:10;}
 
-    /* ──────────────────────────────────────────────
-       CRITICAL FIXES (ADDED AT END – DO NOT REMOVE)
-       ────────────────────────────────────────────── */
-    #chart-container {
-      pointer-events: none; /* Let clicks pass through to buttons */
-    }
-    #drawing-canvas {
-      pointer-events: auto; /* Only canvas gets drawing events */
-    }
-    .sidebar-right,
-    .timeframe-bar,
-    .chart-type-bar,
-    .indicator-panel,
-    .add-btn,
-    .search-container,
-    .dropdown-list {
-      position: relative;
-      z-index: 30; /* Above canvas */
-    }
+    /* FIXED: Make buttons clickable */
+    #chart-container{pointer-events:none;}
+    .sidebar-right{position:relative;z-index:30;}
+    .timeframe-bar,.chart-type-bar,.indicator-panel{position:relative;z-index:31;}
+    .add-btn{position:relative;z-index:32;}
   </style>
 </head>
 
