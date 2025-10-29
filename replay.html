@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Replay - TradeVision</title>
+  <link rel="icon" href="assets/icons/chart.svg" type="image/svg+xml">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+  <style>
+    :root{--bg:#141518;--bg-light:#1e222d;--text:#d1d4dc;--text-light:#9ea1b5;--accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#2d313e;--card:#1e222d;}
+    [data-theme="light"]{--bg:#ffffff;--bg-light:#f8f9fa;--text:#2d3748;--text-light:#718096;--accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#e2e8f0;--card:#ffffff;}
+    body{margin:0;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);}
+    a{color:var(--accent);text-decoration:none;}
+    .container{max-width:1200px;margin:0 auto;padding:0;}
+    .header{background:var(--bg-light);border-bottom:1px solid var(--border);padding:0.75rem 0;position:sticky;top:0;z-index:100;}
+    .flex-between{display:flex;justify-content:space-between;align-items:center;}
+    .logo{font-weight:700;font-size:1.4rem;color:var(--accent);}
+    .logo i{font-size:1.5rem;}
+    .nav-links a{margin:0 0.75rem;font-weight:500;}
+    .icon-btn{background:none;border:none;color:var(--text-light);font-size:1.2rem;cursor:pointer;padding:0.5rem;}
+    .replay-controls{background:var(--bg-light);padding:1rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;}
+    .control-btn{padding:0.5rem 1rem;background:var(--accent);color:white;border:none;border-radius:4px;cursor:pointer;}
+    .speed-btn{padding:0.4rem 0.8rem;background:var(--card);border:1px solid var(--border);border-radius:4px;cursor:pointer;}
+    .speed-btn.active{background:var(--accent);color:white;}
+    #chart-container{height:calc(100vh - 160px);background:var(--card);border:1px solid var(--border);}
+    .footer{background:var(--bg-light);border-top:1px solid var(--border);padding:0.75rem 0;font-size:0.8rem;text-align:center;color:var(--text-light);}
+  </style>
+</head>
+<body data-theme="dark">
+  <header class="header">
+    <div class="container flex-between">
+      <div class="logo"><a href="index.html" class="flex-center"><i class="fas fa-chart-line"></i><span>TradeVision</span></a></div>
+      <nav class="nav-links">
+        <a href="chart.html">Chart</a>
+        <a href="watchlist.html">Watchlist</a>
+        <a href="screener.html">Screener</a>
+        <a href="ideas.html">Ideas</a>
+        <a href="alerts.html">Alerts</a>
+        <a href="trading.html">Trade</a>
+        <a href="backtest.html">Backtest</a>
+      </nav>
+      <div class="header-actions">
+        <button id="theme-toggle" class="icon-btn"><i class="fas fa-moon"></i></button>
+        <a href="profile.html" class="icon-btn"><i class="fas fa-user"></i></a>
+        <a href="settings.html" class="icon-btn"><i class="fas fa-cog"></i></a>
+      </div>
+    </div>
+  </header>
+
+  <div class="replay-controls container">
+    <button class="control-btn" id="play-pause"><i class="fas fa-play"></i> Play</button>
+    <button class="control-btn" id="reset"><i class="fas fa-redo"></i> Reset</button>
+    <div>
+      <span>Speed:</span>
+      <button class="speed-btn active" data-speed="0.5">0.5x</button>
+      <button class="speed-btn" data-speed="1">1x</button>
+      <button class="speed-btn" data-speed="2">2x</button>
+    </div>
+    <div style="flex:1;"></div>
+    <span id="current-date">--</span>
+  </div>
+
+  <div id="chart-container" class="container"></div>
+
+  <footer class="footer">
+    <div class="container">© 2025 TradeVision. Open Source.</div>
+  </footer>
+
+  <script>
+    const themeToggle = document.getElementById('theme-toggle');
+    const body = document.body;
+    const themeIcon = themeToggle.querySelector('i');
+    themeToggle.addEventListener('click', () => {
+      const isDark = body.getAttribute('data-theme') === 'dark';
+      body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+      themeIcon.classList.toggle('fa-moon'); themeIcon.classList.toggle('fa-sun');
+      localStorage.setItem('theme', isDark ? 'light' : 'dark');
+    });
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    body.setAttribute('data-theme', savedTheme);
+    if (savedTheme === 'light') themeIcon.classList.replace('fa-moon', 'fa-sun');
+
+    const container = document.getElementById('chart-container');
+    let chart, series, data = [], index = 0, interval, speed = 1000;
+    const playBtn = document.getElementById('play-pause');
+    const resetBtn = document.getElementById('reset');
+    const dateEl = document.getElementById('current-date');
+
+    function init() {
+      chart = LightweightCharts.createChart(container, {
+        width: container.clientWidth,
+        height: container.clientHeight,
+        layout: { background: { color: 'transparent' }, textColor: 'var(--text-light)' },
+        grid: { vertLines: { color: 'var(--border)' }, horzLines: { color: 'var(--border)' } },
+      });
+      series = chart.addCandlestickSeries({
+        upColor: 'var(--green)', downColor: 'var(--red)',
+        wickUpColor: 'var(--green)', wickDownColor: 'var(--red)',
+      });
+      generateData();
+      index = 0;
+      series.setData([]);
+      dateEl.textContent = '--';
+    }
+
+    function generateData() {
+      const start = Math.floor(Date.now()/1000) - 365*24*3600;
+      data = Array.from({length: 200}, (_, i) => {
+        const time = start + i * 3600;
+        const close = 180 + Math.sin(i/10)*15 + Math.random()*5;
+        return { time, open: close, high: close*1.01, low: close*0.99, close };
+      });
+    }
+
+    function step() {
+      if (index < data.length) {
+        series.update(data[index]);
+        dateEl.textContent = new Date(data[index].time * 1000).toLocaleString();
+        index++;
+      } else {
+        clearInterval(interval);
+        playBtn.innerHTML = '<i class="fas fa-play"></i> Replay';
+      }
+    }
+
+    playBtn.addEventListener('click', () => {
+      if (interval) {
+        clearInterval(interval);
+        interval = null;
+        playBtn.innerHTML = '<i class="fas fa-play"></i> Play';
+      } else {
+        interval = setInterval(step, speed);
+        playBtn.innerHTML = '<i class="fas fa-pause"></i> Pause';
+      }
+    });
+
+    resetBtn.addEventListener('click', () => {
+      clearInterval(interval);
+      interval = null;
+      index = 0;
+      series.setData([]);
+      playBtn.innerHTML = '<i class="fas fa-play"></i> Play';
+      dateEl.textContent = '--';
+    });
+
+    document.querySelectorAll('.speed-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        speed = 1000 / parseFloat(btn.dataset.speed);
+        if (interval) {
+          clearInterval(interval);
+          interval = setInterval(step, speed);
+        }
+      });
+    });
+
+    window.addEventListener('resize', () => chart.resize(container.clientWidth, container.clientHeight));
+    init();
+  </script>
+</body>
+</html>
