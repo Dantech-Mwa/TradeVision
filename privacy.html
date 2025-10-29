@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Privacy - TradeVision</title>
+  <link rel="icon" href="assets/icons/chart.svg" type="image/svg+xml">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    :root{--bg:#141518;--bg-light:#1e222d;--text:#d1d4dc;--text-light:#9ea1b5;--accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#2d313e;--card:#1e222d;}
+    [data-theme="light"]{--bg:#ffffff;--bg-light:#f8f9fa;--text:#2d3748;--text-light:#718096;--accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#e2e8f0;--card:#ffffff;}
+    body{margin:0;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);}
+    a{color:var(--accent);text-decoration:none;}
+    .container{max-width:800px;margin:0 auto;padding:2rem 1rem;}
+    .header{background:var(--bg-light);border-bottom:1px solid var(--border);padding:0.75rem 0;position:sticky;top:0;z-index:100;}
+    .flex-between{display:flex;justify-content:space-between;align-items:center;}
+    .logo{font-weight:700;font-size:1.4rem;color:var(--accent);}
+    .logo i{font-size:1.5rem;}
+    .nav-links a{margin:0 0.75rem;font-weight:500;}
+    .icon-btn{background:none;border:none;color:var(--text-light);font-size:1.2rem;cursor:pointer;padding:0.5rem;}
+    .privacy-content{line-height:1.7;color:var(--text-light);}
+    .privacy-content h2{margin:2rem 0 1rem;font-size:1.3rem;color:var(--accent);}
+    .footer{background:var(--bg-light);border-top:1px solid var(--border);padding:1rem 0;font-size:0.8rem;text-align:center;color:var(--text-light);}
+  </style>
+</head>
+<body data-theme="dark">
+  <header class="header">
+    <div class="container flex-between">
+      <div class="logo"><a href="index.html" class="flex-center"><i class="fas fa-chart-line"></i><span>TradeVision</span></a></div>
+      <nav class="nav-links">
+        <a href="chart.html">Chart</a>
+        <a href="watchlist.html">Watchlist</a>
+        <a href="screener.html">Screener</a>
+        <a href="ideas.html">Ideas</a>
+        <a href="alerts.html">Alerts</a>
+        <a href="trading.html">Trade</a>
+        <a href="backtest.html">Backtest</a>
+      </nav>
+      <div class="header-actions">
+        <button id="theme-toggle" class="icon-btn"><i class="fas fa-moon"></i></button>
+        <a href="profile.html" class="icon-btn"><i class="fas fa-user"></i></a>
+        <a href="settings.html" class="icon-btn"><i class="fas fa-cog"></i></a>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <h1>Privacy Policy</h1>
+    <div class="privacy-content">
+      <p><strong>TradeVision</strong> does not collect, store, or share any personal data.</p>
+      <h2>Data Storage</h2>
+      <p>All data (watchlist, alerts, settings) is stored in your browser's <code>localStorage</code>. Nothing is sent to any server.</p>
+      <h2>Cookies</h2>
+      <p>No cookies are used.</p>
+      <h2>Third Parties</h2>
+      <p>We do not use analytics, ads, or tracking.</p>
+      <h2>Open Source</h2>
+      <p>View the source on <a href="https://github.com/yourusername/TradeVision" target="_blank">GitHub</a>.</p>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container">© 2025 TradeVision. Open Source.</div>
+  </footer>
+
+  <script>
+    const themeToggle = document.getElementById('theme-toggle');
+    const body = document.body;
+    const themeIcon = themeToggle.querySelector('i');
+    themeToggle.addEventListener('click', () => {
+      const isDark = body.getAttribute('data-theme') === 'dark';
+      body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+      themeIcon.classList.toggle('fa-moon'); themeIcon.classList.toggle('fa-sun');
+      localStorage.setItem('theme', isDark ? 'light' : 'dark');
+    });
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    body.setAttribute('data-theme', savedTheme);
+    if (savedTheme === 'light') themeIcon.classList.replace('fa-moon', 'fa-sun');
+  </script>
+</body>
+</html>
