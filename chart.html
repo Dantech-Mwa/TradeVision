@@ -10,6 +10,7 @@
   <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
   <link id="theme-style" rel="stylesheet" href="assets/css/main.css">
   <link rel="stylesheet" href="assets/css/dark-theme.css">
+  <script src="https://cdn.jsdelivr.net/npm/technicalindicators@3"></script>
   <style>
     :root{--bg:#141518;--bg-light:#1e222d;--text:#d1d4dc;--text-light:#9ea1b5;--accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#2d313e;--card:#1e222d;}
     [data-theme="light"]{--bg:#ffffff;--bg-light:#f8f9fa;--text:#2d3748;--text-light:#718096;--accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#e2e8f0;--card:#ffffff;}
@@ -141,62 +142,63 @@
   // Symbol from URL
   function getSymbol() {
     const params = new URLSearchParams(location.search);
-    let sym = params.get('symbol') || 'BTCUSD';
-    return sym.toUpperCase();
+    return (params.get('symbol') || 'BTCUSD').toUpperCase();
   }
 
-  // Binance Symbol Map
   const binanceMap = {
     'BTCUSD': 'btcusdt', 'ETHUSD': 'ethusdt',
-    'AAPL': 'aaplusdt', 'TSLA': 'tslausdt', 'SPY': 'spyusdt',
-    'NVDA': 'nvdausdt', 'MSFT': 'msftusdt'
+    'AAPL': 'aaplusdt', 'TSLA': 'tslausdt', 'SPY': 'spyusdt'
   };
 
-  let chart, series, tickerWs, klineWs;
+  let chart, priceSeries, rsiSeries, macdSeries, emaSeries;
+  let priceData = [];
+  let klineWs, tickerWs;
+
+  // Indicator Storage
+  const indicators = {
+    rsi: null,
+    macd: null,
+    ema: null
+  };
 
   async function initChart() {
     const symbol = getSymbol();
     const binanceSym = binanceMap[symbol] || symbol.toLowerCase() + 'usdt';
 
-    // Create Chart
+    // Main Chart
     chart = LightweightCharts.createChart(document.getElementById('chart'), {
       width: document.getElementById('chart').clientWidth,
       height: 500,
       layout: { background: { color: 'transparent' }, textColor: 'var(--text)' },
       grid: { vertLines: { color: 'var(--border)' }, horzLines: { color: 'var(--border)' } },
-      crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
-      timeScale: { borderColor: 'var(--border)', timeVisible: true, secondsVisible: true }
+      timeScale: { borderColor: 'var(--border)' }
     });
 
-    series = chart.addCandlestickSeries({
+    priceSeries = chart.addCandlestickSeries({
       upColor: 'var(--green)', downColor: 'var(--red)',
-      borderUpColor: 'var(--green)', borderDownColor: 'var(--red)',
       wickUpColor: 'var(--green)', wickDownColor: 'var(--red)'
     });
 
-    // Load last 100 klines via REST (once)
-    try {
-      const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=${binanceSym.toUpperCase()}&interval=1m&limit=100`);
-      const data = await res.json();
-      const bars = data.map(d => ({
-        time: d[0] / 1000,
-        open: parseFloat(d[1]),
-        high: parseFloat(d[2]),
-        low: parseFloat(d[3]),
-        close: parseFloat(d[4])
-      }));
-      series.setData(bars);
-    } catch (e) {
-      console.error('Failed to load history:', e);
-    }
+    // Load History
+    const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=${binanceSym.toUpperCase()}&interval=1m&limit=200`);
+    const data = await res.json();
+    priceData = data.map(d => ({
+      time: d[0] / 1000,
+      open: parseFloat(d[1]),
+      high: parseFloat(d[2]),
+      low: parseFloat(d[3]),
+      close: parseFloat(d[4])
+    }));
+    priceSeries.setData(priceData);
 
-    // WebSocket: Kline 1m (live bars)
+    // Initialize Indicators
+    initIndicators();
+
+    // WebSocket: Kline
     klineWs = new WebSocket(`wss://stream.binance.com:9443/ws/${binanceSym}@kline_1m`);
     klineWs.onmessage = (e) => {
-      const msg = JSON.parse(e.data);
-      const k = msg.k;
-      if (!k.x) return; // Incomplete bar
-
+      const k = JSON.parse(e.data).k;
+      if (!k.x) return;
       const bar = {
         time: k.t / 1000,
         open: parseFloat(k.o),
@@ -204,19 +206,68 @@
         low: parseFloat(k.l),
         close: parseFloat(k.c)
       };
-      series.update(bar);
+      priceData.push(bar);
+      if (priceData.length > 500) priceData.shift();
+      priceSeries.update(bar);
+      updateIndicators(bar);
     };
 
-    // WebSocket: Ticker (live price)
+    // WebSocket: Ticker
     tickerWs = new WebSocket(`wss://stream.binance.com:9443/ws/${binanceSym}@ticker`);
     tickerWs.onmessage = (e) => {
       const t = JSON.parse(e.data);
       document.getElementById('current-price').textContent = parseFloat(t.c).toFixed(2);
       const change = parseFloat(t.P);
-      const changeEl = document.getElementById('price-change');
-      changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
-      changeEl.style.color = change >= 0 ? 'var(--green)' : 'var(--red)';
+      const el = document.getElementById('price-change');
+      el.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
+      el.style.color = change >= 0 ? 'var(--green)' : 'var(--red)';
     };
+  }
+
+  function initIndicators() {
+    const closes = priceData.map(d => d.close);
+
+    // RSI
+    indicators.rsi = new RSI({ period: 14, values: closes });
+    rsiSeries = chart.addLineSeries({ color: '#9c27b0', lineWidth: 2, priceScaleId: 'rsi' });
+    chart.priceScale('rsi').applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
+    const rsiValues = indicators.rsi.getResult();
+    const rsiData = rsiValues.map((v, i) => ({ time: priceData[i].time, value: v }));
+    rsiSeries.setData(rsiData);
+
+    // MACD
+    indicators.macd = new MACD({ fastPeriod: 12, slowPeriod: 26, signalPeriod: 9, values: closes, SimpleMAOscillator: true, SimpleMASignal: true });
+    macdSeries = chart.addHistogramSeries({ color: '#2962ff', priceScaleId: 'macd' });
+    chart.priceScale('macd').applyOptions({ scaleMargins: { top: 0.7, bottom: 0.1 } });
+    const macd = indicators.macd.getResult();
+    const macdData = macd.MACD.map((v, i) => ({ time: priceData[i].time, value: v }));
+    macdSeries.setData(macdData);
+
+    // EMA 20
+    indicators.ema = new EMA({ period: 20, values: closes });
+    emaSeries = chart.addLineSeries({ color: '#ff9800', lineWidth: 2 });
+    const emaValues = indicators.ema.getResult();
+    const emaData = emaValues.map((v, i) => ({ time: priceData[i].time, value: v }));
+    emaSeries.setData(emaData);
+  }
+
+  function updateIndicators(bar) {
+    const closes = priceData.map(d => d.close);
+
+    // Update RSI
+    indicators.rsi.nextValue(bar.close);
+    const rsiResult = indicators.rsi.getResult();
+    rsiSeries.update({ time: bar.time, value: rsiResult[rsiResult.length - 1] });
+
+    // Update MACD
+    indicators.macd.nextValue(bar.close);
+    const macdResult = indicators.macd.getResult();
+    macdSeries.update({ time: bar.time, value: macdResult.MACD[macdResult.MACD.length - 1] });
+
+    // Update EMA
+    indicators.ema.nextValue(bar.close);
+    const emaResult = indicators.ema.getResult();
+    emaSeries.update({ time: bar.time, value: emaResult[emaResult.length - 1] });
   }
 
   // Resize
@@ -224,7 +275,6 @@
     if (chart) chart.resize(document.getElementById('chart').clientWidth, 500);
   });
 
-  // Start
   initChart();
 </script>
   
