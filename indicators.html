@@ -11,11 +11,18 @@
   <script src="https://cdn.jsdelivr.net/npm/technicalindicators@3"></script>
 
   <style>
-    :root{--bg:#141518;--bg-light:#1e222d;--text:#d1d4dc;--text-light:#9ea1b5;--accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#2d313e;--card:#1e222d;}
-    [data-theme="light"]{--bg:#ffffff;--bg-light:#f8f9fa;--text:#2d3748;--text-light:#718096;--accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#e2e8f0;--card:#ffffff;}
-    body{margin:0;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);}
+    :root{
+      --bg:#141518;--bg-light:#1e222d;--text:#d1d4dc;--text-light:#9ea1b5;
+      --accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#2d313e;--card:#1e222d;
+    }
+    [data-theme="light"]{
+      --bg:#ffffff;--bg-light:#f8f9fa;--text:#2d3748;--text-light:#718096;
+      --accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#e2e8f0;--card:#ffffff;
+    }
+    *,*::before,*::after{box-sizing:border-box;}
+    body{margin:0;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);transition:background .3s,color .3s;}
     a{color:var(--accent);text-decoration:none;}
-    .container{max-width:1200px;margin:0 auto;padding:2rem 1rem;}
+    .container{max-width:1300px;margin:0 auto;padding:2rem 1rem;}
     .header{background:var(--bg-light);border-bottom:1px solid var(--border);padding:.75rem 0;position:sticky;top:0;z-index:100;}
     .flex-between{display:flex;justify-content:space-between;align-items:center;}
     .logo{font-weight:700;font-size:1.4rem;color:var(--accent);}
@@ -23,139 +30,236 @@
     .nav-links a{margin:0 .75rem;font-weight:500;}
     .icon-btn{background:none;border:none;color:var(--text-light);font-size:1.2rem;cursor:pointer;padding:.5rem;}
 
+    /* ---------- Tabs ---------- */
+    .tab-bar{margin:2rem 0;display:flex;gap:.5rem;border-bottom:1px solid var(--border);}
+    .tab-btn{padding:.6rem 1.2rem;border:none;background:none;color:var(--text-light);font-weight:600;cursor:pointer;position:relative;transition:.2s;}
+    .tab-btn.active{color:var(--accent);font-weight:700;}
+    .tab-btn.active::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:3px;background:var(--accent);border-radius:2px;}
+
+    /* ---------- Search ---------- */
     .search-bar{margin:1.5rem 0;}
-    .search-bar input{width:100%;max-width:420px;padding:.6rem 1rem;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--text);font-size:1rem;}
-    .indicator-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;margin-top:1rem;}
-    .indicator-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1rem;cursor:pointer;transition:.2s;}
-    .indicator-card:hover{transform:translateY(-3px);box-shadow:0 6px 16px rgba(0,0,0,.25);}
-    .indicator-card h3{margin:0 0 .4rem;font-size:1.15rem;}
-    .indicator-card p{font-size:.9rem;color:var(--text-light);margin:0;}
-    .category{margin:2rem 0 .5rem;font-weight:600;color:var(--accent);font-size:1.1rem;}
+    .search-bar input{width:100%;max-width:460px;padding:.65rem 1rem;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--text);font-size:1rem;transition:border .2s;}
+    .search-bar input:focus{outline:none;border-color:var(--accent);}
+
+    /* ---------- Grid ---------- */
+    .indicator-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.2rem;margin-top:1rem;}
+    .indicator-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.2rem;cursor:pointer;transition:transform .2s,box-shadow .2s;}
+    .indicator-card:hover{transform:translateY(-4px);box-shadow:0 8px 20px rgba(0,0,0,.3);}
+    .indicator-card h3{margin:0 0 .4rem;font-size:1.15rem;display:flex;align-items:center;gap:.4rem;}
+    .indicator-card p{font-size:.88rem;color:var(--text-light);margin:0;line-height:1.4;}
+    .badge{font-size:.65rem;padding:.2rem .4rem;border-radius:4px;background:var(--accent);color:#fff;}
+
+    /* ---------- Community Trending ---------- */
+    .trending-list{list-style:none;padding:0;margin:1rem 0;}
+    .trending-item{display:flex;align-items:center;gap:.8rem;padding:.6rem 0;border-bottom:1px solid var(--border);}
+    .trending-item:last-child{border:none;}
+    .trending-name{font-weight:600;}
+    .trending-author{color:var(--text-light);font-size:.85rem;}
+    .boost{display:flex;align-items:center;gap:.3rem;color:var(--green);font-weight:600;}
+
     .footer{background:var(--bg-light);border-top:1px solid var(--border);padding:1rem 0;font-size:.8rem;text-align:center;color:var(--text-light);}
   </style>
 </head>
 
 <body data-theme="dark">
-  <header class="header">
-    <div class="container flex-between">
-      <div class="logo"><a href="index.html" class="flex-center"><i class="fas fa-chart-line"></i><span>TradeVision</span></a></div>
-      <nav class="nav-links">
-        <a href="chart.html">Chart</a>
-        <a href="watchlist.html">Watchlist</a>
-        <a href="screener.html">Screener</a>
-        <a href="ideas.html">Ideas</a>
-        <a href="alerts.html">Alerts</a>
-      </nav>
-      <div class="header-actions">
-        <button id="theme-toggle" class="icon-btn"><i class="fas fa-moon"></i></button>
-      </div>
-    </div>
-  </header>
 
-  <div class="container">
-    <h1>Indicators Library (120+)</h1>
+<header class="header">
+  <div class="container flex-between">
+    <div class="logo"><a href="index.html"><i class="fas fa-chart-line"></i> TradeVision</a></div>
+    <nav class="nav-links">
+      <a href="chart.html">Chart</a>
+      <a href="watchlist.html">Watchlist</a>
+      <a href="screener.html">Screener</a>
+      <a href="ideas.html">Ideas</a>
+      <a href="alerts.html">Alerts</a>
+    </nav>
+    <button id="theme-toggle" class="icon-btn"><i class="fas fa-moon"></i></button>
+  </div>
+</header>
 
-    <div class="search-bar">
-      <input type="text" id="indicator-search" placeholder="Search indicators… (RSI, MACD, Bollinger, etc.)">
-    </div>
+<div class="container">
+  <h1 style="margin-bottom:.5rem;">Indicators Library</h1>
+  <p style="color:var(--text-light);margin-top:0;">120+ built‑in, community scripts, and your personal collection.</p>
 
-    <!-- Cards will be injected here -->
-    <div id="indicator-container"></div>
+  <!-- Tabs -->
+  <div class="tab-bar">
+    <button class="tab-btn active" data-tab="builtin">Built‑in</button>
+    <button class="tab-btn" data-tab="community">Community</button>
+    <button class="tab-btn" data-tab="personal">Personal</button>
   </div>
 
-  <footer class="footer">
-    <div class="container">© 2025 TradeVision. Open Source.</div>
-  </footer>
+  <!-- Search -->
+  <div class="search-bar">
+    <input type="text" id="global-search" placeholder="Search any indicator… (RSI, MACD, Bollinger, etc.)">
+  </div>
 
-  <script>
-    /* --------------------------------------------------------------
-       1. Theme toggle
-       -------------------------------------------------------------- */
-    const themeToggle = document.getElementById('theme-toggle');
-    const body = document.body;
-    const themeIcon = themeToggle.querySelector('i');
-    themeToggle.addEventListener('click', () => {
-      const isDark = body.getAttribute('data-theme') === 'dark';
-      body.setAttribute('data-theme', isDark ? 'light' : 'dark');
-      themeIcon.classList.toggle('fa-moon'); themeIcon.classList.toggle('fa-sun');
-      localStorage.setItem('theme', isDark ? 'light' : 'dark');
-    });
-    const savedTheme = localStorage.getItem('theme') || 'dark';
-    body.setAttribute('data-theme', savedTheme);
-    if (savedTheme === 'light') themeIcon.classList.replace('fa-moon', 'fa-sun');
+  <!-- Content Panels -->
+  <div id="builtin" class="tab-content">
+    <div id="builtin-grid" class="indicator-grid"></div>
+  </div>
 
-    /* --------------------------------------------------------------
-       2. All indicators from technicalindicators
-       -------------------------------------------------------------- */
-    const TI = window.TI;               // global exported by the CDN
-    const allIndicators = Object.keys(TI)
-      .filter(k => typeof TI[k] === 'function' && k !== 'Indicator')
-      .map(name => ({
-        name,
-        fn: TI[name],
-        description: (TI[name].description || `Calculates ${name}`) + '.'
-      }))
-      .sort((a,b) => a.name.localeCompare(b.name));
+  <div id="community" class="tab-content" style="display:none;">
+    <h2 style="margin-top:0;">Trending Scripts</h2>
+    <ul id="trending-list" class="trending-list"></ul>
+  </div>
 
-    /* --------------------------------------------------------------
-       3. Render cards (grouped by first letter for nicer UX)
-       -------------------------------------------------------------- */
-    const container = document.getElementById('indicator-container');
-    let lastLetter = '';
-    allIndicators.forEach(ind => {
-      const first = ind.name[0].toUpperCase();
-      if (first !== lastLetter) {
-        lastLetter = first;
-        const cat = document.createElement('div');
-        cat.className = 'category';
-        cat.textContent = first;
-        container.appendChild(cat);
-      }
+  <div id="personal" class="tab-content" style="display:none;">
+    <p style="color:var(--text-light);">Your private Pine‑Script HTML files will appear here.</p>
+    <p><em>Invite‑only scripts are hidden from others.</em></p>
+  </div>
+</div>
 
-      const card = document.createElement('div');
-      card.className = 'indicator-card';
-      card.dataset.name = ind.name;
-      card.innerHTML = `<h3>${ind.name}</h3><p>${ind.description}</p>`;
-      card.title = `Add ${ind.name} to the chart`;
-      card.addEventListener('click', () => addIndicatorToChart(ind.name));
-      container.appendChild(card);
-    });
+<footer class="footer"><div class="container">© 2025 TradeVision. Open Source.</div></footer>
 
-    /* --------------------------------------------------------------
-       4. Live search
-       -------------------------------------------------------------- */
-    const searchInput = document.getElementById('indicator-search');
-    searchInput.addEventListener('input', () => {
-      const term = searchInput.value.trim().toLowerCase();
-      document.querySelectorAll('.indicator-card').forEach(c => {
-        const txt = c.textContent.toLowerCase();
-        c.style.display = txt.includes(term) ? '' : 'none';
-      });
-    });
+<script>
+/* ──────────────────────────────────────
+   1. Theme toggle
+   ────────────────────────────────────── */
+const themeBtn = document.getElementById('theme-toggle');
+const themeIcon = themeBtn.querySelector('i');
+themeBtn.addEventListener('click', () => {
+  const isDark = document.body.getAttribute('data-theme') === 'dark';
+  document.body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  themeIcon.classList.toggle('fa-moon'); themeIcon.classList.toggle('fa-sun');
+  localStorage.setItem('theme', isDark ? 'light' : 'dark');
+});
+const saved = localStorage.getItem('theme') || 'dark';
+document.body.setAttribute('data-theme', saved);
+if (saved === 'light') themeIcon.classList.replace('fa-moon','fa-sun');
 
-    /* --------------------------------------------------------------
-       5. Add indicator → localStorage → chart.html reads it
-       -------------------------------------------------------------- */
-    function addIndicatorToChart(name) {
-      let added = JSON.parse(localStorage.getItem('chartIndicators') || '[]');
-      if (!added.includes(name)) {
-        added.push(name);
-        localStorage.setItem('chartIndicators', JSON.stringify(added));
-        alert(`${name} added! Open chart.html to see it plotted.`);
-      } else {
-        alert(`${name} is already on the chart.`);
-      }
+/* ──────────────────────────────────────
+   2. Tab system
+   ────────────────────────────────────── */
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+    document.getElementById(btn.dataset.tab).style.display = 'block';
+  });
+});
+
+/* ──────────────────────────────────────
+   3. Built‑in indicators (technicalindicators)
+   ────────────────────────────────────── */
+const TI = window.TI;
+const builtin = Object.keys(TI)
+  .filter(k => typeof TI[k] === 'function' && k !== 'Indicator')
+  .map(name => ({
+    name,
+    description: (TI[name].description || `Calculates ${name}`) + '.'
+  }))
+  .sort((a,b) => a.name.localeCompare(b.name));
+
+const grid = document.getElementById('builtin-grid');
+let last = '';
+builtin.forEach(ind => {
+  const first = ind.name[0].toUpperCase();
+  if (first !== last) {
+    last = first;
+    const cat = document.createElement('div');
+    cat.className = 'category';
+    cat.textContent = first;
+    grid.appendChild(cat);
+  }
+
+  const card = document.createElement('div');
+  card.className = 'indicator-card';
+  card.dataset.name = ind.name;
+  card.innerHTML = `
+    <h3><i class="fas fa-chart-line"></i> ${ind.name}</h3>
+    <p>${ind.description}</p>
+    <span class="badge">Built‑in</span>
+  `;
+  card.title = `Add ${ind.name} to the chart`;
+  card.addEventListener('click', () => addToChart(ind.name));
+  grid.appendChild(card);
+});
+
+/* ──────────────────────────────────────
+   4. Global search (all tabs)
+   ────────────────────────────────────── */
+const globalSearch = document.getElementById('global-search');
+globalSearch.addEventListener('input', () => {
+  const term = globalSearch.value.trim().toLowerCase();
+  // Built‑in
+  document.querySelectorAll('#builtin .indicator-card').forEach(c => {
+    const txt = c.textContent.toLowerCase();
+    c.style.display = txt.includes(term) ? '' : 'none';
+  });
+  // Community (simple demo filter)
+  document.querySelectorAll('.trending-item').forEach(i => {
+    const txt = i.textContent.toLowerCase();
+    i.style.display = txt.includes(term) ? '' : 'none';
+  });
+});
+
+/* ──────────────────────────────────────
+   5. Add to chart → localStorage
+   ────────────────────────────────────── */
+function addToChart(name) {
+  let list = JSON.parse(localStorage.getItem('chartIndicators') || '[]');
+  if (!list.includes(name)) {
+    list.push(name);
+    localStorage.setItem('chartIndicators', JSON.stringify(list));
+    alert(`${name} added! Open chart.html to see it plotted.`);
+  } else {
+    alert(`${name} is already on the chart.`);
+  }
+}
+
+/* ──────────────────────────────────────
+   6. Community → Trending (Binance socket demo)
+   ────────────────────────────────────── */
+const trendingList = document.getElementById('trending-list');
+
+// Demo data – replace with real socket later
+const demoScripts = [
+  {name:'SuperTrend AI', author:'CryptoWhale', boost:1240},
+  {name:'Volume Profile Pro', author:'TraderX', boost:987},
+  {name:'Smart Money Concept', author:'AlphaTrader', boost:742},
+  {name:'EMA Cloud v3', author:'PineMaster', boost:689},
+  {name:'RSI Divergence', author:'SignalBot', boost:512},
+];
+
+demoScripts.forEach(s => {
+  const li = document.createElement('li');
+  li.className = 'trending-item';
+  li.innerHTML = `
+    <div>
+      <div class="trending-name">${s.name}</div>
+      <div class="trending-author">by ${s.author}</div>
+    </div>
+    <div class="boost"><i class="fas fa-arrow-up"></i> ${s.boost}</div>
+  `;
+  trendingList.appendChild(li);
+});
+
+/* ──────────────────────────────────────
+   7. Real‑time boost via Binance ticker (demo)
+   ────────────────────────────────────── */
+let ws;
+function connectBoostSocket() {
+  ws = new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@ticker');
+  ws.onmessage = e => {
+    const data = JSON.parse(e.data);
+    const boost = Math.floor(Math.random()*50) + 10; // fake boost
+    const randomItem = trendingList.children[Math.floor(Math.random()*trendingList.children.length)];
+    if (randomItem) {
+      const boostEl = randomItem.querySelector('.boost');
+      const current = parseInt(boostEl.textContent.replace(/[^\d]/g,'')) || 0;
+      boostEl.innerHTML = `<i class="fas fa-arrow-up"></i> ${current + boost}`;
     }
+  };
+  ws.onclose = () => setTimeout(connectBoostSocket, 3000);
+}
+connectBoostSocket();
 
-    /* --------------------------------------------------------------
-       6. (Optional) Clear all indicators from the chart
-       -------------------------------------------------------------- */
-    // Uncomment if you want a “Clear all” button
-    const clearBtn = document.createElement('button');
-    clearBtn.textContent = 'Clear All Indicators';
-    clearBtn.style.marginTop = '1rem';
-    clearBtn.onclick = () => { localStorage.removeItem('chartIndicators'); alert('All cleared'); };
-     document.querySelector('.container').appendChild(clearBtn);
-  </script>
+/* ──────────────────────────────────────
+   8. Personal tab – placeholder
+   ────────────────────────────────────── */
+// You can later read a folder of .html Pine scripts and inject them here.
+
+</script>
 </body>
 </html>
