@@ -3,35 +3,38 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Indicators - TradeVision</title>
+  <title>Indicators – TradeVision</title>
   <link rel="icon" href="assets/icons/chart.svg" type="image/svg+xml">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <link id="theme-style" rel="stylesheet" href="assets/css/main.css">
-  <link rel="stylesheet" href="assets/css/dark-theme.css">
+  <!-- technicalindicators – 120+ indicators -->
   <script src="https://cdn.jsdelivr.net/npm/technicalindicators@3"></script>
+
   <style>
     :root{--bg:#141518;--bg-light:#1e222d;--text:#d1d4dc;--text-light:#9ea1b5;--accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#2d313e;--card:#1e222d;}
     [data-theme="light"]{--bg:#ffffff;--bg-light:#f8f9fa;--text:#2d3748;--text-light:#718096;--accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#e2e8f0;--card:#ffffff;}
     body{margin:0;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);}
     a{color:var(--accent);text-decoration:none;}
     .container{max-width:1200px;margin:0 auto;padding:2rem 1rem;}
-    .header{background:var(--bg-light);border-bottom:1px solid var(--border);padding:0.75rem 0;position:sticky;top:0;z-index:100;}
+    .header{background:var(--bg-light);border-bottom:1px solid var(--border);padding:.75rem 0;position:sticky;top:0;z-index:100;}
     .flex-between{display:flex;justify-content:space-between;align-items:center;}
     .logo{font-weight:700;font-size:1.4rem;color:var(--accent);}
     .logo i{font-size:1.5rem;}
-    .nav-links a{margin:0 0.75rem;font-weight:500;}
-    .icon-btn{background:none;border:none;color:var(--text-light);font-size:1.2rem;cursor:pointer;padding:0.5rem;}
-    .search-bar input{width:100%;max-width:400px;padding:0.5rem 1rem;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);}
-    .indicator-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;margin-top:2rem;}
-    .indicator-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1rem;cursor:pointer;transition:0.2s;}
-    .indicator-card:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,0.2);}
-    .indicator-card h3{margin:0 0 0.5rem;font-size:1.1rem;}
-    .indicator-card p{font-size:0.9rem;color:var(--text-light);margin:0;}
-    .category{margin:2rem 0 1rem;font-weight:600;color:var(--accent);}
-    .footer{background:var(--bg-light);border-top:1px solid var(--border);padding:1rem 0;font-size:0.8rem;text-align:center;color:var(--text-light);}
+    .nav-links a{margin:0 .75rem;font-weight:500;}
+    .icon-btn{background:none;border:none;color:var(--text-light);font-size:1.2rem;cursor:pointer;padding:.5rem;}
+
+    .search-bar{margin:1.5rem 0;}
+    .search-bar input{width:100%;max-width:420px;padding:.6rem 1rem;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--text);font-size:1rem;}
+    .indicator-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;margin-top:1rem;}
+    .indicator-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1rem;cursor:pointer;transition:.2s;}
+    .indicator-card:hover{transform:translateY(-3px);box-shadow:0 6px 16px rgba(0,0,0,.25);}
+    .indicator-card h3{margin:0 0 .4rem;font-size:1.15rem;}
+    .indicator-card p{font-size:.9rem;color:var(--text-light);margin:0;}
+    .category{margin:2rem 0 .5rem;font-weight:600;color:var(--accent);font-size:1.1rem;}
+    .footer{background:var(--bg-light);border-top:1px solid var(--border);padding:1rem 0;font-size:.8rem;text-align:center;color:var(--text-light);}
   </style>
 </head>
+
 <body data-theme="dark">
   <header class="header">
     <div class="container flex-between">
@@ -42,50 +45,22 @@
         <a href="screener.html">Screener</a>
         <a href="ideas.html">Ideas</a>
         <a href="alerts.html">Alerts</a>
-        <a href="trading.html">Trade</a>
-        <a href="backtest.html">Backtest</a>
       </nav>
       <div class="header-actions">
         <button id="theme-toggle" class="icon-btn"><i class="fas fa-moon"></i></button>
-        <a href="profile.html" class="icon-btn"><i class="fas fa-user"></i></a>
-        <a href="settings.html" class="icon-btn"><i class="fas fa-cog"></i></a>
       </div>
     </div>
   </header>
 
   <div class="container">
-    <h1>Indicators Library</h1>
-    <div class="search-bar"><input type="text" id="indicator-search" placeholder="Search indicators..."></div>
+    <h1>Indicators Library (120+)</h1>
 
-    <div class="category">Trend</div>
-    <div class="indicator-grid" id="trend-indicators">
-      <div class="indicator-card" data-name="SMA"><h3>Simple Moving Average (SMA)</h3><p>Average price over N periods.</p></div>
-      <div class="indicator-card" data-name="EMA"><h3>Exponential Moving Average (EMA)</h3><p>Weighted moving average.</p></div>
-      <div class="indicator-card" data-name="WMA"><h3>Weighted Moving Average (WMA)</h3><p>Linear weighted average.</p></div>
-      <div class="indicator-card" data-name="Ichimoku"><h3>Ichimoku Cloud</h3><p>Comprehensive trend system.</p></div>
+    <div class="search-bar">
+      <input type="text" id="indicator-search" placeholder="Search indicators… (RSI, MACD, Bollinger, etc.)">
     </div>
 
-    <div class="category">Momentum</div>
-    <div class="indicator-grid" id="momentum-indicators">
-      <div class="indicator-card" data-name="RSI"><h3>Relative Strength Index (RSI)</h3><p>Measures overbought/oversold.</p></div>
-      <div class="indicator-card" data-name="Stochastic"><h3>Stochastic Oscillator</h3><p>Compares close to range.</p></div>
-      <div class="indicator-card" data-name="MACD"><h3>MACD</h3><p>Moving Average Convergence Divergence.</p></div>
-      <div class="indicator-card" data-name="CCI"><h3>Commodity Channel Index</h3><p>Identifies cyclical turns.</p></div>
-    </div>
-
-    <div class="category">Volatility</div>
-    <div class="indicator-grid" id="volatility-indicators">
-      <div class="indicator-card" data-name="Bollinger"><h3>Bollinger Bands</h3><p>Volatility bands around SMA.</p></div>
-      <div class="indicator-card" data-name="ATR"><h3>Average True Range (ATR)</h3><p>Measures market volatility.</p></div>
-      <div class="indicator-card" data-name="Keltner"><h3>Keltner Channel</h3><p>EMA with ATR bands.</p></div>
-    </div>
-
-    <div class="category">Volume</div>
-    <div class="indicator-grid" id="volume-indicators">
-      <div class="indicator-card" data-name="OBV"><h3>On Balance Volume (OBV)</h3><p>Cumulative volume flow.</p></div>
-      <div class="indicator-card" data-name="VWAP"><h3>Volume Weighted Average Price</h3><p>Average price by volume.</p></div>
-      <div class="indicator-card" data-name="MFI"><h3>Money Flow Index</h3><p>Volume-weighted RSI.</p></div>
-    </div>
+    <!-- Cards will be injected here -->
+    <div id="indicator-container"></div>
   </div>
 
   <footer class="footer">
@@ -93,6 +68,9 @@
   </footer>
 
   <script>
+    /* --------------------------------------------------------------
+       1. Theme toggle
+       -------------------------------------------------------------- */
     const themeToggle = document.getElementById('theme-toggle');
     const body = document.body;
     const themeIcon = themeToggle.querySelector('i');
@@ -106,22 +84,78 @@
     body.setAttribute('data-theme', savedTheme);
     if (savedTheme === 'light') themeIcon.classList.replace('fa-moon', 'fa-sun');
 
-    // Search
+    /* --------------------------------------------------------------
+       2. All indicators from technicalindicators
+       -------------------------------------------------------------- */
+    const TI = window.TI;               // global exported by the CDN
+    const allIndicators = Object.keys(TI)
+      .filter(k => typeof TI[k] === 'function' && k !== 'Indicator')
+      .map(name => ({
+        name,
+        fn: TI[name],
+        description: (TI[name].description || `Calculates ${name}`) + '.'
+      }))
+      .sort((a,b) => a.name.localeCompare(b.name));
+
+    /* --------------------------------------------------------------
+       3. Render cards (grouped by first letter for nicer UX)
+       -------------------------------------------------------------- */
+    const container = document.getElementById('indicator-container');
+    let lastLetter = '';
+    allIndicators.forEach(ind => {
+      const first = ind.name[0].toUpperCase();
+      if (first !== lastLetter) {
+        lastLetter = first;
+        const cat = document.createElement('div');
+        cat.className = 'category';
+        cat.textContent = first;
+        container.appendChild(cat);
+      }
+
+      const card = document.createElement('div');
+      card.className = 'indicator-card';
+      card.dataset.name = ind.name;
+      card.innerHTML = `<h3>${ind.name}</h3><p>${ind.description}</p>`;
+      card.title = `Add ${ind.name} to the chart`;
+      card.addEventListener('click', () => addIndicatorToChart(ind.name));
+      container.appendChild(card);
+    });
+
+    /* --------------------------------------------------------------
+       4. Live search
+       -------------------------------------------------------------- */
     const searchInput = document.getElementById('indicator-search');
     searchInput.addEventListener('input', () => {
-      const term = searchInput.value.toLowerCase();
-      document.querySelectorAll('.indicator-card').forEach(card => {
-        const text = card.textContent.toLowerCase();
-        card.style.display = text.includes(term) ? '' : 'none';
+      const term = searchInput.value.trim().toLowerCase();
+      document.querySelectorAll('.indicator-card').forEach(c => {
+        const txt = c.textContent.toLowerCase();
+        c.style.display = txt.includes(term) ? '' : 'none';
       });
     });
 
-    // Click to add
-    document.querySelectorAll('.indicator-card').forEach(card => {
-      card.addEventListener('click', () => {
-        alert(`Indicator "${card.dataset.name}" added to chart! (Open chart.html to see)`);
-      });
-    });
+    /* --------------------------------------------------------------
+       5. Add indicator → localStorage → chart.html reads it
+       -------------------------------------------------------------- */
+    function addIndicatorToChart(name) {
+      let added = JSON.parse(localStorage.getItem('chartIndicators') || '[]');
+      if (!added.includes(name)) {
+        added.push(name);
+        localStorage.setItem('chartIndicators', JSON.stringify(added));
+        alert(`${name} added! Open chart.html to see it plotted.`);
+      } else {
+        alert(`${name} is already on the chart.`);
+      }
+    }
+
+    /* --------------------------------------------------------------
+       6. (Optional) Clear all indicators from the chart
+       -------------------------------------------------------------- */
+    // Uncomment if you want a “Clear all” button
+    const clearBtn = document.createElement('button');
+    clearBtn.textContent = 'Clear All Indicators';
+    clearBtn.style.marginTop = '1rem';
+    clearBtn.onclick = () => { localStorage.removeItem('chartIndicators'); alert('All cleared'); };
+     document.querySelector('.container').appendChild(clearBtn);
   </script>
 </body>
 </html>
