@@ -4,87 +4,59 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Chart - TradeVision</title>
-
-  <!-- Favicon -->
   <link rel="icon" href="assets/icons/chart.svg" type="image/svg+xml">
-
-  <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-  <!-- Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
-  <!-- Lightweight Charts (stable) -->
   <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4/dist/lightweight-charts.standalone.production.js"></script>
-
-  <!-- Technical Indicators (UMD build – works in browser) -->
-  <script src="https://cdn.jsdelivr.net/npm/technicalindicators@3/dist/technicalindicators.js"></script>
-
+  <link id="theme-style" rel="stylesheet" href="assets/css/main.css">
+  <link rel="stylesheet" href="assets/css/dark-theme.css">
   <style>
-    :root{
-      --bg:#141518;--bg-light:#1e222d;--text:#d1d4dc;--text-light:#9ea1b5;
-      --accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#2d313e;--card:#1e222d;
-    }
-    [data-theme="light"]{
-      --bg:#ffffff;--bg-light:#f8f9fa;--text:#2d3748;--text-light:#718096;
-      --accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#e2e8f0;--card:#ffffff;
-    }
-    *,*::before,*::after{box-sizing:border-box;}
-    body{margin:0;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;}
+    :root{--bg:#141518;--bg-light:#1e222d;--text:#d1d4dc;--text-light:#9ea1b5;--accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#2d313e;--card:#1e222d;}
+    [data-theme="light"]{--bg:#ffffff;--bg-light:#f8f9fa;--text:#2d3748;--text-light:#718096;--accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#e2e8f0;--card:#ffffff;}
+    body{margin:0;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);}
     a{color:var(--accent);text-decoration:none;}
     .container{max-width:1400px;margin:0 auto;padding:0 1rem;}
     .flex-between{display:flex;justify-content:space-between;align-items:center;}
-    .flex-center{display:flex;align-items:center;gap:.5rem;}
-    .header{background:var(--bg-light);border-bottom:1px solid var(--border);padding:.75rem 0;position:sticky;top:0;z-index:100;}
+    .flex-center{display:flex;align-items:center;gap:0.5rem;}
+    .header{background:var(--bg-light);border-bottom:1px solid var(--border);padding:0.75rem 0;position:sticky;top:0;z-index:100;}
     .logo{font-weight:700;font-size:1.4rem;color:var(--accent);}
     .logo i{font-size:1.5rem;}
-    .nav-links a{margin:0 .75rem;font-weight:500;}
-    .icon-btn{background:none;border:none;color:var(--text-light);font-size:1.2rem;cursor:pointer;padding:.5rem;}
-
+    .nav-links a{margin:0 0.75rem;font-weight:500;}
+    .icon-btn{background:none;border:none;color:var(--text-light);font-size:1.2rem;cursor:pointer;padding:0.5rem;}
     .chart-layout{display:grid;grid-template-columns:60px 1fr 250px;gap:0;height:calc(100vh - 60px);}
-    .sidebar-left{background:var(--bg-light);border-right:1px solid var(--border);overflow-y:auto;padding:.5rem;}
-    .sidebar-left button{width:100%;padding:.75rem 0;border:none;background:none;color:var(--text-light);cursor:pointer;text-align:center;font-size:.9rem;}
+    .sidebar-left{background:var(--bg-light);border-right:1px solid var(--border);overflow-y:auto;padding:0.5rem;}
+    .sidebar-left button{width:100%;padding:0.75rem 0;border:none;background:none;color:var(--text-light);cursor:pointer;text-align:center;font-size:0.9rem;}
     .sidebar-left button:hover,.sidebar-left button.active{background:var(--accent);color:white;}
-    .sidebar-left i{font-size:1.2rem;display:block;margin-bottom:.25rem;}
-    .main-chart{position:relative;overflow:hidden;}
-    #chart-container{position:relative;width:100%;height:100%;}
-    #chart{width:100%;height:100%;}
-    #drawing-canvas{position:absolute;top:0;left:0;pointer-events:auto;z-index:10;}
+    .sidebar-left i{font-size:1.2rem;display:block;margin-bottom:0.25rem;}
+    .main-chart{overflow:hidden;position:relative;}
+    #chart-container{width:100%;height:100%;position:relative;}
     .sidebar-right{background:var(--bg-light);border-left:1px solid var(--border);padding:1rem;overflow-y:auto;}
     .panel-title{font-weight:600;margin-bottom:1rem;font-size:1rem;}
     .symbol-info{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;}
     .symbol-info h2{font-size:1.3rem;margin:0;}
     .symbol-info .price{font-size:1.2rem;font-weight:600;}
-    .change{color:#26a69a;}
-    .change.negative{color:#ef5350;}
-    .timeframe-bar{margin-bottom:1rem;display:flex;flex-wrap:wrap;gap:.5rem;}
-    .timeframe-btn{padding:.4rem .8rem;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:4px;font-size:.85rem;cursor:pointer;}
+    .change{color:var(--green);}
+    .change.negative{color:var(--red);}
+    .timeframe-bar{margin-bottom:1rem;display:flex;flex-wrap:wrap;gap:0.5rem;}
+    .timeframe-btn{padding:0.4rem 0.8rem;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:4px;font-size:0.85rem;cursor:pointer;}
     .timeframe-btn.active{background:var(--accent);color:white;border-color:var(--accent);}
     .indicator-list{margin-top:1rem;}
-    .indicator-item{display:flex;justify-content:space-between;align-items:center;padding:.5rem 0;border-bottom:1px solid var(--border);font-size:.9rem;}
+    .indicator-item{display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid var(--border);font-size:0.9rem;}
     .remove-indicator{color:var(--red);cursor:pointer;}
-    .footer{background:var(--bg-light);border-top:1px solid var(--border);padding:.75rem 0;font-size:.8rem;text-align:center;color:var(--text-light);}
-
-    #drawing-tools{margin:1rem 0;display:flex;gap:.5rem;flex-wrap:wrap;}
-    #drawing-tools button{padding:.5rem 1rem;background:var(--card);border:1px solid var(--border);border-radius:4px;color:var(--text);cursor:pointer;}
-    #drawing-tools button.active{background:var(--accent);color:white;}
-
-    .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);align-items:center;justify-content:center;z-index:1000;}
-    .modal.active{display:flex;}
-    .modal-content{background:var(--card);padding:1.5rem;border-radius:8px;width:90%;max-width:400px;}
-    .modal-close{float:right;cursor:pointer;color:var(--text-light);}
-    .modal-btn{width:100%;margin:0.5rem 0;padding:0.5rem;background:var(--bg-light);border:1px solid var(--border);border-radius:4px;cursor:pointer;text-align:left;}
-
-    @media(max-width:992px){
-      .chart-layout{grid-template-columns:1fr;}
-      .sidebar-left,.sidebar-right{display:none;}
-    }
+    .footer{background:var(--bg-light);border-top:1px solid var(--border);padding:0.75rem 0;font-size:0.8rem;text-align:center;color:var(--text-light);}
+    @media(max-width:992px){.chart-layout{grid-template-columns:1fr;}}
+    @media(max-width:992px){.sidebar-left,.sidebar-right{display:none;}}
+    
+    /* Status indicator */
+    .status-indicator{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;}
+    .status-connected{background:var(--green);}
+    .status-disconnected{background:var(--red);}
+    .status-connecting{background:#ff9800;animation:pulse 1.5s infinite;}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
   </style>
 </head>
 
 <body data-theme="dark">
-
-  <!-- HEADER -->
   <header class="header">
     <div class="container flex-between">
       <div class="logo"><a href="index.html" class="flex-center"><i class="fas fa-chart-line"></i><span>TradeVision</span></a></div>
@@ -105,23 +77,21 @@
     </div>
   </header>
 
-  <!-- Drawing Toolbar -->
-  <div id="drawing-tools" class="container"></div>
-
-  <!-- Layout -->
   <div class="chart-layout">
+    <!-- Left Sidebar: Drawing Tools -->
     <div class="sidebar-left">
       <button data-tool="cursor" class="active"><i class="fas fa-mouse-pointer"></i><span>Cursor</span></button>
       <button data-tool="line"><i class="fas fa-minus"></i><span>Line</span></button>
       <button data-tool="trendline"><i class="fas fa-chart-line"></i><span>Trend</span></button>
       <button data-tool="horizontal"><i class="fas fa-grip-lines"></i><span>H-Line</span></button>
-      <button data-tool="fib"><i class="fas fa-ruler"></i><span>Fib</span></button>
+      <button data-tool="fib-retracement"><i class="fas fa-ruler"></i><span>Fib</span></button>
       <button data-tool="rectangle"><i class="fas fa-square"></i><span>Rect</span></button>
       <button data-tool="ellipse"><i class="fas fa-circle"></i><span>Ellipse</span></button>
       <button data-tool="text"><i class="fas fa-font"></i><span>Text</span></button>
-      <button data-tool="arrow"><i class="fas fa-arrow-up"></i><span>Arrow</span></button>
+      <button data-tool="arrow"><i class="fas fa-arrow-up"></i><span>Awrow</span></button>
     </div>
 
+    <!-- Main Chart -->
     <div class="main-chart">
       <div id="chart-container">
         <div id="chart"></div>
@@ -129,6 +99,7 @@
       </div>
     </div>
 
+    <!-- Right Sidebar: Symbol Info + Timeframes + Indicators -->
     <div class="sidebar-right">
       <div class="symbol-info">
         <div>
@@ -154,87 +125,88 @@
 
       <div>
         <div class="panel-title">Indicators</div>
-        <button id="add-indicator-btn">+ Add Indicator</button>
+        <button id="add-indicator-btn" style="width:100%;padding:0.5rem;background:var(--accent);color:white;border:none;border-radius:4px;cursor:pointer;">+ Add Indicator</button>
         <div id="indicator-list" class="indicator-list"></div>
       </div>
 
       <div style="margin-top:1rem;">
-        <button onclick="runSavedPine()">Run Saved Pine</button>
+        <button onclick="runSavedPine()" style="width:100%;padding:0.5rem;background:var(--accent);color:white;border:none;border-radius:4px;cursor:pointer;">Run Saved Pine</button>
       </div>
     </div>
   </div>
 
-  <!-- Modal -->
+  <!-- Add Indicator Modal -->
   <div id="indicator-modal" class="modal">
     <div class="modal-content">
       <span class="modal-close">x</span>
-      <h3>Add Indicator</h3>
+      <h3 style="margin-top:0;">Add Indicator</h3>
       <button class="modal-btn" data-ind="RSI">RSI (14)</button>
       <button class="modal-btn" data-ind="MACD">MACD</button>
       <button class="modal-btn" data-ind="EMA20">EMA (20)</button>
     </div>
   </div>
 
-  <footer class="footer"><div class="container">© 2025 TradeVision. Open Source.</div></footer>
+  <footer class="footer">
+    <div class="container">© 2025 TradeVision. Open Source.</div>
+  </footer>
 
-  <!-- SCRIPT -->
   <script>
-    // 1. Theme
+    // Theme Toggle
     const themeToggle = document.getElementById('theme-toggle');
     const body = document.body;
     const themeIcon = themeToggle.querySelector('i');
-    function setTheme(dark) {
-      body.setAttribute('data-theme', dark ? 'dark' : 'light');
-      themeIcon.classList.toggle('fa-moon', dark);
-      themeIcon.classList.toggle('fa-sun', !dark);
-      localStorage.setItem('theme', dark ? 'dark' : 'light');
+    themeToggle.addEventListener('click', () => {
+      const isDark = body.getAttribute('data-theme') === 'dark';
+      body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+      themeIcon.classList.toggle('fa-moon'); themeIcon.classList.toggle('fa-sun');
+      localStorage.setItem('theme', isDark ? 'light' : 'dark');
+    });
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    body.setAttribute('data-theme', savedTheme);
+    if (savedTheme === 'light') themeIcon.classList.replace('fa-moon', 'fa-sun');
+
+    // Symbol from URL
+    function getSymbol() {
+      const params = new URLSearchParams(location.search);
+      return (params.get('symbol') || 'BTCUSD').toUpperCase();
     }
-    themeToggle.addEventListener('click', () => setTheme(body.getAttribute('data-theme') !== 'dark'));
-    setTheme(localStorage.getItem('theme') !== 'light');
 
-    // 2. Symbol - RESTORED ORIGINAL FORMAT
-    const urlParams = new URLSearchParams(location.search);
-    let symbol = (urlParams.get('symbol') || 'BTCUSD').toUpperCase();
-    
-    // Original symbol mapping
-    const binanceMap = { BTCUSD:'btcusdt',ETHUSD:'ethusdt',AAPL:'aaplusdt',TSLA:'tslausdt',SPY:'spyusdt' };
+    const symbol = getSymbol();
+    const binanceMap = {
+      'BTCUSD': 'btcusdt', 'ETHUSD': 'ethusdt',
+      'AAPL': 'aaplusdt', 'TSLA': 'tslausdt', 'SPY': 'spyusdt'
+    };
     const binanceSym = binanceMap[symbol] || symbol.toLowerCase() + 'usdt';
-    
-    // RESTORED ORIGINAL DISPLAY
-    document.getElementById('symbol-name').textContent = symbol;
-    document.getElementById('symbol-exchange').textContent = symbol.endsWith('USD') ? 'CRYPTO' : 'NASDAQ';
 
-    // 3. Chart globals
+    document.getElementById('symbol-name').textContent = symbol;
+    document.getElementById('symbol-exchange').textContent = symbol.includes('USD') ? 'CRYPTO' : 'NASDAQ';
+
+    // Chart globals
     let chart, priceSeries;
     let priceData = [];
     let klineWs, tickerWs;
     let currentInterval = '15m';
-    const indicatorSeries = {}, indicatorInst = {};
 
-    // 4. Wait for LW + TI - RESTORED ORIGINAL
+    // Indicator globals
+    const indicatorSeries = {};
+    const indicatorInst = {};
+
+    // Wait for libraries
     function waitForLibs() {
-      if (typeof LightweightCharts !== 'undefined' && typeof TI !== 'undefined') initAll();
-      else setTimeout(waitForLibs, 50);
+      if (typeof LightweightCharts !== 'undefined') {
+        initChart();
+      } else {
+        setTimeout(waitForLibs, 50);
+      }
     }
 
-    async function initAll() {
-      await createChart();
-      await loadHistory(currentInterval);
-      connectTicker();
-      initDrawing();
-      initToolbars();
-      initIndicatorsModal();
-    }
-
-    // 5. Create chart (HEX colors only!) - RESTORED ORIGINAL
-    async function createChart() {
-      const container = document.getElementById('chart');
+    async function initChart() {
+      const container = document.getElementById('chart-container');
       chart = LightweightCharts.createChart(container, {
         width: container.clientWidth,
         height: container.clientHeight,
-        layout: { background: { color: '#141518' }, textColor: '#d1d4dc' },
+        layout: { background: { color: 'transparent' }, textColor: '#d1d4dc' },
         grid: { vertLines: { color: '#2d313e' }, horzLines: { color: '#2d313e' } },
-        crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
         timeScale: { borderColor: '#2d313e' }
       });
 
@@ -243,147 +215,101 @@
         wickUpColor: '#26a69a', wickDownColor: '#ef5350'
       });
 
-      new ResizeObserver(() => {
-        chart.applyOptions({ width: container.clientWidth, height: container.clientHeight });
-        resizeCanvas();
-      }).observe(container);
+      await loadHistory(currentInterval);
+      connectTicker();
+      connectKline(currentInterval);
+      initDrawing();
+      initToolbars();
     }
 
-    // 6. Load history - RESTORED ORIGINAL WITH FIXES
+    // Load history from Binance (same as index's ticker mapping)
     async function loadHistory(interval) {
-      try {
-        const limit = interval === '1' ? 500 : 300;
-        // Convert interval to Binance format
-        const binanceInterval = interval === 'D' ? '1d' :
-                              interval === 'W' ? '1w' :
-                              interval === 'M' ? '1M' : interval + 'm';
-        
-        const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=${binanceSym.toUpperCase()}&interval=${binanceInterval}&limit=${limit}`);
-        const raw = await res.json();
-        priceData = raw.map(k => ({
-          time: k[0] / 1000,
-          open: +k[1], high: +k[2], low: +k[3], close: +k[4]
-        }));
-        priceSeries.setData(priceData);
-        initAllIndicators();
-        
-        // Connect kline after history loads
-        connectKline(interval);
-      } catch (error) {
-        console.error('Failed to load history, using sample data:', error);
-        generateSampleData();
-        connectKline(interval);
-      }
-    }
-
-    // Sample data fallback
-    function generateSampleData() {
-      const now = Math.floor(Date.now() / 1000);
-      let price = 45000;
-      
-      priceData = [];
-      for (let i = 100; i >= 0; i--) {
-        const change = (Math.random() - 0.5) * 1000;
-        price += change;
-        priceData.push({
-          time: now - i * 900,
-          open: price,
-          high: price + Math.random() * 200,
-          low: price - Math.random() * 200,
-          close: price + change
-        });
-      }
+      const limit = 200;
+      const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=${binanceSym.toUpperCase()}&interval=${interval}&limit=${limit}`);
+      const raw = await res.json();
+      priceData = raw.map(k => ({
+        time: k[0] / 1000,
+        open: parseFloat(k[1]),
+        high: parseFloat(k[2]),
+        low: parseFloat(k[3]),
+        close: parseFloat(k[4])
+      }));
       priceSeries.setData(priceData);
+      initAllIndicators();
     }
 
-    // 7. Live kline - FIXED WEBSOCKET
-    function connectKline(interval) {
-      if (klineWs) klineWs.close();
-      
-      // Convert interval to Binance format
-      const binanceInterval = interval === 'D' ? '1d' :
-                            interval === 'W' ? '1w' :
-                            interval === 'M' ? '1M' : interval + 'm';
-      
-      klineWs = new WebSocket(`wss://stream.binance.com:9443/ws/${binanceSym}@kline_${binanceInterval}`);
-      
-      klineWs.onmessage = e => {
-        const k = JSON.parse(e.data).k;
-        if (!k.x) return;
-        const bar = { time: k.t/1000, open:+k.o, high:+k.h, low:+k.l, close:+k.c };
-        priceData.push(bar);
-        if (priceData.length > 1000) priceData.shift();
-        priceSeries.update(bar);
-        updateAllIndicators(bar);
-      };
-      
-      klineWs.onclose = () => setTimeout(() => connectKline(interval), 3000);
-    }
-
-    // 8. Ticker - FIXED WEBSOCKET
+    // Live ticker (exact copy from index)
     function connectTicker() {
       if (tickerWs) tickerWs.close();
-      
       tickerWs = new WebSocket(`wss://stream.binance.com:9443/ws/${binanceSym}@ticker`);
-      
-      tickerWs.onmessage = e => {
+      tickerWs.onmessage = (e) => {
         const t = JSON.parse(e.data);
-        document.getElementById('current-price').textContent = (+t.c).toFixed(2);
-        const chg = +t.P;
+        document.getElementById('current-price').textContent = parseFloat(t.c).toFixed(2);
+        const change = parseFloat(t.P);
         const el = document.getElementById('price-change');
-        el.textContent = (chg >= 0 ? '+' : '') + chg.toFixed(2) + '%';
-        el.className = chg >= 0 ? 'change' : 'change negative';
+        el.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
+        el.style.color = change >= 0 ? '#26a69a' : '#ef5350';
       };
-      
       tickerWs.onclose = () => setTimeout(connectTicker, 3000);
     }
 
-    // 9. Indicators - RESTORED ORIGINAL
+    // Live kline (adapted from index's ticker to kline stream)
+    function connectKline(interval) {
+      if (klineWs) klineWs.close();
+      klineWs = new WebSocket(`wss://stream.binance.com:9443/ws/${binanceSym}@kline_${interval}`);
+      klineWs.onmessage = (e) => {
+        const k = JSON.parse(e.data).k;
+        if (!k.x) return;  // Incomplete bar
+        const bar = {
+          time: k.t / 1000,
+          open: parseFloat(k.o),
+          high: parseFloat(k.h),
+          low: parseFloat(k.l),
+          close: parseFloat(k.c)
+        };
+        priceData.push(bar);
+        if (priceData.length > 500) priceData.shift();
+        priceSeries.update(bar);
+        updateAllIndicators(bar);
+      };
+      klineWs.onclose = () => setTimeout(() => connectKline(interval), 3000);
+    }
+
+    // Indicators (from previous chart, using technicalindicators)
     function initAllIndicators() {
       const closes = priceData.map(d => d.close);
+
       // RSI
       if (!indicatorInst.RSI) {
-        indicatorInst.RSI = new TI.RSI({ period:14, values:closes });
+        indicatorInst.RSI = new TI.RSI({ period: 14, values: closes });
         indicatorSeries.RSI = chart.addLineSeries({ color: '#9c27b0', priceScaleId: 'rsi' });
-        chart.priceScale('rsi').applyOptions({ scaleMargins: { top: 0.85, bottom: 0 } });
-      } else indicatorInst.RSI = new TI.RSI({ period:14, values:closes });
-      const rsi = indicatorInst.RSI.getResult();
-      indicatorSeries.RSI.setData(rsi.map((v,i)=>({time:priceData[i].time,value:v})));
+        chart.priceScale('rsi').applyOptions({ scaleMargins: { top: 0.8, bottom: 0 } });
+      }
+      const rsiValues = indicatorInst.RSI.getResult();
+      const rsiData = rsiValues.map((v, i) => ({ time: priceData[i].time, value: v }));
+      indicatorSeries.RSI.setData(rsiData);
 
       // MACD
       if (!indicatorInst.MACD) {
-        indicatorInst.MACD = new TI.MACD({ fastPeriod:12, slowPeriod:26, signalPeriod:9, values:closes,
-                                          SimpleMAOscillator:true, SimpleMASignal:true });
+        indicatorInst.MACD = new TI.MACD({ fastPeriod: 12, slowPeriod: 26, signalPeriod: 9, values: closes });
         indicatorSeries.MACD = chart.addHistogramSeries({ color: '#2962ff', priceScaleId: 'macd' });
         chart.priceScale('macd').applyOptions({ scaleMargins: { top: 0.7, bottom: 0.1 } });
-      } else indicatorInst.MACD = new TI.MACD({ fastPeriod:12, slowPeriod:26, signalPeriod:9, values:closes,
-                                                SimpleMAOscillator:true, SimpleMASignal:true });
+      }
       const macd = indicatorInst.MACD.getResult();
-      indicatorSeries.MACD.setData(macd.MACD.map((v,i)=>({time:priceData[i].time,value:v})));
-
-      // EMA20
-      if (!indicatorInst.EMA20) {
-        indicatorInst.EMA20 = new TI.EMA({ period:20, values:closes });
-        indicatorSeries.EMA20 = chart.addLineSeries({ color: '#ff9800' });
-      } else indicatorInst.EMA20 = new TI.EMA({ period:20, values:closes });
-      const ema = indicatorInst.EMA20.getResult();
-      indicatorSeries.EMA20.setData(ema.map((v,i)=>({time:priceData[i].time,value:v})));
+      const macdData = macd.MACD.map((v, i) => ({ time: priceData[i].time, value: v }));
+      indicatorSeries.MACD.setData(macdData);
 
       renderIndicatorList();
     }
 
     function updateAllIndicators(bar) {
-      indicatorInst.RSI?.nextValue(bar.close);
-      const rsi = indicatorInst.RSI?.getResult().slice(-1)[0];
-      if (rsi !== undefined) indicatorSeries.RSI?.update({ time: bar.time, value: rsi });
+      indicatorInst.RSI.nextValue(bar.close);
+      const rsiResult = indicatorInst.RSI.getResult();
+      indicatorSeries.RSI.update({ time: bar.time, value: rsiResult[rsiResult.length - 1] });
 
-      indicatorInst.MACD?.nextValue(bar.close);
-      const macd = indicatorInst.MACD?.getResult().MACD.slice(-1)[0];
-      if (macd !== undefined) indicatorSeries.MACD?.update({ time: bar.time, value: macd });
-
-      indicatorInst.EMA20?.nextValue(bar.close);
-      const ema = indicatorInst.EMA20?.getResult().slice(-1)[0];
-      if (ema !== undefined) indicatorSeries.EMA20?.update({ time: bar.time, value: ema });
+      indicatorInst.MACD.nextValue(bar.close);
+      const macdResult = indicatorInst.MACD.getResult();
+      indicatorSeries.MACD.update({ time: bar.time, value: macdResult.MACD[macdResult.MACD.length - 1] });
     }
 
     function renderIndicatorList() {
@@ -397,124 +323,45 @@
       });
     }
 
-    // 10. Timeframe - RESTORED ORIGINAL
+    // Timeframe buttons
     document.querySelectorAll('.timeframe-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.timeframe-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        const int = btn.dataset.interval === 'D' ? '1d' :
-                    btn.dataset.interval === 'W' ? '1w' :
-                    btn.dataset.interval === 'M' ? '1M' : btn.dataset.interval + 'm';
-        currentInterval = int;
-        loadHistory(int);
-        connectKline(int);
+        currentInterval = btn.dataset.interval === 'D' ? '1d' : btn.dataset.interval + 'm';
+        loadHistory(currentInterval);
+        connectKline(currentInterval);
       });
     });
 
-    // 11. Add Indicator Modal - RESTORED ORIGINAL
-    function initIndicatorsModal() {
-      const modal = document.getElementById('indicator-modal');
-      const close = document.querySelector('.modal-close');
-      const addBtn = document.getElementById('add-indicator-btn');
-      addBtn.onclick = () => modal.classList.add('active');
-      close.onclick = modal.onclick = e => { if (e.target === modal || e.target === close) modal.classList.remove('active'); };
+    // Add Indicator Modal
+    document.getElementById('add-indicator-btn').addEventListener('click', () => {
+      document.getElementById('indicator-modal').style.display = 'block';
+    });
 
-      document.querySelectorAll('.modal-btn').forEach(b => {
-        b.onclick = () => {
-          const ind = b.dataset.ind;
-          if (indicatorSeries[ind]) return;
-          const closes = priceData.map(d => d.close);
-          if (ind === 'RSI') indicatorInst.RSI = new TI.RSI({ period:14, values:closes });
-          if (ind === 'MACD') indicatorInst.MACD = new TI.MACD({ fastPeriod:12, slowPeriod:26, signalPeriod:9, values:closes,
-                                                             SimpleMAOscillator:true, SimpleMASignal:true });
-          if (ind === 'EMA20') indicatorInst.EMA20 = new TI.EMA({ period:20, values:closes });
-          initAllIndicators();
-          modal.classList.remove('active');
-        };
+    document.querySelector('.modal-close').addEventListener('click', () => {
+      document.getElementById('indicator-modal').style.display = 'none';
+    });
+
+    document.querySelectorAll('.modal-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const ind = btn.dataset.ind;
+        if (indicatorSeries[ind]) return;
+        // Add indicator (simplified)
+        const item = document.createElement('div');
+        item.className = 'indicator-item';
+        item.innerHTML = `<span>${ind}</span><i class="fas fa-times remove-indicator" data-ind="${ind}"></i>`;
+        document.getElementById('indicator-list').appendChild(item);
+        document.getElementById('indicator-modal').style.display = 'none';
       });
+    });
 
-      document.getElementById('indicator-list').addEventListener('click', e => {
-        if (e.target.classList.contains('remove-indicator')) {
-          const name = e.target.dataset.ind;
-          indicatorSeries[name]?.remove();
-          delete indicatorSeries[name];
-          delete indicatorInst[name];
-          renderIndicatorList();
-        }
-      });
-    }
-
-    // 12. Drawing - RESTORED ORIGINAL
-    let isDrawing = false, currentTool = 'cursor', startPoint = null;
-    const drawings = [];
-    const canvas = document.getElementById('drawing-canvas');
-    const ctx = canvas.getContext('2d');
-
-    function resizeCanvas() {
-      const rect = chart.getContainer().getBoundingClientRect();
-      canvas.width = rect.width; canvas.height = rect.height;
-      redraw();
-    }
-
-    function initDrawing() {
-      resizeCanvas();
-      window.addEventListener('resize', resizeCanvas);
-
-      const top = document.getElementById('drawing-tools');
-      top.innerHTML = `<button data-tool="cursor" class="active">Cursor</button>
-                       <button data-tool="line">Line</button>
-                       <button data-tool="fib">Fib</button>
-                       <button data-tool="text">Text</button>
-                       <button id="clear-drawings">Clear</button>`;
-      top.addEventListener('click', e => {
-        if (!e.target.dataset?.tool && e.target.id !== 'clear-drawings') return;
-        top.querySelectorAll('button').forEach(b => b.classList.remove('active'));
-        e.target.classList.add('active');
-        currentTool = e.target.dataset.tool || 'cursor';
-      });
-      document.getElementById('clear-drawings').onclick = () => { drawings.length = 0; redraw(); };
-
-      document.querySelectorAll('.sidebar-left button').forEach(b => {
-        b.addEventListener('click', () => {
-          document.querySelectorAll('.sidebar-left button').forEach(x => x.classList.remove('active'));
-          b.classList.add('active');
-          currentTool = b.dataset.tool;
-        });
-      });
-
-      chart.subscribeClick(param => {
-        if (currentTool === 'cursor' || !param.point) return;
-        if (!isDrawing) {
-          startPoint = { x: param.point.x, y: param.point.y, time: param.time };
-          isDrawing = true;
-        } else {
-          drawings.push({ tool: currentTool, start: startPoint, end: { x: param.point.x, y: param.point.y, time: param.time } });
-          isDrawing = false;
-          redraw();
-        }
-      });
-    }
-
-    function redraw() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      drawings.forEach(d => {
-        ctx.strokeStyle = '#2962ff';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(d.start.x, d.start.y);
-        ctx.lineTo(d.end.x, d.end.y);
-        ctx.stroke();
-      });
-    }
-
-    // 13. Pine stub - RESTORED ORIGINAL
+    // Run Saved Pine (stub)
     function runSavedPine() {
-      const script = localStorage.getItem('pineScript') || '';
-      if (!script) return alert('No Pine script saved. Edit in pine-editor.html first.');
-      alert('Pine execution stub – ready for PineJS');
+      alert('Pine Script execution stub - integrate PineJS here');
     }
 
-    // 14. Start - RESTORED ORIGINAL
+    // Start
     waitForLibs();
   </script>
 </body>
