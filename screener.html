@@ -104,88 +104,77 @@
     <div class="container">© 2025 TradeVision. Open Source.</div>
   </footer>
 
-  <script>
-    const themeToggle = document.getElementById('theme-toggle');
-    const body = document.body;
-    const themeIcon = themeToggle.querySelector('i');
-    themeToggle.addEventListener('click', () => {
-      const isDark = body.getAttribute('data-theme') === 'dark';
-      body.setAttribute('data-theme', isDark ? 'light' : 'dark');
-      themeIcon.classList.toggle('fa-moon'); themeIcon.classList.toggle('fa-sun');
-      localStorage.setItem('theme', isDark ? 'light' : 'dark');
-    });
-    const savedTheme = localStorage.getItem('theme') || 'dark';
-    body.setAttribute('data-theme', savedTheme);
-    if (savedTheme === 'light') themeIcon.classList.replace('fa-moon', 'fa-sun');
+ <script>
+  const themeToggle = document.getElementById('theme-toggle');
+  const body = document.body;
+  const themeIcon = themeToggle.querySelector('i');
+  themeToggle.addEventListener('click', () => {
+    const isDark = body.getAttribute('data-theme') === 'dark';
+    body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+    themeIcon.classList.toggle('fa-moon'); themeIcon.classList.toggle('fa-sun');
+    localStorage.setItem('theme', isDark ? 'light' : 'dark');
+  });
+  const savedTheme = localStorage.getItem('theme') || 'dark';
+  body.setAttribute('data-theme', savedTheme);
+  if (savedTheme === 'light') themeIcon.classList.replace('fa-moon', 'fa-sun');
 
-    const stocks = [
-      {symbol:'AAPL',price:182.5,change:1.2,volume:58000000,marketCap:2900000000000,pe:30.5},
-      {symbol:'MSFT',price:378.2,change:-0.5,volume:22000000,marketCap:2800000000000,pe:35.2},
-      {symbol:'GOOGL',price:142.8,change:2.1,volume:30000000,marketCap:1800000000000,pe:28.1},
-      {symbol:'TSLA',price:248.6,change:-3.4,volume:110000000,marketCap:790000000000,pe:72.3},
-      {symbol:'NVDA',price:488.9,change:4.5,volume:45000000,marketCap:1200000000000,pe:65.8},
-      {symbol:'META',price:488.1,change:0.8,volume:18000000,marketCap:1250000000000,pe:32.4},
-    ];
+  const symbols = ['BTCUSD', 'ETHUSD', 'AAPL', 'TSLA', 'SPY', 'NVDA'];
+  const binanceMap = { 'BTCUSD': 'btcusdt', 'ETHUSD': 'ethusdt', 'AAPL': 'aaplusdt', 'TSLA': 'tslausdt', 'SPY': 'spyusdt', 'NVDA': 'nvdausdt' };
+  let ws;
 
+  function render() {
     const tbody = document.querySelector('#screener-table tbody');
-    let sortCol = 'symbol', sortAsc = true;
-
-    function render() {
-      tbody.innerHTML = '';
-      let filtered = stocks.filter(s => {
-        const cap = document.getElementById('market-cap').value;
-        const minP = document.getElementById('min-price').value || 0;
-        const maxP = document.getElementById('max-price').value || Infinity;
-        const minV = document.getElementById('min-volume').value || 0;
-        return (!cap || s.marketCap > parseFloat(cap.replace(/[^0-9]/g,''))*1e9) &&
-               s.price >= minP && s.price <= maxP && s.volume >= minV;
-      });
-      filtered.sort((a,b) => {
-        let av = a[sortCol], bv = b[sortCol];
-        if (sortCol === 'symbol') return sortAsc ? av.localeCompare(bv) : bv.localeCompare(av);
-        return sortAsc ? av - bv : bv - av;
-      });
-      filtered.forEach(s => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td class="symbol"><a href="chart.html?symbol=${s.symbol}">${s.symbol}</a></td>
-          <td>$${s.price.toFixed(2)}</td>
-          <td class="change ${s.change<0?'negative':''}">${s.change>0?'+':''}${s.change}%</td>
-          <td>${(s.volume/1e6).toFixed(1)}M</td>
-          <td>$${(s.marketCap/1e9).toFixed(0)}B</td>
-          <td>${s.pe}</td>
-          <td><button class="add-watchlist" data-symbol="${s.symbol}">+ Watch</button></td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    document.querySelectorAll('.sortable').forEach(th => {
-      th.addEventListener('click', () => {
-        const col = th.dataset.col;
-        if (sortCol === col) sortAsc = !sortAsc;
-        else { sortCol = col; sortAsc = true; }
-        render();
-      });
+    tbody.innerHTML = '';
+    symbols.forEach(sym => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><a href="chart.html?symbol=${sym}">${sym}</a></td>
+        <td class="price">—</td>
+        <td class="change">—</td>
+        <td><button class="watch-btn" data-sym="${sym}">+ Watch</button></td>
+      `;
+      tbody.appendChild(tr);
     });
+  }
 
-    document.querySelectorAll('.filters input, .filters select').forEach(el => {
-      el.addEventListener('input', render);
-    });
+  function connectWS() {
+    const streams = symbols.map(s => `${binanceMap[s]}@ticker`).join('/');
+    ws = new WebSocket(`wss://stream.binance.com:9443/stream?streams=${streams}`);
 
-    tbody.addEventListener('click', e => {
-      if (e.target.classList.contains('add-watchlist')) {
-        const sym = e.target.dataset.symbol;
-        let wl = JSON.parse(localStorage.getItem('watchlist')) || [];
-        if (!wl.includes(sym)) {
-          wl.push(sym);
-          localStorage.setItem('watchlist', JSON.stringify(wl));
-          alert(`${sym} added to watchlist!`);
-        }
+    ws.onmessage = (e) => {
+      const msg = JSON.parse(e.data);
+      if (!msg.data) return;
+      const t = msg.data;
+      const sym = Object.keys(binanceMap).find(k => binanceMap[k] === t.s.toLowerCase());
+
+      const row = document.querySelector(`tr td a[href*="symbol=${sym}"]`)?.parentElement?.parentElement;
+      if (row) {
+        row.querySelector('.price').textContent = parseFloat(t.c).toFixed(2);
+        const change = parseFloat(t.P);
+        const chgEl = row.querySelector('.change');
+        chgEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
+        chgEl.style.color = change >= 0 ? 'var(--green)' : 'var(--red)';
       }
-    });
+    };
 
-    render();
-  </script>
+    ws.onclose = () => setTimeout(connectWS, 3000);
+  }
+
+  document.getElementById('screener-table').addEventListener('click', e => {
+    if (e.target.classList.contains('watch-btn')) {
+      const sym = e.target.dataset.sym;
+      let watchlist = JSON.parse(localStorage.getItem('watchlist')) || [];
+      if (!watchlist.includes(sym)) {
+        watchlist.push(sym);
+        localStorage.setItem('watchlist', JSON.stringify(watchlist));
+        e.target.textContent = 'Added';
+        e.target.disabled = true;
+      }
+    }
+  });
+
+  render();
+  connectWS();
+</script>
 </body>
 </html>
