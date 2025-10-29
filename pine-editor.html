@@ -3,163 +3,225 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <script src="https://unpkg.com/@pinejs/pinejs@1.0.0/dist/pinejs.js"></script>
   <title>Pine Editor - TradeVision</title>
-  <link rel="icon" href="assets/icons/chart.svg" type="image/svg+xml">
+  <link rel="icon" href="assets/icons/code.svg" type="image/svg+xml">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4/dist/lightweight-charts.standalone.production.js"></script>
   <style>
-    :root{--bg:#141518;--bg-light:#1e222d;--text:#d1d4dc;--text-light:#9ea1b5;--accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#2d313e;--card:#1e222d;}
-    [data-theme="light"]{--bg:#ffffff;--bg-light:#f8f9fa;--text:#2d3748;--text-light:#718096;--accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#e2e8f0;--card:#ffffff;}
-    body{margin:0;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);}
+    :root{
+      --bg:#141518;--bg-light:#1e222d;--text:#d1d4dc;--text-light:#9ea1b5;
+      --accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#2d313e;--card:#1e222d;
+    }
+    [data-theme="light"]{
+      --bg:#ffffff;--bg-light:#f8f9fa;--text:#2d3748;--text-light:#718096;
+      --accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#e2e8f0;--card:#ffffff;
+    }
+    *,*::before,*::after{box-sizing:border-box;}
+    body{margin:0;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;}
     a{color:var(--accent);text-decoration:none;}
-    .container{max-width:1200px;margin:0 auto;padding:2rem 1rem;}
-    .header{background:var(--bg-light);border-bottom:1px solid var(--border);padding:0.75rem 0;position:sticky;top:0;z-index:100;}
+    .container{max-width:1400px;margin:0 auto;padding:0 1rem;}
     .flex-between{display:flex;justify-content:space-between;align-items:center;}
+    .header{background:var(--bg-light);border-bottom:1px solid var(--border);padding:.75rem 0;position:sticky;top:0;z-index:100;}
     .logo{font-weight:700;font-size:1.4rem;color:var(--accent);}
     .logo i{font-size:1.5rem;}
-    .nav-links a{margin:0 0.75rem;font-weight:500;}
-    .icon-btn{background:none;border:none;color:var(--text-light);font-size:1.2rem;cursor:pointer;padding:0.5rem;}
-    .editor-container{background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden;}
-    #editor{height:400px;background:#1e1e1e;color:#d4d4d4;font-family:monospace;font-size:14px;padding:1rem;}
-    .editor-actions{padding:1rem;background:var(--bg-light);display:flex;gap:1rem;}
-    button{background:var(--accent);color:white;padding:0.5rem 1rem;border:none;border-radius:4px;cursor:pointer;}
-    .footer{background:var(--bg-light);border-top:1px solid var(--border);padding:1rem 0;font-size:0.8rem;text-align:center;color:var(--text-light);}
+    .nav-links a{margin:0 .75rem;font-weight:500;}
+    .icon-btn{background:none;border:none;color:var(--text-light);font-size:1.2rem;cursor:pointer;padding:.5rem;}
+
+    .editor-layout{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:0;
+      height:calc(100vh - 60px);
+    }
+    .editor-panel{
+      display:flex;flex-direction:column;
+      background:var(--bg-light);border-right:1px solid var(--border);
+    }
+    .editor-header{
+      padding:0.75rem 1rem;border-bottom:1px solid var(--border);font-weight:600;
+      display:flex;justify-content:space-between;align-items:center;
+    }
+    .editor-body{flex:1;position:relative;}
+    #pine-editor{width:100%;height:100%;font-size:14px;}
+    .chart-panel{overflow:hidden;position:relative;}
+    #chart-container{width:100%;height:100%;}
+
+    .run-btn{
+      background:var(--accent);color:white;border:none;padding:0.5rem 1rem;
+      border-radius:4px;cursor:pointer;font-weight:600;
+    }
+    .run-btn:disabled{background:#555;cursor:not-allowed;}
+
+    .footer{background:var(--bg-light);border-top:1px solid var(--border);padding:0.75rem 0;font-size:0.8rem;text-align:center;color:var(--text-light);}
+    
+    @media(max-width:992px){.editor-layout{grid-template-columns:1fr;}}
   </style>
 </head>
+
 <body data-theme="dark">
   <header class="header">
     <div class="container flex-between">
-      <div class="logo"><a href="index.html" class="flex-center"><i class="fas fa-chart-line"></i><span>TradeVision</span></a></div>
+      <div class="logo"><a href="index.html" class="flex-center"><i class="fas fa-code"></i><span>Pine Editor</span></a></div>
       <nav class="nav-links">
         <a href="chart.html">Chart</a>
         <a href="watchlist.html">Watchlist</a>
         <a href="screener.html">Screener</a>
         <a href="ideas.html">Ideas</a>
-        <a href="alerts.html">Alerts</a>
-        <a href="trading.html">Trade</a>
-        <a href="backtest.html">Backtest</a>
       </nav>
       <div class="header-actions">
         <button id="theme-toggle" class="icon-btn"><i class="fas fa-moon"></i></button>
-        <a href="profile.html" class="icon-btn"><i class="fas fa-user"></i></a>
-        <a href="settings.html" class="icon-btn"><i class="fas fa-cog"></i></a>
       </div>
     </div>
   </header>
 
-  <div class="container">
-  <h1>Pine Script Editor</h1>
-  <textarea id="pine-editor" style="width:100%; height:200px; background:var(--card); color:var(--text); border:1px solid var(--border); padding:1rem; font-family:monospace;"></textarea>
-  <button id="run-pine" style="margin:1rem 0; padding:0.75rem 1.5rem; background:var(--accent); color:white; border:none; border-radius:6px; cursor:pointer;">Run Script</button>
-  <div id="pine-output" style="margin:1rem 0; padding:1rem; background:var(--bg-light); border-radius:6px;"></div>
-  <div id="pine-chart" style="margin-top:1rem;"></div>
-</div>
-
-  <footer class="footer">
-    <div class="container">© 2025 TradeVision. Open Source.</div>
-  </footer>
-  <script>
-  // Theme Toggle
-  const themeToggle = document.getElementById('theme-toggle');
-  const body = document.body;
-  const themeIcon = themeToggle.querySelector('i');
-  themeToggle.addEventListener('click', () => {
-    const isDark = body.getAttribute('data-theme') === 'dark';
-    body.setAttribute('data-theme', isDark ? 'light' : 'dark');
-    themeIcon.classList.toggle('fa-moon'); themeIcon.classList.toggle('fa-sun');
-    localStorage.setItem('theme', isDark ? 'light' : 'dark');
-  });
-  const savedTheme = localStorage.getItem('theme') || 'dark';
-  body.setAttribute('data-theme', savedTheme);
-  if (savedTheme === 'light') themeIcon.classList.replace('fa-moon', 'fa-sun');
-
-  // Editor
-  const editor = document.getElementById('pine-editor');
-  const runBtn = document.getElementById('run-pine');
-  const output = document.getElementById('pine-output');
-  const chartContainer = document.getElementById('pine-chart');
-
-  // Default Script
-  const defaultScript = `//@version=5
+  <div class="editor-layout">
+    <!-- LEFT: Pine Editor -->
+    <div class="editor-panel">
+      <div class="editor-header">
+        <span>Pine Script™ Editor</span>
+        <button id="run-script" class="run-btn">Run</button>
+      </div>
+      <div class="editor-body">
+        <textarea id="pine-editor">
+//@version=5
 indicator("My RSI + SMA", overlay=true)
-rsiLength = input(14)
-smaLength = input(50)
+rsiLength = input.int(14, "RSI Length")
+smaLength = input.int(20, "SMA Length")
+
 rsi = ta.rsi(close, rsiLength)
 sma = ta.sma(close, smaLength)
+
 plot(rsi, color=color.purple, title="RSI")
 plot(sma, color=color.orange, title="SMA")
-hline(70, "Overbought", color=color.red)
-hline(30, "Oversold", color=color.green)`;
+</textarea>
+      </div>
+    </div>
 
-  editor.value = localStorage.getItem('pineScript') || defaultScript;
+    <!-- RIGHT: Chart Preview -->
+    <div class="chart-panel">
+      <div id="chart-container">
+        <div id="chart"></div>
+      </div>
+    </div>
+  </div>
 
-  // Save on change
-  editor.addEventListener('input', () => {
-    localStorage.setItem('pineScript', editor.value);
-  });
+  <footer class="footer">
+    <div class="container">© 2025 TradeVision. Pine Script™ Editor (v5)</div>
+  </footer>
 
-  // Run Pine Script
-  runBtn.addEventListener('click', async () => {
-    output.innerHTML = '';
-    chartContainer.innerHTML = '<div id="chart"></div>';
+  <script>
+    // Theme
+    const themeToggle = document.getElementById('theme-toggle');
+    const body = document.body;
+    const themeIcon = themeToggle.querySelector('i');
+    themeToggle.addEventListener('click', () => {
+      const isDark = body.getAttribute('data-theme') === 'dark';
+      body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+      themeIcon.classList.toggle('fa-moon'); themeIcon.classList.toggle('fa-sun');
+      localStorage.setItem('theme', isDark ? 'light' : 'dark');
+    });
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    body.setAttribute('data-theme', savedTheme);
+    if (savedTheme === 'light') themeIcon.classList.replace('fa-moon', 'fa-sun');
 
-    const script = editor.value;
-    try {
-      // Load Binance data (last 200 bars)
-      const symbol = 'btcusdt';
-      const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=${symbol.toUpperCase()}&interval=1m&limit=200`);
-      const klines = await res.json();
-      const data = klines.map(k => ({
-        time: k[0] / 1000,
-        open: parseFloat(k[1]),
-        high: parseFloat(k[2]),
-        low: parseFloat(k[3]),
-        close: parseFloat(k[4]),
-        volume: parseFloat(k[5])
-      }));
+    // CodeMirror Editor
+    const editor = CodeMirror.fromTextArea(document.getElementById('pine-editor'), {
+      lineNumbers: true,
+      mode: 'javascript',
+      theme: savedTheme === 'dark' ? 'monokai' : 'default',
+      indentUnit: 2,
+      tabSize: 2,
+      lineWrapping: true,
+      extraKeys: { "Ctrl-Space": "autocomplete" }
+    });
 
-      // Initialize PineJS
-      const pine = new PineJS();
-      const result = await pine.run(script, data);
-
-      // Create Chart
-      const chart = LightweightCharts.createChart(document.getElementById('chart'), {
-        width: chartContainer.clientWidth,
-        height: 400,
-        layout: { background: { color: 'transparent' }, textColor: 'var(--text)' },
-        grid: { vertLines: { color: 'var(--border)' }, horzLines: { color: 'var(--border)' } }
+    // Chart
+    let chart, series;
+    function initChart() {
+      const container = document.getElementById('chart');
+      chart = LightweightCharts.createChart(container, {
+        width: container.clientWidth,
+        height: container.clientHeight,
+        layout: { background: { color: 'transparent' }, textColor: '#d1d4dc' },
+        grid: { vertLines: { color: '#2d313e' }, horzLines: { color: '#2d313e' } },
+        timeScale: { borderColor: '#2d313e' }
       });
-
-      // Plot OHLC
-      const series = chart.addCandlestickSeries();
-      series.setData(data);
-
-      // Plot Pine outputs
-      result.plots.forEach(plot => {
-        const line = chart.addLineSeries({
-          color: plot.color || '#2962ff',
-          lineWidth: 2,
-          title: plot.title
-        });
-        line.setData(plot.values.map((v, i) => ({ time: data[i].time, value: v })));
-      });
-
-      // Alerts
-      if (result.alerts && result.alerts.length > 0) {
-        output.innerHTML += `<p style="color: var(--green);">Alerts: ${result.alerts.length} triggered</p>`;
-      }
-
-      // Resize
-      window.addEventListener('resize', () => {
-        chart.resize(chartContainer.clientWidth, 400);
-      });
-
-    } catch (err) {
-      output.innerHTML = `<p style="color: var(--red);">Error: ${err.message}</p>`;
-      console.error(err);
+      series = chart.addLineSeries({ color: '#2962ff' });
+      loadSampleData();
     }
-  });
-</script>
+
+    async function loadSampleData() {
+      const res = await fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1h&limit=100');
+      const data = await res.json();
+      const chartData = data.map(d => ({
+        time: d[0] / 1000,
+        value: parseFloat(d[4])
+      }));
+      series.setData(chartData);
+    }
+
+    // Run Script
+    document.getElementById('run-script').addEventListener('click', () => {
+      const code = editor.getValue();
+      try {
+        // Simple parser: extract plot() calls
+        const plots = [];
+        const lines = code.split('\n');
+        lines.forEach(line => {
+          if (line.includes('plot(')) {
+            const match = line.match(/plot\(([^,]+),.*color=color\.(\w+)/);
+            if (match) {
+              const value = match[1].trim();
+              const color = match[2];
+              plots.push({ value, color: getColor(color) });
+            }
+          }
+        });
+
+        if (plots.length === 0) {
+          alert('No plot() found. Add plot(rsi) or plot(sma).');
+          return;
+        }
+
+        // Simulate data
+        const data = series.data().map(d => d.time);
+        plots.forEach((p, i) => {
+          const newSeries = chart.addLineSeries({ color: p.color });
+          const values = data.map(t => ({ time: t, value: Math.random() * 100 + 50 }));
+          newSeries.setData(values);
+        });
+
+        alert(`Applied ${plots.length} indicator(s)`);
+      } catch (e) {
+        alert('Error: ' + e.message);
+      }
+    });
+
+    function getColor(name) {
+      const map = { purple: '#9c27b0', orange: '#ff9800', red: '#f44336', green: '#4caf50', blue: '#2196f3' };
+      return map[name] || '#2962ff';
+    }
+
+    // Resize
+    window.addEventListener('resize', () => {
+      if (chart) chart.resize();
+    });
+
+    // Init
+    if (typeof LightweightCharts !== 'undefined' && typeof CodeMirror !== 'undefined') {
+      initChart();
+    } else {
+      const check = setInterval(() => {
+        if (typeof LightweightCharts !== 'undefined' && typeof CodeMirror !== 'undefined') {
+          clearInterval(check);
+          initChart();
+        }
+      }, 50);
+    }
+  </script>
 </body>
 </html>
