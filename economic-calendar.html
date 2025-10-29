@@ -28,6 +28,7 @@
     .impact-low{color:var(--text-light);}
     .footer{background:var(--bg-light);border-top:1px solid var(--border);padding:1rem 0;font-size:0.8rem;text-align:center;color:var(--text-light);}
     @media(max-width:768px){.filters{flex-direction:column;}}
+    .widget-container{margin-top:1rem;}
   </style>
 </head>
 
@@ -53,12 +54,11 @@
       <div class="filter-group">
         <label>Country</label>
         <select id="country-filter">
-          <option value="">All Countries</option>
+          <option value="">All</option>
           <option value="US">United States</option>
           <option value="GB">United Kingdom</option>
           <option value="EU">Eurozone</option>
           <option value="JP">Japan</option>
-          <option value="CN">China</option>
         </select>
       </div>
       <div class="filter-group">
@@ -78,9 +78,10 @@
         <label>To Date</label>
         <input type="date" id="to-date" value="2025-10-30">
       </div>
-      <button id="fetch-btn" style="padding:0.5rem 1rem;background:var(--accent);color:white;border:none;border-radius:4px;cursor:pointer;">Load Calendar</button>
+      <button id="fetch-btn" style="padding:0.5rem 1rem;background:var(--accent);color:white;border:none;border-radius:4px;cursor:pointer;">Load Data</button>
     </div>
 
+    <!-- Table for API Data -->
     <table id="calendar-table">
       <thead>
         <tr>
@@ -94,9 +95,26 @@
         </tr>
       </thead>
       <tbody id="calendar-body">
-        <tr><td colspan="7">Loading events...</td></tr>
+        <tr><td colspan="7">Loading...</td></tr>
       </tbody>
     </table>
+
+    <!-- Fallback Widget (Visual) -->
+    <div class="widget-container">
+      <h3>Fallback View (Live Widget)</h3>
+      <div class="tradingview-widget-container">
+        <div class="tradingview-widget-container__widget"></div>
+        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-economic-calendar.js" async>
+        {
+          "width": "100%",
+          "height": "600",
+          "countries": ["US"],
+          "importance": [3],
+          "colorTheme": "dark"
+        }
+        </script>
+      </div>
+    </div>
   </div>
 
   <footer class="footer">
@@ -118,7 +136,7 @@
     body.setAttribute('data-theme', savedTheme);
     if (savedTheme === 'light') themeIcon.classList.replace('fa-moon', 'fa-sun');
 
-    // Fetch TradingView Calendar
+    // Fetch from TradingView Unofficial API (with Proxy to Bypass 403)
     async function fetchCalendar() {
       const from = document.getElementById('from-date').value;
       const to = document.getElementById('to-date').value;
@@ -130,19 +148,22 @@
       if (country) url += `&countries=${country}`;
       if (impact) url += `&importance=${impact}`;
 
+      // Use CORS proxy to bypass 403
+      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+
       try {
-        const response = await fetch(url);
-        if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        const data = await response.json();
-        if (data.error) throw new Error(data.error);
+        const response = await fetch(proxyUrl);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const text = await response.text();
+        const data = JSON.parse(text);
         renderTable(data.result || []);
       } catch (error) {
         console.error('API Error:', error);
-        document.getElementById('calendar-body').innerHTML = `<tr><td colspan="7">Error loading data: ${error.message}</td></tr>`;
+        document.getElementById('calendar-body').innerHTML = `<tr><td colspan="7">Error: ${error.message} (Try refresh)</td></tr>`;
       }
     }
 
-    // Render Table
+    // Render Table (Your Exact Format)
     function renderTable(events) {
       const tbody = document.getElementById('calendar-body');
       if (events.length === 0) {
@@ -150,20 +171,18 @@
         return;
       }
       tbody.innerHTML = events.map(event => {
-        const time = new Date(event.date).toLocaleString('en-US', { timeZone: 'UTC' });
+        const time = new Date(event.date).toLocaleString('en-US', { timeZone: 'UTC', hour12: false });
         const impactStars = '★'.repeat(event.importance || 1);
         const impactClass = event.importance === 3 ? 'impact-high' : event.importance === 2 ? 'impact-medium' : 'impact-low';
-        return `
-          <tr>
-            <td>${time}</td>
-            <td>${event.country}</td>
-            <td>${event.event}</td>
-            <td class="${impactClass}">${impactStars}</td>
-            <td>${event.actual || '--'}</td>
-            <td>${event.forecast || '--'}</td>
-            <td>${event.previous || '--'}</td>
-          </tr>
-        `;
+        return `<tr>
+          <td>${time}</td>
+          <td>${event.country}</td>
+          <td>${event.event}</td>
+          <td class="${impactClass}">${impactStars}</td>
+          <td>${event.actual || '--'}</td>
+          <td>${event.forecast || '--'}</td>
+          <td>${event.previous || '--'}</td>
+        </tr>`;
       }).join('');
     }
 
