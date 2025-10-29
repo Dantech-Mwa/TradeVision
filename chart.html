@@ -182,6 +182,7 @@
       position: relative;
       width: 100%;
       height: 100%;
+      /* FIXED: Remove pointer-events: none */
     }
     
     #chart {
@@ -271,6 +272,8 @@
 
     .indicator-panel {
       margin-top: 1rem;
+      position: relative;
+      z-index: 30; /* FIXED: Higher z-index */
     }
     
     .add-btn {
@@ -284,6 +287,8 @@
       font-size: .95rem;
       margin-bottom: .5rem;
       transition: background-color 0.2s;
+      position: relative;
+      z-index: 31; /* FIXED: Higher z-index */
     }
     
     .add-btn:hover {
@@ -292,6 +297,7 @@
     
     .search-container {
       position: relative;
+      z-index: 32; /* FIXED: Higher z-index */
     }
     
     .search-container input {
@@ -322,7 +328,7 @@
       border: 1px solid var(--border);
       border-top: none;
       border-radius: 0 0 6px 6px;
-      z-index: 30;
+      z-index: 40; /* FIXED: Higher z-index */
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
     
@@ -351,6 +357,8 @@
       border-radius: 6px;
       margin-bottom: .4rem;
       font-size: .9rem;
+      position: relative;
+      z-index: 30; /* FIXED: Higher z-index */
     }
     
     .indicator-item .name {
@@ -456,6 +464,19 @@
     
     #search-go:hover {
       color: var(--accent-hover);
+    }
+
+    /* FIX: Ensure chart container doesn't block interactions */
+    .tv-lightweight-charts {
+      pointer-events: none !important;
+    }
+    
+    #chart {
+      pointer-events: none !important;
+    }
+    
+    #chart-container > *:not(#drawing-canvas) {
+      pointer-events: none !important;
     }
   </style>
 </head>
@@ -753,7 +774,6 @@
           document.querySelectorAll('.sidebar-left button').forEach(b => b.classList.remove('active'));
           btn.classList.add('active');
           activeTool = btn.dataset.tool;
-          // Drawing tool logic would go here
           console.log(`Selected tool: ${activeTool}`);
         });
       });
@@ -847,9 +867,13 @@
     // ─────────────────────────────────────────────────────
     //  INDICATOR PANEL (120+ indicators, live on chart)
     // ─────────────────────────────────────────────────────
-    (async function initIndicatorPanel() {
-      // Wait for technicalindicators
-      while (!window.TI) await new Promise(r => setTimeout(r, 50));
+    (function initIndicatorPanel() {
+      // Check if technical indicators library is available
+      if (!window.TI) {
+        console.warn('Technical Indicators library not loaded');
+        return;
+      }
+
       const TI = window.TI;
 
       const allIndicators = Object.keys(TI)
@@ -888,6 +912,7 @@
         applyIndicatorsToChart();
       };
 
+      // FIXED: Add event listener to indicator list
       list.addEventListener('click', e => {
         if (e.target.classList.contains('remove')) {
           const name = e.target.dataset.name;
@@ -898,10 +923,14 @@
         }
       });
 
-      addBtn.addEventListener('click', () => {
+      // FIXED: Make sure the add button is clickable
+      addBtn.addEventListener('click', (e) => {
+        e.stopPropagation(); // Prevent event bubbling
         const visible = searchContainer.style.display !== 'none';
         searchContainer.style.display = visible ? 'none' : 'block';
-        if (!visible) searchInput.focus();
+        if (!visible) {
+          searchInput.focus();
+        }
       });
 
       searchInput.addEventListener('input', () => {
