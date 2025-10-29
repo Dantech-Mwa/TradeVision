@@ -14,7 +14,7 @@
   <!-- Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-  <!-- Lightweight Charts (stable) -->
+  <!-- Lightweight Charts (v4 stable) -->
   <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4/dist/lightweight-charts.standalone.production.js"></script>
 
   <style>
@@ -31,14 +31,12 @@
     a{color:var(--accent);text-decoration:none;}
     .container{max-width:1400px;margin:0 auto;padding:0 1rem;}
 
-    /* Layout */
     .flex-between{display:flex;justify-content:space-between;align-items:center;}
     .flex-center{display:flex;align-items:center;gap:.5rem;}
     .grid-2x2{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;}
     .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;}
     @media(max-width:768px){.grid-2x2,.grid-3{grid-template-columns:1fr;}}
 
-    /* Header */
     .header{background:var(--bg-light);border-bottom:1px solid var(--border);padding:.75rem 0;position:sticky;top:0;z-index:100;}
     .logo{font-weight:700;font-size:1.4rem;color:var(--accent);}
     .logo i{font-size:1.5rem;}
@@ -48,7 +46,6 @@
     .nav-links a{margin:0 .75rem;font-weight:500;}
     .icon-btn{background:none;border:none;color:var(--text-light);font-size:1.2rem;cursor:pointer;padding:.5rem;}
 
-    /* Hero */
     .hero{text-align:center;padding:3rem 0;}
     .hero h1{font-size:2.5rem;margin:0 0 1rem;}
     .gradient{background:linear-gradient(90deg,#2962ff,#00bfa5);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
@@ -57,7 +54,6 @@
     .btn-primary{background:var(--accent);color:white;}
     .btn-secondary{background:var(--bg-light);color:var(--text);border:1px solid var(--border);}
 
-    /* Cards */
     .chart-card,.link-card{background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden;}
     .card-header{padding:.75rem 1rem;display:flex;justify-content:space-between;font-size:.9rem;background:var(--bg-light);}
     .symbol{font-weight:600;}
@@ -66,11 +62,9 @@
     .link-card:hover{background:var(--bg-light);}
     .link-card i{font-size:1.8rem;margin-bottom:.5rem;color:var(--accent);}
 
-    /* Sections */
     .mini-charts-grid,.quick-links{margin:3rem 0;}
     h2{font-size:1.5rem;margin-bottom:1rem;}
 
-    /* Footer */
     .footer{background:var(--bg-light);border-top:1px solid var(--border);padding:2rem 0 1rem;font-size:.9rem;}
     .footer-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2rem;margin-bottom:1.5rem;}
     .footer-grid a{display:block;margin:.4rem 0;color:var(--text-light);}
@@ -175,26 +169,19 @@
   <!-- MAIN SCRIPT -->
   <script>
     /* -------------------------------------------------
-       1. Theme toggle (persisted)
+       1. Theme toggle
        ------------------------------------------------- */
     const themeToggle = document.getElementById('theme-toggle');
     const body = document.body;
     const themeIcon = themeToggle.querySelector('i');
-
     function setTheme(isDark) {
       body.setAttribute('data-theme', isDark ? 'dark' : 'light');
       themeIcon.classList.toggle('fa-moon', isDark);
       themeIcon.classList.toggle('fa-sun', !isDark);
       localStorage.setItem('theme', isDark ? 'dark' : 'light');
     }
-
-    themeToggle.addEventListener('click', () => {
-      const cur = body.getAttribute('data-theme') === 'dark';
-      setTheme(!cur);
-    });
-
-    const saved = localStorage.getItem('theme') || 'dark';
-    setTheme(saved === 'dark');
+    themeToggle.addEventListener('click', () => setTheme(body.getAttribute('data-theme') !== 'dark'));
+    setTheme(localStorage.getItem('theme') !== 'light');
 
     /* -------------------------------------------------
        2. Search
@@ -221,14 +208,13 @@
     function waitForLW() {
       if (typeof LightweightCharts !== 'undefined') {
         initCharts();
-        connectWS();
-        resizeAll();
+        setTimeout(connectWS, 500);  // Let DOM settle
       } else {
         setTimeout(waitForLW, 50);
       }
     }
 
-    // ---- create all charts (HEX colors only!) ----
+    // ---- Create all charts (HEX colors only!) ----
     function initCharts() {
       symbols.forEach(sym => {
         const container = document.getElementById(`chart-${sym.toLowerCase()}`);
@@ -237,14 +223,8 @@
         const chart = LightweightCharts.createChart(container, {
           width: container.clientWidth,
           height: 120,
-          layout: { 
-            background: { color: '#141518' },   // HEX
-            textColor: '#9ea1b5'               // HEX
-          },
-          grid: { 
-            vertLines: { color: '#2d313e' },   // HEX
-            horzLines: { color: '#2d313e' }    // HEX
-          },
+          layout: { background: { color: '#141518' }, textColor: '#9ea1b5' },
+          grid: { vertLines: { color: '#2d313e' }, horzLines: { color: '#2d313e' } },
           timeScale: { timeVisible: true, secondsVisible: false }
         });
 
@@ -253,51 +233,61 @@
           wickUpColor: '#26a69a', wickDownColor: '#ef5350'
         });
 
-        // seed with a single empty bar
-        const now = Math.floor(Date.now() / 1000);
-        const seed = { time: now - 3600, open: 0, high: 0, low: 0, close: 0 };
+        // Seed with empty bar
+        const seed = { time: Math.floor(Date.now() / 1000) - 3600, open: 0, high: 0, low: 0, close: 0 };
         series.setData([seed]);
 
         charts[sym] = { chart, series, data: [], lastBar: null };
       });
+
+      // Resize handler (correct API)
+      window.addEventListener('resize', () => {
+        Object.values(charts).forEach(c => {
+          c.chart.applyOptions({ width: c.chart.clientWidth, height: 120 });
+        });
+      });
     }
 
-    // ---- Binance WS -------------------------------------------------
+    // ---- Binance WS (only after charts exist) ----
     let ws;
     function connectWS() {
+      if (Object.keys(charts).length === 0) {
+        setTimeout(connectWS, 500);
+        return;
+      }
+
       const streams = symbols.map(s => `${binanceMap[s]}@ticker`).join('/');
       ws = new WebSocket(`wss://stream.binance.com:9443/stream?streams=${streams}`);
 
       ws.onmessage = ev => {
         const msg = JSON.parse(ev.data);
         if (!msg.data) return;
+
         const t = msg.data;
         const binanceSym = t.s.toLowerCase();
         const ourSym = Object.keys(binanceMap).find(k => binanceMap[k] === binanceSym);
-        if (!ourSym) return;
+        if (!ourSym || !charts[ourSym]) return;
 
         const price = parseFloat(t.c);
         const change = parseFloat(t.P);
         const { chart, series, data, lastBar } = charts[ourSym];
 
-        // ----- update header -----
+        // Update header
         const card = document.querySelector(`.chart-card[data-symbol="${ourSym}"]`);
         card.querySelector('.price').textContent = price.toFixed(2);
         const chgEl = card.querySelector('.change');
         chgEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
         chgEl.style.color = change >= 0 ? '#26a69a' : '#ef5350';
 
-        // ----- update candlestick (1-minute aggregation) -----
+        // Update candlestick (1-min aggregation)
         const nowMinute = Math.floor(Date.now() / 60000) * 60;
         if (!lastBar || lastBar.time < nowMinute) {
-          // new minute bar
           const newBar = { time: nowMinute, open: price, high: price, low: price, close: price };
           data.push(newBar);
           charts[ourSym].lastBar = newBar;
           if (data.length > 50) data.shift();
           series.setData(data);
         } else {
-          // update current bar
           lastBar.close = price;
           lastBar.high = Math.max(lastBar.high, price);
           lastBar.low = Math.min(lastBar.low, price);
@@ -309,16 +299,7 @@
       ws.onerror = err => console.error('WS error:', err);
     }
 
-    // ---- Resize handler ------------------------------------------------
-    function resizeAll() {
-      Object.values(charts).forEach(c => {
-        const container = c.chart.getContainer();
-        c.chart.applyOptions({ width: container.clientWidth, height: 120 });
-      });
-    }
-    window.addEventListener('resize', resizeAll);
-
-    // ---- START ------------------------------------------------
+    // ---- Start everything ----
     waitForLW();
   </script>
 </body>
