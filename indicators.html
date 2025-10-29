@@ -7,22 +7,14 @@
   <link rel="icon" href="assets/icons/chart.svg" type="image/svg+xml">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <!-- technicalindicators – 120+ indicators -->
   <script src="https://cdn.jsdelivr.net/npm/technicalindicators@3"></script>
-
   <style>
-    :root{
-      --bg:#141518;--bg-light:#1e222d;--text:#d1d4dc;--text-light:#9ea1b5;
-      --accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#2d313e;--card:#1e222d;
-    }
-    [data-theme="light"]{
-      --bg:#ffffff;--bg-light:#f8f9fa;--text:#2d3748;--text-light:#718096;
-      --accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#e2e8f0;--card:#ffffff;
-    }
+    :root{--bg:#141518;--bg-light:#1e222d;--text:#d1d4dc;--text-light:#9ea1b5;--accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#2d313e;--card:#1e222d;}
+    [data-theme="light"]{--bg:#ffffff;--bg-light:#f8f9fa;--text:#2d3748;--text-light:#718096;--accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#e2e8f0;--card:#ffffff;}
     *,*::before,*::after{box-sizing:border-box;}
-    body{margin:0;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);transition:background .3s,color .3s;}
+    body{margin:0;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);}
     a{color:var(--accent);text-decoration:none;}
-    .container{max-width:1300px;margin:0 auto;padding:2rem 1rem;}
+    .container{max-width:1400px;margin:0 auto;padding:2rem 1rem;}
     .header{background:var(--bg-light);border-bottom:1px solid var(--border);padding:.75rem 0;position:sticky;top:0;z-index:100;}
     .flex-between{display:flex;justify-content:space-between;align-items:center;}
     .logo{font-weight:700;font-size:1.4rem;color:var(--accent);}
@@ -30,34 +22,77 @@
     .nav-links a{margin:0 .75rem;font-weight:500;}
     .icon-btn{background:none;border:none;color:var(--text-light);font-size:1.2rem;cursor:pointer;padding:.5rem;}
 
-    /* ---------- Tabs ---------- */
-    .tab-bar{margin:2rem 0;display:flex;gap:.5rem;border-bottom:1px solid var(--border);}
-    .tab-btn{padding:.6rem 1.2rem;border:none;background:none;color:var(--text-light);font-weight:600;cursor:pointer;position:relative;transition:.2s;}
-    .tab-btn.active{color:var(--accent);font-weight:700;}
-    .tab-btn.active::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:3px;background:var(--accent);border-radius:2px;}
+    /* TradingView-style Top Bar */
+    .indicators-header{position:relative;margin-bottom:1.5rem;}
+    .search-bar{position:relative;margin-bottom:1rem;}
+    .search-bar input{width:100%;max-width:500px;padding:1rem 1rem 1rem 3rem;border:1px solid var(--border);border-radius:25px;background:var(--card);color:var(--text);font-size:.95rem;transition:border .2s,box-shadow .2s;}
+    .search-bar input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(41,98,255,.1);}
+    .search-bar i{position:absolute;left:1rem;top:50%;transform:translateY(-50%);color:var(--text-light);}
 
-    /* ---------- Search ---------- */
-    .search-bar{margin:1.5rem 0;}
-    .search-bar input{width:100%;max-width:460px;padding:.65rem 1rem;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--text);font-size:1rem;transition:border .2s;}
-    .search-bar input:focus{outline:none;border-color:var(--accent);}
+    /* Tabs (TradingView-style) */
+    .tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:1.5rem;}
+    .tab-btn{padding:0.75rem 1.5rem;border:none;background:none;color:var(--text-light);font-weight:500;cursor:pointer;position:relative;transition:color .2s;}
+    .tab-btn:hover{color:var(--text);}
+    .tab-btn.active{color:var(--accent);font-weight:600;}
+    .tab-btn.active::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:2px;background:var(--accent);border-radius:1px 1px 0 0;}
+    .tab-content{display:none;}
+    .tab-content.active{display:block;animation:fadeIn .3s ease-in;}
 
-    /* ---------- Grid ---------- */
-    .indicator-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.2rem;margin-top:1rem;}
-    .indicator-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.2rem;cursor:pointer;transition:transform .2s,box-shadow .2s;}
-    .indicator-card:hover{transform:translateY(-4px);box-shadow:0 8px 20px rgba(0,0,0,.3);}
-    .indicator-card h3{margin:0 0 .4rem;font-size:1.15rem;display:flex;align-items:center;gap:.4rem;}
-    .indicator-card p{font-size:.88rem;color:var(--text-light);margin:0;line-height:1.4;}
-    .badge{font-size:.65rem;padding:.2rem .4rem;border-radius:4px;background:var(--accent);color:#fff;}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
 
-    /* ---------- Community Trending ---------- */
-    .trending-list{list-style:none;padding:0;margin:1rem 0;}
-    .trending-item{display:flex;align-items:center;gap:.8rem;padding:.6rem 0;border-bottom:1px solid var(--border);}
-    .trending-item:last-child{border:none;}
+    /* Left Sidebar for Categories (TradingView-style) */
+    .categories-sidebar{float:left;width:220px;margin-right:2rem;}
+    .category-list{padding:0;margin:0;list-style:none;}
+    .category-item{padding:0.75rem 1rem;cursor:pointer;font-weight:500;border-radius:8px;margin-bottom:0.25rem;transition:.2s;}
+    .category-item:hover{background:var(--bg-light);}
+    .category-item.active{background:var(--accent);color:white;}
+    .category-count{font-size:.8rem;color:var(--text-light);margin-left:0.5rem;}
+
+    /* Main Content Grid */
+    .indicators-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1rem);gap:1.5rem;margin-top:1rem;}
+    .indicator-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;cursor:pointer;transition:transform .2s,box-shadow .2s;position:relative;overflow:hidden;}
+    .indicator-card:hover{transform:translateY(-4px);box-shadow:0 12px 28px rgba(0,0,0,.15);}
+    .indicator-card::before{content:'';position:absolute;top:0;left:0;width:100%;height:4px;background:var(--accent);}
+    .indicator-card h3{margin:0 0 .4rem;font-size:1.1rem;font-weight:600;display:flex;align-items:center;gap:.5rem;}
+    .indicator-card i{font-size:1.2rem;color:var(--accent);}
+    .indicator-card p{font-size:.9rem;color:var(--text-light);margin:0;line-height:1.4;}
+    .indicator-card .tags{display:flex;gap:.25rem;margin-top:.6rem;}
+    .tag{background:var(--bg-light);color:var(--text-light);padding:.2rem .4rem;font-size:.7rem;border-radius:4px;}
+
+    /* Trending List */
+    .trending-section{margin-top:2rem;}
+    .trending-list{list-style:none;padding:0;margin:0;}
+    .trending-item{display:flex;align-items:center;gap:1rem;padding:1rem;border-radius:8px;margin-bottom:.5rem;background:var(--card);border:1px solid var(--border);transition:.2s;}
+    .trending-item:hover{background:var(--bg-light);}
+    .trending-rank{position:relative;}
+    .trending-rank::before{content:attr(data-rank);position:absolute;top:-8px;right:-8px;background:var(--green);color:white;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;}
     .trending-name{font-weight:600;}
     .trending-author{color:var(--text-light);font-size:.85rem;}
-    .boost{display:flex;align-items:center;gap:.3rem;color:var(--green);font-weight:600;}
+    .trending-score{display:flex;align-items:center;gap:.3rem;color:var(--green);font-weight:600;}
+    .trending-score i{font-size:.9rem;}
+
+    /* Modal for Personal Scripts */
+    .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.8);z-index:1000;align-items:center;justify-content:center;}
+    .modal.active{display:flex;}
+    .modal-content{background:var(--card);padding:2rem;border-radius:12px;max-width:500px;width:90%;max-height:80vh;overflow-y:auto;}
+    .modal h3{margin-top:0;font-size:1.1rem;}
+    .modal input,.modal button{width:100%;padding:.75rem;margin:.5rem 0;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);}
+    .modal button{background:var(--accent);color:white;border:none;cursor:pointer;font-weight:600;}
 
     .footer{background:var(--bg-light);border-top:1px solid var(--border);padding:1rem 0;font-size:.8rem;text-align:center;color:var(--text-light);}
+
+    /* responsive */
+    @media(max-width:992px){
+      .categories-sidebar{width:100%;margin-right:0;margin-bottom:1.5rem;}
+      .tabs{overflow-x:auto;}
+      .tabs::-webkit-scrollbar{height:4px;}
+      .tabs::-webkit-scrollbar-thumb{background:var(--border);}
+      .indicator-grid{grid-template-columns:repeat(auto-fill,minmax(280px,1fr));}
+    }
+    @media(max-width:768px){
+      .indicator-grid{grid-template-columns:1fr;}
+      .tabs{flex-direction:column;}
+    }
   </style>
 </head>
 
@@ -65,7 +100,7 @@
 
 <header class="header">
   <div class="container flex-between">
-    <div class="logo"><a href="index.html"><i class="fas fa-chart-line"></i> TradeVision</a></div>
+    <div class="logo"><a href="index.html" class="flex-center"><i class="fas fa-chart-line"></i><span>TradeVision</span></a></div>
     <nav class="nav-links">
       <a href="chart.html">Chart</a>
       <a href="watchlist.html">Watchlist</a>
@@ -79,11 +114,11 @@
 
 <div class="container">
   <h1 style="margin-bottom:.5rem;">Indicators Library</h1>
-  <p style="color:var(--text-light);margin-top:0;">120+ built‑in, community scripts, and your personal collection.</p>
+  <p style="color:var(--text-light);margin-top:0;">120+ built-in, community scripts, and your personal collection.</p>
 
   <!-- Tabs -->
-  <div class="tab-bar">
-    <button class="tab-btn active" data-tab="builtin">Built‑in</button>
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="builtin">Built-in</button>
     <button class="tab-btn" data-tab="community">Community</button>
     <button class="tab-btn" data-tab="personal">Personal</button>
   </div>
@@ -93,23 +128,47 @@
     <input type="text" id="global-search" placeholder="Search any indicator… (RSI, MACD, Bollinger, etc.)">
   </div>
 
-  <!-- Content Panels -->
+  <!-- Built-in -->
   <div id="builtin" class="tab-content">
+    <div class="categories-sidebar">
+      <ul class="category-list">
+        <li class="category-item active" data-category="all">All (120+)</li>
+        <li class="category-item" data-category="trend">Trend (25)</li>
+        <li class="category-item" data-category="momentum">Momentum (20)</li>
+        <li class="category-item" data-category="volume">Volume (15)</li>
+        <li class="category-item" data-category="volatility">Volatility (18)</li>
+        <li class="category-item" data-category="oscillators">Oscillators (22)</li>
+        <li class="category-item" data-category="other">Other (20)</li>
+      </ul>
+    </div>
     <div id="builtin-grid" class="indicator-grid"></div>
   </div>
 
-  <div id="community" class="tab-content" style="display:none;">
-    <h2 style="margin-top:0;">Trending Scripts</h2>
-    <ul id="trending-list" class="trending-list"></ul>
+  <!-- Community -->
+  <div id="community" class="tab-content">
+    <div class="trending-section">
+      <h2 style="margin-top:0;">Trending Scripts</h2>
+      <ul id="trending-list" class="trending-list"></ul>
+    </div>
   </div>
 
-  <div id="personal" class="tab-content" style="display:none;">
-    <p style="color:var(--text-light);">Your private Pine‑Script HTML files will appear here.</p>
-    <p><em>Invite‑only scripts are hidden from others.</em></p>
+  <!-- Personal -->
+  <div id="personal" class="tab-content">
+    <div class="modal">
+      <div class="modal-content">
+        <h3>Upload Your Script</h3>
+        <input type="file" accept=".html,.js" id="script-upload">
+        <button onclick="uploadScript()">Upload</button>
+      </div>
+    </div>
+    <p style="color:var(--text-light);">Your private scripts will appear here.</p>
+    <p><em>Invite-only scripts are hidden from others.</em></p>
   </div>
 </div>
 
-<footer class="footer"><div class="container">© 2025 TradeVision. Open Source.</div></footer>
+<footer class="footer">
+  <div class="container">© 2025 TradeVision. Open Source.</div>
+</footer>
 
 <script>
 /* ──────────────────────────────────────
@@ -140,7 +199,7 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 });
 
 /* ──────────────────────────────────────
-   3. Built‑in indicators (technicalindicators)
+   3. Built-in indicators (technicalindicators)
    ────────────────────────────────────── */
 const TI = window.TI;
 const builtin = Object.keys(TI)
@@ -169,33 +228,30 @@ builtin.forEach(ind => {
   card.innerHTML = `
     <h3><i class="fas fa-chart-line"></i> ${ind.name}</h3>
     <p>${ind.description}</p>
-    <span class="badge">Built‑in</span>
+    <div class="card-actions">
+      <button class="boost-btn" title="Boost this indicator"><i class="fas fa-arrow-up"></i> <span class="boost-count">0</span></button>
+      <button class="add-btn-mini" title="Add to chart">+</button>
+    </div>
+    <span class="badge">Built-in</span>
   `;
-  card.title = `Add ${ind.name} to the chart`;
   card.addEventListener('click', () => addToChart(ind.name));
   grid.appendChild(card);
 });
 
 /* ──────────────────────────────────────
-   4. Global search (all tabs)
+   4. Global search
    ────────────────────────────────────── */
 const globalSearch = document.getElementById('global-search');
 globalSearch.addEventListener('input', () => {
   const term = globalSearch.value.trim().toLowerCase();
-  // Built‑in
-  document.querySelectorAll('#builtin .indicator-card').forEach(c => {
+  document.querySelectorAll('.indicator-card').forEach(c => {
     const txt = c.textContent.toLowerCase();
     c.style.display = txt.includes(term) ? '' : 'none';
-  });
-  // Community (simple demo filter)
-  document.querySelectorAll('.trending-item').forEach(i => {
-    const txt = i.textContent.toLowerCase();
-    i.style.display = txt.includes(term) ? '' : 'none';
   });
 });
 
 /* ──────────────────────────────────────
-   5. Add to chart → localStorage
+   5. Add to chart
    ────────────────────────────────────── */
 function addToChart(name) {
   let list = JSON.parse(localStorage.getItem('chartIndicators') || '[]');
@@ -209,57 +265,135 @@ function addToChart(name) {
 }
 
 /* ──────────────────────────────────────
-   6. Community → Trending (Binance socket demo)
+   6. Trending metrics
    ────────────────────────────────────── */
-const trendingList = document.getElementById('trending-list');
+const METRIC_KEY = 'indicatorsMetrics';
+const DAY_MS = 24 * 60 * 60 * 1000;
 
-// Demo data – replace with real socket later
-const demoScripts = [
-  {name:'SuperTrend AI', author:'CryptoWhale', boost:1240},
-  {name:'Volume Profile Pro', author:'TraderX', boost:987},
-  {name:'Smart Money Concept', author:'AlphaTrader', boost:742},
-  {name:'EMA Cloud v3', author:'PineMaster', boost:689},
-  {name:'RSI Divergence', author:'SignalBot', boost:512},
-];
+function loadMetrics() {
+  const raw = localStorage.getItem(METRIC_KEY);
+  const now = Date.now();
+  let data = raw ? JSON.parse(raw) : {};
+  for (const name in data) {
+    if (data[name].last < now - 30*DAY_MS) delete data[name];
+  }
+  return data;
+}
+let metrics = loadMetrics();
 
-demoScripts.forEach(s => {
-  const li = document.createElement('li');
-  li.className = 'trending-item';
-  li.innerHTML = `
-    <div>
-      <div class="trending-name">${s.name}</div>
-      <div class="trending-author">by ${s.author}</div>
-    </div>
-    <div class="boost"><i class="fas fa-arrow-up"></i> ${s.boost}</div>
-  `;
-  trendingList.appendChild(li);
+let saveTimer;
+function scheduleSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => localStorage.setItem(METRIC_KEY, JSON.stringify(metrics)), 2000);
+}
+
+function record(name, type) {
+  if (!metrics[name]) metrics[name] = {view:0, add:0, boost:0, last:0};
+  const entry = metrics[name];
+  const today = Math.floor(Date.now() / DAY_MS) * DAY_MS;
+  if (entry.last < today) entry.view = entry.add = entry.boost = 0;
+  entry[type]++;
+  entry.last = Date.now();
+  scheduleSave();
+}
+
+function velocityScore(entry) {
+  const now = Date.now();
+  const dayAgo = now - DAY_MS;
+  if (entry.last < dayAgo) return 0;
+  return entry.boost + 5 * entry.add + 2 * entry.view;
+}
+
+function updateBoostDisplay(card) {
+  const name = card.dataset.name;
+  const entry = metrics[name] || {boost:0};
+  const cnt = card.querySelector('.boost-count');
+  if (cnt) cnt.textContent = entry.boost;
+}
+
+/* ──────────────────────────────────────
+   7. Hook actions
+   ────────────────────────────────────── */
+document.querySelectorAll('.indicator-card').forEach(card => {
+  const name = card.dataset.name;
+
+  // boost
+  const boostBtn = card.querySelector('.boost-btn');
+  if (boostBtn) {
+    boostBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      record(name, 'boost');
+      updateBoostDisplay(card);
+    });
+  }
+
+  // add to chart
+  const addBtn = card.querySelector('.add-btn-mini');
+  if (addBtn) {
+    addBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      record(name, 'add');
+      addToChart(name);
+      updateBoostDisplay(card);
+    });
+  }
+
+  // view (once per session)
+  if (!sessionStorage.getItem('viewed_' + name)) {
+    record(name, 'view');
+    sessionStorage.setItem('viewed_' + name, '1');
+  }
+  updateBoostDisplay(card);
 });
 
 /* ──────────────────────────────────────
-   7. Real‑time boost via Binance ticker (demo)
+   8. Trending list
    ────────────────────────────────────── */
-let ws;
-function connectBoostSocket() {
-  ws = new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@ticker');
-  ws.onmessage = e => {
-    const data = JSON.parse(e.data);
-    const boost = Math.floor(Math.random()*50) + 10; // fake boost
-    const randomItem = trendingList.children[Math.floor(Math.random()*trendingList.children.length)];
-    if (randomItem) {
-      const boostEl = randomItem.querySelector('.boost');
-      const current = parseInt(boostEl.textContent.replace(/[^\d]/g,'')) || 0;
-      boostEl.innerHTML = `<i class="fas fa-arrow-up"></i> ${current + boost}`;
-    }
-  };
-  ws.onclose = () => setTimeout(connectBoostSocket, 3000);
+function rebuildTrending() {
+  const list = document.getElementById('trending-list');
+  list.innerHTML = '';
+
+  const ranked = Object.entries(metrics)
+    .map(([name, entry]) => ({name, score: velocityScore(entry), entry}))
+    .filter(o => o.score > 0)
+    .sort((a,b) => b.score - a.score)
+    .slice(0, 12);
+
+  if (ranked.length === 0) {
+    list.innerHTML = '<li style="color:var(--text-light);padding:.6rem;">No activity yet – start boosting!</li>';
+    return;
+  }
+
+  ranked.forEach((o, rank) => {
+    const li = document.createElement('li');
+    li.className = 'trending-item';
+    li.dataset.rank = rank + 1;
+    li.innerHTML = `
+      <div>
+        <div class="trending-name">${o.name}</div>
+        <div class="trending-author">Community</div>
+      </div>
+      <div class="boost"><i class="fas fa-fire"></i> ${o.score}</div>
+    `;
+    list.appendChild(li);
+  });
 }
-connectBoostSocket();
+rebuildTrending();
+setInterval(rebuildTrending, 30000);
 
 /* ──────────────────────────────────────
-   8. Personal tab – placeholder
+   9. personal placeholder
    ────────────────────────────────────── */
-// You can later read a folder of .html Pine scripts and inject them here.
-
+function uploadScript() {
+  const file = document.getElementById('script-upload').files[0];
+  if (!file) return alert('Select a file');
+  const reader = new FileReader();
+  reader.onload = e => {
+    localStorage.setItem('personalScript', e.target.result);
+    alert('Uploaded! Add it to your library.');
+  };
+  reader.readAsText(file);
+}
 </script>
 </body>
 </html>
