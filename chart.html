@@ -22,6 +22,7 @@
     .nav-links a{margin:0 .75rem;font-weight:500;}
     .icon-btn{background:none;border:none;color:var(--text-light);font-size:1.2rem;cursor:pointer;padding:.5rem;}
 
+    /* LAYOUT */
     .chart-layout{
       display:grid;
       grid-template-columns:80px 1fr 280px;
@@ -43,7 +44,7 @@
 
     .main-chart{display:flex;flex-direction:column;overflow:hidden;}
     #chart-container{flex:1;position:relative;}
-    #volume-pane{height:80px;position:relative;background:var(--bg-light);border-top:1px solid var(--border);}
+    #volume-container{height:80px;position:relative;background:var(--bg-light);border-top:1px solid var(--border);}
 
     .sidebar-right{
       background:var(--bg-light);border-left:1px solid var(--border);padding:1rem;overflow-y:auto;
@@ -69,6 +70,7 @@
     .footer{background:var(--bg-light);border-top:1px solid var(--border);padding:0.75rem 0;font-size:0.8rem;text-align:center;color:var(--text-light);}
     @media(max-width:992px){.chart-layout{grid-template-columns:1fr;}.sidebar-left,.sidebar-right{display:none;}}
 
+    /* Drawing Canvas */
     #drawing-canvas{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10;}
   </style>
 </head>
@@ -110,7 +112,7 @@
     <!-- CENTER: Chart + Volume -->
     <div class="main-chart">
       <div id="chart-container"><div id="chart"></div><canvas id="drawing-canvas"></canvas></div>
-      <div id="volume-pane"></div>
+      <div id="volume-container"><div id="volume"></div></div>
     </div>
 
     <!-- RIGHT: Info + Timeframes + Chart Types + Indicators -->
@@ -175,49 +177,39 @@
 
     // === CHART INIT ===
     function initChart() {
-      const container = document.getElementById('chart');
-      chart = LightweightCharts.createChart(container, {
-        width: container.clientWidth,
-        height: container.clientHeight,
-        layout: { background: { color: 'transparent' }, textColor: '#d1d4dc' },
-        grid: { vertLines: { color: '#2d313e' }, horzLines: { color: '#2d313e' } },
-        timeScale: { borderColor: '#2d313e' },
-        rightPriceScale: { scaleMargins: { top: 0.1, bottom: 0.3 } }, // Leave space for volume
-        leftPriceScale: { visible: false }
-      });
+  const container = document.getElementById('chart');
+  chart = LightweightCharts.createChart(container, {
+    width: container.clientWidth,
+    height: container.clientHeight,
+    layout: { background: { color: 'transparent' }, textColor: '#d1d4dc' },
+    grid: { vertLines: { color: '#2d313e' }, horzLines: { color: '#2d313e' } },
+    timeScale: { borderColor: '#2d313e' }
+  });
 
-      // Main price series
-      priceSeries = chart.addCandlestickSeries({
-        upColor: '#26a69a', downColor: '#ef5350',
-        wickUpColor: '#26a69a', wickDownColor: '#ef5350',
-        priceScaleId: 'right'
-      });
+  priceSeries = chart.addCandlestickSeries({
+    upColor: '#26a69a', downColor: '#ef5350',
+    wickUpColor: '#26a69a', wickDownColor: '#ef5350'
+  });
 
-      // Volume series on same chart
-      volumeSeries = chart.addHistogramSeries({
-        color: '#26a69a80',
-        priceScaleId: 'volume',
-        priceFormat: { type: 'volume' }
-      });
-      chart.priceScale('volume').applyOptions({
-        scaleMargins: { top: 0.8, bottom: 0 },
-        visible: true
-      });
+  // Volume chart - keep this separate
+  const volumeChart = LightweightCharts.createChart(document.getElementById('volume'), {
+    width: container.clientWidth,
+    height: 80,
+    layout: { background: { color: 'transparent' }, textColor: '#9ea1b5' },
+    grid: { vertLines: { visible: false }, horzLines: { visible: false } },
+    timeScale: { visible: false }
+  });
 
-      loadHistory(currentInterval);
-      connectTicker();
-      connectKline(currentInterval);
-      initDrawing();
-      initToolbars();
+  volumeSeries = volumeChart.addHistogramSeries({
+    color: '#26a69a80', priceFormat: { type: 'volume' }
+  });
 
-      // Sync volume pane size
-      const volumePane = document.getElementById('volume-pane');
-      const observer = new ResizeObserver(() => {
-        chart.resize(container.clientWidth, container.clientHeight);
-      });
-      observer.observe(container);
-    }
-
+  loadHistory(currentInterval);
+  connectTicker();
+  connectKline(currentInterval);
+  initDrawing();
+  initToolbars();
+}
     // === HISTORY ===
     async function loadHistory(interval) {
       const limit = 200;
@@ -283,16 +275,16 @@
       const data = priceData.map(d => ({ time: d.time, open: d.open, high: d.high, low: d.low, close: d.close }));
       chart.removeSeries(priceSeries);
       if (currentChartType === 'line') {
-        priceSeries = chart.addLineSeries({ color: '#2962ff', priceScaleId: 'right' });
+        priceSeries = chart.addLineSeries({ color: '#2962ff' });
         priceSeries.setData(priceData.map(d => ({ time: d.time, value: d.close })));
       } else if (currentChartType === 'area') {
-        priceSeries = chart.addAreaSeries({ lineColor: '#2962ff', topColor: '#2962ff40', bottomColor: '#2962ff10', priceScaleId: 'right' });
+        priceSeries = chart.addAreaSeries({ lineColor: '#2962ff', topColor: '#2962ff40', bottomColor: '#2962ff10' });
         priceSeries.setData(priceData.map(d => ({ time: d.time, value: d.close })));
       } else if (currentChartType === 'bar') {
-        priceSeries = chart.addBarSeries({ upColor: '#26a69a', downColor: '#ef5350', priceScaleId: 'right' });
+        priceSeries = chart.addBarSeries({ upColor: '#26a69a', downColor: '#ef5350' });
         priceSeries.setData(data);
       } else {
-        priceSeries = chart.addCandlestickSeries({ upColor: '#26a69a', downColor: '#ef5350', wickUpColor: '#26a69a', wickDownColor: '#ef5350', priceScaleId: 'right' });
+        priceSeries = chart.addCandlestickSeries({ upColor: '#26a69a', downColor: '#ef5350', wickUpColor: '#26a69a', wickDownColor: '#ef5350' });
         priceSeries.setData(data);
       }
       volumeSeries.setData(priceData.map(d => ({ time: d.time, value: d.volume, color: d.close >= d.open ? '#26a69a80' : '#ef535080' })));
@@ -392,8 +384,10 @@
       });
 
       canvas.addEventListener('mouseup', () => {
-        isDrawing = false;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if (isDrawing) {
+          isDrawing = false;
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
       });
     }
 
