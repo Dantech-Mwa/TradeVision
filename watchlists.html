@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Watchlist - TradeVision</title>
+  <link rel="icon" href="assets/icons/chart.svg" type="image/svg+xml">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link id="theme-style" rel="stylesheet" href="assets/css/main.css">
+  <link rel="stylesheet" href="assets/css/dark-theme.css">
+  <style>
+    :root{--bg:#141518;--bg-light:#1e222d;--text:#d1d4dc;--text-light:#9ea1b5;--accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#2d313e;--card:#1e222d;}
+    [data-theme="light"]{--bg:#ffffff;--bg-light:#f8f9fa;--text:#2d3748;--text-light:#718096;--accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#e2e8f0;--card:#ffffff;}
+    body{margin:0;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);}
+    a{color:var(--accent);text-decoration:none;}
+    .container{max-width:1200px;margin:0 auto;padding:2rem 1rem;}
+    .header{background:var(--bg-light);border-bottom:1px solid var(--border);padding:0.75rem 0;position:sticky;top:0;z-index:100;}
+    .flex-between{display:flex;justify-content:space-between;align-items:center;}
+    .logo{font-weight:700;font-size:1.4rem;color:var(--accent);}
+    .logo i{font-size:1.5rem;}
+    .nav-links a{margin:0 0.75rem;font-weight:500;}
+    .icon-btn{background:none;border:none;color:var(--text-light);font-size:1.2rem;cursor:pointer;padding:0.5rem;}
+    .watchlist-controls{margin-bottom:1rem;display:flex;gap:0.5rem;}
+    .watchlist-controls input{padding:0.5rem 1rem;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text);flex:1;}
+    .watchlist-controls button{padding:0.5rem 1rem;background:var(--accent);color:white;border:none;border-radius:4px;cursor:pointer;}
+    table{width:100%;border-collapse:collapse;margin-top:1rem;}
+    th,td{padding:0.75rem 1rem;text-align:left;border-bottom:1px solid var(--border);}
+    th{background:var(--bg-light);font-weight:600;}
+    .symbol{font-weight:600;}
+    .price{font-weight:600;}
+    .change{color:var(--green);}
+    .change.negative{color:var(--red);}
+    .remove-btn{color:var(--red);cursor:pointer;}
+    .footer{background:var(--bg-light);border-top:1px solid var(--border);padding:1rem 0;font-size:0.8rem;text-align:center;color:var(--text-light);}
+  </style>
+</head>
+<body data-theme="dark">
+  <header class="header">
+    <div class="container flex-between">
+      <div class="logo"><a href="index.html" class="flex-center"><i class="fas fa-chart-line"></i><span>TradeVision</span></a></div>
+      <nav class="nav-links">
+        <a href="chart.html">Chart</a>
+        <a href="watchlist.html">Watchlist</a>
+        <a href="screener.html">Screener</a>
+        <a href="ideas.html">Ideas</a>
+        <a href="alerts.html">Alerts</a>
+        <a href="trading.html">Trade</a>
+        <a href="backtest.html">Backtest</a>
+      </nav>
+      <div class="header-actions">
+        <button id="theme-toggle" class="icon-btn"><i class="fas fa-moon"></i></button>
+        <a href="profile.html" class="icon-btn"><i class="fas fa-user"></i></a>
+        <a href="settings.html" class="icon-btn"><i class="fas fa-cog"></i></a>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <h1>My Watchlist</h1>
+    <div class="watchlist-controls">
+      <input type="text" id="add-symbol" placeholder="Enter symbol (e.g. AAPL)">
+      <button id="add-btn">Add</button>
+    </div>
+
+    <table id="watchlist-table">
+      <thead>
+        <tr>
+          <th>Symbol</th>
+          <th>Price</th>
+          <th>Change</th>
+          <th>Volume</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Filled by JS -->
+      </tbody>
+    </table>
+  </div>
+
+  <footer class="footer">
+    <div class="container">© 2025 TradeVision. Open Source.</div>
+  </footer>
+
+  <script>
+    const themeToggle = document.getElementById('theme-toggle');
+    const body = document.body;
+    const themeIcon = themeToggle.querySelector('i');
+    themeToggle.addEventListener('click', () => {
+      const isDark = body.getAttribute('data-theme') === 'dark';
+      body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+      themeIcon.classList.toggle('fa-moon'); themeIcon.classList.toggle('fa-sun');
+      localStorage.setItem('theme', isDark ? 'light' : 'dark');
+    });
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    body.setAttribute('data-theme', savedTheme);
+    if (savedTheme === 'light') themeIcon.classList.replace('fa-moon', 'fa-sun');
+
+    const tableBody = document.querySelector('#watchlist-table tbody');
+    const addInput = document.getElementById('add-symbol');
+    const addBtn = document.getElementById('add-btn');
+
+    let watchlist = JSON.parse(localStorage.getItem('watchlist')) || ['AAPL', 'TSLA', 'BTCUSD'];
+
+    function render() {
+      tableBody.innerHTML = '';
+      watchlist.forEach(symbol => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td class="symbol"><a href="chart.html?symbol=${symbol}">${symbol}</a></td>
+          <td class="price" data-symbol="${symbol}">--</td>
+          <td class="change" data-symbol="${symbol}">--</td>
+          <td>--</td>
+          <td><i class="fas fa-trash remove-btn" data-symbol="${symbol}"></i></td>
+        `;
+        tableBody.appendChild(row);
+        fetchPrice(symbol);
+      });
+    }
+
+    async function fetchPrice(symbol) {
+      let price = 0;
+      if (symbol === 'BTCUSD') {
+        const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd');
+        const data = await res.json();
+        price = data.bitcoin.usd;
+      } else {
+        price = symbol === 'AAPL' ? 180 + Math.random()*10 : 250 + Math.random()*20;
+      }
+      const priceEl = document.querySelector(`.price[data-symbol="${symbol}"]`);
+      const changeEl = document.querySelector(`.change[data-symbol="${symbol}"]`);
+      if (priceEl) priceEl.textContent = price.toFixed(2);
+      if (changeEl) {
+        const change = (Math.random() - 0.5) * 5;
+        changeEl.textContent = (change > 0 ? '+' : '') + change.toFixed(2) + '%';
+        changeEl.className = change >= 0 ? 'change' : 'change negative';
+      }
+    }
+
+    addBtn.addEventListener('click', () => {
+      const sym = addInput.value.trim().toUpperCase();
+      if (sym && !watchlist.includes(sym)) {
+        watchlist.push(sym);
+        localStorage.setItem('watchlist', JSON.stringify(watchlist));
+        render();
+        addInput.value = '';
+      }
+    });
+
+    tableBody.addEventListener('click', e => {
+      if (e.target.classList.contains('remove-btn')) {
+        const sym = e.target.dataset.symbol;
+        watchlist = watchlist.filter(s => s !== sym);
+        localStorage.setItem('watchlist', JSON.stringify(watchlist));
+        render();
+      }
+    });
+
+    render();
+    setInterval(() => watchlist.forEach(fetchPrice), 10000);
+  </script>
+</body>
+</html>
