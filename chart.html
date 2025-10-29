@@ -122,6 +122,10 @@
         <a href="settings.html" class="icon-btn"><i class="fas fa-cog"></i></a>
       </div>
     </div>
+    <div class="search-bar" style="margin-left:auto;max-width:200px;">
+  <input type="text" id="symbol-search" placeholder="e.g. ETHUSD, AAPL" style="width:100%;padding:0.5rem;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text);font-size:0.9rem;">
+  <button id="search-go" style="position:absolute;right:0.5rem;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--accent);cursor:pointer;">Go</button>
+</div>
   </header>
 
   <div class="chart-layout">
@@ -516,7 +520,21 @@
         }
       });
     }
+    
+// === SYMBOL SEARCH ===
+document.getElementById('search-go').addEventListener('click', () => {
+  const input = document.getElementById('symbol-search').value.trim().toUpperCase();
+  if (!input) return;
+  const url = new URL(location);
+  url.searchParams.set('symbol', input);
+  location.href = url;
+});
 
+// Allow Enter key
+document.getElementById('symbol-search').addEventListener('keypress', e => {
+  if (e.key === 'Enter') document.getElementById('search-go').click();
+});
+    
     // === START ===
     if (typeof LightweightCharts !== 'undefined') {
       initChart();
