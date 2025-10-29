@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Screener - TradeVision</title>
+  <link rel="icon" href="assets/icons/chart.svg" type="image/svg+xml">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link id="theme-style" rel="stylesheet" href="assets/css/main.css">
+  <link rel="stylesheet" href="assets/css/dark-theme.css">
+  <style>
+    :root{--bg:#141518;--bg-light:#1e222d;--text:#d1d4dc;--text-light:#9ea1b5;--accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#2d313e;--card:#1e222d;}
+    [data-theme="light"]{--bg:#ffffff;--bg-light:#f8f9fa;--text:#2d3748;--text-light:#718096;--accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#e2e8f0;--card:#ffffff;}
+    body{margin:0;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);}
+    a{color:var(--accent);text-decoration:none;}
+    .container{max-width:1400px;margin:0 auto;padding:2rem 1rem;}
+    .header{background:var(--bg-light);border-bottom:1px solid var(--border);padding:0.75rem 0;position:sticky;top:0;z-index:100;}
+    .flex-between{display:flex;justify-content:space-between;align-items:center;}
+    .logo{font-weight:700;font-size:1.4rem;color:var(--accent);}
+    .logo i{font-size:1.5rem;}
+    .nav-links a{margin:0 0.75rem;font-weight:500;}
+    .icon-btn{background:none;border:none;color:var(--text-light);font-size:1.2rem;cursor:pointer;padding:0.5rem;}
+    .filters{margin-bottom:1.5rem;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem;}
+    .filter-group label{display:block;margin-bottom:0.25rem;font-size:0.9rem;}
+    .filter-group input,.filter-group select{padding:0.5rem;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text);width:100%;}
+    table{width:100%;border-collapse:collapse;margin-top:1rem;}
+    th,td{padding:0.75rem 1rem;text-align:left;border-bottom:1px solid var(--border);}
+    th{background:var(--bg-light);font-weight:600;cursor:pointer;}
+    th.sortable::after{content:'up-down';margin-left:0.5rem;font-family:'Font Awesome 6 Free';font-weight:900;}
+    .symbol{font-weight:600;}
+    .change{color:var(--green);}
+    .change.negative{color:var(--red);}
+    .footer{background:var(--bg-light);border-top:1px solid var(--border);padding:1rem 0;font-size:0.8rem;text-align:center;color:var(--text-light);}
+  </style>
+</head>
+<body data-theme="dark">
+  <header class="header">
+    <div class="container flex-between">
+      <div class="logo"><a href="index.html" class="flex-center"><i class="fas fa-chart-line"></i><span>TradeVision</span></a></div>
+      <nav class="nav-links">
+        <a href="chart.html">Chart</a>
+        <a href="watchlist.html">Watchlist</a>
+        <a href="screener.html">Screener</a>
+        <a href="ideas.html">Ideas</a>
+        <a href="alerts.html">Alerts</a>
+        <a href="trading.html">Trade</a>
+        <a href="backtest.html">Backtest</a>
+      </nav>
+      <div class="header-actions">
+        <button id="theme-toggle" class="icon-btn"><i class="fas fa-moon"></i></button>
+        <a href="profile.html" class="icon-btn"><i class="fas fa-user"></i></a>
+        <a href="settings.html" class="icon-btn"><i class="fas fa-cog"></i></a>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <h1>Stock Screener</h1>
+    <div class="filters">
+      <div class="filter-group">
+        <label>Exchange</label>
+        <select id="exchange"><option>All</option><option>NASDAQ</option><option>NYSE</option></select>
+      </div>
+      <div class="filter-group">
+        <label>Market Cap</label>
+        <select id="market-cap"><option>Any</option><option>>$10B</option><option>>$50B</option></select>
+      </div>
+      <div class="filter-group">
+        <label>Price</label>
+        <input type="number" id="min-price" placeholder="Min">
+      </div>
+      <div class="filter-group">
+        <label>&nbsp;</label>
+        <input type="number" id="max-price" placeholder="Max">
+      </div>
+      <div class="filter-group">
+        <label>Volume</label>
+        <input type="number" id="min-volume" placeholder="Min">
+      </div>
+      <div class="filter-group">
+        <label>RSI (14)</label>
+        <input type="number" id="rsi" placeholder="e.g. 70">
+      </div>
+    </div>
+
+    <table id="screener-table">
+      <thead>
+        <tr>
+          <th class="sortable" data-col="symbol">Symbol</th>
+          <th class="sortable" data-col="price">Price</th>
+          <th class="sortable" data-col="change">Change %</th>
+          <th class="sortable" data-col="volume">Volume</th>
+          <th class="sortable" data-col="marketCap">Market Cap</th>
+          <th class="sortable" data-col="pe">">P/E</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <footer class="footer">
+    <div class="container">© 2025 TradeVision. Open Source.</div>
+  </footer>
+
+  <script>
+    const themeToggle = document.getElementById('theme-toggle');
+    const body = document.body;
+    const themeIcon = themeToggle.querySelector('i');
+    themeToggle.addEventListener('click', () => {
+      const isDark = body.getAttribute('data-theme') === 'dark';
+      body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+      themeIcon.classList.toggle('fa-moon'); themeIcon.classList.toggle('fa-sun');
+      localStorage.setItem('theme', isDark ? 'light' : 'dark');
+    });
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    body.setAttribute('data-theme', savedTheme);
+    if (savedTheme === 'light') themeIcon.classList.replace('fa-moon', 'fa-sun');
+
+    const stocks = [
+      {symbol:'AAPL',price:182.5,change:1.2,volume:58000000,marketCap:2900000000000,pe:30.5},
+      {symbol:'MSFT',price:378.2,change:-0.5,volume:22000000,marketCap:2800000000000,pe:35.2},
+      {symbol:'GOOGL',price:142.8,change:2.1,volume:30000000,marketCap:1800000000000,pe:28.1},
+      {symbol:'TSLA',price:248.6,change:-3.4,volume:110000000,marketCap:790000000000,pe:72.3},
+      {symbol:'NVDA',price:488.9,change:4.5,volume:45000000,marketCap:1200000000000,pe:65.8},
+      {symbol:'META',price:488.1,change:0.8,volume:18000000,marketCap:1250000000000,pe:32.4},
+    ];
+
+    const tbody = document.querySelector('#screener-table tbody');
+    let sortCol = 'symbol', sortAsc = true;
+
+    function render() {
+      tbody.innerHTML = '';
+      let filtered = stocks.filter(s => {
+        const cap = document.getElementById('market-cap').value;
+        const minP = document.getElementById('min-price').value || 0;
+        const maxP = document.getElementById('max-price').value || Infinity;
+        const minV = document.getElementById('min-volume').value || 0;
+        return (!cap || s.marketCap > parseFloat(cap.replace(/[^0-9]/g,''))*1e9) &&
+               s.price >= minP && s.price <= maxP && s.volume >= minV;
+      });
+      filtered.sort((a,b) => {
+        let av = a[sortCol], bv = b[sortCol];
+        if (sortCol === 'symbol') return sortAsc ? av.localeCompare(bv) : bv.localeCompare(av);
+        return sortAsc ? av - bv : bv - av;
+      });
+      filtered.forEach(s => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="symbol"><a href="chart.html?symbol=${s.symbol}">${s.symbol}</a></td>
+          <td>$${s.price.toFixed(2)}</td>
+          <td class="change ${s.change<0?'negative':''}">${s.change>0?'+':''}${s.change}%</td>
+          <td>${(s.volume/1e6).toFixed(1)}M</td>
+          <td>$${(s.marketCap/1e9).toFixed(0)}B</td>
+          <td>${s.pe}</td>
+          <td><button class="add-watchlist" data-symbol="${s.symbol}">+ Watch</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    document.querySelectorAll('.sortable').forEach(th => {
+      th.addEventListener('click', () => {
+        const col = th.dataset.col;
+        if (sortCol === col) sortAsc = !sortAsc;
+        else { sortCol = col; sortAsc = true; }
+        render();
+      });
+    });
+
+    document.querySelectorAll('.filters input, .filters select').forEach(el => {
+      el.addEventListener('input', render);
+    });
+
+    tbody.addEventListener('click', e => {
+      if (e.target.classList.contains('add-watchlist')) {
+        const sym = e.target.dataset.symbol;
+        let wl = JSON.parse(localStorage.getItem('watchlist')) || [];
+        if (!wl.includes(sym)) {
+          wl.push(sym);
+          localStorage.setItem('watchlist', JSON.stringify(wl));
+          alert(`${sym} added to watchlist!`);
+        }
+      }
+    });
+
+    render();
+  </script>
+</body>
+</html>
