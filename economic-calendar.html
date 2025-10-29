@@ -4,197 +4,420 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Economic Calendar - TradeVision</title>
-  <link rel="icon" href="assets/icons/calendar.svg" type="image/svg+xml">
+  <link rel="icon" href="assets/icons/chart.svg" type="image/svg+xml">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
     :root{--bg:#141518;--bg-light:#1e222d;--text:#d1d4dc;--text-light:#9ea1b5;--accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#2d313e;--card:#1e222d;}
     [data-theme="light"]{--bg:#ffffff;--bg-light:#f8f9fa;--text:#2d3748;--text-light:#718096;--accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#e2e8f0;--card:#ffffff;}
-    body{margin:0;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;}
-    a{color:var(--accent);text-decoration:none;}
-    .container{max-width:1200px;margin:0 auto;padding:2rem 1rem;}
+    body{margin:0;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);}
+    .container{max-width:1400px;margin:0 auto;padding:2rem 1rem;}
     .header{background:var(--bg-light);border-bottom:1px solid var(--border);padding:0.75rem 0;position:sticky;top:0;z-index:100;}
     .flex-between{display:flex;justify-content:space-between;align-items:center;}
     .logo{font-weight:700;font-size:1.4rem;color:var(--accent);}
     .nav-links a{margin:0 0.75rem;font-weight:500;}
-    .icon-btn{background:none;border:none;color:var(--text-light);font-size:1.2rem;cursor:pointer;padding:0.5rem;}
-    .filters{display:flex;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap;}
-    .filter-group input,.filter-group select{padding:0.5rem;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text);}
+    .calendar-controls{margin-bottom:1rem;display:flex;gap:1rem;flex-wrap:wrap;align-items:center;}
+    .calendar-controls select,.calendar-controls input,.calendar-controls button{padding:0.5rem;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text);}
+    .calendar-controls button{background:var(--accent);color:white;cursor:pointer;}
+    .calendar-controls button:disabled{background:var(--text-light);cursor:not-allowed;}
     table{width:100%;border-collapse:collapse;margin-top:1rem;}
     th,td{padding:0.75rem 1rem;text-align:left;border-bottom:1px solid var(--border);}
-    th{background:var(--bg-light);font-weight:600;cursor:pointer;}
-    .impact-high{color:var(--red);font-weight:700;}
-    .impact-medium{color:#ff9800;}
+    th{background:var(--bg-light);font-weight:600;position:sticky;top:0;}
+    .impact-high{color:var(--red);font-weight:600;}
+    .impact-medium{color:#ff9800;font-weight:500;}
     .impact-low{color:var(--text-light);}
-    .footer{background:var(--bg-light);border-top:1px solid var(--border);padding:1rem 0;font-size:0.8rem;text-align:center;color:var(--text-light);}
-    @media(max-width:768px){.filters{flex-direction:column;}}
-    .widget-container{margin-top:1rem;}
+    .country-flag{width:20px;height:15px;margin-right:8px;border-radius:2px;}
+    .positive{color:var(--green);}
+    .negative{color:var(--red);}
+    .refresh-btn{background:var(--accent);color:white;border:none;padding:0.5rem 1rem;border-radius:4px;cursor:pointer;}
+    .footer{background:var(--bg-light);border-top:1px solid var(--border);padding:1rem 0;text-align:center;color:var(--text-light);}
+    .event-row:hover{background:var(--bg-light);}
+    .event-time{font-family:'Courier New', monospace;}
+    .api-status{font-size:0.8rem;color:var(--text-light);}
+    .api-status.connected{color:var(--green);}
+    .api-status.error{color:var(--red);}
+    .api-status.warning{color:#ff9800;}
+    .live-badge{background:var(--green);color:white;padding:0.2rem 0.5rem;border-radius:12px;font-size:0.7rem;margin-left:0.5rem;}
+    .loading-spinner{display:inline-block;width:12px;height:12px;border:2px solid #f3f3f3;border-top:2px solid var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin-right:0.5rem;}
+    @keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
+    .stats-bar{display:flex;gap:2rem;margin-bottom:1rem;font-size:0.9rem;color:var(--text-light);}
+    .stat-item{display:flex;align-items:center;gap:0.5rem;}
+    .importance-3{border-left:4px solid var(--red);}
+    .importance-2{border-left:4px solid #ff9800;}
+    .importance-1{border-left:4px solid var(--text-light);}
   </style>
 </head>
-
 <body data-theme="dark">
   <header class="header">
     <div class="container flex-between">
-      <div class="logo"><a href="index.html" class="flex-center"><i class="fas fa-calendar-alt"></i><span>Economic Calendar</span></a></div>
+      <div class="logo"><a href="index.html"><i class="fas fa-chart-line"></i> TradeVision</a></div>
       <nav class="nav-links">
         <a href="chart.html">Chart</a>
         <a href="watchlist.html">Watchlist</a>
         <a href="screener.html">Screener</a>
-        <a href="ideas.html">Ideas</a>
+        <a href="economic-calendar.html">Calendar</a>
         <a href="alerts.html">Alerts</a>
       </nav>
-      <div class="header-actions">
-        <button id="theme-toggle" class="icon-btn"><i class="fas fa-moon"></i></button>
-      </div>
     </div>
   </header>
 
   <div class="container">
-    <div class="filters">
-      <div class="filter-group">
-        <label>Country</label>
-        <select id="country-filter">
-          <option value="">All</option>
-          <option value="US">United States</option>
-          <option value="GB">United Kingdom</option>
-          <option value="EU">Eurozone</option>
-          <option value="JP">Japan</option>
-        </select>
+    <h1><i class="fas fa-calendar-alt"></i> Economic Calendar <span class="live-badge">LIVE</span></h1>
+    
+    <div class="stats-bar">
+      <div class="stat-item">
+        <i class="fas fa-bolt" style="color:var(--green);"></i>
+        <span>Source: <strong>Real-time Web Data</strong></span>
       </div>
-      <div class="filter-group">
-        <label>Impact</label>
-        <select id="impact-filter">
-          <option value="">All</option>
-          <option value="3">High</option>
-          <option value="2">Medium</option>
-          <option value="1">Low</option>
-        </select>
+      <div class="stat-item">
+        <i class="fas fa-sync-alt"></i>
+        <span>Auto-refresh: <strong>Every 5 minutes</strong></span>
       </div>
-      <div class="filter-group">
-        <label>From Date</label>
-        <input type="date" id="from-date" value="2025-10-29">
-      </div>
-      <div class="filter-group">
-        <label>To Date</label>
-        <input type="date" id="to-date" value="2025-10-30">
-      </div>
-      <button id="fetch-btn" style="padding:0.5rem 1rem;background:var(--accent);color:white;border:none;border-radius:4px;cursor:pointer;">Load Data</button>
     </div>
 
-    <!-- Table for API Data -->
-    <table id="calendar-table">
-      <thead>
-        <tr>
-          <th>Time (UTC)</th>
-          <th>Country</th>
-          <th>Event</th>
-          <th>Impact</th>
-          <th>Actual</th>
-          <th>Forecast</th>
-          <th>Previous</th>
-        </tr>
-      </thead>
-      <tbody id="calendar-body">
-        <tr><td colspan="7">Loading...</td></tr>
-      </tbody>
-    </table>
+    <div class="calendar-controls">
+      <input type="date" id="date-filter">
+      <select id="country-filter">
+        <option value="all">All Countries</option>
+        <option value="united states">United States</option>
+        <option value="euro zone">European Union</option>
+        <option value="united kingdom">United Kingdom</option>
+        <option value="japan">Japan</option>
+        <option value="china">China</option>
+        <option value="canada">Canada</option>
+        <option value="australia">Australia</option>
+      </select>
+      <select id="impact-filter">
+        <option value="all">All Impact</option>
+        <option value="high">High</option>
+        <option value="medium">Medium</option>
+        <option value="low">Low</option>
+      </select>
+      <button id="refresh-btn" class="refresh-btn">
+        <i class="fas fa-sync-alt"></i> Refresh
+      </button>
+      <span id="api-status" class="api-status">Initializing real-time data sources...</span>
+    </div>
 
-    <!-- Fallback Widget (Visual) -->
-    <div class="widget-container">
-      <h3>Fallback View (Live Widget)</h3>
-      <div class="tradingview-widget-container">
-        <div class="tradingview-widget-container__widget"></div>
-        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-economic-calendar.js" async>
-        {
-          "width": "100%",
-          "height": "600",
-          "countries": ["US"],
-          "importance": [3],
-          "colorTheme": "dark"
-        }
-        </script>
-      </div>
+    <div id="calendar-content">
+      <table id="events-table">
+        <thead>
+          <tr>
+            <th>Time (UTC)</th>
+            <th>Country</th>
+            <th>Event</th>
+            <th>Impact</th>
+            <th>Actual</th>
+            <th>Forecast</th>
+            <th>Previous</th>
+          </tr>
+        </thead>
+        <tbody id="events-body">
+          <tr>
+            <td colspan="7">
+              <div class="loading-spinner"></div>
+              Loading live economic data from multiple sources...
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 
   <footer class="footer">
-    <div class="container">© 2025 TradeVision. Open Source.</div>
+    <div class="container">© 2025 TradeVision. Real-time economic data</div>
   </footer>
 
   <script>
-    // Theme Toggle
-    const themeToggle = document.getElementById('theme-toggle');
-    const body = document.body;
-    const themeIcon = themeToggle.querySelector('i');
-    themeToggle.addEventListener('click', () => {
-      const isDark = body.getAttribute('data-theme') === 'dark';
-      body.setAttribute('data-theme', isDark ? 'light' : 'dark');
-      themeIcon.classList.toggle('fa-moon'); themeIcon.classList.toggle('fa-sun');
-      localStorage.setItem('theme', isDark ? 'light' : 'dark');
-    });
-    const savedTheme = localStorage.getItem('theme') || 'dark';
-    body.setAttribute('data-theme', savedTheme);
-    if (savedTheme === 'light') themeIcon.classList.replace('fa-moon', 'fa-sun');
+    // Production Economic Calendar - Real Web Scraping Only
+    class ProductionEconomicCalendar {
+      constructor() {
+        this.events = [];
+        this.dataSources = [
+          this.fetchTradingEconomics.bind(this),
+          this.fetchInvestingCom.bind(this),
+          this.fetchForexFactory.bind(this)
+        ];
+        this.currentSource = 0;
+        this.init();
+      }
 
-    // Fetch from TradingView Unofficial API (with Proxy to Bypass 403)
-    async function fetchCalendar() {
-      const from = document.getElementById('from-date').value;
-      const to = document.getElementById('to-date').value;
-      const country = document.getElementById('country-filter').value;
-      const impact = document.getElementById('impact-filter').value;
-      const fromUTC = `${from}T00:00:00.000Z`;
-      const toUTC = `${to}T23:59:59.999Z`;
-      let url = `https://economic-calendar.tradingview.com/events?from=${fromUTC}&to=${toUTC}`;
-      if (country) url += `&countries=${country}`;
-      if (impact) url += `&importance=${impact}`;
+      async init() {
+        // Set default date to today
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('date-filter').value = today;
+        
+        // Event listeners
+        document.getElementById('refresh-btn').addEventListener('click', () => this.loadEconomicData());
+        document.getElementById('date-filter').addEventListener('change', () => this.loadEconomicData());
+        document.getElementById('country-filter').addEventListener('change', () => this.filterEvents());
+        document.getElementById('impact-filter').addEventListener('change', () => this.filterEvents());
+        
+        // Load initial data
+        await this.loadEconomicData();
+        
+        // Auto-refresh every 5 minutes
+        setInterval(() => this.loadEconomicData(), 300000);
+      }
 
-      // Use CORS proxy to bypass 403
-      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+      async loadEconomicData() {
+        const refreshBtn = document.getElementById('refresh-btn');
+        const date = document.getElementById('date-filter').value;
+        
+        refreshBtn.disabled = true;
+        refreshBtn.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> Loading...';
+        
+        this.updateStatus('Fetching real economic data...');
 
-      try {
+        try {
+          // Try multiple data sources in sequence
+          for (let i = 0; i < this.dataSources.length; i++) {
+            const sourceIndex = (this.currentSource + i) % this.dataSources.length;
+            this.updateStatus(`Trying source ${sourceIndex + 1}...`);
+            
+            try {
+              const events = await this.dataSources[sourceIndex](date);
+              if (events && events.length > 0) {
+                this.events = events;
+                this.currentSource = sourceIndex;
+                this.filterEvents();
+                this.updateStatus(`Loaded ${events.length} events from source ${sourceIndex + 1}`, 'connected');
+                break;
+              }
+            } catch (error) {
+              console.log(`Source ${sourceIndex + 1} failed:`, error.message);
+              if (i === this.dataSources.length - 1) {
+                throw new Error('All data sources failed');
+              }
+            }
+          }
+        } catch (error) {
+          console.error('All data sources failed:', error);
+          this.updateStatus('All sources unavailable - retrying in 30s', 'error');
+          setTimeout(() => this.loadEconomicData(), 30000);
+        } finally {
+          refreshBtn.disabled = false;
+          refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh';
+        }
+      }
+
+      // METHOD 1: Trading Economics (Official API - No 403)
+      async fetchTradingEconomics(date) {
+        this.updateStatus('Accessing Trading Economics...');
+        
+        // Trading Economics free API endpoint
+        const response = await fetch(`https://api.tradingeconomics.com/calendar/country/all/${date}?c=guest:guest`);
+        
+        if (!response.ok) throw new Error(`TE API: ${response.status}`);
+        
+        const data = await response.json();
+        
+        return data.map(event => ({
+          time: this.formatTime(event.Date),
+          country: event.Country,
+          event: event.Event,
+          impact: this.getImpactLevel(event.Importance),
+          actual: event.Actual || '',
+          forecast: event.Forecast || '',
+          previous: event.Previous || '',
+          importance: event.Importance
+        }));
+      }
+
+      // METHOD 2: Investing.com via CORS Proxy
+      async fetchInvestingCom(date) {
+        this.updateStatus('Accessing Investing.com data...');
+        
+        const formattedDate = date.replace(/-/g, '');
+        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(
+          `https://www.investing.com/economic-calendar/Service/getCalendarFiltered?date=${formattedDate}`
+        )}`;
+        
         const response = await fetch(proxyUrl);
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const text = await response.text();
-        const data = JSON.parse(text);
-        renderTable(data.result || []);
-      } catch (error) {
-        console.error('API Error:', error);
-        document.getElementById('calendar-body').innerHTML = `<tr><td colspan="7">Error: ${error.message} (Try refresh)</td></tr>`;
+        if (!response.ok) throw new Error(`Investing.com: ${response.status}`);
+        
+        const data = await response.json();
+        return this.parseInvestingComData(data);
+      }
+
+      parseInvestingComData(data) {
+        if (!data.data) throw new Error('No data from Investing.com');
+        
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(data.data, 'text/html');
+        const rows = doc.querySelectorAll('.js-event-item');
+        
+        return Array.from(rows).map(row => {
+          const time = row.querySelector('.time')?.textContent.trim() || '';
+          const country = row.querySelector('.flagCur')?.textContent.trim() || '';
+          const event = row.querySelector('.event')?.textContent.trim() || '';
+          const impact = row.querySelector('.sentiment')?.getAttribute('title') || 'low';
+          const actual = row.querySelector('.actual')?.textContent.trim() || '';
+          const forecast = row.querySelector('.forecast')?.textContent.trim() || '';
+          const previous = row.querySelector('.previous')?.textContent.trim() || '';
+          
+          return {
+            time: time,
+            country: country,
+            event: event,
+            impact: impact.toLowerCase(),
+            actual: actual,
+            forecast: forecast,
+            previous: previous,
+            importance: impact === 'high' ? 3 : impact === 'medium' ? 2 : 1
+          };
+        });
+      }
+
+      // METHOD 3: Forex Factory via Public Data
+      async fetchForexFactory(date) {
+        this.updateStatus('Accessing Forex Factory data...');
+        
+        // Forex Factory calendar data
+        const response = await fetch(`https://nfs.faireconomy.media/ff_calendar_thisweek.json`);
+        
+        if (!response.ok) throw new Error(`Forex Factory: ${response.status}`);
+        
+        const data = await response.json();
+        const targetDate = new Date(date);
+        
+        return data
+          .filter(event => {
+            const eventDate = new Date(event.date);
+            return eventDate.toDateString() === targetDate.toDateString();
+          })
+          .map(event => ({
+            time: event.time,
+            country: event.country,
+            event: event.title,
+            impact: this.getImpactLevel(event.impact),
+            actual: event.actual || '',
+            forecast: event.forecast || '',
+            previous: event.previous || '',
+            importance: event.impact === 'High' ? 3 : event.impact === 'Medium' ? 2 : 1
+          }));
+      }
+
+      filterEvents() {
+        const countryFilter = document.getElementById('country-filter').value;
+        const impactFilter = document.getElementById('impact-filter').value;
+        
+        const filtered = this.events.filter(event => {
+          const countryMatch = countryFilter === 'all' || 
+            event.country.toLowerCase().includes(countryFilter.toLowerCase());
+          const impactMatch = impactFilter === 'all' || event.impact === impactFilter;
+          return countryMatch && impactMatch;
+        });
+        
+        this.renderEvents(filtered);
+      }
+
+      renderEvents(events) {
+        const eventsBody = document.getElementById('events-body');
+        
+        if (events.length === 0) {
+          eventsBody.innerHTML = '<tr><td colspan="7">No economic events found for selected filters</td></tr>';
+          return;
+        }
+
+        // Sort by importance and time
+        const sortedEvents = events.sort((a, b) => {
+          if (b.importance !== a.importance) return b.importance - a.importance;
+          return a.time.localeCompare(b.time);
+        });
+
+        eventsBody.innerHTML = sortedEvents.map(event => `
+          <tr class="event-row importance-${event.importance}">
+            <td class="event-time">${event.time}</td>
+            <td>
+              <img src="${this.getFlagUrl(event.country)}" alt="${event.country}" class="country-flag">
+              ${event.country}
+            </td>
+            <td><strong>${event.event}</strong></td>
+            <td class="impact-${event.impact}">
+              ${this.getImpactIcon(event.importance)} ${event.impact}
+            </td>
+            <td class="${this.getValueColor(event.actual, event.forecast)}">
+              <strong>${event.actual || '--'}</strong>
+            </td>
+            <td>${event.forecast || '--'}</td>
+            <td>${event.previous || '--'}</td>
+          </tr>
+        `).join('');
+      }
+
+      updateStatus(message, status = '') {
+        const statusElement = document.getElementById('api-status');
+        statusElement.textContent = message;
+        statusElement.className = `api-status ${status}`;
+      }
+
+      getFlagUrl(country) {
+        const countryMap = {
+          'united states': 'us', 'us': 'us',
+          'euro zone': 'eu', 'european union': 'eu',
+          'united kingdom': 'gb', 'uk': 'gb',
+          'japan': 'jp', 'jpn': 'jp',
+          'china': 'cn', 'chn': 'cn',
+          'canada': 'ca', 'can': 'ca',
+          'australia': 'au', 'aus': 'au'
+        };
+        
+        const countryCode = countryMap[country.toLowerCase()] || 'un';
+        return `https://flagcdn.com/w20/${countryCode}.png`;
+      }
+
+      getImpactLevel(importance) {
+        if (importance === 3 || importance === 'High') return 'high';
+        if (importance === 2 || importance === 'Medium') return 'medium';
+        return 'low';
+      }
+
+      getImpactIcon(importance) {
+        const icons = { 3: '🔴', 2: '🟡', 1: '⚪' };
+        return icons[importance] || '⚪';
+      }
+
+      getValueColor(actual, forecast) {
+        if (!actual || actual === '--' || !forecast || forecast === '--') return '';
+        try {
+          const actualNum = parseFloat(actual.toString().replace(/[%,]/g, ''));
+          const forecastNum = parseFloat(forecast.toString().replace(/[%,]/g, ''));
+          
+          if (isNaN(actualNum) || isNaN(forecastNum)) return '';
+          
+          return actualNum > forecastNum ? 'positive' : actualNum < forecastNum ? 'negative' : '';
+        } catch {
+          return '';
+        }
+      }
+
+      formatTime(dateString) {
+        if (!dateString) return '--:--';
+        try {
+          const date = new Date(dateString);
+          if (isNaN(date.getTime())) return dateString;
+          
+          return date.toLocaleTimeString('en-US', { 
+            hour: '2-digit', 
+            minute: '2-digit',
+            hour12: false,
+            timeZone: 'UTC'
+          });
+        } catch {
+          return dateString;
+        }
       }
     }
 
-    // Render Table (Your Exact Format)
-    function renderTable(events) {
-      const tbody = document.getElementById('calendar-body');
-      if (events.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7">No events found.</td></tr>';
-        return;
-      }
-      tbody.innerHTML = events.map(event => {
-        const time = new Date(event.date).toLocaleString('en-US', { timeZone: 'UTC', hour12: false });
-        const impactStars = '★'.repeat(event.importance || 1);
-        const impactClass = event.importance === 3 ? 'impact-high' : event.importance === 2 ? 'impact-medium' : 'impact-low';
-        return `<tr>
-          <td>${time}</td>
-          <td>${event.country}</td>
-          <td>${event.event}</td>
-          <td class="${impactClass}">${impactStars}</td>
-          <td>${event.actual || '--'}</td>
-          <td>${event.forecast || '--'}</td>
-          <td>${event.previous || '--'}</td>
-        </tr>`;
-      }).join('');
-    }
+    // Initialize when page loads
+    document.addEventListener('DOMContentLoaded', () => {
+      new ProductionEconomicCalendar();
+    });
 
-    // Events
-    document.getElementById('fetch-btn').addEventListener('click', fetchCalendar);
-    document.getElementById('country-filter').addEventListener('change', fetchCalendar);
-    document.getElementById('impact-filter').addEventListener('change', fetchCalendar);
-    document.getElementById('from-date').addEventListener('change', fetchCalendar);
-    document.getElementById('to-date').addEventListener('change', fetchCalendar);
-
-    // Load on page load
-    window.addEventListener('load', fetchCalendar);
+    // Theme management
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.body.setAttribute('data-theme', savedTheme);
   </script>
 </body>
 </html>
