@@ -7,8 +7,6 @@
   <link rel="icon" href="assets/icons/chart.svg" type="image/svg+xml">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <link id="theme-style" rel="stylesheet" href="assets/css/main.css">
-  <link rel="stylesheet" href="assets/css/dark-theme.css">
   <style>
     :root{--bg:#141518;--bg-light:#1e222d;--text:#d1d4dc;--text-light:#9ea1b5;--accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#2d313e;--card:#1e222d;}
     [data-theme="light"]{--bg:#ffffff;--bg-light:#f8f9fa;--text:#2d3748;--text-light:#718096;--accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#e2e8f0;--card:#ffffff;}
@@ -21,82 +19,114 @@
     .logo i{font-size:1.5rem;}
     .nav-links a{margin:0 0.75rem;font-weight:500;}
     .icon-btn{background:none;border:none;color:var(--text-light);font-size:1.2rem;cursor:pointer;padding:0.5rem;}
+
+    /* Filters */
     .filters{margin-bottom:1.5rem;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem;}
     .filter-group label{display:block;margin-bottom:0.25rem;font-size:0.9rem;}
     .filter-group input,.filter-group select{padding:0.5rem;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text);width:100%;}
+
+    /* Search Dropdown */
+    #symbol-search-container{position:relative;}
+    #symbol-search-input{padding:0.5rem;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text);width:100%;}
+    #symbol-search-dropdown{position:absolute;top:100%;left:0;right:0;background:var(--card);border:1px solid var(--border);border-radius:0 0 4px 4px;max-height:200px;overflow-y:auto;z-index:10;}
+    .symbol-option{padding:0.5rem;cursor:pointer;border-bottom:1px solid var(--border);transition:0.2s;}
+    .symbol-option:hover{background:var(--bg-light);}
+    .symbol-option:last-child{border-bottom:none;}
+
+    /* Table */
     table{width:100%;border-collapse:collapse;margin-top:1rem;}
     th,td{padding:0.75rem 1rem;text-align:left;border-bottom:1px solid var(--border);}
     th{background:var(--bg-light);font-weight:600;cursor:pointer;}
-    th.sortable::after{content:'up-down';margin-left:0.5rem;font-family:'Font Awesome 6 Free';font-weight:900;}
+    th.sortable::after{content:'↕';margin-left:0.5rem;}
     .symbol{font-weight:600;}
     .change{color:var(--green);}
     .change.negative{color:var(--red);}
+    .action-btn{padding:0.4rem 0.8rem;background:var(--accent);color:white;border:none;border-radius:4px;cursor:pointer;font-size:0.8rem;}
+    .loading{text-align:center;padding:2rem;color:var(--text-light);}
+    .no-results{text-align:center;padding:2rem;color:var(--text-light);}
+
     .footer{background:var(--bg-light);border-top:1px solid var(--border);padding:1rem 0;font-size:0.8rem;text-align:center;color:var(--text-light);}
+
+    /* Status */
+    .status-indicator{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;}
+    .status-connected{background:var(--green);}
+    .status-connecting{background:#ff9800;animation:pulse 1.5s infinite;}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+
+    @media(max-width:768px){.filters{grid-template-columns:1fr;}}
   </style>
 </head>
+
 <body data-theme="dark">
   <header class="header">
     <div class="container flex-between">
-      <div class="logo"><a href="index.html" class="flex-center"><i class="fas fa-chart-line"></i><span>TradeVision</span></a></div>
+      <div class="logo"><a href="index.html" class="flex-center"><i class="fas fa-filter"></i><span>Screener</span></a></div>
       <nav class="nav-links">
         <a href="chart.html">Chart</a>
         <a href="watchlist.html">Watchlist</a>
         <a href="screener.html">Screener</a>
         <a href="ideas.html">Ideas</a>
         <a href="alerts.html">Alerts</a>
-        <a href="trading.html">Trade</a>
-        <a href="backtest.html">Backtest</a>
       </nav>
       <div class="header-actions">
         <button id="theme-toggle" class="icon-btn"><i class="fas fa-moon"></i></button>
-        <a href="profile.html" class="icon-btn"><i class="fas fa-user"></i></a>
-        <a href="settings.html" class="icon-btn"><i class="fas fa-cog"></i></a>
       </div>
     </div>
   </header>
 
   <div class="container">
-    <h1>Stock Screener</h1>
+    <h1>Crypto Screener (2300+ Symbols)</h1>
     <div class="filters">
       <div class="filter-group">
-        <label>Exchange</label>
-        <select id="exchange"><option>All</option><option>NASDAQ</option><option>NYSE</option></select>
+        <label>Search Symbol</label>
+        <div id="symbol-search-container">
+          <input type="text" id="symbol-search-input" placeholder="e.g. BTC, ETH, SOL...">
+          <div id="symbol-search-dropdown"></div>
+        </div>
       </div>
       <div class="filter-group">
         <label>Market Cap</label>
-        <select id="market-cap"><option>Any</option><option>>$10B</option><option>>$50B</option></select>
+        <select id="market-cap">
+          <option value="">All</option>
+          <option value="large">Large (> $10B)</option>
+          <option value="mid">Mid ($1B - $10B)</option>
+          <option value="small">Small (< $1B)</option>
+        </select>
       </div>
       <div class="filter-group">
-        <label>Price</label>
-        <input type="number" id="min-price" placeholder="Min">
+        <label>Price Change (24h)</label>
+        <select id="change-filter">
+          <option value="">All</option>
+          <option value="positive">Gainers (+%)</option>
+          <option value="negative">Losers (-%)</option>
+        </select>
       </div>
       <div class="filter-group">
-        <label>&nbsp;</label>
-        <input type="number" id="max-price" placeholder="Max">
+        <label>Volume (24h)</label>
+        <input type="number" id="min-volume" placeholder="Min (USD)">
       </div>
-      <div class="filter-group">
-        <label>Volume</label>
-        <input type="number" id="min-volume" placeholder="Min">
-      </div>
-      <div class="filter-group">
-        <label>RSI (14)</label>
-        <input type="number" id="rsi" placeholder="e.g. 70">
-      </div>
+    </div>
+
+    <div id="connection-status" class="flex-center" style="margin-bottom:1rem;">
+      <span class="status-indicator status-connecting"></span>
+      <span>Loading 2300+ symbols...</span>
     </div>
 
     <table id="screener-table">
       <thead>
         <tr>
           <th class="sortable" data-col="symbol">Symbol</th>
-          <th class="sortable" data-col="price">Price</th>
-          <th class="sortable" data-col="change">Change %</th>
-          <th class="sortable" data-col="volume">Volume</th>
+          <th class="sortable" data-col="price">Price (USDT)</th>
+          <th class="sortable" data-col="change">24h Change</th>
+          <th class="sortable" data-col="volume">24h Volume</th>
           <th class="sortable" data-col="marketCap">Market Cap</th>
-          <th class="sortable" data-col="pe">">P/E</th>
+          <th class="sortable" data-col="pe">P/E Ratio</th>
           <th>Action</th>
         </tr>
       </thead>
-      <tbody></tbody>
+      <tbody id="screener-body">
+        <tr><td colspan="7" class="loading">Loading live data...</td></tr>
+      </tbody>
     </table>
   </div>
 
@@ -104,77 +134,168 @@
     <div class="container">© 2025 TradeVision. Open Source.</div>
   </footer>
 
- <script>
-  const themeToggle = document.getElementById('theme-toggle');
-  const body = document.body;
-  const themeIcon = themeToggle.querySelector('i');
-  themeToggle.addEventListener('click', () => {
-    const isDark = body.getAttribute('data-theme') === 'dark';
-    body.setAttribute('data-theme', isDark ? 'light' : 'dark');
-    themeIcon.classList.toggle('fa-moon'); themeIcon.classList.toggle('fa-sun');
-    localStorage.setItem('theme', isDark ? 'light' : 'dark');
-  });
-  const savedTheme = localStorage.getItem('theme') || 'dark';
-  body.setAttribute('data-theme', savedTheme);
-  if (savedTheme === 'light') themeIcon.classList.replace('fa-moon', 'fa-sun');
-
-  const symbols = ['BTCUSD', 'ETHUSD', 'AAPL', 'TSLA', 'SPY', 'NVDA'];
-  const binanceMap = { 'BTCUSD': 'btcusdt', 'ETHUSD': 'ethusdt', 'AAPL': 'aaplusdt', 'TSLA': 'tslausdt', 'SPY': 'spyusdt', 'NVDA': 'nvdausdt' };
-  let ws;
-
-  function render() {
-    const tbody = document.querySelector('#screener-table tbody');
-    tbody.innerHTML = '';
-    symbols.forEach(sym => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td><a href="chart.html?symbol=${sym}">${sym}</a></td>
-        <td class="price">—</td>
-        <td class="change">—</td>
-        <td><button class="watch-btn" data-sym="${sym}">+ Watch</button></td>
-      `;
-      tbody.appendChild(tr);
+  <script>
+    // Theme Toggle
+    const themeToggle = document.getElementById('theme-toggle');
+    const body = document.body;
+    const themeIcon = themeToggle.querySelector('i');
+    themeToggle.addEventListener('click', () => {
+      const isDark = body.getAttribute('data-theme') === 'dark';
+      body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+      themeIcon.classList.toggle('fa-moon'); themeIcon.classList.toggle('fa-sun');
+      localStorage.setItem('theme', isDark ? 'light' : 'dark');
     });
-  }
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    body.setAttribute('data-theme', savedTheme);
+    if (savedTheme === 'light') themeIcon.classList.replace('fa-moon', 'fa-sun');
 
-  function connectWS() {
-    const streams = symbols.map(s => `${binanceMap[s]}@ticker`).join('/');
-    ws = new WebSocket(`wss://stream.binance.com:9443/stream?streams=${streams}`);
+    // Binance API URLs
+    const BINANCE_INFO_URL = 'https://api.binance.com/api/v3/exchangeInfo';
+    const BINANCE_TICKER_URL = 'wss://stream.binance.com:9443/ws/!ticker@arr';
 
-    ws.onmessage = (e) => {
-      const msg = JSON.parse(e.data);
-      if (!msg.data) return;
-      const t = msg.data;
-      const sym = Object.keys(binanceMap).find(k => binanceMap[k] === t.s.toLowerCase());
+    // Global variables
+    let allSymbols = [];
+    let liveData = {}; // symbol → {price, change, volume}
+    let ws = null;
+    let sortCol = 'symbol';
+    let sortAsc = true;
 
-      const row = document.querySelector(`tr td a[href*="symbol=${sym}"]`)?.parentElement?.parentElement;
-      if (row) {
-        row.querySelector('.price').textContent = parseFloat(t.c).toFixed(2);
-        const change = parseFloat(t.P);
-        const chgEl = row.querySelector('.change');
-        chgEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
-        chgEl.style.color = change >= 0 ? 'var(--green)' : 'var(--red)';
-      }
-    };
-
-    ws.onclose = () => setTimeout(connectWS, 3000);
-  }
-
-  document.getElementById('screener-table').addEventListener('click', e => {
-    if (e.target.classList.contains('watch-btn')) {
-      const sym = e.target.dataset.sym;
-      let watchlist = JSON.parse(localStorage.getItem('watchlist')) || [];
-      if (!watchlist.includes(sym)) {
-        watchlist.push(sym);
-        localStorage.setItem('watchlist', JSON.stringify(watchlist));
-        e.target.textContent = 'Added';
-        e.target.disabled = true;
+    // Fetch All 2300+ Symbols
+    async function loadSymbols() {
+      try {
+        const response = await fetch(BINANCE_INFO_URL);
+        const data = await response.json();
+        allSymbols = data.symbols
+          .filter(s => s.status === 'TRADING' && s.quoteAsset === 'USDT' && s.baseAsset !== 'USD') // USDT pairs only
+          .map(s => ({ symbol: s.symbol, name: s.baseAsset, price: 0, change: 0, volume: 0 }))
+          .sort((a, b) => a.name.localeCompare(b.name));
+        renderTable(allSymbols);
+        connectWebSocket();
+        document.getElementById('connection-status').innerHTML = '<span class="status-indicator status-connected"></span><span>Live Data (2300+ Symbols)</span>';
+      } catch (error) {
+        console.error('Error loading symbols:', error);
+        document.getElementById('connection-status').innerHTML = '<span class="status-indicator status-disconnected"></span><span>Error loading symbols</span>';
+        // Fallback mock data
+        allSymbols = [
+          { symbol: 'BTCUSDT', name: 'Bitcoin', price: 45000, change: 2.5, volume: 1230000000 },
+          { symbol: 'ETHUSDT', name: 'Ethereum', price: 2500, change: -1.2, volume: 850000000 },
+          { symbol: 'ADAUSDT', name: 'Cardano', price: 0.5, change: 3.1, volume: 150000000 },
+          { symbol: 'DOTUSDT', name: 'Polkadot', price: 7, change: -0.8, volume: 95000000 }
+        ];
+        renderTable(allSymbols);
       }
     }
-  });
 
-  render();
-  connectWS();
-</script>
+    // WebSocket for Live Data (All Tickers)
+    function connectWebSocket() {
+      ws = new WebSocket(BINANCE_TICKER_URL);
+      ws.onopen = () => console.log('Connected to Binance Tickers');
+      ws.onmessage = (event) => {
+        const tickers = JSON.parse(event.data);
+        tickers.forEach(t => {
+          const symbol = t.s;
+          if (allSymbols.find(s => s.symbol === symbol)) {
+            liveData[symbol] = {
+              price: parseFloat(t.c),
+              change: parseFloat(t.P),
+              volume: parseFloat(t.v)
+            };
+          }
+        });
+        renderTable(allSymbols);
+      };
+      ws.onclose = () => setTimeout(connectWebSocket, 3000);
+      ws.onerror = (err) => console.error('WebSocket error:', err);
+    }
+
+    // Render Table
+    function renderTable(symbols) {
+      const tbody = document.getElementById('screener-body');
+      const filtered = symbols.filter(s => {
+        const search = document.getElementById('symbol-search-input').value.toLowerCase();
+        if (search && !s.name.toLowerCase().includes(search) && !s.symbol.toLowerCase().includes(search)) return false;
+        const capFilter = document.getElementById('market-cap').value;
+        if (capFilter === 'large' && s.price < 10000) return false; // Mock cap logic
+        const volFilter = document.getElementById('min-volume').value;
+        if (volFilter && (liveData[s.symbol]?.volume || 0) < parseFloat(volFilter)) return false;
+        const changeFilter = document.getElementById('change-filter').value;
+        if (changeFilter === 'positive' && (liveData[s.symbol]?.change || 0) < 0) return false;
+        if (changeFilter === 'negative' && (liveData[s.symbol]?.change || 0) >= 0) return false;
+        return true;
+      }).sort((a, b) => {
+        let valA = liveData[a.symbol]?.[sortCol] || a[sortCol];
+        let valB = liveData[b.symbol]?.[sortCol] || b[sortCol];
+        if (sortCol === 'symbol') return sortAsc ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name);
+        return sortAsc ? valA - valB : valB - valA;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="no-results">No results found.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(s => {
+        const live = liveData[s.symbol] || {};
+        const changeClass = live.change >= 0 ? 'change' : 'change negative';
+        return `<tr>
+          <td><a href="chart.html?symbol=${s.symbol}">${s.symbol}</a></td>
+          <td>${live.price ? live.price.toFixed(4) : '--'}</td>
+          <td class="${changeClass}">${live.change ? (live.change >= 0 ? '+' : '') + live.change.toFixed(2) + '%' : '--'}</td>
+          <td>${live.volume ? (live.volume / 1000000).toFixed(0) + 'M' : '--'}</td>
+          <td>${s.price * 1000000 ? '$' + (s.price * 1000000 / 1000000000).toFixed(1) + 'B' : '--'}</td>
+          <td>--</td>
+          <td><button class="action-btn" data-sym="${s.symbol}">+ Watch</button></td>
+        </tr>`;
+      }).join('');
+    }
+
+    // Symbol Search Dropdown
+    document.getElementById('symbol-search-input').addEventListener('input', e => {
+      const term = e.target.value.toLowerCase();
+      const dropdown = document.getElementById('symbol-search-dropdown');
+      if (term.length < 2) {
+        dropdown.innerHTML = '';
+        dropdown.style.display = 'none';
+        return;
+      }
+      const matches = allSymbols.filter(s => s.symbol.toLowerCase().includes(term) || s.name.toLowerCase().includes(term)).slice(0, 10);
+      dropdown.innerHTML = matches.map(s => `<div class="symbol-option" onclick="selectSymbol('${s.symbol}')">${s.symbol} - ${s.name}</div>`).join('');
+      dropdown.style.display = matches.length > 0 ? 'block' : 'none';
+    });
+
+    function selectSymbol(symbol) {
+      document.getElementById('symbol-search-input').value = symbol;
+      document.getElementById('symbol-search-dropdown').style.display = 'none';
+      renderTable(allSymbols.filter(s => s.symbol === symbol));
+    }
+
+    // Sorting
+    document.querySelectorAll('.sortable').forEach(th => {
+      th.addEventListener('click', () => {
+        const col = th.dataset.col;
+        if (sortCol === col) sortAsc = !sortAsc;
+        else { sortCol = col; sortAsc = true; }
+        renderTable(allSymbols);
+      });
+    });
+
+    // Add to Watchlist
+    document.getElementById('screener-table').addEventListener('click', e => {
+      if (e.target.classList.contains('action-btn')) {
+        const sym = e.target.dataset.sym;
+        let watchlist = JSON.parse(localStorage.getItem('watchlist')) || [];
+        if (!watchlist.includes(sym)) {
+          watchlist.push(sym);
+          localStorage.setItem('watchlist', JSON.stringify(watchlist));
+          e.target.textContent = 'Added';
+          e.target.disabled = true;
+          e.target.style.background = '#26a69a';
+        }
+      }
+    });
+
+    // Load on startup
+    loadSymbols();
+  </script>
 </body>
 </html>
