@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Economic Calendar - TradeVision</title>
+  <link rel="icon" href="assets/icons/chart.svg" type="image/svg+xml">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    :root{--bg:#141518;--bg-light:#1e222d;--text:#d1d4dc;--text-light:#9ea1b5;--accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#2d313e;--card:#1e222d;}
+    [data-theme="light"]{--bg:#ffffff;--bg-light:#f8f9fa;--text:#2d3748;--text-light:#718096;--accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#e2e8f0;--card:#ffffff;}
+    body{margin:0;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);}
+    a{color:var(--accent);text-decoration:none;}
+    .container{max-width:1000px;margin:0 auto;padding:2rem 1rem;}
+    .header{background:var(--bg-light);border-bottom:1px solid var(--border);padding:0.75rem 0;position:sticky;top:0;z-index:100;}
+    .flex-between{display:flex;justify-content:space-between;align-items:center;}
+    .logo{font-weight:700;font-size:1.4rem;color:var(--accent);}
+    .logo i{font-size:1.5rem;}
+    .nav-links a{margin:0 0.75rem;font-weight:500;}
+    .icon-btn{background:none;border:none;color:var(--text-light);font-size:1.2rem;cursor:pointer;padding:0.5rem;}
+    .calendar-controls{margin-bottom:1rem;display:flex;gap:1rem;flex-wrap:wrap;}
+    .calendar-controls select,.calendar-controls input{padding:0.5rem;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text);}
+    table{width:100%;border-collapse:collapse;margin-top:1rem;}
+    th,td{padding:0.75rem 1rem;text-align:left;border-bottom:1px solid var(--border);}
+    th{background:var(--bg-light);font-weight:600;}
+    .impact-high{color:var(--red);}
+    .impact-medium{color:#ff9800;}
+    .impact-low{color:var(--text-light);}
+    .footer{background:var(--bg-light);border-top:1px solid var(--border);padding:1rem 0;font-size:0.8rem;text-align:center;color:var(--text-light);}
+  </style>
+</head>
+<body data-theme="dark">
+  <header class="header">
+    <div class="container flex-between">
+      <div class="logo"><a href="index.html" class="flex-center"><i class="fas fa-chart-line"></i><span>TradeVision</span></a></div>
+      <nav class="nav-links">
+        <a href="chart.html">Chart</a>
+        <a href="watchlist.html">Watchlist</a>
+        <a href="screener.html">Screener</a>
+        <a href="ideas.html">Ideas</a>
+        <a href="alerts.html">Alerts</a>
+        <a href="trading.html">Trade</a>
+        <a href="backtest.html">Backtest</a>
+      </nav>
+      <div class="header-actions">
+        <button id="theme-toggle" class="icon-btn"><i class="fas fa-moon"></i></button>
+        <a href="profile.html" class="icon-btn"><i class="fas fa-user"></i></a>
+        <a href="settings.html" class="icon-btn"><i class="fas fa-cog"></i></a>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <h1>Economic Calendar</h1>
+    <div class="calendar-controls">
+      <input type="date" id="date-filter" value="2025-10-29">
+      <select id="country-filter">
+        <option>All Countries</option>
+        <option>US</option>
+        <option>EU</option>
+        <option>CN</option>
+      </select>
+      <select id="impact-filter">
+        <option>All Impact</option>
+        <option>High</option>
+        <option>Medium</option>
+        <option>Low</option>
+      </select>
+    </div>
+
+    <table id="events-table">
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>Country</th>
+          <th>Event</th>
+          <th>Impact</th>
+          <th>Actual</th>
+          <th>Forecast</th>
+          <th>Previous</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>14:30</td>
+          <td>US</td>
+          <td>GDP QoQ</td>
+          <td class="impact-high">High</td>
+          <td>3.1%</td>
+          <td>3.0%</td>
+          <td>2.8%</td>
+        </tr>
+        <tr>
+          <td>16:00</td>
+          <td>EU</td>
+          <td>CPI YoY</td>
+          <td class="impact-medium">Medium</td>
+          <td>2.1%</td>
+          <td>2.0%</td>
+          <td>1.9%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <footer class="footer">
+    <div class="container">© 2025 TradeVision. Open Source.</div>
+  </footer>
+
+  <script>
+    const themeToggle = document.getElementById('theme-toggle');
+    const body = document.body;
+    const themeIcon = themeToggle.querySelector('i');
+    themeToggle.addEventListener('click', () => {
+      const isDark = body.getAttribute('data-theme') === 'dark';
+      body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+      themeIcon.classList.toggle('fa-moon'); themeIcon.classList.toggle('fa-sun');
+      localStorage.setItem('theme', isDark ? 'light' : 'dark');
+    });
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    body.setAttribute('data-theme', savedTheme);
+    if (savedTheme === 'light') themeIcon.classList.replace('fa-moon', 'fa-sun');
+  </script>
+</body>
+</html>
