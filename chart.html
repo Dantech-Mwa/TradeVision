@@ -74,6 +74,32 @@
 
     /* Drawing Canvas */
     #drawing-canvas{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10;}
+
+    /* Animation styles for price updates */
+    .price-update {
+      animation: pricePulse 0.6s ease-in-out;
+    }
+    @keyframes pricePulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    .flash-green {
+      animation: flashGreen 0.8s ease-in-out;
+    }
+    .flash-red {
+      animation: flashRed 0.8s ease-in-out;
+    }
+    @keyframes flashGreen {
+      0% { background-color: transparent; }
+      30% { background-color: rgba(38, 166, 154, 0.3); }
+      100% { background-color: transparent; }
+    }
+    @keyframes flashRed {
+      0% { background-color: transparent; }
+      30% { background-color: rgba(239, 83, 80, 0.3); }
+      100% { background-color: transparent; }
+    }
   </style>
 </head>
 
@@ -176,6 +202,7 @@
     let klineWs, tickerWs;
     let currentInterval = '15m';
     let currentChartType = 'candlestick';
+    let lastPrice = 0;
 
     // === CHART INIT ===
     function initChart() {
@@ -186,12 +213,15 @@
         height: container.clientHeight,
         layout: { background: { color: 'transparent' }, textColor: '#d1d4dc' },
         grid: { vertLines: { color: '#2d313e' }, horzLines: { color: '#2d313e' } },
-        timeScale: { borderColor: '#2d313e', timeVisible: true, secondsVisible: false }
+        timeScale: { borderColor: '#2d313e', timeVisible: true, secondsVisible: false },
+        handleScroll: { mouseWheel: true, pressedMouseMove: true },
+        handleScale: { axisPressedMouseMove: true, mouseWheel: true, pinch: true }
       });
 
       priceSeries = chart.addCandlestickSeries({
         upColor: '#26a69a', downColor: '#ef5350',
-        wickUpColor: '#26a69a', wickDownColor: '#ef5350'
+        wickUpColor: '#26a69a', wickDownColor: '#ef5350',
+        borderUpColor: '#26a69a', borderDownColor: '#ef5350'
       });
 
       // Initialize volume chart separately
@@ -201,11 +231,14 @@
         height: 80,
         layout: { background: { color: 'transparent' }, textColor: '#9ea1b5' },
         grid: { vertLines: { visible: false }, horzLines: { visible: false } },
-        timeScale: { visible: false }
+        timeScale: { visible: false },
+        handleScroll: false,
+        handleScale: false
       });
 
       volumeSeries = volumeChart.addHistogramSeries({
-        color: '#26a69a80', priceFormat: { type: 'volume' }
+        color: '#26a69a80', 
+        priceFormat: { type: 'volume' }
       });
 
       loadHistory(currentInterval);
@@ -237,11 +270,30 @@
       tickerWs = new WebSocket(`wss://stream.binance.com:9443/ws/${binanceSym}@ticker`);
       tickerWs.onmessage = e => {
         const t = JSON.parse(e.data);
-        document.getElementById('current-price').textContent = parseFloat(t.c).toFixed(2);
+        const currentPrice = parseFloat(t.c);
+        const priceElement = document.getElementById('current-price');
+        
+        // Add animation class based on price movement
+        if (lastPrice > 0) {
+          if (currentPrice > lastPrice) {
+            priceElement.classList.add('flash-green');
+          } else if (currentPrice < lastPrice) {
+            priceElement.classList.add('flash-red');
+          }
+          
+          // Remove animation class after animation completes
+          setTimeout(() => {
+            priceElement.classList.remove('flash-green', 'flash-red');
+          }, 800);
+        }
+        
+        priceElement.textContent = currentPrice.toFixed(2);
         const change = parseFloat(t.P);
         const el = document.getElementById('price-change');
         el.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
         el.className = change >= 0 ? 'change' : 'change negative';
+        
+        lastPrice = currentPrice;
       };
       tickerWs.onclose = () => setTimeout(connectTicker, 3000);
     }
@@ -252,7 +304,6 @@
       klineWs = new WebSocket(`wss://stream.binance.com:9443/ws/${binanceSym}@kline_${interval}`);
       klineWs.onmessage = e => {
         const k = JSON.parse(e.data).k;
-        if (!k.x) return;
         const bar = {
           time: k.t / 1000,
           open: parseFloat(k.o),
@@ -261,15 +312,42 @@
           close: parseFloat(k.c),
           volume: parseFloat(k.v)
         };
-        const existing = priceData.find(d => d.time === bar.time);
-        if (existing) {
-          Object.assign(existing, bar);
-          priceSeries.update(bar);
-          volumeSeries.update({ time: bar.time, value: bar.volume, color: bar.close >= bar.open ? '#26a69a80' : '#ef535080' });
+
+        const existingIndex = priceData.findIndex(d => d.time === bar.time);
+        
+        if (existingIndex >= 0) {
+          // Update existing bar with smooth transition
+          const oldBar = priceData[existingIndex];
+          priceData[existingIndex] = bar;
+          
+          // Apply animation for price updates
+          if (priceSeries && typeof priceSeries.update === 'function') {
+            priceSeries.update(bar);
+          }
+          
+          // Update volume with color based on price movement
+          const volumeColor = bar.close >= bar.open ? '#26a69a80' : '#ef535080';
+          if (volumeSeries && typeof volumeSeries.update === 'function') {
+            volumeSeries.update({ 
+              time: bar.time, 
+              value: bar.volume, 
+              color: volumeColor 
+            });
+          }
         } else {
+          // Add new bar with entrance animation
           priceData.push(bar);
           if (priceData.length > 500) priceData.shift();
-          updateChartSeries();
+          
+          // Use setTimeout to create a staggered animation effect for new bars
+          setTimeout(() => {
+            updateChartSeries();
+            
+            // Auto-scroll to the latest data
+            if (chart) {
+              chart.timeScale().scrollToPosition(-1, false);
+            }
+          }, 50);
         }
       };
       klineWs.onclose = () => setTimeout(() => connectKline(interval), 3000);
@@ -277,24 +355,65 @@
 
     // === CHART TYPE SWITCH ===
     function updateChartSeries() {
-      const data = priceData.map(d => ({ time: d.time, open: d.open, high: d.high, low: d.low, close: d.close }));
+      if (!chart || !priceData.length) return;
+      
+      const data = priceData.map(d => ({ 
+        time: d.time, 
+        open: d.open, 
+        high: d.high, 
+        low: d.low, 
+        close: d.close 
+      }));
+      
       chart.removeSeries(priceSeries);
       
       if (currentChartType === 'line') {
-        priceSeries = chart.addLineSeries({ color: '#2962ff' });
+        priceSeries = chart.addLineSeries({ 
+          color: '#2962ff',
+          lineWidth: 2
+        });
         priceSeries.setData(priceData.map(d => ({ time: d.time, value: d.close })));
       } else if (currentChartType === 'area') {
-        priceSeries = chart.addAreaSeries({ lineColor: '#2962ff', topColor: '#2962ff40', bottomColor: '#2962ff10' });
+        priceSeries = chart.addAreaSeries({ 
+          lineColor: '#2962ff', 
+          topColor: '#2962ff40', 
+          bottomColor: '#2962ff10',
+          lineWidth: 2
+        });
         priceSeries.setData(priceData.map(d => ({ time: d.time, value: d.close })));
       } else if (currentChartType === 'bar') {
-        priceSeries = chart.addBarSeries({ upColor: '#26a69a', downColor: '#ef5350' });
+        priceSeries = chart.addBarSeries({ 
+          upColor: '#26a69a', 
+          downColor: '#ef5350' 
+        });
         priceSeries.setData(data);
       } else {
-        priceSeries = chart.addCandlestickSeries({ upColor: '#26a69a', downColor: '#ef5350', wickUpColor: '#26a69a', wickDownColor: '#ef5350' });
+        priceSeries = chart.addCandlestickSeries({ 
+          upColor: '#26a69a', 
+          downColor: '#ef5350', 
+          wickUpColor: '#26a69a', 
+          wickDownColor: '#ef5350',
+          borderUpColor: '#26a69a',
+          borderDownColor: '#ef5350'
+        });
         priceSeries.setData(data);
       }
       
-      volumeSeries.setData(priceData.map(d => ({ time: d.time, value: d.volume, color: d.close >= d.open ? '#26a69a80' : '#ef535080' })));
+      // Update volume series with smooth transition
+      if (volumeSeries && typeof volumeSeries.setData === 'function') {
+        volumeSeries.setData(priceData.map(d => ({ 
+          time: d.time, 
+          value: d.volume, 
+          color: d.close >= d.open ? '#26a69a80' : '#ef535080' 
+        })));
+      }
+      
+      // Auto-fit content after update
+      setTimeout(() => {
+        if (chart) {
+          chart.timeScale().fitContent();
+        }
+      }, 100);
     }
 
     // === TOOLBARS ===
