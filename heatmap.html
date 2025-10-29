@@ -71,54 +71,68 @@
   </footer>
 
   <script>
-    const themeToggle = document.getElementById('theme-toggle');
-    const body = document.body;
-    const themeIcon = themeToggle.querySelector('i');
-    themeToggle.addEventListener('click', () => {
-      const isDark = body.getAttribute('data-theme') === 'dark';
-      body.setAttribute('data-theme', isDark ? 'light' : 'dark');
-      themeIcon.classList.toggle('fa-moon'); themeIcon.classList.toggle('fa-sun');
-      localStorage.setItem('theme', isDark ? 'light' : 'dark');
+  const themeToggle = document.getElementById('theme-toggle');
+  const body = document.body;
+  const themeIcon = themeToggle.querySelector('i');
+  themeToggle.addEventListener('click', () => {
+    const isDark = body.getAttribute('data-theme') === 'dark';
+    body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+    themeIcon.classList.toggle('fa-moon'); themeIcon.classList.toggle('fa-sun');
+    localStorage.setItem('theme', isDark ? 'light' : 'dark');
+  });
+  const savedTheme = localStorage.getItem('theme') || 'dark';
+  body.setAttribute('data-theme', savedTheme);
+  if (savedTheme === 'light') themeIcon.classList.replace('fa-moon', 'fa-sun');
+
+  const stocks = [
+    {s:'AAPL',p:0},{s:'MSFT',p:0},{s:'GOOGL',p:0},{s:'TSLA',p:0},
+    {s:'NVDA',p:0},{s:'META',p:0},{s:'AMD',p:0},{s:'INTC',p:0}
+  ];
+  const binanceMap = { 'AAPL': 'aaplusdt', 'MSFT': 'msftusdt', 'GOOGL': 'googlusdt', 'TSLA': 'tslausdt', 'NVDA': 'nvdausdt', 'META': 'metausdt', 'AMD': 'amdusdt', 'INTC': 'intcusdt' };
+  let ws;
+
+  function getColor(pct) {
+    if (pct >= 3) return '#0d5e39';
+    if (pct >= 1) return '#26a69a';
+    if (pct >= 0) return '#4caf50';
+    if (pct >= -1) return '#ff9800';
+    if (pct >= -3) return '#f44336';
+    return '#b71c1c';
+  }
+
+  function render() {
+    const container = document.getElementById('heatmap');
+    container.innerHTML = '';
+    stocks.forEach(stock => {
+      const div = document.createElement('div');
+      div.className = 'heat-cell';
+      div.style.backgroundColor = getColor(stock.p);
+      div.innerHTML = `<div>${stock.s}</div><div>${stock.p > 0 ? '+' : ''}${stock.p.toFixed(2)}%</div>`;
+      div.onclick = () => location.href = `chart.html?symbol=${stock.s}`;
+      container.appendChild(div);
     });
-    const savedTheme = localStorage.getItem('theme') || 'dark';
-    body.setAttribute('data-theme', savedTheme);
-    if (savedTheme === 'light') themeIcon.classList.replace('fa-moon', 'fa-sun');
+  }
 
-    const heatmap = document.getElementById('heatmap');
-    const stocks = [
-      {s:'AAPL',p:2.1},{s:'MSFT',p:-0.8},{s:'GOOGL',p:1.5},{s:'TSLA',p:-3.2},
-      {s:'NVDA',p:4.8},{s:'META',p:0.9},{s:'AMD',p:3.1},{s:'INTC',p:-1.2},
-      {s:'PYPL',p:-2.5},{s:'NFLX',p:1.8},{s:'AMZN',p:0.5},{s:'BABA',p:-4.1}
-    ];
+  function connectWS() {
+    const streams = stocks.map(s => `${binanceMap[s.s]}@ticker`).join('/');
+    ws = new WebSocket(`wss://stream.binance.com:9443/stream?streams=${streams}`);
 
-    function getColor(pct) {
-      if (pct >= 3) return '#0d5e39';
-      if (pct >= 1) return '#26a69a';
-      if (pct >= 0) return '#4caf50';
-      if (pct >= -1) return '#ff9800';
-      if (pct >= -3) return '#f44336';
-      return '#b71c1c';
-    }
+    ws.onmessage = (e) => {
+      const msg = JSON.parse(e.data);
+      if (!msg.data) return;
+      const t = msg.data;
+      const stock = stocks.find(s => binanceMap[s.s] === t.s.toLowerCase());
+      if (stock) {
+        stock.p = parseFloat(t.P);
+        render();
+      }
+    };
 
-    function render() {
-      heatmap.innerHTML = '';
-      stocks.forEach(stock => {
-        const div = document.createElement('div');
-        div.className = 'heat-cell';
-        div.style.backgroundColor = getColor(stock.p);
-        div.innerHTML = `<div>${stock.s}</div><div>${stock.p > 0 ? '+' : ''}${stock.p}%</div>`;
-        div.onclick = () => location.href = `chart.html?symbol=${stock.s}`;
-        heatmap.appendChild(div);
-      });
-    }
+    ws.onclose = () => setTimeout(connectWS, 3000);
+  }
 
-    document.getElementById('group-by').addEventListener('change', render);
-    document.getElementById('timeframe').addEventListener('change', () => {
-      stocks.forEach(s => s.p = (Math.random() - 0.5) * 10);
-      render();
-    });
-
-    render();
-  </script>
+  render();
+  connectWS();
+</script>
 </body>
 </html>
