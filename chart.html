@@ -785,6 +785,46 @@ document.getElementById('search-go').addEventListener('click', () => {
 document.getElementById('symbol-search').addEventListener('keypress', e => {
   if (e.key === 'Enter') document.getElementById('search-go').click();
 });
+    
+    // -----  INDICATOR INTEGRATION  -----
+const TI = window.TI;                     // same CDN as above
+const chartIndicators = JSON.parse(localStorage.getItem('chartIndicators') || '[]');
+
+function applyIndicators(ohlcvArray) {    // ohlcvArray = [{time, open, high, low, close, volume}, …]
+  const close = ohlcvArray.map(c => c.close);
+  const high  = ohlcvArray.map(c => c.high);
+  const low   = ohlcvArray.map(c => c.low);
+  const open  = ohlcvArray.map(c => c.open);
+  const volume= ohlcvArray.map(c => c.volume);
+
+  chartIndicators.forEach(name => {
+    try {
+      const Ind = TI[name];
+      const input = { close, high, low, open, volume, period: 14 }; // default period
+      const result = Ind.calculate(input);
+
+      // Lightweight-Charts expects {time, value}
+      const seriesData = ohlcvArray.map((c, i) => ({
+        time: c.time,
+        value: result[i] !== undefined ? result[i] : null
+      })).filter(d => d.value !== null);
+
+      // Create a new line series (you can reuse the same series if you want overlay)
+      const indSeries = chart.addLineSeries({
+        color: '#2962ff',
+        lineWidth: 2,
+        title: name
+      });
+      indSeries.setData(seriesData);
+    } catch (e) {
+      console.warn(`Indicator ${name} failed:`, e);
+    }
+  });
+}
+
+// Call after you have pushed your OHLCV candles into the main series:
+applyIndicators(candles);
+    
     // THEME TOGGLE
     document.getElementById('theme-toggle').addEventListener('click', () => {
       const isDark = document.body.getAttribute('data-theme') === 'dark';
