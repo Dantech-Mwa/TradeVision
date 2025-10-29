@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Drawing Tools - TradeVision</title>
+  <link rel="icon" href="assets/icons/chart.svg" type="image/svg+xml">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link id="theme-style" rel="stylesheet" href="assets/css/main.css">
+  <link rel="stylesheet" href="assets/css/dark-theme.css">
+  <style>
+    :root{--bg:#141518;--bg-light:#1e222d;--text:#d1d4dc;--text-light:#9ea1b5;--accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#2d313e;--card:#1e222d;}
+    [data-theme="light"]{--bg:#ffffff;--bg-light:#f8f9fa;--text:#2d3748;--text-light:#718096;--accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#e2e8f0;--card:#ffffff;}
+    body{margin:0;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);}
+    a{color:var(--accent);text-decoration:none;}
+    .container{max-width:1200px;margin:0 auto;padding:2rem 1rem;}
+    .header{background:var(--bg-light);border-bottom:1px solid var(--border);padding:0.75rem 0;position:sticky;top:0;z-index:100;}
+    .flex-between{display:flex;justify-content:space-between;align-items:center;}
+    .logo{font-weight:700;font-size:1.4rem;color:var(--accent);}
+    .logo i{font-size:1.5rem;}
+    .nav-links a{margin:0 0.75rem;font-weight:500;}
+    .icon-btn{background:none;border:none;color:var(--text-light);font-size:1.2rem;cursor:pointer;padding:0.5rem;}
+    .tools-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:1rem;margin-top:2rem;}
+    .tool-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1rem;text-align:center;cursor:pointer;transition:0.2s;}
+    .tool-card:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,0.2);}
+    .tool-card i{font-size:2rem;margin-bottom:0.5rem;color:var(--accent);}
+    .tool-card h3{margin:0 0 0.5rem;font-size:1rem;}
+    .tool-card p{font-size:0.85rem;color:var(--text-light);margin:0;}
+    .category{margin:2rem 0 1rem;font-weight:600;color:var(--accent);}
+    .footer{background:var(--bg-light);border-top:1px solid var(--border);padding:1rem 0;font-size:0.8rem;text-align:center;color:var(--text-light);}
+  </style>
+</head>
+<body data-theme="dark">
+  <header class="header">
+    <div class="container flex-between">
+      <div class="logo"><a href="index.html" class="flex-center"><i class="fas fa-chart-line"></i><span>TradeVision</span></a></div>
+      <nav class="nav-links">
+        <a href="chart.html">Chart</a>
+        <a href="watchlist.html">Watchlist</a>
+        <a href="screener.html">Screener</a>
+        <a href="ideas.html">Ideas</a>
+        <a href="alerts.html">Alerts</a>
+        <a href="trading.html">Trade</a>
+        <a href="backtest.html">Backtest</a>
+      </nav>
+      <div class="header-actions">
+        <button id="theme-toggle" class="icon-btn"><i class="fas fa-moon"></i></button>
+        <a href="profile.html" class="icon-btn"><i class="fas fa-user"></i></a>
+        <a href="settings.html" class="icon-btn"><i class="fas fa-cog"></i></a>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <h1>Drawing Tools</h1>
+    <p>70+ professional annotation tools. Click any to use on chart.</p>
+
+    <div class="category">Lines</div>
+    <div class="tools-grid">
+      <div class="tool-card" data-tool="line"><i class="fas fa-minus"></i><h3>Trend Line</h3><p>Straight line</p></div>
+      <div class="tool-card" data-tool="ray"><i class="fas fa-long-arrow-alt-right"></i><h3>Ray</h3><p>Extends right</p></div>
+      <div class="tool-card" data-tool="horizontal"><i class="fas fa-grip-lines"></i><h3>Horizontal</h3><p>Price level</p></div>
+      <div class="tool-card" data-tool="channel"><i class="fas fa-equals"></i><h3>Parallel Channel</h3><p>Two parallel lines</p></div>
+    </div>
+
+    <div class="category">Fibonacci</div>
+    <div class="tools-grid">
+      <div class="tool-card" data-tool="fib-retracement"><i class="fas fa-ruler"></i><h3>Retracement</h3><p>0-100% levels</p></div>
+      <div class="tool-card" data-tool="fib-extension"><i class="fas fa-expand-arrows-alt"></i><h3>Extension</h3><p>Beyond 100%</p></div>
+      <div class="tool-card" data-tool="fib-time"><i class="fas fa-clock"></i><h3>Time Zones</h3><p>Vertical fib</p></div>
+    </div>
+
+    <div class="category">Shapes</div>
+    <div class="tools-grid">
+      <div class="tool-card" data-tool="rectangle"><i class="fas fa-square"></i><h3>Rectangle</h3><p>Price zone</p></div>
+      <div class="tool-card" data-tool="ellipse"><i class="fas fa-circle"></i><h3>Ellipse</h3><p>Circular zone</p></div>
+      <div class="tool-card" data-tool="triangle"><i class="fas fa-caret-up"></i><h3>Triangle</h3><p>Pattern</p></div>
+    </div>
+
+    <div class="category">Annotations</div>
+    <div class="tools-grid">
+      <div class="tool-card" data-tool="text"><i class="fas fa-font"></i><h3>Text</h3><p>Label</p></div>
+      <div class="tool-card" data-tool="callout"><i class="fas fa-comment"></i><h3>Callout</h3><p>With arrow</p></div>
+      <div class="tool-card" data-tool="arrow"><i class="fas fa-arrow-up"></i><h3>Arrow</h3><p>Direction</p></div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container">© 2025 TradeVision. Open Source.</div>
+  </footer>
+
+  <script>
+    const themeToggle = document.getElementById('theme-toggle');
+    const body = document.body;
+    const themeIcon = themeToggle.querySelector('i');
+    themeToggle.addEventListener('click', () => {
+      const isDark = body.getAttribute('data-theme') === 'dark';
+      body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+      themeIcon.classList.toggle('fa-moon'); themeIcon.classList.toggle('fa-sun');
+      localStorage.setItem('theme', isDark ? 'light' : 'dark');
+    });
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    body.setAttribute('data-theme', savedTheme);
+    if (savedTheme === 'light') themeIcon.classList.replace('fa-moon', 'fa-sun');
+
+    document.querySelectorAll('.tool-card').forEach(card => {
+      card.addEventListener('click', () => {
+        alert(`Drawing tool "${card.querySelector('h3').textContent}" selected! Use on chart.html`);
+      });
+    });
+  </script>
+</body>
+</html>
