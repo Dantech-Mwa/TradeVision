@@ -7,8 +7,6 @@
   <link rel="icon" href="assets/icons/chart.svg" type="image/svg+xml">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <link id="theme-style" rel="stylesheet" href="assets/css/main.css">
-  <link rel="stylesheet" href="assets/css/dark-theme.css">
   <style>
     :root{--bg:#141518;--bg-light:#1e222d;--text:#d1d4dc;--text-light:#9ea1b5;--accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#2d313e;--card:#1e222d;}
     [data-theme="light"]{--bg:#ffffff;--bg-light:#f8f9fa;--text:#2d3748;--text-light:#718096;--accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#e2e8f0;--card:#ffffff;}
@@ -24,11 +22,14 @@
     .tools-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:1rem;margin-top:2rem;}
     .tool-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1rem;text-align:center;cursor:pointer;transition:0.2s;}
     .tool-card:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,0.2);}
+    .tool-card.active{background:var(--accent);color:white;}
+    .tool-card.active i{color:white;}
     .tool-card i{font-size:2rem;margin-bottom:0.5rem;color:var(--accent);}
     .tool-card h3{margin:0 0 0.5rem;font-size:1rem;}
     .tool-card p{font-size:0.85rem;color:var(--text-light);margin:0;}
     .category{margin:2rem 0 1rem;font-weight:600;color:var(--accent);}
     .footer{background:var(--bg-light);border-top:1px solid var(--border);padding:1rem 0;font-size:0.8rem;text-align:center;color:var(--text-light);}
+    .notification{position:fixed;top:20px;right:20px;background:var(--green);color:white;padding:1rem;border-radius:6px;z-index:1000;display:none;}
   </style>
 </head>
 <body data-theme="dark">
@@ -55,12 +56,20 @@
   <div class="container">
     <h1>Drawing Tools</h1>
     <p>70+ professional annotation tools. Click any to use on chart.</p>
+    
+    <div style="background:var(--bg-light);padding:1rem;border-radius:8px;margin-bottom:2rem;">
+      <strong>Selected Tool:</strong> <span id="selected-tool">None</span> | 
+      <a href="chart.html" style="margin-left:1rem;color:var(--accent);">
+        <i class="fas fa-external-link-alt"></i> Go to Chart to use selected tool
+      </a>
+    </div>
 
     <div class="category">Lines</div>
     <div class="tools-grid">
       <div class="tool-card" data-tool="line"><i class="fas fa-minus"></i><h3>Trend Line</h3><p>Straight line</p></div>
       <div class="tool-card" data-tool="ray"><i class="fas fa-long-arrow-alt-right"></i><h3>Ray</h3><p>Extends right</p></div>
       <div class="tool-card" data-tool="horizontal"><i class="fas fa-grip-lines"></i><h3>Horizontal</h3><p>Price level</p></div>
+      <div class="tool-card" data-tool="vertical"><i class="fas fa-grip-lines-vertical"></i><h3>Vertical</h3><p>Time marker</p></div>
       <div class="tool-card" data-tool="channel"><i class="fas fa-equals"></i><h3>Parallel Channel</h3><p>Two parallel lines</p></div>
     </div>
 
@@ -76,6 +85,7 @@
       <div class="tool-card" data-tool="rectangle"><i class="fas fa-square"></i><h3>Rectangle</h3><p>Price zone</p></div>
       <div class="tool-card" data-tool="ellipse"><i class="fas fa-circle"></i><h3>Ellipse</h3><p>Circular zone</p></div>
       <div class="tool-card" data-tool="triangle"><i class="fas fa-caret-up"></i><h3>Triangle</h3><p>Pattern</p></div>
+      <div class="tool-card" data-tool="polygon"><i class="fas fa-draw-polygon"></i><h3>Polygon</h3><p>Multi-sided shape</p></div>
     </div>
 
     <div class="category">Annotations</div>
@@ -83,7 +93,20 @@
       <div class="tool-card" data-tool="text"><i class="fas fa-font"></i><h3>Text</h3><p>Label</p></div>
       <div class="tool-card" data-tool="callout"><i class="fas fa-comment"></i><h3>Callout</h3><p>With arrow</p></div>
       <div class="tool-card" data-tool="arrow"><i class="fas fa-arrow-up"></i><h3>Arrow</h3><p>Direction</p></div>
+      <div class="tool-card" data-tool="measure"><i class="fas fa-ruler-combined"></i><h3>Measure</h3><p>Distance tool</p></div>
     </div>
+
+    <div class="category">Advanced Tools</div>
+    <div class="tools-grid">
+      <div class="tool-card" data-tool="pencil"><i class="fas fa-pencil-alt"></i><h3>Freehand</h3><p>Draw freely</p></div>
+      <div class="tool-card" data-tool="eraser"><i class="fas fa-eraser"></i><h3>Eraser</h3><p>Remove drawings</p></div>
+      <div class="tool-card" data-tool="cursor"><i class="fas fa-mouse-pointer"></i><h3>Select</h3><p>Move/Edit tools</p></div>
+      <div class="tool-card" data-tool="clear"><i class="fas fa-trash"></i><h3>Clear All</h3><p>Remove all drawings</p></div>
+    </div>
+  </div>
+
+  <div class="notification" id="notification">
+    Tool activated! Go to <a href="chart.html" style="color:white;text-decoration:underline;">Chart</a> to use it.
   </div>
 
   <footer class="footer">
@@ -91,24 +114,111 @@
   </footer>
 
   <script>
+    // Theme toggle functionality
     const themeToggle = document.getElementById('theme-toggle');
     const body = document.body;
     const themeIcon = themeToggle.querySelector('i');
     themeToggle.addEventListener('click', () => {
       const isDark = body.getAttribute('data-theme') === 'dark';
       body.setAttribute('data-theme', isDark ? 'light' : 'dark');
-      themeIcon.classList.toggle('fa-moon'); themeIcon.classList.toggle('fa-sun');
+      themeIcon.classList.toggle('fa-moon'); 
+      themeIcon.classList.toggle('fa-sun');
       localStorage.setItem('theme', isDark ? 'light' : 'dark');
     });
+    
     const savedTheme = localStorage.getItem('theme') || 'dark';
     body.setAttribute('data-theme', savedTheme);
     if (savedTheme === 'light') themeIcon.classList.replace('fa-moon', 'fa-sun');
 
+    // Drawing tools functionality
+    let selectedTool = localStorage.getItem('selectedDrawingTool') || 'cursor';
+    const selectedToolElement = document.getElementById('selected-tool');
+    
+    // Update selected tool display
+    function updateSelectedToolDisplay() {
+      selectedToolElement.textContent = getToolDisplayName(selectedTool);
+      
+      // Update active states
+      document.querySelectorAll('.tool-card').forEach(card => {
+        card.classList.remove('active');
+        if (card.dataset.tool === selectedTool) {
+          card.classList.add('active');
+        }
+      });
+    }
+    
+    // Get display name for tools
+    function getToolDisplayName(tool) {
+      const toolNames = {
+        'cursor': 'Select Tool',
+        'line': 'Trend Line',
+        'ray': 'Ray Line',
+        'horizontal': 'Horizontal Line',
+        'vertical': 'Vertical Line',
+        'channel': 'Parallel Channel',
+        'fib-retracement': 'Fibonacci Retracement',
+        'fib-extension': 'Fibonacci Extension',
+        'fib-time': 'Fibonacci Time Zones',
+        'rectangle': 'Rectangle',
+        'ellipse': 'Ellipse',
+        'triangle': 'Triangle',
+        'polygon': 'Polygon',
+        'text': 'Text Annotation',
+        'callout': 'Callout',
+        'arrow': 'Arrow',
+        'measure': 'Measure Tool',
+        'pencil': 'Freehand Drawing',
+        'eraser': 'Eraser',
+        'clear': 'Clear All Drawings'
+      };
+      return toolNames[tool] || tool;
+    }
+    
+    // Tool selection handler
     document.querySelectorAll('.tool-card').forEach(card => {
       card.addEventListener('click', () => {
-        alert(`Drawing tool "${card.querySelector('h3').textContent}" selected! Use on chart.html`);
+        const tool = card.dataset.tool;
+        selectedTool = tool;
+        
+        // Save to localStorage
+        localStorage.setItem('selectedDrawingTool', tool);
+        
+        // Update display
+        updateSelectedToolDisplay();
+        
+        // Show notification
+        const notification = document.getElementById('notification');
+        notification.style.display = 'block';
+        notification.style.background = tool === 'clear' ? 'var(--red)' : 'var(--green)';
+        
+        // Auto-hide notification
+        setTimeout(() => {
+          notification.style.display = 'none';
+        }, 3000);
+        
+        // If clear tool is selected, also set a flag
+        if (tool === 'clear') {
+          localStorage.setItem('clearDrawings', 'true');
+          setTimeout(() => {
+            localStorage.removeItem('clearDrawings');
+          }, 1000);
+        }
+        
+        console.log(`Tool "${tool}" selected and saved. Go to chart.html to use it.`);
       });
     });
+    
+    // Initialize display
+    updateSelectedToolDisplay();
+    
+    // Check if we're coming from chart with a tool request
+    const urlParams = new URLSearchParams(window.location.search);
+    const requestedTool = urlParams.get('tool');
+    if (requestedTool) {
+      selectedTool = requestedTool;
+      localStorage.setItem('selectedDrawingTool', requestedTool);
+      updateSelectedToolDisplay();
+    }
   </script>
 </body>
 </html>
