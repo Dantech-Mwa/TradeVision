@@ -181,29 +181,37 @@
       flex-direction: column;
       overflow: hidden;
       position: relative;
+      height: 100%;
     }
     
-    #chart-container {
+    .chart-container {
       flex: 1;
       position: relative;
       width: 100%;
       height: 100%;
       background: var(--bg);
+      display: flex;
+      flex-direction: column;
     }
     
-    #chart {
-      width: 100%;
-      height: 100%;
-    }
-    
-    #volume-container {
-      height: 80px;
+    #main-chart {
+      height: 45%;
       position: relative;
-      background: var(--bg-light);
+    }
+    
+    #volume-chart {
+      height: 15%;
+      position: relative;
       border-top: 1px solid var(--border);
     }
     
-    #volume {
+    #indicators-chart {
+      height: 40%;
+      position: relative;
+      border-top: 1px solid var(--border);
+    }
+    
+    .chart-inner {
       width: 100%;
       height: 100%;
     }
@@ -414,21 +422,22 @@
       pointer-events: auto;
     }
 
-.drawing-text-input {
-  position: absolute !important;
-  background: var(--card) !important;
-  border: 2px solid var(--accent) !important;
-  border-radius: 4px !important;
-  padding: 8px 12px !important;
-  color: var(--text) !important;
-  font-family: 'Inter', sans-serif !important;
-  font-size: 14px !important;
-  z-index: 1000 !important;
-  outline: none !important;
-  min-width: 150px !important;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.3) !important;
-  pointer-events: auto !important;
-}
+    .drawing-text-input {
+      position: absolute !important;
+      background: var(--card) !important;
+      border: 2px solid var(--accent) !important;
+      border-radius: 4px !important;
+      padding: 8px 12px !important;
+      color: var(--text) !important;
+      font-family: 'Inter', sans-serif !important;
+      font-size: 14px !important;
+      z-index: 1000 !important;
+      outline: none !important;
+      min-width: 150px !important;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3) !important;
+      pointer-events: auto !important;
+    }
+    
     /* Price flash animations */
     .flash-green {
       animation: flashGreen 0.8s ease;
@@ -562,11 +571,13 @@
       pointer-events: none !important;
     }
     
-    #chart {
+    #main-chart .chart-inner,
+    #volume-chart .chart-inner,
+    #indicators-chart .chart-inner {
       pointer-events: none !important;
     }
     
-    #chart-container > *:not(#drawing-canvas) {
+    .chart-container > *:not(#drawing-canvas) {
       pointer-events: none !important;
     }
   </style>
@@ -611,14 +622,19 @@
       <button data-tool="clear" style="margin-top: auto; background: var(--red); color: white;"><i class="fas fa-trash"></i><span>Clear</span></button>
     </div>
 
-    <!-- CENTER CHART + VOLUME -->
+    <!-- CENTER CHART + VOLUME + INDICATORS -->
     <div class="main-chart">
-      <div id="chart-container">
-        <div id="chart"></div>
-        <canvas id="drawing-canvas"></canvas>
-      </div>
-      <div id="volume-container">
-        <div id="volume"></div>
+      <div class="chart-container">
+        <div id="main-chart">
+          <div class="chart-inner" id="price-chart"></div>
+          <canvas id="drawing-canvas"></canvas>
+        </div>
+        <div id="volume-chart">
+          <div class="chart-inner" id="volume-indicator"></div>
+        </div>
+        <div id="indicators-chart">
+          <div class="chart-inner" id="indicators-container"></div>
+        </div>
       </div>
     </div>
 
@@ -674,7 +690,7 @@
     // ───── GLOBALS ─────
     const urlParams = new URLSearchParams(location.search);
     let currentSymbol = (urlParams.get('symbol') || 'BTCUSDT').toUpperCase();
-    let chart, priceSeries, volumeSeries, volumeChart;
+    let chart, priceSeries, volumeSeries, indicatorsChart;
     let priceData = [];
     let klineWs, tickerWs;
     let currentInterval = '15m';
@@ -849,10 +865,14 @@
 
     // ───── CHART INITIALISATION ─────
     function initChart() {
-      const container = document.getElementById('chart');
-      chart = LightweightCharts.createChart(container, {
-        width: container.clientWidth,
-        height: container.clientHeight,
+      const priceContainer = document.getElementById('price-chart');
+      const volumeContainer = document.getElementById('volume-indicator');
+      const indicatorsContainer = document.getElementById('indicators-container');
+      
+      // Main price chart (45%)
+      chart = LightweightCharts.createChart(priceContainer, {
+        width: priceContainer.clientWidth,
+        height: priceContainer.clientHeight,
         layout: { background: { color: 'transparent' }, textColor: '#d1d4dc' },
         grid: { vertLines: { color: '#2d313e' }, horzLines: { color: '#2d313e' } },
         timeScale: { borderColor: '#2d313e', timeVisible: true, secondsVisible: false },
@@ -866,10 +886,10 @@
         borderUpColor: '#26a69a', borderDownColor: '#ef5350'
       });
 
-      const volContainer = document.getElementById('volume');
-      volumeChart = LightweightCharts.createChart(volContainer, {
-        width: volContainer.clientWidth,
-        height: 80,
+      // Volume chart (15%)
+      const volumeChart = LightweightCharts.createChart(volumeContainer, {
+        width: volumeContainer.clientWidth,
+        height: volumeContainer.clientHeight,
         layout: { background: { color: 'transparent' }, textColor: '#9ea1b5' },
         grid: { vertLines: { visible: false }, horzLines: { visible: false } },
         timeScale: { visible: false },
@@ -880,6 +900,17 @@
       volumeSeries = volumeChart.addHistogramSeries({
         color: '#26a69a80',
         priceFormat: { type: 'volume' }
+      });
+
+      // Indicators chart (40%)
+      indicatorsChart = LightweightCharts.createChart(indicatorsContainer, {
+        width: indicatorsContainer.clientWidth,
+        height: indicatorsContainer.clientHeight,
+        layout: { background: { color: 'transparent' }, textColor: '#d1d4dc' },
+        grid: { vertLines: { color: '#2d313e' }, horzLines: { color: '#2d313e' } },
+        timeScale: { borderColor: '#2d313e', timeVisible: true, secondsVisible: false },
+        handleScroll: { mouseWheel: true, pressedMouseMove: true },
+        handleScale: { axisPressedMouseMove: true, mouseWheel: true, pinch: true }
       });
 
       // Initialize with current symbol
@@ -902,7 +933,7 @@
       
       // Set canvas size to match container
       function resizeDrawingCanvas() {
-        const container = document.getElementById('chart-container');
+        const container = document.getElementById('main-chart');
         drawingCanvas.width = container.clientWidth;
         drawingCanvas.height = container.clientHeight;
         redrawAllDrawings();
@@ -916,180 +947,181 @@
     }
 
     function setupDrawingEvents() {
-  let startX, startY;
-  
-  // MOUSE DOWN - Start drawing
-  drawingCanvas.addEventListener('mousedown', (e) => {
-    if (activeTool === 'cursor' || activeTool === 'clear') return;
-    
-    // Handle text tool separately
-    if (activeTool === 'text') {
-      createTextInput(e.offsetX, e.offsetY);
-      return; // Don't proceed with normal drawing flow for text
-    }
-    
-    // For other drawing tools
-    isDrawing = true;
-    startX = e.offsetX;
-    startY = e.offsetY;
-    
-    currentDrawing = {
-      type: activeTool,
-      points: [{x: startX, y: startY}],
-      color: '#2962ff',
-      lineWidth: 2
-    };
-  });
-  
-  // MOUSE MOVE - Draw preview (only for non-text tools)
-  drawingCanvas.addEventListener('mousemove', (e) => {
-    if (!isDrawing || !currentDrawing || activeTool === 'text') return;
-    
-    const currentX = e.offsetX;
-    const currentY = e.offsetY;
-    
-    // Update current drawing
-    if (currentDrawing.points.length === 1) {
-      currentDrawing.points.push({x: currentX, y: currentY});
-    } else {
-      currentDrawing.points[1] = {x: currentX, y: currentY};
-    }
-    
-    // Redraw everything including preview
-    redrawAllDrawings();
-    drawPreview(currentDrawing);
-  });
-  
-  // MOUSE UP - Finalize drawing (only for non-text tools)
-  drawingCanvas.addEventListener('mouseup', (e) => {
-    if (!isDrawing || !currentDrawing || activeTool === 'text') return;
-    
-    isDrawing = false;
-    
-    // Only save if we have a valid drawing (not a click)
-    if (currentDrawing.points.length === 2) {
-      drawings.push({...currentDrawing});
-    }
-    
-    currentDrawing = null;
-    redrawAllDrawings();
-  });
-}
-
-function createTextInput(x, y) {
-  console.log('Creating text input at:', x, y);
-  
-  // Remove existing text input
-  const existingInput = document.querySelector('.drawing-text-input');
-  if (existingInput) {
-    existingInput.remove();
-  }
-  
-  // Create new text input
-  const textInput = document.createElement('input');
-  textInput.type = 'text';
-  textInput.className = 'drawing-text-input';
-  textInput.style.left = x + 'px';
-  textInput.style.top = y + 'px';
-  textInput.placeholder = 'Type text here...';
-  textInput.style.zIndex = '10000';
-  textInput.style.position = 'absolute';
-  textInput.style.background = 'var(--card)';
-  textInput.style.border = '2px solid var(--accent)';
-  textInput.style.borderRadius = '4px';
-  textInput.style.padding = '8px 12px';
-  textInput.style.color = 'var(--text)';
-  textInput.style.fontFamily = 'Inter, sans-serif';
-  textInput.style.fontSize = '14px';
-  textInput.style.outline = 'none';
-  textInput.style.minWidth = '150px';
-  textInput.style.boxShadow = '0 2px 10px rgba(0,0,0,0.3)';
-  textInput.style.pointerEvents = 'auto';
-  
-  // Add to chart container
-  const chartContainer = document.getElementById('chart-container');
-  chartContainer.appendChild(textInput);
-  
-  // Focus with a slight delay
-  setTimeout(() => {
-    textInput.focus();
-    textInput.select();
-  }, 50);
-  
-  console.log('Text input created and added to DOM');
-  
-  // Handle text completion
-  const completeText = () => {
-    console.log('Completing text:', textInput.value);
-    if (textInput.value.trim()) {
-      drawings.push({
-        type: 'text',
-        x: parseInt(textInput.style.left),
-        y: parseInt(textInput.style.top),
-        text: textInput.value.trim(),
-        color: '#2962ff',
-        font: '14px Inter'
+      let startX, startY;
+      
+      // MOUSE DOWN - Start drawing
+      drawingCanvas.addEventListener('mousedown', (e) => {
+        if (activeTool === 'cursor' || activeTool === 'clear') return;
+        
+        // Handle text tool separately
+        if (activeTool === 'text') {
+          createTextInput(e.offsetX, e.offsetY);
+          return; // Don't proceed with normal drawing flow for text
+        }
+        
+        // For other drawing tools
+        isDrawing = true;
+        startX = e.offsetX;
+        startY = e.offsetY;
+        
+        currentDrawing = {
+          type: activeTool,
+          points: [{x: startX, y: startY}],
+          color: '#2962ff',
+          lineWidth: 2
+        };
       });
-      redrawAllDrawings();
-      console.log('Text saved to drawings');
+      
+      // MOUSE MOVE - Draw preview (only for non-text tools)
+      drawingCanvas.addEventListener('mousemove', (e) => {
+        if (!isDrawing || !currentDrawing || activeTool === 'text') return;
+        
+        const currentX = e.offsetX;
+        const currentY = e.offsetY;
+        
+        // Update current drawing
+        if (currentDrawing.points.length === 1) {
+          currentDrawing.points.push({x: currentX, y: currentY});
+        } else {
+          currentDrawing.points[1] = {x: currentX, y: currentY};
+        }
+        
+        // Redraw everything including preview
+        redrawAllDrawings();
+        drawPreview(currentDrawing);
+      });
+      
+      // MOUSE UP - Finalize drawing (only for non-text tools)
+      drawingCanvas.addEventListener('mouseup', (e) => {
+        if (!isDrawing || !currentDrawing || activeTool === 'text') return;
+        
+        isDrawing = false;
+        
+        // Only save if we have a valid drawing (not a click)
+        if (currentDrawing.points.length === 2) {
+          drawings.push({...currentDrawing});
+        }
+        
+        currentDrawing = null;
+        redrawAllDrawings();
+      });
     }
-    
-    // Remove the input
-    if (textInput.parentNode) {
-      textInput.parentNode.removeChild(textInput);
-    }
-  };
-  
-  // Event listeners
-  textInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      e.stopPropagation();
-      completeText();
-    } else if (e.key === 'Escape') {
-      e.preventDefault();
-      e.stopPropagation();
-      if (textInput.parentNode) {
-        textInput.parentNode.removeChild(textInput);
+
+    function createTextInput(x, y) {
+      console.log('Creating text input at:', x, y);
+      
+      // Remove existing text input
+      const existingInput = document.querySelector('.drawing-text-input');
+      if (existingInput) {
+        existingInput.remove();
       }
+      
+      // Create new text input
+      const textInput = document.createElement('input');
+      textInput.type = 'text';
+      textInput.className = 'drawing-text-input';
+      textInput.style.left = x + 'px';
+      textInput.style.top = y + 'px';
+      textInput.placeholder = 'Type text here...';
+      textInput.style.zIndex = '10000';
+      textInput.style.position = 'absolute';
+      textInput.style.background = 'var(--card)';
+      textInput.style.border = '2px solid var(--accent)';
+      textInput.style.borderRadius = '4px';
+      textInput.style.padding = '8px 12px';
+      textInput.style.color = 'var(--text)';
+      textInput.style.fontFamily = 'Inter, sans-serif';
+      textInput.style.fontSize = '14px';
+      textInput.style.outline = 'none';
+      textInput.style.minWidth = '150px';
+      textInput.style.boxShadow = '0 2px 10px rgba(0,0,0,0.3)';
+      textInput.style.pointerEvents = 'auto';
+      
+      // Add to chart container
+      const chartContainer = document.getElementById('main-chart');
+      chartContainer.appendChild(textInput);
+      
+      // Focus with a slight delay
+      setTimeout(() => {
+        textInput.focus();
+        textInput.select();
+      }, 50);
+      
+      console.log('Text input created and added to DOM');
+      
+      // Handle text completion
+      const completeText = () => {
+        console.log('Completing text:', textInput.value);
+        if (textInput.value.trim()) {
+          drawings.push({
+            type: 'text',
+            x: parseInt(textInput.style.left),
+            y: parseInt(textInput.style.top),
+            text: textInput.value.trim(),
+            color: '#2962ff',
+            font: '14px Inter'
+          });
+          redrawAllDrawings();
+          console.log('Text saved to drawings');
+        }
+        
+        // Remove the input
+        if (textInput.parentNode) {
+          textInput.parentNode.removeChild(textInput);
+        }
+      };
+      
+      // Event listeners
+      textInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          e.stopPropagation();
+          completeText();
+        } else if (e.key === 'Escape') {
+          e.preventDefault();
+          e.stopPropagation();
+          if (textInput.parentNode) {
+            textInput.parentNode.removeChild(textInput);
+          }
+        }
+      });
+      
+      // Handle clicks outside the text input
+      const handleOutsideClick = (e) => {
+        if (!textInput.parentNode) {
+          document.removeEventListener('mousedown', handleOutsideClick);
+          return;
+        }
+        
+        if (!textInput.contains(e.target)) {
+          completeText();
+          document.removeEventListener('mousedown', handleOutsideClick);
+        }
+      };
+      
+      // Add the outside click listener after a short delay
+      setTimeout(() => {
+        document.addEventListener('mousedown', handleOutsideClick);
+      }, 100);
+      
+      // Prevent drawing tools from interfering
+      textInput.addEventListener('mousedown', (e) => {
+        e.stopPropagation();
+      });
+      
+      textInput.addEventListener('click', (e) => {
+        e.stopPropagation();
+      });
+      
+      textInput.addEventListener('focus', (e) => {
+        e.stopPropagation();
+      });
+      
+      textInput.addEventListener('blur', (e) => {
+        e.stopPropagation();
+      });
     }
-  });
-  
-  // Handle clicks outside the text input
-  const handleOutsideClick = (e) => {
-    if (!textInput.parentNode) {
-      document.removeEventListener('mousedown', handleOutsideClick);
-      return;
-    }
-    
-    if (!textInput.contains(e.target)) {
-      completeText();
-      document.removeEventListener('mousedown', handleOutsideClick);
-    }
-  };
-  
-  // Add the outside click listener after a short delay
-  setTimeout(() => {
-    document.addEventListener('mousedown', handleOutsideClick);
-  }, 100);
-  
-  // Prevent drawing tools from interfering
-  textInput.addEventListener('mousedown', (e) => {
-    e.stopPropagation();
-  });
-  
-  textInput.addEventListener('click', (e) => {
-    e.stopPropagation();
-  });
-  
-  textInput.addEventListener('focus', (e) => {
-    e.stopPropagation();
-  });
-  
-  textInput.addEventListener('blur', (e) => {
-    e.stopPropagation();
-  });
-}
+
     function drawPreview(drawing) {
       drawingCtx.strokeStyle = drawing.color;
       drawingCtx.lineWidth = drawing.lineWidth;
@@ -1463,525 +1495,85 @@ function createTextInput(x, y) {
     }
 
     // ───── INDICATOR PANEL ─────
-    // ───── INDICATOR MANAGER ─────
-function initIndicatorPanel() {
-  const allIndicators = [
-    { name: 'RSI', description: 'Relative Strength Index', category: 'Momentum' },
-    { name: 'ADOSC', description: 'Accumulation/Distribution Oscillator', category: 'Volume' },
-    { name: 'ADX', description: 'Average Directional Index', category: 'Trend' },
-    { name: 'AROON', description: 'Aroon Indicator', category: 'Trend' },
-    { name: 'ATR', description: 'Average True Range', category: 'Volatility' },
-    { name: 'Auto Anchored Volume Profile', description: 'Auto Anchored Volume Profile', category: 'Volume' },
-    { name: 'Average True Range', description: 'Average True Range', category: 'Volatility' },
-    { name: 'BOLLINGER', description: 'Bollinger Bands', category: 'Volatility' },
-    { name: 'Bollinger Bands', description: 'Bollinger Bands', category: 'Volatility' },
-    { name: 'CCI', description: 'Commodity Channel Index', category: 'Momentum' },
-    { name: 'CORREL', description: 'Correlation Coefficient', category: 'Statistical' },
-    { name: 'Commodity Channel Index', description: 'Commodity Channel Index', category: 'Momentum' },
-    { name: 'DEMA', description: 'Double Exponential Moving Average', category: 'Moving Average' },
-    { name: 'EMA', description: 'Exponential Moving Average', category: 'Moving Average' },
-    { name: 'Fixed Range Volume Profile', description: 'Fixed Range Volume Profile', category: 'Volume' },
-    { name: 'HULLMA', description: 'Hull Moving Average', category: 'Moving Average' },
-    { name: 'Ichimoku Cloud', description: 'Ichimoku Cloud', category: 'Trend' },
-    { name: 'KAMA', description: 'Kaufman Adaptive Moving Average', category: 'Moving Average' },
-    { name: 'LINEARREG', description: 'Linear Regression', category: 'Statistical' },
-    { name: 'LINEARREG_ANGLE', description: 'Linear Regression Angle', category: 'Statistical' },
-    { name: 'LINEARREG_INTERCEPT', description: 'Linear Regression Intercept', category: 'Statistical' },
-    { name: 'LINEARREG_SLOPE', description: 'Linear Regression Slope', category: 'Statistical' },
-    { name: 'MACD', description: 'Moving Average Convergence Divergence', category: 'Momentum' },
-    { name: 'MAMA', description: 'MESA Adaptive Moving Average', category: 'Moving Average' },
-    { name: 'MINUS_DI', description: 'Minus Directional Indicator', category: 'Trend' },
-    { name: 'MINUS_DM', description: 'Minus Directional Movement', category: 'Trend' },
-    { name: 'Money Flow Index', description: 'Money Flow Index', category: 'Volume' },
-    { name: 'Moving Average', description: 'Moving Average', category: 'Moving Average' },
-    { name: 'OBV', description: 'On Balance Volume', category: 'Volume' },
-    { name: 'PLUS_DI', description: 'Plus Directional Indicator', category: 'Trend' },
-    { name: 'PLUS_DM', description: 'Plus Directional Movement', category: 'Trend' },
-    { name: 'Parabolic SAR', description: 'Parabolic Stop and Reverse', category: 'Trend' },
-    { name: 'Periodic Volume Profile', description: 'Periodic Volume Profile', category: 'Volume' },
-    { name: 'SMA', description: 'Simple Moving Average', category: 'Moving Average' },
-    { name: 'STDDEV', description: 'Standard Deviation', category: 'Statistical' },
-    { name: 'STOCH', description: 'Stochastic Oscillator', category: 'Momentum' },
-    { name: 'STOCHF', description: 'Stochastic Fast', category: 'Momentum' },
-    { name: 'STOCHRSI', description: 'Stochastic RSI', category: 'Momentum' },
-    { name: 'Session Time Price Opportunity', description: 'Session Time Price Opportunity', category: 'Volume' },
-    { name: 'Session Volume Profile', description: 'Session Volume Profile', category: 'Volume' },
-    { name: 'Session Volume Profile HD', description: 'Session Volume Profile HD', category: 'Volume' },
-    { name: 'Stochastic Oscillator', description: 'Stochastic Oscillator', category: 'Momentum' },
-    { name: 'TEMA', description: 'Triple Exponential Moving Average', category: 'Moving Average' },
-    { name: 'TRIMA', description: 'Triangular Moving Average', category: 'Moving Average' },
-    { name: 'TRIX', description: 'Triple Exponential Average', category: 'Momentum' },
-    { name: 'TSF', description: 'Time Series Forecast', category: 'Statistical' },
-    { name: 'Time Price Opportunity', description: 'Time Price Opportunity', category: 'Volume' },
-    { name: 'ULTOSC', description: 'Ultimate Oscillator', category: 'Momentum' },
-    { name: 'VWAP', description: 'Volume Weighted Average Price', category: 'Volume' },
-    { name: 'VWMA', description: 'Volume Weighted Moving Average', category: 'Volume' },
-    { name: 'Visible Range Volume Profile', description: 'Visible Range Volume Profile', category: 'Volume' },
-    { name: 'Volume Weighted Average Price', description: 'Volume Weighted Average Price', category: 'Volume' },
-    { name: 'WILLR', description: 'Williams %R', category: 'Momentum' },
-    { name: 'WMA', description: 'Weighted Moving Average', category: 'Moving Average' },
-    { name: 'Williams %R', description: 'Williams %R', category: 'Momentum' }
-  ];
-
-  const addBtn = document.getElementById('add-indicator-btn');
-  const searchContainer = document.getElementById('indicator-search-container');
-  const searchInput = document.getElementById('indicator-search-input');
-  const dropdown = document.getElementById('indicator-dropdown');
-  const list = document.getElementById('indicator-list');
-
-  let activeIndicators = JSON.parse(localStorage.getItem('chartIndicators') || '[]');
-  const save = () => localStorage.setItem('chartIndicators', JSON.stringify(activeIndicators));
-
-  const render = () => {
-    list.innerHTML = '';
-    if (!activeIndicators.length) {
-      list.innerHTML = '<div style="color:var(--text-light);font-size:.85rem;text-align:center;padding:.5rem;">No indicators added</div>';
-      return;
-    }
-    activeIndicators.forEach(name => {
-      const div = document.createElement('div');
-      div.className = 'indicator-item';
-      div.innerHTML = `<span class="name">${name}</span><i class="fas fa-trash remove" data-name="${name}"></i>`;
-      list.appendChild(div);
-    });
-  };
-
-  const add = name => {
-    if (activeIndicators.includes(name)) return;
-    activeIndicators.push(name);
-    save();
-    render();
-    applyIndicatorsToChart();
-  };
-
-  list.addEventListener('click', e => {
-    if (e.target.classList.contains('remove')) {
-      const name = e.target.dataset.name;
-      activeIndicators = activeIndicators.filter(n => n !== name);
-      save();
-      render();
-      applyIndicatorsToChart();
-    }
-  });
-
-  addBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    const visible = searchContainer.style.display !== 'none';
-    searchContainer.style.display = visible ? 'none' : 'block';
-    if (!visible) {
-      searchInput.focus();
-      searchInput.value = '';
-      dropdown.innerHTML = '<div class="dropdown-item" style="color:var(--text-light);font-style:italic;">Start typing to search indicators...</div>';
-    }
-  });
-
-  searchInput.addEventListener('input', () => {
-    const term = searchInput.value.toLowerCase();
-    
-    if (term.length < 1) {
-      dropdown.innerHTML = '<div class="dropdown-item" style="color:var(--text-light);font-style:italic;">Start typing to search indicators...</div>';
-      return;
-    }
-    
-    const matches = allIndicators
-      .filter(i => 
-        i.name.toLowerCase().includes(term) || 
-        i.description.toLowerCase().includes(term) ||
-        i.category.toLowerCase().includes(term)
-      )
-      .slice(0, 15);
-    
-    dropdown.innerHTML = '';
-    
-    if (!matches.length) {
-      dropdown.innerHTML = '<div class="dropdown-item" style="color:var(--text-light);font-style:italic;">No indicators found</div>';
-    } else {
-      // Group by category
-      const byCategory = {};
-      matches.forEach(i => {
-        if (!byCategory[i.category]) byCategory[i.category] = [];
-        byCategory[i.category].push(i);
+    function initIndicatorPanel() {
+      const addBtn = document.getElementById('add-indicator-btn');
+      const searchContainer = document.getElementById('indicator-search-container');
+      const searchInput = document.getElementById('indicator-search-input');
+      const dropdown = document.getElementById('indicator-dropdown');
+      
+      if (!addBtn || !searchContainer || !searchInput || !dropdown) return;
+      
+      // Toggle search visibility
+      addBtn.addEventListener('click', () => {
+        const isVisible = searchContainer.style.display === 'block';
+        searchContainer.style.display = isVisible ? 'none' : 'block';
+        if (!isVisible) {
+          searchInput.value = '';
+          dropdown.innerHTML = '<div class="dropdown-item">Start typing indicator name...</div>';
+          searchInput.focus();
+        }
       });
       
-      Object.keys(byCategory).forEach(category => {
-        // Add category header
-        const header = document.createElement('div');
-        header.className = 'dropdown-item';
-        header.style.background = 'var(--bg-light)';
-        header.style.fontWeight = '600';
-        header.style.borderBottom = '1px solid var(--border)';
-        header.textContent = category;
-        dropdown.appendChild(header);
-        
-        // Add indicators in this category
-        byCategory[category].forEach(i => {
-          const el = document.createElement('div');
-          el.className = 'dropdown-item';
-          el.innerHTML = `<strong>${i.name}</strong><br><small style="color:var(--text-light)">${i.description}</small>`;
-          el.onclick = () => {
-            add(i.name);
-            searchInput.value = '';
-            searchContainer.style.display = 'none';
-          };
-          dropdown.appendChild(el);
-        });
-      });
-    }
-  });
-
-  searchInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && searchInput.value.trim()) {
-      const matches = allIndicators.filter(i => 
-        i.name.toLowerCase().includes(searchInput.value.toLowerCase())
-      );
-      if (matches.length > 0) {
-        add(matches[0].name);
-        searchInput.value = '';
-        searchContainer.style.display = 'none';
-      }
-    }
-  });
-
-  document.addEventListener('click', e => {
-    if (!addBtn.contains(e.target) && !searchContainer.contains(e.target)) {
-      searchContainer.style.display = 'none';
-    }
-  });
-
-  render();
-
-  // ───── INDICATOR CALCULATIONS ─────
-  window.applyIndicatorsToChart = function () {
-    if (!priceData?.length || !activeIndicators.length) return;
-    
-    // Clean up existing indicator series
-    if (chart._indicatorSeries) {
-      chart._indicatorSeries.forEach(s => {
-        try { chart.removeSeries(s); } catch(e) {}
-      });
-    }
-    chart._indicatorSeries = [];
-    
-    const values = priceData.map(d => ({
-      open: d.open, high: d.high, low: d.low, close: d.close, volume: d.volume, timestamp: d.time
-    }));
-    
-    activeIndicators.forEach(indicatorName => {
-      try {
-        let series;
-        
-        switch(indicatorName) {
-          case 'SMA':
-          case 'Moving Average':
-            series = chart.addLineSeries({ color: '#2962ff', lineWidth: 1, title: 'SMA 14' });
-            series.setData(calculateSMA(values, 14));
-            break;
-            
-          case 'EMA':
-            series = chart.addLineSeries({ color: '#ff6b6b', lineWidth: 1, title: 'EMA 14' });
-            series.setData(calculateEMA(values, 14));
-            break;
-            
-          case 'RSI':
-            series = chart.addLineSeries({ color: '#8e44ad', lineWidth: 1, title: 'RSI 14' });
-            chart.priceScale('right').applyOptions({ mode: 2 }); // Percentage scale
-            series.setData(calculateRSI(values, 14));
-            break;
-            
-          case 'MACD':
-            const macdData = calculateMACD(values);
-            series = chart.addLineSeries({ color: '#2962ff', lineWidth: 1, title: 'MACD' });
-            series.setData(macdData.macd);
-            chart._indicatorSeries.push(series);
-            
-            series = chart.addLineSeries({ color: '#ff6b6b', lineWidth: 1, title: 'Signal' });
-            series.setData(macdData.signal);
-            break;
-            
-          case 'BOLLINGER':
-          case 'Bollinger Bands':
-            const bbData = calculateBollingerBands(values, 20, 2);
-            series = chart.addLineSeries({ color: '#2962ff', lineWidth: 1, title: 'BB Middle' });
-            series.setData(bbData.middle);
-            chart._indicatorSeries.push(series);
-            
-            series = chart.addLineSeries({ color: '#666', lineWidth: 1, title: 'BB Upper', lineStyle: 2 });
-            series.setData(bbData.upper);
-            chart._indicatorSeries.push(series);
-            
-            series = chart.addLineSeries({ color: '#666', lineWidth: 1, title: 'BB Lower', lineStyle: 2 });
-            series.setData(bbData.lower);
-            break;
-            
-          case 'Stochastic Oscillator':
-          case 'STOCH':
-            const stochData = calculateStochastic(values, 14);
-            series = chart.addLineSeries({ color: '#2962ff', lineWidth: 1, title: 'Stoch %K' });
-            series.setData(stochData.k);
-            chart._indicatorSeries.push(series);
-            
-            series = chart.addLineSeries({ color: '#ff6b6b', lineWidth: 1, title: 'Stoch %D' });
-            series.setData(stochData.d);
-            break;
-            
-          case 'ATR':
-          case 'Average True Range':
-            series = chart.addLineSeries({ color: '#e67e22', lineWidth: 1, title: 'ATR 14' });
-            series.setData(calculateATR(values, 14));
-            break;
-            
-          case 'CCI':
-            series = chart.addLineSeries({ color: '#16a085', lineWidth: 1, title: 'CCI 20' });
-            series.setData(calculateCCI(values, 20));
-            break;
-            
-          case 'OBV':
-            series = chart.addLineSeries({ color: '#27ae60', lineWidth: 1, title: 'OBV' });
-            series.setData(calculateOBV(values));
-            break;
-            
-          case 'WILLR':
-          case 'Williams %R':
-            series = chart.addLineSeries({ color: '#8e44ad', lineWidth: 1, title: 'Williams %R' });
-            series.setData(calculateWilliamsR(values, 14));
-            break;
-            
-          case 'VWMA':
-            series = chart.addLineSeries({ color: '#f39c12', lineWidth: 1, title: 'VWMA 20' });
-            series.setData(calculateVWMA(values, 20));
-            break;
-            
-          default:
-            // For unsupported indicators, add a placeholder
-            series = chart.addLineSeries({ color: '#95a5a6', lineWidth: 1, title: indicatorName });
-            series.setData(calculateSMA(values, 14)); // Fallback to SMA
-            console.log(`Indicator ${indicatorName} not fully implemented, using SMA as placeholder`);
+      // Search functionality
+      searchInput.addEventListener('input', () => {
+        const query = searchInput.value.trim().toLowerCase();
+        if (!query) {
+          dropdown.innerHTML = '<div class="dropdown-item">Start typing indicator name...</div>';
+          return;
         }
         
-        if (series) chart._indicatorSeries.push(series);
-      } catch (error) {
-        console.error(`Error calculating ${indicatorName}:`, error);
-      }
-    });
-  };
-
-  // Core calculation functions
-  function calculateSMA(data, period) {
-    const result = [];
-    for (let i = period - 1; i < data.length; i++) {
-      let sum = 0;
-      for (let j = 0; j < period; j++) sum += data[i - j].close;
-      result.push({ time: data[i].timestamp, value: sum / period });
-    }
-    return result;
-  }
-
-  function calculateEMA(data, period) {
-    const result = [];
-    const multiplier = 2 / (period + 1);
-    let ema = data[0].close;
-    
-    for (let i = 0; i < data.length; i++) {
-      ema = i === 0 ? data[i].close : (data[i].close - ema) * multiplier + ema;
-      if (i >= period - 1) {
-        result.push({ time: data[i].timestamp, value: ema });
-      }
-    }
-    return result;
-  }
-
-  function calculateRSI(data, period) {
-    const result = [];
-    let gains = 0, losses = 0;
-    
-    for (let i = 1; i <= period; i++) {
-      const change = data[i].close - data[i-1].close;
-      if (change >= 0) gains += change; else losses -= change;
-    }
-    
-    let avgGain = gains / period, avgLoss = losses / period;
-    
-    for (let i = period + 1; i < data.length; i++) {
-      const change = data[i].close - data[i-1].close;
-      avgGain = (avgGain * (period - 1) + (change > 0 ? change : 0)) / period;
-      avgLoss = (avgLoss * (period - 1) + (change < 0 ? -change : 0)) / period;
+        // Filter indicators (simplified for demo)
+        const indicators = ['RSI', 'MACD', 'Bollinger Bands', 'Stochastic', 'ATR', 'CCI', 'VWAP', 'Momentum', 'OBV', 'Volume MA', 'Williams %R', 'ADX'];
+        const matches = indicators.filter(ind => ind.toLowerCase().includes(query));
+        
+        if (matches.length === 0) {
+          dropdown.innerHTML = '<div class="dropdown-item">No indicators found</div>';
+        } else {
+          dropdown.innerHTML = matches.map(ind => `
+            <div class="dropdown-item" data-indicator="${ind}">
+              ${ind}
+            </div>
+          `).join('');
+        }
+      });
       
-      const rs = avgLoss === 0 ? 100 : avgGain / avgLoss;
-      const rsi = 100 - (100 / (1 + rs));
+      // Add indicator on click
+      dropdown.addEventListener('click', (e) => {
+        const item = e.target.closest('.dropdown-item');
+        if (item && item.dataset.indicator) {
+          addIndicatorToList(item.dataset.indicator);
+          searchContainer.style.display = 'none';
+          searchInput.value = '';
+        }
+      });
       
-      result.push({ time: data[i].timestamp, value: rsi });
-    }
-    return result;
-  }
-
-  function calculateMACD(data) {
-    const ema12 = calculateEMA(data, 12);
-    const ema26 = calculateEMA(data, 26);
-    const macdLine = [];
-    
-    for (let i = 0; i < ema26.length; i++) {
-      if (i < ema12.length) {
-        macdLine.push({
-          time: ema26[i].time,
-          value: ema12[i].value - ema26[i].value
-        });
-      }
+      // Close search when clicking outside
+      document.addEventListener('click', (e) => {
+        if (!addBtn.contains(e.target) && !searchContainer.contains(e.target)) {
+          searchContainer.style.display = 'none';
+        }
+      });
     }
     
-    const signal = calculateEMA(macdLine.map(m => ({close: m.value, timestamp: m.time})), 9);
-    return { macd: macdLine, signal };
-  }
-
-  function calculateBollingerBands(data, period, stdDev) {
-    const sma = calculateSMA(data, period);
-    const result = { middle: sma, upper: [], lower: [] };
-    
-    for (let i = 0; i < sma.length; i++) {
-      let sum = 0;
-      for (let j = 0; j < period; j++) {
-        sum += Math.pow(data[i + period - 1 - j].close - sma[i].value, 2);
-      }
-      const deviation = Math.sqrt(sum / period);
+    function addIndicatorToList(indicatorName) {
+      const indicatorList = document.getElementById('indicator-list');
+      if (!indicatorList) return;
       
-      result.upper.push({ time: sma[i].time, value: sma[i].value + deviation * stdDev });
-      result.lower.push({ time: sma[i].time, value: sma[i].value - deviation * stdDev });
-    }
-    return result;
-  }
-
-  function calculateStochastic(data, period) {
-    const result = { k: [], d: [] };
-    
-    for (let i = period - 1; i < data.length; i++) {
-      let highest = -Infinity, lowest = Infinity;
-      for (let j = 0; j < period; j++) {
-        highest = Math.max(highest, data[i - j].high);
-        lowest = Math.min(lowest, data[i - j].low);
-      }
+      const indicatorItem = document.createElement('div');
+      indicatorItem.className = 'indicator-item';
+      indicatorItem.innerHTML = `
+        <span class="name">${indicatorName}</span>
+        <span class="remove"><i class="fas fa-times"></i></span>
+      `;
       
-      const k = ((data[i].close - lowest) / (highest - lowest)) * 100;
-      result.k.push({ time: data[i].timestamp, value: k });
-    }
-    
-    // Simple moving average of %K for %D
-    for (let i = 2; i < result.k.length; i++) {
-      const d = (result.k[i].value + result.k[i-1].value + result.k[i-2].value) / 3;
-      result.d.push({ time: result.k[i].time, value: d });
-    }
-    
-    return result;
-  }
-
-  function calculateATR(data, period) {
-    const result = [];
-    let sum = 0;
-    
-    for (let i = 1; i <= period; i++) {
-      const tr = Math.max(
-        data[i].high - data[i].low,
-        Math.abs(data[i].high - data[i-1].close),
-        Math.abs(data[i].low - data[i-1].close)
-      );
-      sum += tr;
-    }
-    
-    let atr = sum / period;
-    result.push({ time: data[period].timestamp, value: atr });
-    
-    for (let i = period + 1; i < data.length; i++) {
-      const tr = Math.max(
-        data[i].high - data[i].low,
-        Math.abs(data[i].high - data[i-1].close),
-        Math.abs(data[i].low - data[i-1].close)
-      );
-      atr = (atr * (period - 1) + tr) / period;
-      result.push({ time: data[i].timestamp, value: atr });
-    }
-    
-    return result;
-  }
-
-  function calculateCCI(data, period) {
-    const result = [];
-    
-    for (let i = period - 1; i < data.length; i++) {
-      let sum = 0, sumDev = 0;
-      for (let j = 0; j < period; j++) {
-        const typical = (data[i - j].high + data[i - j].low + data[i - j].close) / 3;
-        sum += typical;
-      }
-      const sma = sum / period;
+      // Remove indicator
+      indicatorItem.querySelector('.remove').addEventListener('click', () => {
+        indicatorItem.remove();
+      });
       
-      for (let j = 0; j < period; j++) {
-        const typical = (data[i - j].high + data[i - j].low + data[i - j].close) / 3;
-        sumDev += Math.abs(typical - sma);
-      }
-      const meanDev = sumDev / period;
-      const typicalPrice = (data[i].high + data[i].low + data[i].close) / 3;
-      const cci = (typicalPrice - sma) / (0.015 * meanDev);
-      
-      result.push({ time: data[i].timestamp, value: cci });
+      indicatorList.appendChild(indicatorItem);
     }
-    return result;
-  }
 
-  function calculateOBV(data) {
-    const result = [{ time: data[0].timestamp, value: data[0].volume }];
-    
-    for (let i = 1; i < data.length; i++) {
-      let obv = result[result.length - 1].value;
-      if (data[i].close > data[i-1].close) obv += data[i].volume;
-      else if (data[i].close < data[i-1].close) obv -= data[i].volume;
-      
-      result.push({ time: data[i].timestamp, value: obv });
-    }
-    return result;
-  }
-
-  function calculateWilliamsR(data, period) {
-    const result = [];
-    
-    for (let i = period - 1; i < data.length; i++) {
-      let highest = -Infinity, lowest = Infinity;
-      for (let j = 0; j < period; j++) {
-        highest = Math.max(highest, data[i - j].high);
-        lowest = Math.min(lowest, data[i - j].low);
-      }
-      
-      const williamsR = ((highest - data[i].close) / (highest - lowest)) * -100;
-      result.push({ time: data[i].timestamp, value: williamsR });
-    }
-    return result;
-  }
-
-  function calculateVWMA(data, period) {
-    const result = [];
-    
-    for (let i = period - 1; i < data.length; i++) {
-      let sumPriceVolume = 0, sumVolume = 0;
-      for (let j = 0; j < period; j++) {
-        sumPriceVolume += data[i - j].close * data[i - j].volume;
-        sumVolume += data[i - j].volume;
-      }
-      
-      result.push({ time: data[i].timestamp, value: sumPriceVolume / sumVolume });
-    }
-    return result;
-  }
-
-  // Auto-apply indicators when ready
-  setTimeout(() => {
-    if (window.applyIndicatorsToChart && priceData && priceData.length > 0) {
-      window.applyIndicatorsToChart();
-    }
-  }, 1500);
-}
-
-// Initialize when page loads
-if (document.getElementById('add-indicator-btn')) {
-  setTimeout(initIndicatorPanel, 500);
-}
-      
     // ───── THEME TOGGLE ─────
     document.getElementById('theme-toggle').addEventListener('click', () => {
       const isDark = document.body.getAttribute('data-theme') === 'dark';
