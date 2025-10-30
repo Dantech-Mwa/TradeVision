@@ -721,6 +721,10 @@
     let currentChartType = 'candlestick';
     let lastPrice = 0;
     let activeIndicators = [];
+	// ---------------------------------------------------------------
+// GLOBAL: keep a reference to every series that belongs to an indicator
+// ---------------------------------------------------------------
+    const indicatorSeriesMap = new Map();   // key: indicatorName   value: array of series
     
     // ───── DRAWING TOOLS GLOBALS ─────
     let activeTool = 'cursor';
@@ -1316,7 +1320,12 @@
         clearIndicatorChart();
       });
     }
-
+document.getElementById('clear-indicators').addEventListener('click', () => {
+  activeIndicators = [];
+  localStorage.removeItem('chartIndicators');
+  updateIndicatorList();
+  clearIndicatorChart();          // wipes everything instantly
+});
     function loadActiveIndicators() {
       const saved = JSON.parse(localStorage.getItem('chartIndicators') || '[]');
       activeIndicators = saved;
@@ -1342,172 +1351,178 @@
       updateAllIndicators();
     }
 
-    function removeIndicator(name) {
-      activeIndicators = activeIndicators.filter(ind => ind.name !== name);
-      localStorage.setItem('chartIndicators', JSON.stringify(activeIndicators));
-      updateIndicatorList();
-      updateAllIndicators();
-    }
+   /* -------------------------------------------------------------
+   INDICATOR REMOVAL – removes the indicator + its series instantly
+   ------------------------------------------------------------- */
+function removeIndicator(name) {
+  // 1. Remove from the active list
+  activeIndicators = activeIndicators.filter(ind => ind.name !== name);
+  localStorage.setItem('chartIndicators', JSON.stringify(activeIndicators));
 
-    function updateIndicatorList() {
-      const list = document.getElementById('indicator-list');
-      list.innerHTML = '';
-      
-      if (activeIndicators.length === 0) {
-        list.innerHTML = '<div class="empty-state" style="color:var(--text-light);padding:.5rem;">No indicators added</div>';
-        return;
-      }
-      
-      activeIndicators.forEach(indicator => {
-        const item = document.createElement('div');
-        item.className = 'indicator-item';
-        item.innerHTML = `
-          <span class="name">${indicator.name}</span>
-          <span class="remove" title="Remove indicator">×</span>
-        `;
-        
-        item.querySelector('.remove').addEventListener('click', () => {
-          removeIndicator(indicator.name);
-        });
-        
-        list.appendChild(item);
-      });
-    }
+  // 2. Update the right-panel list
+  updateIndicatorList();
 
-    function updateAllIndicators() {
-      if (!priceData.length) return;
-      
-      clearIndicatorChart();
-      
-      activeIndicators.forEach(indicator => {
-        const config = IndicatorConfigs[indicator.name];
-        if (config) {
-          const result = config.calculate(priceData, indicator.params);
-          plotIndicator(indicator.name, result, indicator.params);
-        }
-      });
-    }
+  // 3. **Delete ONLY the series that belong to this indicator**
+  const seriesArray = indicatorSeriesMap.get(name) || [];
+  seriesArray.forEach(s => {
+    try { indicatorsChart.removeSeries(s); } catch (_) {}
+  });
+  indicatorSeriesMap.delete(name);   // clean the map
+
+  // 4. If anything is left → redraw the rest (optional – chart is already clean)
+  if (activeIndicators.length > 0) {
+    updateAllIndicators();   // will clear again (safe) and plot remaining
+  }
+}
+/* -------------------------------------------------------------
+   Remove every series that was created for a specific indicator
+   ------------------------------------------------------------- */
+function removeIndicatorSeries(indicatorName) {
+  if (!indicatorsChart || !indicatorsChart._series) return;
+
+  // Lightweight-Charts stores all series in an internal array
+  const seriesToRemove = indicatorsChart._series.filter(s => {
+    // Series title is set to:  "RSI", "MACD MACD", "Bollinger Bands Upper", …
+    const title = s.options?.().title || '';
+    return title.startsWith(indicatorName);
+  });
+
+  seriesToRemove.forEach(s => {
+    try { indicatorsChart.removeSeries(s); } catch (_) {}
+  });
+}
+
+/* -------------------------------------------------------------
+   Re-build the UI list of active indicators
+   ------------------------------------------------------------- */
+function updateIndicatorList() {
+  const list = document.getElementById('indicator-list');
+  list.innerHTML = '';
+
+  if (activeIndicators.length === 0) {
+    list.innerHTML =
+      '<div class="empty-state" style="color:var(--text-light);padding:.5rem;">No indicators added</div>';
+    return;
+  }
+
+  activeIndicators.forEach(ind => {
+    const item = document.createElement('div');
+    item.className = 'indicator-item';
+    item.innerHTML = `
+      <span class="name">${ind.name}</span>
+      <span class="remove" title="Remove indicator">×</span>
+    `;
+
+    item.querySelector('.remove').addEventListener('click', () => {
+      removeIndicator(ind.name);
+    });
+
+    list.appendChild(item);
+  });
+}
+
+/* -------------------------------------------------------------
+   Re-calculate & re-plot **all remaining** indicators
+   ------------------------------------------------------------- */
+function updateAllIndicators() {
+  if (!priceData.length) return;
+
+  // Clear *everything* first – guarantees a clean slate
+  clearIndicatorChart();
+
+  activeIndicators.forEach(ind => {
+    const cfg = IndicatorConfigs[ind.name];
+    if (!cfg) return;
+
+    const result = cfg.calculate(priceData, ind.params);
+    plotIndicator(ind.name, result, ind.params);
+  });
+}
+
+/* -------------------------------------------------------------
+   Helper – wipe the whole indicator pane (used by many places)
+   ------------------------------------------------------------- */
+function clearIndicatorChart() {
+  if (!indicatorsChart || !indicatorsChart._series) return;
+  while (indicatorsChart._series.length) {
+    try { indicatorsChart.removeSeries(indicatorsChart._series[0]); } catch (_) { break; }
+  }
+  indicatorSeriesMap.clear();   // also wipe the map
+}
 
     function plotIndicator(name, result, params) {
-      if (result.value) {
-        // Single line indicator
-        const series = indicatorsChart.addLineSeries({
-          color: getIndicatorColor(name),
-          lineWidth: 2,
-          title: name
-        });
-        
-        const data = priceData.map((d, i) => ({
-          time: d.time,
-          value: result.value[i]
-        })).filter(d => d.value !== null);
-        
-        series.setData(data);
-      } else if (result.macdLine && result.signalLine && result.histogram) {
-        // MACD indicator
-        const macdSeries = indicatorsChart.addLineSeries({
-          color: '#2962ff',
-          lineWidth: 2,
-          title: `${name} MACD`
-        });
-        
-        const signalSeries = indicatorsChart.addLineSeries({
-          color: '#ff6b6b',
-          lineWidth: 1,
-          title: `${name} Signal`
-        });
-        
-        const histSeries = indicatorsChart.addHistogramSeries({
-          color: '#26a69a',
-          title: `${name} Histogram`
-        });
-        
-        const macdData = priceData.map((d, i) => ({
-          time: d.time,
-          value: result.macdLine[i]
-        })).filter(d => d.value !== null);
-        
-        const signalData = priceData.map((d, i) => ({
-          time: d.time,
-          value: result.signalLine[i]
-        })).filter(d => d.value !== null);
-        
-        const histData = priceData.map((d, i) => ({
-          time: d.time,
-          value: result.histogram[i],
-          color: result.histogram[i] >= 0 ? '#26a69a' : '#ef5350'
-        })).filter(d => d.value !== null);
-        
-        macdSeries.setData(macdData);
-        signalSeries.setData(signalData);
-        histSeries.setData(histData);
-      } else if (result.upper && result.middle && result.lower) {
-        // Bollinger Bands
-        const upperSeries = indicatorsChart.addLineSeries({
-          color: '#ffa726',
-          lineWidth: 1,
-          title: `${name} Upper`
-        });
-        
-        const middleSeries = indicatorsChart.addLineSeries({
-          color: '#2962ff',
-          lineWidth: 1,
-          title: `${name} Middle`
-        });
-        
-        const lowerSeries = indicatorsChart.addLineSeries({
-          color: '#ffa726',
-          lineWidth: 1,
-          title: `${name} Lower`
-        });
-        
-        const upperData = priceData.map((d, i) => ({
-          time: d.time,
-          value: result.upper[i]
-        })).filter(d => d.value !== null);
-        
-        const middleData = priceData.map((d, i) => ({
-          time: d.time,
-          value: result.middle[i]
-        })).filter(d => d.value !== null);
-        
-        const lowerData = priceData.map((d, i) => ({
-          time: d.time,
-          value: result.lower[i]
-        })).filter(d => d.value !== null);
-        
-        upperSeries.setData(upperData);
-        middleSeries.setData(middleData);
-        lowerSeries.setData(lowerData);
-      } else if (result.k && result.d) {
-        // Stochastic
-        const kSeries = indicatorsChart.addLineSeries({
-          color: '#2962ff',
-          lineWidth: 2,
-          title: `${name} %K`
-        });
-        
-        const dSeries = indicatorsChart.addLineSeries({
-          color: '#ff6b6b',
-          lineWidth: 1,
-          title: `${name} %D`
-        });
-        
-        const kData = priceData.map((d, i) => ({
-          time: d.time,
-          value: result.k[i]
-        })).filter(d => d.value !== null);
-        
-        const dData = priceData.map((d, i) => ({
-          time: d.time,
-          value: result.d[i]
-        })).filter(d => d.value !== null);
-        
-        kSeries.setData(kData);
-        dSeries.setData(dData);
-      }
-    }
+  // Remove old series for this indicator (if any)
+  const oldSeries = indicatorSeriesMap.get(name) || [];
+  oldSeries.forEach(s => {
+    try { indicatorsChart.removeSeries(s); } catch (_) {}
+  });
+  indicatorSeriesMap.set(name, []);   // start fresh
 
+  // -----------------------------------------------------------------
+  // 1. SINGLE-LINE INDICATORS (RSI, SMA, EMA, ATR, CCI, VWAP, OBV …)
+  // -----------------------------------------------------------------
+  if (result.value) {
+    const series = indicatorsChart.addLineSeries({
+      color: getIndicatorColor(name),
+      lineWidth: 2,
+      title: name
+    });
+    const data = priceData.map((d, i) => ({
+      time: d.time,
+      value: result.value[i]
+    })).filter(d => d.value !== null);
+
+    series.setData(data);
+    indicatorSeriesMap.get(name).push(series);
+    return;
+  }
+
+  // -----------------------------------------------------------------
+  // 2. MACD
+  // -----------------------------------------------------------------
+  if (result.macdLine && result.signalLine && result.histogram) {
+    const macd = indicatorsChart.addLineSeries({ color: '#2962ff', lineWidth: 2, title: `${name} MACD` });
+    const signal = indicatorsChart.addLineSeries({ color: '#ff6b6b', lineWidth: 1, title: `${name} Signal` });
+    const hist = indicatorsChart.addHistogramSeries({ color: '#26a69a', title: `${name} Histogram` });
+
+    macd.setData(priceData.map((d,i)=>({time:d.time, value:result.macdLine[i]})).filter(d=>d.value!==null));
+    signal.setData(priceData.map((d,i)=>({time:d.time, value:result.signalLine[i]})).filter(d=>d.value!==null));
+    hist.setData(priceData.map((d,i)=>({time:d.time, value:result.histogram[i],
+          color: result.histogram[i]>=0 ? '#26a69a' : '#ef5350' })).filter(d=>d.value!==null));
+
+    indicatorSeriesMap.get(name).push(macd, signal, hist);
+    return;
+  }
+
+  // -----------------------------------------------------------------
+  // 3. BOLLINGER BANDS
+  // -----------------------------------------------------------------
+  if (result.upper && result.middle && result.lower) {
+    const up   = indicatorsChart.addLineSeries({ color: '#ffa726', lineWidth: 1, title: `${name} Upper` });
+    const mid  = indicatorsChart.addLineSeries({ color: '#2962ff', lineWidth: 1, title: `${name} Middle` });
+    const low  = indicatorsChart.addLineSeries({ color: '#ffa726', lineWidth: 1, title: `${name} Lower` });
+
+    up.setData(priceData.map((d,i)=>({time:d.time, value:result.upper[i]})).filter(d=>d.value!==null));
+    mid.setData(priceData.map((d,i)=>({time:d.time, value:result.middle[i]})).filter(d=>d.value!==null));
+    low.setData(priceData.map((d,i)=>({time:d.time, value:result.lower[i]})).filter(d=>d.value!==null));
+
+    indicatorSeriesMap.get(name).push(up, mid, low);
+    return;
+  }
+
+  // -----------------------------------------------------------------
+  // 4. STOCHASTIC
+  // -----------------------------------------------------------------
+  if (result.k && result.d) {
+    const k = indicatorsChart.addLineSeries({ color: '#2962ff', lineWidth: 2, title: `${name} %K` });
+    const d = indicatorsChart.addLineSeries({ color: '#ff6b6b', lineWidth: 1, title: `${name} %D` });
+
+    k.setData(priceData.map((d,i)=>({time:d.time, value:result.k[i]})).filter(d=>d.value!==null));
+    d.setData(priceData.map((d,i)=>({time:d.time, value:result.d[i]})).filter(d=>d.value!==null));
+
+    indicatorSeriesMap.get(name).push(k, d);
+  }
+}
     function clearIndicatorChart() {
       // Remove all series from indicators chart
       while (indicatorsChart._series && indicatorsChart._series.length > 0) {
