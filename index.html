@@ -43,13 +43,51 @@
     .nav-links a{margin:0 .75rem;font-weight:500;}
     .icon-btn{background:none;border:none;color:var(--text-light);font-size:1.2rem;cursor:pointer;padding:.5rem;}
 
-    .hero{text-align:center;padding:3rem 0;}
-    .hero h1{font-size:2.5rem;margin:0 0 1rem;}
+    /* HERO SECTION WITH CHART BACKGROUND */
+    .hero-section {
+      position: relative;
+      min-height: 70vh;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      background: var(--bg);
+    }
+
+    .chart-background {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      opacity: 0.1;
+    }
+
+    #background-chart {
+      width: 100%;
+      height: 100%;
+      background: transparent;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      width: 100%;
+      padding: 2rem 0;
+    }
+
+    .hero h1{font-size:3rem;margin:0 0 1rem;font-weight:700;}
     .gradient{background:linear-gradient(90deg,#2962ff,#00bfa5);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-    .hero p{font-size:1.1rem;color:var(--text-light);max-width:600px;margin:0 auto 2rem;}
-    .btn-primary,.btn-secondary{display:inline-block;padding:.75rem 1.5rem;border-radius:6px;font-weight:600;margin:0 .5rem;}
-    .btn-primary{background:var(--accent);color:white;}
-    .btn-secondary{background:var(--bg-light);color:var(--text);border:1px solid var(--border);}
+    .hero p{font-size:1.3rem;color:var(--text-light);max-width:700px;margin:0 auto 3rem;line-height:1.8;}
+    .btn-primary,.btn-secondary{display:inline-block;padding:1rem 2rem;border-radius:8px;font-weight:600;margin:0 1rem;font-size:1.1rem;transition:all 0.3s ease;}
+    .btn-primary{background:var(--accent);color:white;border:none;}
+    .btn-primary:hover{background:#1e53e5;transform:translateY(-2px);box-shadow:0 8px 25px rgba(41,98,255,0.3);}
+    .btn-secondary{background:transparent;color:var(--text);border:2px solid var(--border);}
+    .btn-secondary:hover{background:var(--bg-light);transform:translateY(-2px);border-color:var(--accent);}
 
     .chart-card,.link-card{background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden;}
     .card-header{padding:.75rem 1rem;display:flex;justify-content:space-between;font-size:.9rem;background:var(--bg-light);}
@@ -68,6 +106,11 @@
     .footer-bottom{text-align:center;color:var(--text-light);}
 
     @media(max-width:992px){.nav-links,.header-actions>a{display:none;}}
+    @media(max-width:768px){
+      .hero h1{font-size:2.2rem;}
+      .hero p{font-size:1.1rem;}
+      .btn-primary,.btn-secondary{padding:.8rem 1.5rem;font-size:1rem;margin:.5rem;}
+    }
     
     /* Status indicator */
     .status-indicator {
@@ -94,7 +137,15 @@
       100% { opacity: 1; }
     }
     
-    /* CRITICAL FIX: Force charts to occupy full container */
+    /* Chart styling - FIXED FOR BACKGROUND */
+    .chart-background > div {
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+    }
+    
     .chart-container > div {
       position: absolute !important;
       top: 0 !important;
@@ -103,15 +154,59 @@
       height: 100% !important;
     }
     
+    .chart-background canvas {
+      width: 100% !important;
+      height: 100% !important;
+      display: block !important;
+    }
+
     .chart-container canvas {
       width: 100% !important;
       height: 100% !important;
       display: block !important;
     }
 
-    /* ANIMATION: Smooth candle & trendline updates */
-    .chart-container canvas {
-      transition: all 0.2s ease-out;
+    /* Feature highlights */
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+      margin: 4rem 0;
+    }
+
+    .feature {
+      text-align: center;
+      padding: 2rem;
+      background: var(--card);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      transition: transform 0.3s ease;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+
+    .feature:hover {
+      transform: translateY(-5px);
+      border-color: var(--accent);
+    }
+
+    .feature i {
+      font-size: 2.5rem;
+      color: var(--accent);
+      margin-bottom: 1rem;
+    }
+
+    .feature h3 {
+      margin: 0 0 1rem 0;
+      font-size: 1.3rem;
+    }
+
+    .feature p {
+      color: var(--text-light);
+      margin: 0;
+      line-height: 1.6;
     }
   </style>
 </head>
@@ -146,77 +241,109 @@
     </div>
   </header>
 
-  <!-- MAIN -->
-  <main class="main-content">
-    <div class="container">
-
-      <!-- Hero -->
-      <section class="hero">
-        <h1>Professional Charts. <span class="gradient">Open Source.</span></h1>
-        <p>Analyze markets with 100+ indicators, drawing tools, real-time data, and social ideas.</p>
-        <div class="hero-actions">
-          <a href="chart.html" class="btn-primary">Open Chart</a>
-          <a href="screener.html" class="btn-secondary">Screen Crypto</a>
-        </div>
-      </section>
-
-      <!-- Mini-Charts -->
-      <section class="mini-charts-grid">
-        <div class="flex-between">
-          <h2>Live Markets</h2>
-          <div id="connection-status" class="flex-center">
-            <span class="status-indicator status-connecting"></span>
-            <span>Connecting...</span>
-          </div>
-        </div>
-        <div class="grid-2x2">
-          <div class="chart-card" data-symbol="BTCUSDT">
-            <div class="card-header">
-              <span class="symbol">BTC/USDT</span>
-              <span class="price">--</span>
-              <span class="change">--</span>
-            </div>
-            <div class="chart-container" id="chart-btc"></div>
-          </div>
-          <div class="chart-card" data-symbol="ETHUSDT">
-            <div class="card-header">
-              <span class="symbol">ETH/USDT</span>
-              <span class="price">--</span>
-              <span class="change">--</span>
-            </div>
-            <div class="chart-container" id="chart-eth"></div>
-          </div>
-          <div class="chart-card" data-symbol="ADAUSDT">
-            <div class="card-header">
-              <span class="symbol">ADA/USDT</span>
-              <span class="price">--</span>
-              <span class="change">--</span>
-            </div>
-            <div class="chart-container" id="chart-ada"></div>
-          </div>
-          <div class="chart-card" data-symbol="DOTUSDT">
-            <div class="card-header">
-              <span class="symbol">DOT/USDT</span>
-              <span class="price">--</span>
-              <span class="change">--</span>
-            </div>
-            <div class="chart-container" id="chart-dot"></div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Quick Links -->
-      <section class="quick-links">
-        <h2>Explore</h2>
-        <div class="grid-3">
-          <a href="indicators.html" class="link-card"><i class="fas fa-wave-square"></i><span>100+ Indicators</span></a>
-          <a href="drawings.html" class="link-card"><i class="fas fa-pencil-ruler"></i><span>70+ Drawing Tools</span></a>
-          <a href="pine-editor.html" class="link-card"><i class="fas fa-code"></i><span>Pine Script Editor</span></a>
-        </div>
-      </section>
-
+  <!-- HERO SECTION WITH CHART BACKGROUND -->
+  <section class="hero-section">
+    <div class="chart-background">
+      <div id="background-chart"></div>
     </div>
-  </main>
+    <div class="container">
+      <div class="hero-content">
+        <div class="hero">
+          <h1>Professional Charts. <span class="gradient">Open Source.</span></h1>
+          <p>Analyze markets with 100+ indicators, drawing tools, real-time data, and social ideas.</p>
+          <div class="hero-actions">
+            <a href="chart.html" class="btn-primary">Open Chart</a>
+            <a href="screener.html" class="btn-secondary">Screen Crypto</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES SECTION -->
+  <section class="container">
+    <div class="features">
+      <a href="chart.html" class="feature">
+        <i class="fas fa-chart-line"></i>
+        <h3>Advanced Charts</h3>
+        <p>Professional trading charts with 100+ technical indicators and drawing tools</p>
+      </a>
+      <a href="screener.html" class="feature">
+        <i class="fas fa-bolt"></i>
+        <h3>Real-time Data</h3>
+        <p>Live market data from multiple exchanges with WebSocket connections</p>
+      </a>
+      <a href="pine-editor.html" class="feature">
+        <i class="fas fa-code"></i>
+        <h3>Pine Script</h3>
+        <p>Custom indicators and strategies with our built-in Pine Script editor</p>
+      </a>
+      <a href="ideas.html" class="feature">
+        <i class="fas fa-users"></i>
+        <h3>Community Ideas</h3>
+        <p>Share and discover trading ideas with our vibrant community</p>
+      </a>
+    </div>
+  </section>
+
+  <!-- Mini-Charts -->
+  <section class="mini-charts-grid">
+    <div class="container">
+      <div class="flex-between">
+        <h2>Live Markets</h2>
+        <div id="connection-status" class="flex-center">
+          <span class="status-indicator status-connecting"></span>
+          <span>Connecting...</span>
+        </div>
+      </div>
+      <div class="grid-2x2">
+        <div class="chart-card" data-symbol="BTCUSDT">
+          <div class="card-header">
+            <span class="symbol">BTC/USDT</span>
+            <span class="price">--</span>
+            <span class="change">--</span>
+          </div>
+          <div class="chart-container" id="chart-btc"></div>
+        </div>
+        <div class="chart-card" data-symbol="ETHUSDT">
+          <div class="card-header">
+            <span class="symbol">ETH/USDT</span>
+            <span class="price">--</span>
+            <span class="change">--</span>
+          </div>
+          <div class="chart-container" id="chart-eth"></div>
+        </div>
+        <div class="chart-card" data-symbol="ADAUSDT">
+          <div class="card-header">
+            <span class="symbol">ADA/USDT</span>
+            <span class="price">--</span>
+            <span class="change">--</span>
+          </div>
+          <div class="chart-container" id="chart-ada"></div>
+        </div>
+        <div class="chart-card" data-symbol="DOTUSDT">
+          <div class="card-header">
+            <span class="symbol">DOT/USDT</span>
+            <span class="price">--</span>
+            <span class="change">--</span>
+          </div>
+          <div class="chart-container" id="chart-dot"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Quick Links -->
+  <section class="quick-links">
+    <div class="container">
+      <h2>Explore</h2>
+      <div class="grid-3">
+        <a href="indicators.html" class="link-card"><i class="fas fa-wave-square"></i><span>100+ Indicators</span></a>
+        <a href="drawings.html" class="link-card"><i class="fas fa-pencil-ruler"></i><span>70+ Drawing Tools</span></a>
+        <a href="pine-editor.html" class="link-card"><i class="fas fa-code"></i><span>Pine Script Editor</span></a>
+      </div>
+    </div>
+  </section>
 
   <!-- FOOTER -->
   <footer class="footer">
@@ -234,6 +361,7 @@
     // GLOBAL VARIABLES
     const symbols = ['BTCUSDT', 'ETHUSDT', 'ADAUSDT', 'DOTUSDT'];
     const charts = {};
+    let backgroundChart = null;
     let ws = null;
     let connectionAttempts = 0;
 
@@ -245,9 +373,163 @@
       'DOTUSDT': 7
     };
 
-    // CHART INITIALIZATION WITH 5-MINUTE CANDLES
+    // SMA CALCULATION FUNCTION
+    function calculateSMA(data, period) {
+      const sma = [];
+      for (let i = period - 1; i < data.length; i++) {
+        let sum = 0;
+        for (let j = 0; j < period; j++) {
+          sum += data[i - j].close;
+        }
+        sma.push({
+          time: data[i].time,
+          value: sum / period
+        });
+      }
+      return sma;
+    }
+
+    // GENERATE CANDLESTICK DATA FOR BACKGROUND
+    function generateBackgroundCandles(count) {
+      const candles = [];
+      const now = Math.floor(Date.now() / 1000);
+      let currentPrice = 45000;
+      
+      // Generate more candles for background with realistic volatility
+      for (let i = count - 1; i >= 0; i--) {
+        const time = now - i * 3600 * 2; // 2-hour intervals for background
+        const priceChange = (Math.random() - 0.5) * 2 * 0.03 * currentPrice; // 3% volatility
+        const open = currentPrice;
+        const close = open + priceChange;
+        
+        // Realistic high/low with proper wicks
+        const wickSize = 0.02 * currentPrice; // 2% wick size
+        const high = Math.max(open, close) + Math.random() * wickSize;
+        const low = Math.min(open, close) - Math.random() * wickSize;
+        
+        candles.push({
+          time: time,
+          open: parseFloat(open.toFixed(2)),
+          high: parseFloat(high.toFixed(2)),
+          low: parseFloat(low.toFixed(2)),
+          close: parseFloat(close.toFixed(2))
+        });
+        
+        currentPrice = close;
+      }
+      return candles;
+    }
+
+    // INITIALIZE BACKGROUND CHART WITH CANDLESTICKS - FIXED
+    function initializeBackgroundChart() {
+      console.log('INITIALIZING BACKGROUND CHART WITH CANDLESTICKS...');
+      
+      const container = document.getElementById('background-chart');
+      if (!container) {
+        console.error('Background chart container not found');
+        return;
+      }
+
+      // Clear container and ensure proper dimensions
+      container.innerHTML = '';
+      container.style.width = '100%';
+      container.style.height = '100%';
+      container.style.position = 'absolute';
+      container.style.top = '0';
+      container.style.left = '0';
+      
+      try {
+        // Create background chart with proper dimensions
+        backgroundChart = LightweightCharts.createChart(container, {
+          width: container.parentElement.clientWidth,
+          height: container.parentElement.clientHeight,
+          layout: {
+            background: { color: 'transparent' },
+            textColor: 'rgba(158, 161, 181, 0.1)',
+          },
+          grid: {
+            vertLines: { visible: false },
+            horzLines: { visible: false },
+          },
+          timeScale: {
+            visible: false,
+            borderVisible: false,
+            timeVisible: false,
+            rightOffset: 1,
+            barSpacing: 1,
+            minBarSpacing: 0.5,
+          },
+          rightPriceScale: {
+            visible: false,
+            borderVisible: false,
+          },
+          leftPriceScale: {
+            visible: false,
+            borderVisible: false,
+          },
+          crosshair: {
+            mode: 0,
+          },
+          handleScroll: false,
+          handleScale: false,
+        });
+
+        // Add candlestick series for background with theme-aware colors
+        const isDark = document.body.getAttribute('data-theme') === 'dark';
+        const upColor = isDark ? 'rgba(38, 166, 154, 0.15)' : 'rgba(38, 166, 154, 0.1)';
+        const downColor = isDark ? 'rgba(239, 83, 80, 0.15)' : 'rgba(239, 83, 80, 0.1)';
+        const borderUpColor = isDark ? 'rgba(38, 166, 154, 0.2)' : 'rgba(38, 166, 154, 0.15)';
+        const borderDownColor = isDark ? 'rgba(239, 83, 80, 0.2)' : 'rgba(239, 83, 80, 0.15)';
+
+        const candlestickSeries = backgroundChart.addCandlestickSeries({
+          upColor: upColor,
+          downColor: downColor,
+          borderUpColor: borderUpColor,
+          borderDownColor: borderDownColor,
+          wickUpColor: borderUpColor,
+          wickDownColor: borderDownColor,
+          priceLineVisible: false,
+          lastValueVisible: false,
+        });
+
+        // Generate candlestick data for background
+        const backgroundCandles = generateBackgroundCandles(200); // More candles for full width
+        candlestickSeries.setData(backgroundCandles);
+
+        console.log('Background candlestick chart initialized successfully');
+
+      } catch (error) {
+        console.error('Failed to create background chart:', error);
+      }
+    }
+
+    // UPDATE BACKGROUND CHART FOR THEME CHANGES
+    function updateBackgroundChartTheme() {
+      if (!backgroundChart) return;
+      
+      const isDark = document.body.getAttribute('data-theme') === 'dark';
+      const upColor = isDark ? 'rgba(38, 166, 154, 0.15)' : 'rgba(38, 166, 154, 0.1)';
+      const downColor = isDark ? 'rgba(239, 83, 80, 0.15)' : 'rgba(239, 83, 80, 0.1)';
+      const borderUpColor = isDark ? 'rgba(38, 166, 154, 0.2)' : 'rgba(38, 166, 154, 0.15)';
+      const borderDownColor = isDark ? 'rgba(239, 83, 80, 0.2)' : 'rgba(239, 83, 80, 0.15)';
+
+      // Get the candlestick series and update colors
+      const series = backgroundChart._series[0];
+      if (series) {
+        series.applyOptions({
+          upColor: upColor,
+          downColor: downColor,
+          borderUpColor: borderUpColor,
+          borderDownColor: borderDownColor,
+          wickUpColor: borderUpColor,
+          wickDownColor: borderDownColor,
+        });
+      }
+    }
+
+    // CHART INITIALIZATION WITH 5-MINUTE CANDLES AND SMA
     function initializeAllCharts() {
-      console.log('INITIALIZING 5-MINUTE CANDLESTICK CHARTS...');
+      console.log('INITIALIZING 5-MINUTE CANDLESTICK CHARTS WITH SMA...');
       
       symbols.forEach(symbol => {
         const chartId = `chart-${symbol.toLowerCase().replace('usdt', '')}`;
@@ -279,7 +561,7 @@
               borderVisible: false,
               timeVisible: false,
               rightOffset: 1,
-              barSpacing: 3, // Tighter spacing for more candles
+              barSpacing: 3,
               minBarSpacing: 1,
               fixLeftEdge: true,
               fixRightEdge: true,
@@ -304,7 +586,7 @@
             handleScale: false,
           });
 
-          // ADD CANDLESTICK SERIES WITH ANIMATION
+          // ADD CANDLESTICK SERIES
           const candlestickSeries = chart.addCandlestickSeries({
             upColor: '#26a69a',
             downColor: '#ef5350',
@@ -314,40 +596,36 @@
             wickDownColor: '#ef5350',
             priceLineVisible: false,
             lastValueVisible: false,
-            // Enable animation
-            animation: true
           });
 
-          // ADD TRENDLINE SERIES WITH ANIMATION
-          const trendlineSeries = chart.addLineSeries({
+          // ADD SMA SERIES
+          const smaSeries = chart.addLineSeries({
             color: '#2962ff',
             lineWidth: 1,
             lineStyle: 0,
             crosshairMarkerVisible: false,
             lastValueVisible: false,
             priceLineVisible: false,
-            // Enable animation
-            animation: true
           });
 
-          // Generate 5-minute candlestick data with MORE candles
-          const sampleCandles = generate5MinuteCandles(20, symbol); // 20 candles = 100 minutes
-          const trendlineData = calculateTrendline(sampleCandles);
+          // Generate 5-minute candlestick data
+          const sampleCandles = generate5MinuteCandles(25, symbol);
+          const smaData = calculateSMA(sampleCandles, 9);
           
           // Set data
           candlestickSeries.setData(sampleCandles);
-          trendlineSeries.setData(trendlineData);
+          smaSeries.setData(smaData);
 
           // Store chart reference
           charts[symbol] = {
             chart: chart,
             candlestickSeries: candlestickSeries,
-            trendlineSeries: trendlineSeries,
+            smaSeries: smaSeries,
             candleData: sampleCandles,
-            trendlineData: trendlineData
+            smaPeriod: 9
           };
           
-          console.log(`5-MINUTE Chart initialized: ${symbol} - 20 candles (100 minutes)`);
+          console.log(`5-MINUTE Chart with SMA initialized: ${symbol}`);
           
         } catch (error) {
           console.error(`Failed to create chart for ${symbol}:`, error);
@@ -365,25 +643,20 @@
       const basePrice = basePrices[symbol];
       let currentPrice = basePrice;
       
-      // Asset-specific volatility for 5-minute timeframe
       const volatilities = {
-        'BTCUSDT': 0.003,  // 0.3% volatility for 5min (BTC is more stable)
-        'ETHUSDT': 0.004,  // 0.4% volatility for 5min
-        'ADAUSDT': 0.008,  // 0.8% volatility for 5min (ADA is more volatile)
-        'DOTUSDT': 0.006   // 0.6% volatility for 5min
+        'BTCUSDT': 0.003,
+        'ETHUSDT': 0.004,
+        'ADAUSDT': 0.008,
+        'DOTUSDT': 0.006
       };
       
       const volatility = volatilities[symbol];
       
       for (let i = count - 1; i >= 0; i--) {
-        const time = now - i * 60 * 5; // 5-minute intervals
-        
-        // Realistic 5-minute price movement
+        const time = now - i * 60 * 5;
         const priceChange = (Math.random() - 0.5) * 2 * volatility * currentPrice;
         const open = currentPrice;
         const close = open + priceChange;
-        
-        // Realistic high/low with proper wicks for 5-minute candles
         const wickSize = volatility * currentPrice * 0.8;
         const high = Math.max(open, close) + Math.random() * wickSize;
         const low = Math.min(open, close) - Math.random() * wickSize;
@@ -401,23 +674,13 @@
       return candles;
     }
 
-    // CALCULATE TRENDLINE
-    function calculateTrendline(candles) {
-      if (candles.length < 2) return [];
+    // UPDATE SMA DATA
+    function updateSMA(symbol) {
+      if (!charts[symbol]) return;
       
-      const firstClose = candles[0].close;
-      const lastClose = candles[candles.length - 1].close;
-      
-      return [
-        {
-          time: candles[0].time,
-          value: firstClose
-        },
-        {
-          time: candles[candles.length - 1].time,
-          value: lastClose
-        }
-      ];
+      const { smaSeries, candleData, smaPeriod } = charts[symbol];
+      const smaData = calculateSMA(candleData, smaPeriod);
+      smaSeries.setData(smaData);
     }
 
     // WEB SOCKET CONNECTION
@@ -459,7 +722,6 @@
           console.log('WebSocket closed:', event.code, event.reason);
           updateConnectionStatus('connecting');
           
-          // Auto-reconnect
           connectionAttempts++;
           if (connectionAttempts < 5) {
             const delay = Math.min(1000 * Math.pow(2, connectionAttempts), 10000);
@@ -479,8 +741,6 @@
       const symbol = ticker.s;
       const price = parseFloat(ticker.c);
       const changePercent = parseFloat(ticker.P);
-      
-      console.log(`BTC/USDT: $${price} (${changePercent}%)`);
       
       // Update price display
       updatePriceDisplay(symbol, price, changePercent);
@@ -511,11 +771,10 @@
         return;
       }
       
-      const { candlestickSeries, trendlineSeries, candleData } = charts[symbol];
+      const { candlestickSeries, candleData } = charts[symbol];
       const now = Math.floor(Date.now() / 1000);
-      const currentInterval = Math.floor(now / 300) * 300; // 5-minute intervals (300 seconds)
+      const currentInterval = Math.floor(now / 300) * 300;
       
-      // Get the last candle
       const lastCandle = candleData[candleData.length - 1];
       
       if (lastCandle && Math.floor(lastCandle.time / 300) * 300 === currentInterval) {
@@ -537,19 +796,16 @@
         
         candleData.push(newCandle);
         
-        // Keep only last 20 candles (100 minutes total)
-        if (candleData.length > 20) {
+        // Keep only last 25 candles (for SMA calculation)
+        if (candleData.length > 25) {
           candleData.shift();
         }
         
         candlestickSeries.setData(candleData);
       }
       
-      // Update trendline
-      const newTrendline = calculateTrendline(candleData);
-      trendlineSeries.setData(newTrendline);
-      
-      console.log(`Updated ${symbol} chart with ${candleData.length} 5-minute candles`);
+      // Update SMA
+      updateSMA(symbol);
     }
 
     // FORMAT PRICE
@@ -584,23 +840,49 @@
       }
     }
 
-    // THEME TOGGLE
+    // THEME TOGGLE WITH BACKGROUND CHART UPDATE
     document.getElementById('theme-toggle').addEventListener('click', () => {
       const isDark = document.body.getAttribute('data-theme') === 'dark';
       document.body.setAttribute('data-theme', isDark ? 'light' : 'dark');
       localStorage.setItem('theme', isDark ? 'light' : 'dark');
+      
+      // Update background chart colors for new theme
+      setTimeout(updateBackgroundChartTheme, 100);
     });
 
     // SEARCH FUNCTIONALITY
     document.getElementById('search-btn').addEventListener('click', () => {
       const query = document.getElementById('symbol-search').value.trim().toUpperCase();
       if (query) {
-        alert(`Searching for: ${query}`);
+        window.location.href = `chart.html?symbol=${query}`;
       }
     });
 
-    // RESIZE HANDLER
+    // ENTER KEY SEARCH
+    document.getElementById('symbol-search').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        const query = document.getElementById('symbol-search').value.trim().toUpperCase();
+        if (query) {
+          window.location.href = `chart.html?symbol=${query}`;
+        }
+      }
+    });
+
+    // RESIZE HANDLER - FIXED FOR BACKGROUND CHART
     window.addEventListener('resize', () => {
+      // Resize background chart
+      if (backgroundChart) {
+        const container = document.getElementById('background-chart');
+        if (container && container.parentElement) {
+          backgroundChart.applyOptions({
+            width: container.parentElement.clientWidth,
+            height: container.parentElement.clientHeight
+          });
+          backgroundChart.timeScale().fitContent();
+        }
+      }
+
+      // Resize mini charts
       Object.values(charts).forEach(({ chart }) => {
         const container = chart.chartElement.parentElement;
         if (container && container.clientWidth > 0) {
@@ -614,9 +896,10 @@
 
     // INITIALIZE EVERYTHING WHEN PAGE LOADS
     document.addEventListener('DOMContentLoaded', () => {
-      console.log('PAGE LOADED - Starting 5-MINUTE chart initialization...');
+      console.log('PAGE LOADED - Starting initialization...');
       
       setTimeout(() => {
+        initializeBackgroundChart();
         initializeAllCharts();
       }, 100);
     });
