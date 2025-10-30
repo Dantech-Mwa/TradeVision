@@ -422,9 +422,11 @@
         <label>Market Cap</label>
         <select id="market-cap">
           <option value="">All</option>
-          <option value="large">Large (> $10B)</option>
+          <option value="mega">Mega (> $100B)</option>
+          <option value="large">Large ($10B - $100B)</option>
           <option value="mid">Mid ($1B - $10B)</option>
-          <option value="small">Small (< $1B)</option>
+          <option value="small">Small ($100M - $1B)</option>
+          <option value="micro">Micro (< $100M)</option>
         </select>
       </div>
       <div class="filter-group">
@@ -433,17 +435,19 @@
           <option value="">All</option>
           <option value="positive">Gainers (+%)</option>
           <option value="negative">Losers (-%)</option>
+          <option value="high-gain">High Gain (> +10%)</option>
+          <option value="high-loss">High Loss (< -10%)</option>
         </select>
       </div>
       <div class="filter-group">
-        <label>Volume (24h)</label>
-        <input type="number" id="min-volume" placeholder="Min (USD)">
+        <label>Min Volume (24h)</label>
+        <input type="number" id="min-volume" placeholder="Min Volume (USD)">
       </div>
     </div>
 
     <div id="connection-status" class="flex-center" style="margin-bottom:1rem;">
       <span class="status-indicator status-connecting"></span>
-      <span>Loading 2300+ symbols...</span>
+      <span>Loading 2300+ symbols with market data...</span>
     </div>
 
     <div class="table-container">
@@ -455,12 +459,12 @@
             <th class="sortable" data-col="change">24h Change</th>
             <th class="sortable" data-col="volume">24h Volume</th>
             <th class="sortable" data-col="marketCap">Market Cap</th>
-            <th class="sortable" data-col="pe">P/E Ratio</th>
+            <th class="sortable" data-col="fdv">FDV Ratio</th>
             <th>Action</th>
           </tr>
         </thead>
         <tbody id="screener-body">
-          <tr><td colspan="7" class="loading">Loading live data...</td></tr>
+          <tr><td colspan="7" class="loading">Loading live data with market cap and FDV ratios...</td></tr>
         </tbody>
       </table>
     </div>
@@ -486,42 +490,126 @@
     body.setAttribute('data-theme', savedTheme);
     if (savedTheme === 'light') themeIcon.classList.replace('fa-moon', 'fa-sun');
 
-    // Binance API URLs
+    // API URLs
     const BINANCE_INFO_URL = 'https://api.binance.com/api/v3/exchangeInfo';
     const BINANCE_TICKER_URL = 'wss://stream.binance.com:9443/ws/!ticker@arr';
+    const COINGECKO_API = 'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=250&page=1&sparkline=false&price_change_percentage=24h';
 
     // Global variables
     let allSymbols = [];
+    let marketCapData = {}; // symbol → {marketCap, fdv, circulatingSupply, totalSupply}
     let liveData = {}; // symbol → {price, change, volume}
     let ws = null;
-    let sortCol = 'symbol';
-    let sortAsc = true;
+    let sortCol = 'marketCap';
+    let sortAsc = false; // Default sort by market cap descending
 
-    // Fetch All 2300+ Symbols
+    // Fetch Market Cap Data from CoinGecko
+    async function loadMarketCapData() {
+      try {
+        const response = await fetch(COINGECKO_API);
+        const data = await response.json();
+        
+        // Create mapping from CoinGecko data
+        data.forEach(coin => {
+          const symbol = coin.symbol.toUpperCase() + 'USDT';
+          marketCapData[symbol] = {
+            marketCap: coin.market_cap || 0,
+            fdv: coin.fully_diluted_valuation || 0,
+            circulatingSupply: coin.circulating_supply || 0,
+            totalSupply: coin.total_supply || 0,
+            fdvRatio: coin.fully_diluted_valuation && coin.market_cap ? 
+                     (coin.fully_diluted_valuation / coin.market_cap).toFixed(2) : 'N/A'
+          };
+        });
+        
+        console.log(`Loaded market cap data for ${Object.keys(marketCapData).length} coins`);
+      } catch (error) {
+        console.error('Error loading market cap data:', error);
+        // Fallback: Use estimated market caps based on price and supply
+        estimateMarketCaps();
+      }
+    }
+
+    // Estimate market caps for coins not in CoinGecko data
+    function estimateMarketCaps() {
+      allSymbols.forEach(symbol => {
+        if (!marketCapData[symbol.symbol]) {
+          const price = liveData[symbol.symbol]?.price || 1;
+          // Estimate supply based on symbol (this is very rough estimation)
+          let estimatedSupply = 1000000; // Default 1M supply
+          
+          if (symbol.symbol.includes('BTC')) estimatedSupply = 21000000;
+          else if (symbol.symbol.includes('ETH')) estimatedSupply = 120000000;
+          else if (symbol.symbol.includes('ADA')) estimatedSupply = 45000000000;
+          else if (symbol.symbol.includes('DOT')) estimatedSupply = 1200000000;
+          else if (symbol.symbol.includes('SOL')) estimatedSupply = 573000000;
+          else if (symbol.symbol.includes('XRP')) estimatedSupply = 100000000000;
+          else if (symbol.symbol.includes('DOGE')) estimatedSupply = 132000000000;
+          else if (symbol.symbol.includes('MATIC')) estimatedSupply = 10000000000;
+          else if (symbol.symbol.includes('BNB')) estimatedSupply = 157000000;
+          else if (symbol.symbol.includes('LTC')) estimatedSupply = 72000000;
+          else if (symbol.symbol.includes('LINK')) estimatedSupply = 1000000000;
+          else if (symbol.symbol.includes('UNI')) estimatedSupply = 1000000000;
+          else if (symbol.symbol.includes('AVAX')) estimatedSupply = 720000000;
+          
+          const marketCap = price * estimatedSupply;
+          const fdv = price * (estimatedSupply * 1.1); // Assume 10% more for FDV
+          
+          marketCapData[symbol.symbol] = {
+            marketCap: marketCap,
+            fdv: fdv,
+            circulatingSupply: estimatedSupply,
+            totalSupply: estimatedSupply * 1.1,
+            fdvRatio: (fdv / marketCap).toFixed(2)
+          };
+        }
+      });
+    }
+
+    // Fetch All 2300+ Symbols from Binance
     async function loadSymbols() {
       try {
         const response = await fetch(BINANCE_INFO_URL);
         const data = await response.json();
+        
+        // Load market cap data first
+        await loadMarketCapData();
+        
         allSymbols = data.symbols
-          .filter(s => s.status === 'TRADING' && s.quoteAsset === 'USDT' && s.baseAsset !== 'USD') // USDT pairs only
-          .map(s => ({ symbol: s.symbol, name: s.baseAsset, price: 0, change: 0, volume: 0 }))
-          .sort((a, b) => a.name.localeCompare(b.name));
+          .filter(s => s.status === 'TRADING' && s.quoteAsset === 'USDT' && s.baseAsset !== 'USD')
+          .map(s => ({ 
+            symbol: s.symbol, 
+            name: s.baseAsset,
+            price: 0, 
+            change: 0, 
+            volume: 0,
+            marketCap: marketCapData[s.symbol]?.marketCap || 0,
+            fdvRatio: marketCapData[s.symbol]?.fdvRatio || 'N/A'
+          }))
+          .sort((a, b) => (b.marketCap || 0) - (a.marketCap || 0)); // Sort by market cap by default
+        
         renderTable(allSymbols);
         connectWebSocket();
-        document.getElementById('connection-status').innerHTML = '<span class="status-indicator status-connected"></span><span>Live Data (2300+ Symbols)</span>';
+        document.getElementById('connection-status').innerHTML = 
+          '<span class="status-indicator status-connected"></span><span>Live Data (2300+ Symbols with Market Cap)</span>';
+          
       } catch (error) {
         console.error('Error loading symbols:', error);
-        document.getElementById('connection-status').innerHTML = '<span class="status-indicator status-disconnected"></span><span>Error loading symbols</span>';
-        // Fallback mock data
+        document.getElementById('connection-status').innerHTML = 
+          '<span class="status-indicator status-disconnected"></span><span>Error loading symbols</span>';
+        
+        // Fallback mock data with market caps
         allSymbols = [
-          { symbol: 'BTCUSDT', name: 'Bitcoin', price: 45000, change: 2.5, volume: 1230000000 },
-          { symbol: 'ETHUSDT', name: 'Ethereum', price: 2500, change: -1.2, volume: 850000000 },
-          { symbol: 'ADAUSDT', name: 'Cardano', price: 0.5, change: 3.1, volume: 150000000 },
-          { symbol: 'DOTUSDT', name: 'Polkadot', price: 7, change: -0.8, volume: 95000000 },
-          { symbol: 'SOLUSDT', name: 'Solana', price: 120, change: 5.2, volume: 450000000 },
-          { symbol: 'XRPUSDT', name: 'Ripple', price: 0.6, change: -2.1, volume: 800000000 },
-          { symbol: 'DOGEUSDT', name: 'Dogecoin', price: 0.15, change: 8.7, volume: 600000000 },
-          { symbol: 'MATICUSDT', name: 'Polygon', price: 1.2, change: -3.5, volume: 300000000 }
+          { symbol: 'BTCUSDT', name: 'Bitcoin', price: 45000, change: 2.5, volume: 1230000000, marketCap: 880000000000, fdvRatio: '1.00' },
+          { symbol: 'ETHUSDT', name: 'Ethereum', price: 2500, change: -1.2, volume: 850000000, marketCap: 300000000000, fdvRatio: '1.05' },
+          { symbol: 'BNBUSDT', name: 'Binance Coin', price: 320, change: 0.8, volume: 450000000, marketCap: 50000000000, fdvRatio: '1.02' },
+          { symbol: 'SOLUSDT', name: 'Solana', price: 120, change: 5.2, volume: 450000000, marketCap: 68000000000, fdvRatio: '1.15' },
+          { symbol: 'XRPUSDT', name: 'Ripple', price: 0.6, change: -2.1, volume: 800000000, marketCap: 32000000000, fdvRatio: '1.25' },
+          { symbol: 'ADAUSDT', name: 'Cardano', price: 0.5, change: 3.1, volume: 150000000, marketCap: 18000000000, fdvRatio: '1.30' },
+          { symbol: 'DOGEUSDT', name: 'Dogecoin', price: 0.15, change: 8.7, volume: 600000000, marketCap: 21000000000, fdvRatio: '1.50' },
+          { symbol: 'DOTUSDT', name: 'Polkadot', price: 7, change: -0.8, volume: 95000000, marketCap: 8400000000, fdvRatio: '1.12' },
+          { symbol: 'MATICUSDT', name: 'Polygon', price: 1.2, change: -3.5, volume: 300000000, marketCap: 11000000000, fdvRatio: '1.08' },
+          { symbol: 'AVAXUSDT', name: 'Avalanche', price: 40, change: 2.3, volume: 200000000, marketCap: 15000000000, fdvRatio: '1.20' }
         ];
         renderTable(allSymbols);
       }
@@ -541,6 +629,19 @@
               change: parseFloat(t.P),
               volume: parseFloat(t.v)
             };
+            
+            // Update market cap with live price if we have supply data
+            if (marketCapData[symbol] && marketCapData[symbol].circulatingSupply) {
+              const newMarketCap = parseFloat(t.c) * marketCapData[symbol].circulatingSupply;
+              marketCapData[symbol].marketCap = newMarketCap;
+              
+              // Update FDV if we have total supply
+              if (marketCapData[symbol].totalSupply) {
+                const newFDV = parseFloat(t.c) * marketCapData[symbol].totalSupply;
+                marketCapData[symbol].fdv = newFDV;
+                marketCapData[symbol].fdvRatio = (newFDV / newMarketCap).toFixed(2);
+              }
+            }
           }
         });
         renderTable(allSymbols);
@@ -549,34 +650,87 @@
       ws.onerror = (err) => console.error('WebSocket error:', err);
     }
 
+    // Format large numbers
+    function formatNumber(num) {
+      if (num >= 1000000000000) {
+        return '$' + (num / 1000000000000).toFixed(2) + 'T';
+      } else if (num >= 1000000000) {
+        return '$' + (num / 1000000000).toFixed(2) + 'B';
+      } else if (num >= 1000000) {
+        return '$' + (num / 1000000).toFixed(2) + 'M';
+      } else if (num >= 1000) {
+        return '$' + (num / 1000).toFixed(2) + 'K';
+      }
+      return '$' + num.toFixed(2);
+    }
+
+    // Format FDV ratio with color coding
+    function formatFDVRatio(ratio) {
+      if (ratio === 'N/A' || !ratio) return '--';
+      
+      const num = parseFloat(ratio);
+      let colorClass = '';
+      
+      if (num < 1.05) colorClass = 'change'; // Green for low FDV (good)
+      else if (num < 1.5) colorClass = ''; // Neutral
+      else colorClass = 'change negative'; // Red for high FDV (potentially overvalued)
+      
+      return `<span class="${colorClass}">${ratio}x</span>`;
+    }
+
     // Render Table
     function renderTable(symbols) {
       const tbody = document.getElementById('screener-body');
       const filtered = symbols.filter(s => {
         const search = document.getElementById('symbol-search-input').value.toLowerCase();
         if (search && !s.name.toLowerCase().includes(search) && !s.symbol.toLowerCase().includes(search)) return false;
+        
         const capFilter = document.getElementById('market-cap').value;
-        if (capFilter === 'large' && s.price < 10000) return false; // Mock cap logic
+        const marketCap = marketCapData[s.symbol]?.marketCap || s.marketCap || 0;
+        if (capFilter === 'mega' && marketCap < 100000000000) return false;
+        if (capFilter === 'large' && (marketCap < 10000000000 || marketCap >= 100000000000)) return false;
+        if (capFilter === 'mid' && (marketCap < 1000000000 || marketCap >= 10000000000)) return false;
+        if (capFilter === 'small' && (marketCap < 100000000 || marketCap >= 1000000000)) return false;
+        if (capFilter === 'micro' && marketCap >= 100000000) return false;
+        
         const volFilter = document.getElementById('min-volume').value;
         if (volFilter && (liveData[s.symbol]?.volume || 0) < parseFloat(volFilter)) return false;
+        
         const changeFilter = document.getElementById('change-filter').value;
-        if (changeFilter === 'positive' && (liveData[s.symbol]?.change || 0) < 0) return false;
-        if (changeFilter === 'negative' && (liveData[s.symbol]?.change || 0) >= 0) return false;
+        const change = liveData[s.symbol]?.change || 0;
+        if (changeFilter === 'positive' && change < 0) return false;
+        if (changeFilter === 'negative' && change >= 0) return false;
+        if (changeFilter === 'high-gain' && change < 10) return false;
+        if (changeFilter === 'high-loss' && change > -10) return false;
+        
         return true;
       }).sort((a, b) => {
-        let valA = liveData[a.symbol]?.[sortCol] || a[sortCol];
-        let valB = liveData[b.symbol]?.[sortCol] || b[sortCol];
-        if (sortCol === 'symbol') return sortAsc ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name);
+        let valA, valB;
+        
+        if (sortCol === 'marketCap') {
+          valA = marketCapData[a.symbol]?.marketCap || a.marketCap || 0;
+          valB = marketCapData[b.symbol]?.marketCap || b.marketCap || 0;
+        } else if (sortCol === 'fdv') {
+          valA = parseFloat(marketCapData[a.symbol]?.fdvRatio) || 0;
+          valB = parseFloat(marketCapData[b.symbol]?.fdvRatio) || 0;
+        } else if (sortCol === 'symbol') {
+          return sortAsc ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name);
+        } else {
+          valA = liveData[a.symbol]?.[sortCol] || a[sortCol];
+          valB = liveData[b.symbol]?.[sortCol] || b[sortCol];
+        }
+        
         return sortAsc ? valA - valB : valB - valA;
       });
 
       if (filtered.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" class="no-results">No results found.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="no-results">No results found. Try adjusting your filters.</td></tr>';
         return;
       }
 
       tbody.innerHTML = filtered.map(s => {
         const live = liveData[s.symbol] || {};
+        const marketInfo = marketCapData[s.symbol] || {};
         const changeClass = live.change >= 0 ? 'change' : 'change negative';
         const watchlist = JSON.parse(localStorage.getItem('watchlist')) || [];
         const isInWatchlist = watchlist.includes(s.symbol);
@@ -587,9 +741,9 @@
           <td><a href="chart.html?symbol=${s.symbol}">${s.symbol}</a></td>
           <td>${live.price ? live.price.toFixed(4) : '--'}</td>
           <td><span class="${changeClass}">${live.change ? (live.change >= 0 ? '+' : '') + live.change.toFixed(2) + '%' : '--'}</span></td>
-          <td>${live.volume ? (live.volume / 1000000).toFixed(0) + 'M' : '--'}</td>
-          <td>${s.price * 1000000 ? '$' + (s.price * 1000000 / 1000000000).toFixed(1) + 'B' : '--'}</td>
-          <td>--</td>
+          <td>${live.volume ? formatNumber(live.volume) : '--'}</td>
+          <td>${marketInfo.marketCap ? formatNumber(marketInfo.marketCap) : '--'}</td>
+          <td>${formatFDVRatio(marketInfo.fdvRatio)}</td>
           <td><button class="${buttonClass}" data-sym="${s.symbol}" ${isInWatchlist ? 'disabled' : ''}>${buttonText}</button></td>
         </tr>`;
       }).join('');
