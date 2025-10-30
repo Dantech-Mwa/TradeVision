@@ -3,92 +3,144 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Pine Editor - TradeVision</title>
+  <title>Pine Editor – TradeVision</title>
   <link rel="icon" href="assets/icons/code.svg" type="image/svg+xml">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <!-- CodeMirror Core + Addons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/lint/lint.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/dialog/dialog.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/search/matchesonscrollbar.min.css">
+  <!-- Lightweight Charts -->
+  <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4/dist/lightweight-charts.standalone.production.js"></script>
+  <!-- CodeMirror Scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4/dist/lightweight-charts.standalone.production.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/edit/matchbrackets.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/edit/closebrackets.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/comment/comment.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/lint/lint.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/dialog/dialog.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/search/search.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/search/searchcursor.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/search/matchesonscrollbar.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/scroll/annotatescrollbar.min.js"></script>
+
   <style>
     :root{
-      --bg:#141518;--bg-light:#1e222d;--text:#d1d4dc;--text-light:#9ea1b5;
-      --accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#2d313e;--card:#1e222d;
+      --bg:#0e1117;--bg-light:#1e222d;--text:#e6edf3;--text-light:#8b949e;
+      --accent:#58a6ff;--green:#3fb950;--red:#f85149;--border:#30363d;--card:#1e222d;
+      --gutter:#30363d;--selection:#264f78;--cursor:#c9d1d9;
     }
     [data-theme="light"]{
-      --bg:#ffffff;--bg-light:#f8f9fa;--text:#2d3748;--text-light:#718096;
-      --accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#e2e8f0;--card:#ffffff;
+      --bg:#ffffff;--bg-light:#f6f8fa;--text:#24292e;--text-light:#586069;
+      --accent:#0366d6;--green:#28a745;--red:#d73a49;--border:#e1e4e8;--card:#ffffff;
+      --gutter:#e1e4e8;--selection:#b3d4fc;--cursor:#24292e;
     }
     *,*::before,*::after{box-sizing:border-box;}
-    body{margin:0;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;}
+    body{margin:0;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);line-height:1.5;}
     a{color:var(--accent);text-decoration:none;}
-    .container{max-width:1400px;margin:0 auto;padding:0 1rem;}
+    .container{max-width:100%;margin:0 auto;padding:0 .5rem;}
+    .flex{display:flex;align-items:center;}
     .flex-between{display:flex;justify-content:space-between;align-items:center;}
-    .header{background:var(--bg-light);border-bottom:1px solid var(--border);padding:.75rem 0;position:sticky;top:0;z-index:100;}
-    .logo{font-weight:700;font-size:1.4rem;color:var(--accent);}
-    .logo i{font-size:1.5rem;}
-    .nav-links a{margin:0 .75rem;font-weight:500;}
-    .icon-btn{background:none;border:none;color:var(--text-light);font-size:1.2rem;cursor:pointer;padding:.5rem;}
+    .header{background:var(--bg-light);border-bottom:1px solid var(--border);padding:.5rem 0;position:sticky;top:0;z-index:100;}
+    .logo{font-weight:700;font-size:1.3rem;color:var(--accent);}
+    .logo i{margin-right:.4rem;}
+    .nav-links a{margin:0 .6rem;font-weight:500;color:var(--text-light);font-size:.9rem;}
+    .icon-btn{background:none;border:none;color:var(--text-light);font-size:1.1rem;cursor:pointer;padding:.4rem;border-radius:4px;transition:.2s;}
+    .icon-btn:hover{background:var(--border);}
 
-    .editor-layout{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:0;
-      height:calc(100vh - 60px);
-    }
-    .editor-panel{
-      display:flex;flex-direction:column;
-      background:var(--bg-light);border-right:1px solid var(--border);
-    }
-    .editor-header{
-      padding:0.75rem 1rem;border-bottom:1px solid var(--border);font-weight:600;
-      display:flex;justify-content:space-between;align-items:center;
-    }
-    .editor-body{flex:1;position:relative;}
-    #pine-editor{width:100%;height:100%;font-size:14px;}
-    .chart-panel{overflow:hidden;position:relative;}
-    #chart-container{width:100%;height:100%;}
+    /* Layout */
+    .main-layout{display:grid;grid-template-rows:auto 1fr auto;height:100vh;}
+    .editor-chart{display:grid;grid-template-columns:1fr 1fr;gap:0;height:100%;}
+    .panel{border-right:1px solid var(--border);display:flex;flex-direction:column;background:var(--bg-light);}
+    .panel-header{padding:.6rem 1rem;border-bottom:1px solid var(--border);font-weight:600;font-size:.9rem;display:flex;justify-content:space-between;align-items:center;}
+    .panel-body{flex:1;position:relative;overflow:hidden;}
+    .status-bar{background:var(--bg);border-top:1px solid var(--border);padding:.3rem .8rem;font-size:.75rem;color:var(--text-light);display:flex;justify-content:space-between;}
 
-    .run-btn{
-      background:var(--accent);color:white;border:none;padding:0.5rem 1rem;
-      border-radius:4px;cursor:pointer;font-weight:600;
-    }
-    .run-btn:disabled{background:#555;cursor:not-allowed;}
+    /* CodeMirror Custom */
+    .CodeMirror{height:100%;font-size:13px;}
+    .CodeMirror-gutters{background:var(--gutter);border-right:1px solid var(--border);}
+    .CodeMirror-cursor{border-left:2px solid var(--cursor);}
+    .CodeMirror-selected{background:var(--selection);}
+    .CodeMirror-foldmarker{color:var(--accent);cursor:pointer;}
+    .cm-pine-keyword{color:#79c0ff;}
+    .cm-pine-function{color:#d2a8ff;}
+    .cm-pine-number{color:#79d7a1;}
+    .cm-pine-string{color:#a5d6ff;}
+    .cm-pine-comment{color:#8b949e;font-style:italic;}
 
-    .footer{background:var(--bg-light);border-top:1px solid var(--border);padding:0.75rem 0;font-size:0.8rem;text-align:center;color:var(--text-light);}
-    
-    @media(max-width:992px){.editor-layout{grid-template-columns:1fr;}}
+    /* Toolbar */
+    .toolbar{background:var(--bg-light);border-bottom:1px solid var(--border);padding:.4rem .8rem;display:flex;gap:.5rem;align-items:center;}
+    .btn{
+      background:var(--accent);color:#fff;border:none;padding:.35rem .9rem;border-radius:4px;font-size:.85rem;font-weight:600;cursor:pointer;
+      display:inline-flex;align-items:center;gap:.3rem;transition:.2s;
+    }
+    .btn:disabled{background:#555;cursor:not-allowed;opacity:.6;}
+    .btn:hover:not(:disabled){background:#1f6feb;}
+    .btn-secondary{background:var(--border);color:var(--text);}
+    .btn-secondary:hover{background:#444;}
+
+    /* Splitter */
+    .splitter{width:6px;background:var(--border);cursor:col-resize;position:relative;z-index:10;}
+    .splitter:hover{background:var(--accent);}
+
+    /* Console */
+    .console{background:#0d1117;color:#c9d1d9;font-family:monospace;font-size:12px;padding:.5rem;overflow-y:auto;max-height:120px;border-top:1px solid var(--border);}
+    .console-error{color:#f85149;}
+    .console-info{color:#58a6ff;}
+
+    /* Footer */
+    .footer{background:var(--bg-light);border-top:1px solid var(--border);padding:.4rem 0;font-size:.75rem;text-align:center;color:var(--text-light);}
+
+    @media(max-width:992px){
+      .editor-chart{grid-template-columns:1fr;}
+      .splitter{display:none;}
+    }
   </style>
 </head>
 
 <body data-theme="dark">
+  <!-- Header -->
   <header class="header">
     <div class="container flex-between">
-      <div class="logo"><a href="index.html" class="flex-center"><i class="fas fa-code"></i><span>Pine Editor</span></a></div>
+      <div class="logo"><a href="#" class="flex"><i class="fas fa-code"></i> Pine Editor</a></div>
       <nav class="nav-links">
-        <a href="chart.html">Chart</a>
-        <a href="watchlist.html">Watchlist</a>
-        <a href="screener.html">Screener</a>
-        <a href="ideas.html">Ideas</a>
+        <a href="#">Chart</a>
+        <a href="#">Watchlist</a>
+        <a href="#">Screener</a>
+        <a href="#">Ideas</a>
       </nav>
-      <div class="header-actions">
-        <button id="theme-toggle" class="icon-btn"><i class="fas fa-moon"></i></button>
-      </div>
+      <button id="theme-toggle" class="icon-btn"><i class="fas fa-moon"></i></button>
     </div>
   </header>
 
-  <div class="editor-layout">
-    <!-- LEFT: Pine Editor -->
-    <div class="editor-panel">
-      <div class="editor-header">
-        <span>Pine Script™ Editor</span>
-        <button id="run-script" class="run-btn">Run</button>
-      </div>
-      <div class="editor-body">
-        <textarea id="pine-editor">
-//@version=5
+  <!-- Main Layout -->
+  <div class="main-layout">
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <button id="run-script" class="btn"><i class="fas fa-play"></i> Add to Chart</button>
+      <button id="clear-console" class="btn btn-secondary"><i class="fas fa-trash"></i> Clear</button>
+      <div style="flex:1;"></div>
+      <span id="script-status" style="font-size:.8rem;color:var(--text-light);">Ready</span>
+    </div>
+
+    <!-- Editor + Chart -->
+    <div class="editor-chart">
+      <!-- Editor Panel -->
+      <div class="panel">
+        <div class="panel-header">
+          <span>Pine Script™ (v5)</span>
+          <div>
+            <button class="icon-btn" title="Format"><i class="fas fa-align-left"></i></button>
+            <button class="icon-btn" title="Search"><i class="fas fa-search"></i></button>
+          </div>
+        </div>
+        <div class="panel-body">
+          <textarea id="pine-editor">//@version=5
 indicator("My RSI + SMA", overlay=true)
+
 rsiLength = input.int(14, "RSI Length")
 smaLength = input.int(20, "SMA Length")
 
@@ -98,14 +150,29 @@ sma = ta.sma(close, smaLength)
 plot(rsi, color=color.purple, title="RSI")
 plot(sma, color=color.orange, title="SMA")
 </textarea>
+        </div>
+        <div id="console" class="console"></div>
+      </div>
+
+      <!-- Splitter -->
+      <div class="splitter" id="splitter"></div>
+
+      <!-- Chart Panel -->
+      <div class="panel" style="border-right:none;">
+        <div class="panel-header">
+          <span>Chart Preview – BTC/USDT (1h)</span>
+          <button id="fit-chart" class="icon-btn" title="Auto Scale"><i class="fas fa-expand-arrows-alt"></i></button>
+        </div>
+        <div class="panel-body">
+          <div id="chart-container" style="width:100%;height:100%;"></div>
+        </div>
       </div>
     </div>
 
-    <!-- RIGHT: Chart Preview -->
-    <div class="chart-panel">
-      <div id="chart-container">
-        <div id="chart"></div>
-      </div>
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <span id="cursor-pos">Line 1, Column 1</span>
+      <span>Pine Script™ v5 • UTF-8 • Spaces: 2</span>
     </div>
   </div>
 
@@ -113,115 +180,280 @@ plot(sma, color=color.orange, title="SMA")
     <div class="container">© 2025 TradeVision. Pine Script™ Editor (v5)</div>
   </footer>
 
+  <!-- Pine Script Mode (Custom Highlighting) -->
   <script>
-    // Theme
+    CodeMirror.defineMode("pine", function() {
+      const keywords = {
+        "indicator":true,"strategy":true,"input":true,"var":true,"if":true,"else":true,
+        "for":true,"while":true,"break":true,"continue":true,"return":true,
+        "true":true,"false":true,"na":true,"plot":true,"hline":true,"fill":true,
+        "ta":true,"math":true,"array":true,"matrix":true,"map":true
+      };
+      const functions = {
+        "rsi":true,"sma":true,"ema":true,"wma":true,"vwap":true,"highest":true,"lowest":true,
+        "crossover":true,"crossunder":true,"rising":true,"falling":true,"barssince":true,
+        "close":true,"open":true,"high":true,"low":true,"volume":true
+      };
+      return {
+        token: function(stream) {
+          if (stream.eatSpace()) return null;
+          const ch = stream.peek();
+
+          // Comments
+          if (ch === '/' && stream.match('//')) { stream.skipToEnd(); return "comment"; }
+          if (ch === '/' && stream.match('/*')) { stream.skipTo('*/') || stream.skipToEnd(); return "comment"; }
+
+          // Strings
+          if (ch === '"' || ch === "'") {
+            stream.match(/^[^"']*["']/); return "string";
+          }
+
+          // Numbers
+          if (/\d/.test(ch) || (ch === '.' && /\d/.test(stream.peek(1)))) {
+            stream.match(/^[0-9]*\.?[0-9]+/); return "number";
+          }
+
+          // Keywords / Functions
+          const word = stream.match(/^[a-zA-Z_]\w*/)[0];
+          if (keywords[word]) return "keyword";
+          if (functions[word]) return "variable-2";
+          if (word === "color") return "atom";
+          return null;
+        }
+      };
+    });
+  </script>
+
+  <script>
+    // === Theme Toggle ===
     const themeToggle = document.getElementById('theme-toggle');
     const body = document.body;
     const themeIcon = themeToggle.querySelector('i');
-    themeToggle.addEventListener('click', () => {
-      const isDark = body.getAttribute('data-theme') === 'dark';
-      body.setAttribute('data-theme', isDark ? 'light' : 'dark');
-      themeIcon.classList.toggle('fa-moon'); themeIcon.classList.toggle('fa-sun');
-      localStorage.setItem('theme', isDark ? 'light' : 'dark');
-    });
+    const setTheme = (theme) => {
+      body.setAttribute('data-theme', theme);
+      themeIcon.classList.toggle('fa-moon', theme === 'dark');
+      themeIcon.classList.toggle('fa-sun', theme === 'light');
+      editor.setOption('theme', theme === 'dark' ? 'monokai' : 'default');
+      localStorage.setItem('theme', theme);
+    };
+    themeToggle.addEventListener('click', () => setTheme(body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'));
     const savedTheme = localStorage.getItem('theme') || 'dark';
-    body.setAttribute('data-theme', savedTheme);
-    if (savedTheme === 'light') themeIcon.classList.replace('fa-moon', 'fa-sun');
+    setTheme(savedTheme);
 
-    // CodeMirror Editor
+    // === Editor ===
     const editor = CodeMirror.fromTextArea(document.getElementById('pine-editor'), {
       lineNumbers: true,
-      mode: 'javascript',
+      mode: 'pine',
       theme: savedTheme === 'dark' ? 'monokai' : 'default',
       indentUnit: 2,
       tabSize: 2,
-      lineWrapping: true,
-      extraKeys: { "Ctrl-Space": "autocomplete" }
+      lineWrapping: false,
+      matchBrackets: true,
+      autoCloseBrackets: true,
+      gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter'],
+      extraKeys: {
+        "Ctrl-Space": "autocomplete",
+        "Ctrl-/" : "toggleComment",
+        "Cmd-/"  : "toggleComment",
+        "F11": cm => cm.setOption("fullScreen", !cm.getOption("fullScreen")),
+        "Esc": cm => cm.getOption("fullScreen") && cm.setOption("fullScreen", false)
+      }
     });
 
-    // Chart
-    let chart, series;
-    function initChart() {
-      const container = document.getElementById('chart');
+    // Cursor position
+    editor.on('cursorActivity', () => {
+      const pos = editor.getCursor();
+      document.getElementById('cursor-pos').textContent = `Line ${pos.line + 1}, Column ${pos.ch + 1}`;
+    });
+
+    // === Console ===
+    const consoleEl = document.getElementById('console');
+    const log = (msg, type = 'info') => {
+      const line = document.createElement('div');
+      line.className = `console-${type}`;
+      line.textContent = msg;
+      consoleEl.appendChild(line);
+      consoleEl.scrollTop = consoleEl.scrollHeight;
+    };
+    document.getElementById('clear-console').onclick = () => consoleEl.innerHTML = '';
+
+    // === Chart ===
+    let chart, priceSeries, indicatorSeries = [];
+    const initChart = () => {
+      const container = document.getElementById('chart-container');
       chart = LightweightCharts.createChart(container, {
         width: container.clientWidth,
         height: container.clientHeight,
         layout: { background: { color: 'transparent' }, textColor: '#d1d4dc' },
         grid: { vertLines: { color: '#2d313e' }, horzLines: { color: '#2d313e' } },
-        timeScale: { borderColor: '#2d313e' }
+        crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
+        timeScale: { borderColor: '#2d313e' },
+        rightPriceScale: { borderColor: '#2d313e' }
       });
-      series = chart.addLineSeries({ color: '#2962ff' });
-      loadSampleData();
-    }
+      priceSeries = chart.addCandlestickSeries({ upColor: '#26a69a', downColor: '#ef5350', borderVisible: false });
+      loadMarketData();
+    };
 
-    async function loadSampleData() {
-      const res = await fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1h&limit=100');
-      const data = await res.json();
-      const chartData = data.map(d => ({
-        time: d[0] / 1000,
-        value: parseFloat(d[4])
-      }));
-      series.setData(chartData);
-    }
+    const loadMarketData = async () => {
+      try {
+        const res = await fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1h&limit=200');
+        const data = await res.json();
+        const candles = data.map(d => ({
+          time: d[0] / 1000,
+          open: parseFloat(d[1]),
+          high: parseFloat(d[2]),
+          low: parseFloat(d[3]),
+          close: parseFloat(d[4])
+        }));
+        priceSeries.setData(candles);
+        window.marketData = candles;
+        log('Market data loaded: BTC/USDT 1h', 'info');
+      } catch (e) {
+        log('Failed to load market data. Using mock.', 'error');
+        window.marketData = generateMockData();
+        priceSeries.setData(window.marketData);
+      }
+    };
 
-    // Run Script
-    document.getElementById('run-script').addEventListener('click', () => {
+    const generateMockData = () => {
+      const now = Math.floor(Date.now() / 1000);
+      const data = [];
+      let price = 30000;
+      for (let i = 0; i < 200; i++) {
+        const change = (Math.random() - 0.5) * 200;
+        price = Math.max(20000, price + change);
+        const open = price + (Math.random() - 0.5) * 100;
+        const close = price + (Math.random() - 0.5) * 100;
+        const high = Math.max(open, close) + Math.random() * 50;
+        const low = Math.min(open, close) - Math.random() * 50;
+        data.push({ time: now - (200 - i) * 3600, open, high, low, close });
+      }
+      return data;
+    };
+
+    // === Run Script ===
+    const runBtn = document.getElementById('run-script');
+    const statusEl = document.getElementById('script-status');
+
+    runBtn.addEventListener('click', () => {
+      runBtn.disabled = true;
+      statusEl.textContent = 'Running...';
+      consoleEl.innerHTML = '';
+      clearIndicators();
+
       const code = editor.getValue();
       try {
-        // Simple parser: extract plot() calls
+        const func = new Function('close', 'ta', 'plot', 'color', code + '; return {plots, inputs};');
+        const inputs = {};
         const plots = [];
-        const lines = code.split('\n');
-        lines.forEach(line => {
-          if (line.includes('plot(')) {
-            const match = line.match(/plot\(([^,]+),.*color=color\.(\w+)/);
-            if (match) {
-              const value = match[1].trim();
-              const color = match[2];
-              plots.push({ value, color: getColor(color) });
+
+        // Mock ta.rsi and ta.sma
+        const ta = {
+          rsi: (src, len) => {
+            const values = [];
+            for (let i = len; i < src.length; i++) {
+              let gain = 0, loss = 0;
+              for (let j = 1; j <= len; j++) {
+                const diff = src[i - j + 1] - src[i - j];
+                if (diff > 0) gain += diff; else loss -= diff;
+              }
+              const avgGain = gain / len, avgLoss = loss / len;
+              const rs = avgLoss === 0 ? 100 : avgGain / avgLoss;
+              values.push(100 - (100 / (1 + rs)));
             }
+            return values;
+          },
+          sma: (src, len) => {
+            const res = [];
+            for (let i = len - 1; i < src.length; i++) {
+              let sum = 0;
+              for (let j = 0; j < len; j++) sum += src[i - j];
+              res.push(sum / len);
+            }
+            return res;
           }
+        };
+
+        const color = { purple: '#9c27b0', orange: '#fb8c00', red: '#f44336', green: '#4caf50', blue: '#2196f3' };
+        const plot = (value, options = {}) => {
+          plots.push({ value: value.toString(), color: options.color || '#2962ff', title: options.title || 'Plot' });
+        };
+
+        // Extract close prices
+        const close = window.marketData.map(d => d.close);
+        func(close, ta, plot, color);
+
+        if (plots.length === 0) throw new Error("No plot() calls detected.");
+
+        // Compute values
+        plots.forEach(p => {
+          let seriesData = [];
+          try {
+            const expr = p.value.replace(/close/g, 'close[i]').replace(/rsi/g, 'ta.rsi(close,14)[i]').replace(/sma/g, 'ta.sma(close,20)[i]');
+            for (let i = 0; i < close.length; i++) {
+              const val = eval(expr);
+              if (!isNaN(val)) seriesData.push({ time: window.marketData[i].time, value: val });
+            }
+          } catch (e) {
+            throw new Error(`Failed to evaluate "${p.value}": ${e.message}`);
+          }
+          const series = chart.addLineSeries({ color: p.color, title: p.title, lineWidth: 2 });
+          series.setData(seriesData);
+          indicatorSeries.push(series);
         });
 
-        if (plots.length === 0) {
-          alert('No plot() found. Add plot(rsi) or plot(sma).');
-          return;
-        }
-
-        // Simulate data
-        const data = series.data().map(d => d.time);
-        plots.forEach((p, i) => {
-          const newSeries = chart.addLineSeries({ color: p.color });
-          const values = data.map(t => ({ time: t, value: Math.random() * 100 + 50 }));
-          newSeries.setData(values);
-        });
-
-        alert(`Applied ${plots.length} indicator(s)`);
-      } catch (e) {
-        alert('Error: ' + e.message);
+        log(`Applied ${plots.length} indicator(s)`, 'info');
+        statusEl.textContent = 'Success';
+        chart.timeScale().fitContent();
+      } catch (err) {
+        log(`Error: ${err.message}`, 'error');
+        statusEl.textContent = 'Failed';
+      } finally {
+        runBtn.disabled = false;
       }
     });
 
-    function getColor(name) {
-      const map = { purple: '#9c27b0', orange: '#ff9800', red: '#f44336', green: '#4caf50', blue: '#2196f3' };
-      return map[name] || '#2962ff';
-    }
+    const clearIndicators = () => {
+      indicatorSeries.forEach(s => chart.removeSeries(s));
+      indicatorSeries = [];
+    };
 
-    // Resize
-    window.addEventListener('resize', () => {
-      if (chart) chart.resize();
+    // === Resizable Splitter ===
+    const splitter = document.getElementById('splitter');
+    let isResizing = false;
+    splitter.addEventListener('mousedown', e => {
+      isResizing = true;
+      document.body.style.cursor = 'col-resize';
+    });
+    document.addEventListener('mousemove', e => {
+      if (!isResizing) return;
+      const container = document.querySelector('.editor-chart');
+      const rect = container.getBoundingClientRect();
+      const percent = ((e.clientX - rect.left) / rect.width) * 100;
+      if (percent > 20 && percent < 80) {
+        document.querySelector('.panel').style.flex = `0 0 ${percent}%`;
+        document.querySelector('.panel + .panel').style.flex = `0 0 ${100 - percent}%`;
+      }
+    });
+    document.addEventListener('mouseup', () => {
+      if (isResizing) {
+        isResizing = false;
+        document.body.style.cursor = '';
+        setTimeout(() => chart?.resize(), 50);
+      }
     });
 
-    // Init
-    if (typeof LightweightCharts !== 'undefined' && typeof CodeMirror !== 'undefined') {
+    // === Fit Chart ===
+    document.getElementById('fit-chart').onclick = () => chart?.timeScale().fitContent();
+
+    // === Resize Handler ===
+    window.addEventListener('resize', () => chart?.resize());
+
+    // === Init ===
+    window.addEventListener('load', () => {
       initChart();
-    } else {
-      const check = setInterval(() => {
-        if (typeof LightweightCharts !== 'undefined' && typeof CodeMirror !== 'undefined') {
-          clearInterval(check);
-          initChart();
-        }
-      }, 50);
-    }
+      editor.focus();
+    });
   </script>
 </body>
 </html>
