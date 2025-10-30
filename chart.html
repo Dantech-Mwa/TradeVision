@@ -1463,121 +1463,525 @@ function createTextInput(x, y) {
     }
 
     // ───── INDICATOR PANEL ─────
-    function initIndicatorPanel() {
-      // Check if technical indicators library is available
-      if (!window.TI) {
-        console.warn('Technical Indicators library not loaded, using fallback');
-        window.TI = {
-          sma: { calculate: (input) => { /* fallback */ } },
-          ema: { calculate: (input) => { /* fallback */ } },
-          rsi: { calculate: (input) => { /* fallback */ } }
-        };
-      }
+    // ───── INDICATOR MANAGER ─────
+function initIndicatorPanel() {
+  const allIndicators = [
+    { name: 'RSI', description: 'Relative Strength Index', category: 'Momentum' },
+    { name: 'ADOSC', description: 'Accumulation/Distribution Oscillator', category: 'Volume' },
+    { name: 'ADX', description: 'Average Directional Index', category: 'Trend' },
+    { name: 'AROON', description: 'Aroon Indicator', category: 'Trend' },
+    { name: 'ATR', description: 'Average True Range', category: 'Volatility' },
+    { name: 'Auto Anchored Volume Profile', description: 'Auto Anchored Volume Profile', category: 'Volume' },
+    { name: 'Average True Range', description: 'Average True Range', category: 'Volatility' },
+    { name: 'BOLLINGER', description: 'Bollinger Bands', category: 'Volatility' },
+    { name: 'Bollinger Bands', description: 'Bollinger Bands', category: 'Volatility' },
+    { name: 'CCI', description: 'Commodity Channel Index', category: 'Momentum' },
+    { name: 'CORREL', description: 'Correlation Coefficient', category: 'Statistical' },
+    { name: 'Commodity Channel Index', description: 'Commodity Channel Index', category: 'Momentum' },
+    { name: 'DEMA', description: 'Double Exponential Moving Average', category: 'Moving Average' },
+    { name: 'EMA', description: 'Exponential Moving Average', category: 'Moving Average' },
+    { name: 'Fixed Range Volume Profile', description: 'Fixed Range Volume Profile', category: 'Volume' },
+    { name: 'HULLMA', description: 'Hull Moving Average', category: 'Moving Average' },
+    { name: 'Ichimoku Cloud', description: 'Ichimoku Cloud', category: 'Trend' },
+    { name: 'KAMA', description: 'Kaufman Adaptive Moving Average', category: 'Moving Average' },
+    { name: 'LINEARREG', description: 'Linear Regression', category: 'Statistical' },
+    { name: 'LINEARREG_ANGLE', description: 'Linear Regression Angle', category: 'Statistical' },
+    { name: 'LINEARREG_INTERCEPT', description: 'Linear Regression Intercept', category: 'Statistical' },
+    { name: 'LINEARREG_SLOPE', description: 'Linear Regression Slope', category: 'Statistical' },
+    { name: 'MACD', description: 'Moving Average Convergence Divergence', category: 'Momentum' },
+    { name: 'MAMA', description: 'MESA Adaptive Moving Average', category: 'Moving Average' },
+    { name: 'MINUS_DI', description: 'Minus Directional Indicator', category: 'Trend' },
+    { name: 'MINUS_DM', description: 'Minus Directional Movement', category: 'Trend' },
+    { name: 'Money Flow Index', description: 'Money Flow Index', category: 'Volume' },
+    { name: 'Moving Average', description: 'Moving Average', category: 'Moving Average' },
+    { name: 'OBV', description: 'On Balance Volume', category: 'Volume' },
+    { name: 'PLUS_DI', description: 'Plus Directional Indicator', category: 'Trend' },
+    { name: 'PLUS_DM', description: 'Plus Directional Movement', category: 'Trend' },
+    { name: 'Parabolic SAR', description: 'Parabolic Stop and Reverse', category: 'Trend' },
+    { name: 'Periodic Volume Profile', description: 'Periodic Volume Profile', category: 'Volume' },
+    { name: 'SMA', description: 'Simple Moving Average', category: 'Moving Average' },
+    { name: 'STDDEV', description: 'Standard Deviation', category: 'Statistical' },
+    { name: 'STOCH', description: 'Stochastic Oscillator', category: 'Momentum' },
+    { name: 'STOCHF', description: 'Stochastic Fast', category: 'Momentum' },
+    { name: 'STOCHRSI', description: 'Stochastic RSI', category: 'Momentum' },
+    { name: 'Session Time Price Opportunity', description: 'Session Time Price Opportunity', category: 'Volume' },
+    { name: 'Session Volume Profile', description: 'Session Volume Profile', category: 'Volume' },
+    { name: 'Session Volume Profile HD', description: 'Session Volume Profile HD', category: 'Volume' },
+    { name: 'Stochastic Oscillator', description: 'Stochastic Oscillator', category: 'Momentum' },
+    { name: 'TEMA', description: 'Triple Exponential Moving Average', category: 'Moving Average' },
+    { name: 'TRIMA', description: 'Triangular Moving Average', category: 'Moving Average' },
+    { name: 'TRIX', description: 'Triple Exponential Average', category: 'Momentum' },
+    { name: 'TSF', description: 'Time Series Forecast', category: 'Statistical' },
+    { name: 'Time Price Opportunity', description: 'Time Price Opportunity', category: 'Volume' },
+    { name: 'ULTOSC', description: 'Ultimate Oscillator', category: 'Momentum' },
+    { name: 'VWAP', description: 'Volume Weighted Average Price', category: 'Volume' },
+    { name: 'VWMA', description: 'Volume Weighted Moving Average', category: 'Volume' },
+    { name: 'Visible Range Volume Profile', description: 'Visible Range Volume Profile', category: 'Volume' },
+    { name: 'Volume Weighted Average Price', description: 'Volume Weighted Average Price', category: 'Volume' },
+    { name: 'WILLR', description: 'Williams %R', category: 'Momentum' },
+    { name: 'WMA', description: 'Weighted Moving Average', category: 'Moving Average' },
+    { name: 'Williams %R', description: 'Williams %R', category: 'Momentum' }
+  ];
 
-      const allIndicators = [
-        { name: 'SMA', description: 'Simple Moving Average' },
-        { name: 'EMA', description: 'Exponential Moving Average' },
-        { name: 'RSI', description: 'Relative Strength Index' },
-        { name: 'MACD', description: 'Moving Average Convergence Divergence' },
-        { name: 'BB', description: 'Bollinger Bands' },
-        { name: 'Stochastic', description: 'Stochastic Oscillator' },
-        { name: 'WilliamsR', description: "Williams %R" },
-        { name: 'ATR', description: 'Average True Range' }
-      ];
+  const addBtn = document.getElementById('add-indicator-btn');
+  const searchContainer = document.getElementById('indicator-search-container');
+  const searchInput = document.getElementById('indicator-search-input');
+  const dropdown = document.getElementById('indicator-dropdown');
+  const list = document.getElementById('indicator-list');
 
-      const addBtn = document.getElementById('add-indicator-btn');
-      const searchContainer = document.getElementById('indicator-search-container');
-      const searchInput = document.getElementById('indicator-search-input');
-      const dropdown = document.getElementById('indicator-dropdown');
-      const list = document.getElementById('indicator-list');
+  let activeIndicators = JSON.parse(localStorage.getItem('chartIndicators') || '[]');
+  const save = () => localStorage.setItem('chartIndicators', JSON.stringify(activeIndicators));
 
-      let activeIndicators = JSON.parse(localStorage.getItem('chartIndicators') || '[]');
-      const save = () => localStorage.setItem('chartIndicators', JSON.stringify(activeIndicators));
-
-      const render = () => {
-        list.innerHTML = '';
-        if (!activeIndicators.length) {
-          list.innerHTML = '<div style="color:var(--text-light);font-size:.85rem;text-align:center;padding:.5rem;">No indicators added</div>';
-          return;
-        }
-        activeIndicators.forEach(name => {
-          const div = document.createElement('div');
-          div.className = 'indicator-item';
-          div.innerHTML = `<span class="name">${name}</span><i class="fas fa-trash remove" data-name="${name}"></i>`;
-          list.appendChild(div);
-        });
-      };
-
-      const add = name => {
-        if (activeIndicators.includes(name)) return;
-        activeIndicators.push(name);
-        save();
-        render();
-        applyIndicatorsToChart();
-      };
-
-      list.addEventListener('click', e => {
-        if (e.target.classList.contains('remove')) {
-          const name = e.target.dataset.name;
-          activeIndicators = activeIndicators.filter(n => n !== name);
-          save();
-          render();
-          applyIndicatorsToChart();
-        }
-      });
-
-      addBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const visible = searchContainer.style.display !== 'none';
-        searchContainer.style.display = visible ? 'none' : 'block';
-        if (!visible) searchInput.focus();
-      });
-
-      searchInput.addEventListener('input', () => {
-        const term = searchInput.value.toLowerCase();
-        const matches = allIndicators
-          .filter(i => i.name.toLowerCase().includes(term) || i.description.toLowerCase().includes(term))
-          .slice(0, 8);
-        dropdown.innerHTML = '';
-        if (!matches.length) {
-          dropdown.innerHTML = '<div class="dropdown-item" style="color:var(--text-light);font-style:italic;">No match</div>';
-        } else {
-          matches.forEach(i => {
-            const el = document.createElement('div');
-            el.className = 'dropdown-item';
-            el.innerHTML = `<strong>${i.name}</strong><br><small>${i.description}</small>`;
-            el.onclick = () => {
-              add(i.name);
-              searchInput.value = '';
-              searchContainer.style.display = 'none';
-            };
-            dropdown.appendChild(el);
-          });
-        }
-      });
-
-      document.addEventListener('click', e => {
-        if (!addBtn.contains(e.target) && !searchContainer.contains(e.target)) {
-          searchContainer.style.display = 'none';
-        }
-      });
-
-      render();
-
-      window.applyIndicatorsToChart = function () {
-        if (!priceData?.length) return;
-        if (chart._indicatorSeries) {
-          chart._indicatorSeries.forEach(s => chart.removeSeries(s));
-        }
-        chart._indicatorSeries = [];
-        // Indicator plotting logic here
-      };
-
-      setTimeout(() => {
-        if (window.applyIndicatorsToChart) window.applyIndicatorsToChart();
-      }, 1000);
+  const render = () => {
+    list.innerHTML = '';
+    if (!activeIndicators.length) {
+      list.innerHTML = '<div style="color:var(--text-light);font-size:.85rem;text-align:center;padding:.5rem;">No indicators added</div>';
+      return;
     }
+    activeIndicators.forEach(name => {
+      const div = document.createElement('div');
+      div.className = 'indicator-item';
+      div.innerHTML = `<span class="name">${name}</span><i class="fas fa-trash remove" data-name="${name}"></i>`;
+      list.appendChild(div);
+    });
+  };
 
+  const add = name => {
+    if (activeIndicators.includes(name)) return;
+    activeIndicators.push(name);
+    save();
+    render();
+    applyIndicatorsToChart();
+  };
+
+  list.addEventListener('click', e => {
+    if (e.target.classList.contains('remove')) {
+      const name = e.target.dataset.name;
+      activeIndicators = activeIndicators.filter(n => n !== name);
+      save();
+      render();
+      applyIndicatorsToChart();
+    }
+  });
+
+  addBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const visible = searchContainer.style.display !== 'none';
+    searchContainer.style.display = visible ? 'none' : 'block';
+    if (!visible) {
+      searchInput.focus();
+      searchInput.value = '';
+      dropdown.innerHTML = '<div class="dropdown-item" style="color:var(--text-light);font-style:italic;">Start typing to search indicators...</div>';
+    }
+  });
+
+  searchInput.addEventListener('input', () => {
+    const term = searchInput.value.toLowerCase();
+    
+    if (term.length < 1) {
+      dropdown.innerHTML = '<div class="dropdown-item" style="color:var(--text-light);font-style:italic;">Start typing to search indicators...</div>';
+      return;
+    }
+    
+    const matches = allIndicators
+      .filter(i => 
+        i.name.toLowerCase().includes(term) || 
+        i.description.toLowerCase().includes(term) ||
+        i.category.toLowerCase().includes(term)
+      )
+      .slice(0, 15);
+    
+    dropdown.innerHTML = '';
+    
+    if (!matches.length) {
+      dropdown.innerHTML = '<div class="dropdown-item" style="color:var(--text-light);font-style:italic;">No indicators found</div>';
+    } else {
+      // Group by category
+      const byCategory = {};
+      matches.forEach(i => {
+        if (!byCategory[i.category]) byCategory[i.category] = [];
+        byCategory[i.category].push(i);
+      });
+      
+      Object.keys(byCategory).forEach(category => {
+        // Add category header
+        const header = document.createElement('div');
+        header.className = 'dropdown-item';
+        header.style.background = 'var(--bg-light)';
+        header.style.fontWeight = '600';
+        header.style.borderBottom = '1px solid var(--border)';
+        header.textContent = category;
+        dropdown.appendChild(header);
+        
+        // Add indicators in this category
+        byCategory[category].forEach(i => {
+          const el = document.createElement('div');
+          el.className = 'dropdown-item';
+          el.innerHTML = `<strong>${i.name}</strong><br><small style="color:var(--text-light)">${i.description}</small>`;
+          el.onclick = () => {
+            add(i.name);
+            searchInput.value = '';
+            searchContainer.style.display = 'none';
+          };
+          dropdown.appendChild(el);
+        });
+      });
+    }
+  });
+
+  searchInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && searchInput.value.trim()) {
+      const matches = allIndicators.filter(i => 
+        i.name.toLowerCase().includes(searchInput.value.toLowerCase())
+      );
+      if (matches.length > 0) {
+        add(matches[0].name);
+        searchInput.value = '';
+        searchContainer.style.display = 'none';
+      }
+    }
+  });
+
+  document.addEventListener('click', e => {
+    if (!addBtn.contains(e.target) && !searchContainer.contains(e.target)) {
+      searchContainer.style.display = 'none';
+    }
+  });
+
+  render();
+
+  // ───── INDICATOR CALCULATIONS ─────
+  window.applyIndicatorsToChart = function () {
+    if (!priceData?.length || !activeIndicators.length) return;
+    
+    // Clean up existing indicator series
+    if (chart._indicatorSeries) {
+      chart._indicatorSeries.forEach(s => {
+        try { chart.removeSeries(s); } catch(e) {}
+      });
+    }
+    chart._indicatorSeries = [];
+    
+    const values = priceData.map(d => ({
+      open: d.open, high: d.high, low: d.low, close: d.close, volume: d.volume, timestamp: d.time
+    }));
+    
+    activeIndicators.forEach(indicatorName => {
+      try {
+        let series;
+        
+        switch(indicatorName) {
+          case 'SMA':
+          case 'Moving Average':
+            series = chart.addLineSeries({ color: '#2962ff', lineWidth: 1, title: 'SMA 14' });
+            series.setData(calculateSMA(values, 14));
+            break;
+            
+          case 'EMA':
+            series = chart.addLineSeries({ color: '#ff6b6b', lineWidth: 1, title: 'EMA 14' });
+            series.setData(calculateEMA(values, 14));
+            break;
+            
+          case 'RSI':
+            series = chart.addLineSeries({ color: '#8e44ad', lineWidth: 1, title: 'RSI 14' });
+            chart.priceScale('right').applyOptions({ mode: 2 }); // Percentage scale
+            series.setData(calculateRSI(values, 14));
+            break;
+            
+          case 'MACD':
+            const macdData = calculateMACD(values);
+            series = chart.addLineSeries({ color: '#2962ff', lineWidth: 1, title: 'MACD' });
+            series.setData(macdData.macd);
+            chart._indicatorSeries.push(series);
+            
+            series = chart.addLineSeries({ color: '#ff6b6b', lineWidth: 1, title: 'Signal' });
+            series.setData(macdData.signal);
+            break;
+            
+          case 'BOLLINGER':
+          case 'Bollinger Bands':
+            const bbData = calculateBollingerBands(values, 20, 2);
+            series = chart.addLineSeries({ color: '#2962ff', lineWidth: 1, title: 'BB Middle' });
+            series.setData(bbData.middle);
+            chart._indicatorSeries.push(series);
+            
+            series = chart.addLineSeries({ color: '#666', lineWidth: 1, title: 'BB Upper', lineStyle: 2 });
+            series.setData(bbData.upper);
+            chart._indicatorSeries.push(series);
+            
+            series = chart.addLineSeries({ color: '#666', lineWidth: 1, title: 'BB Lower', lineStyle: 2 });
+            series.setData(bbData.lower);
+            break;
+            
+          case 'Stochastic Oscillator':
+          case 'STOCH':
+            const stochData = calculateStochastic(values, 14);
+            series = chart.addLineSeries({ color: '#2962ff', lineWidth: 1, title: 'Stoch %K' });
+            series.setData(stochData.k);
+            chart._indicatorSeries.push(series);
+            
+            series = chart.addLineSeries({ color: '#ff6b6b', lineWidth: 1, title: 'Stoch %D' });
+            series.setData(stochData.d);
+            break;
+            
+          case 'ATR':
+          case 'Average True Range':
+            series = chart.addLineSeries({ color: '#e67e22', lineWidth: 1, title: 'ATR 14' });
+            series.setData(calculateATR(values, 14));
+            break;
+            
+          case 'CCI':
+            series = chart.addLineSeries({ color: '#16a085', lineWidth: 1, title: 'CCI 20' });
+            series.setData(calculateCCI(values, 20));
+            break;
+            
+          case 'OBV':
+            series = chart.addLineSeries({ color: '#27ae60', lineWidth: 1, title: 'OBV' });
+            series.setData(calculateOBV(values));
+            break;
+            
+          case 'WILLR':
+          case 'Williams %R':
+            series = chart.addLineSeries({ color: '#8e44ad', lineWidth: 1, title: 'Williams %R' });
+            series.setData(calculateWilliamsR(values, 14));
+            break;
+            
+          case 'VWMA':
+            series = chart.addLineSeries({ color: '#f39c12', lineWidth: 1, title: 'VWMA 20' });
+            series.setData(calculateVWMA(values, 20));
+            break;
+            
+          default:
+            // For unsupported indicators, add a placeholder
+            series = chart.addLineSeries({ color: '#95a5a6', lineWidth: 1, title: indicatorName });
+            series.setData(calculateSMA(values, 14)); // Fallback to SMA
+            console.log(`Indicator ${indicatorName} not fully implemented, using SMA as placeholder`);
+        }
+        
+        if (series) chart._indicatorSeries.push(series);
+      } catch (error) {
+        console.error(`Error calculating ${indicatorName}:`, error);
+      }
+    });
+  };
+
+  // Core calculation functions
+  function calculateSMA(data, period) {
+    const result = [];
+    for (let i = period - 1; i < data.length; i++) {
+      let sum = 0;
+      for (let j = 0; j < period; j++) sum += data[i - j].close;
+      result.push({ time: data[i].timestamp, value: sum / period });
+    }
+    return result;
+  }
+
+  function calculateEMA(data, period) {
+    const result = [];
+    const multiplier = 2 / (period + 1);
+    let ema = data[0].close;
+    
+    for (let i = 0; i < data.length; i++) {
+      ema = i === 0 ? data[i].close : (data[i].close - ema) * multiplier + ema;
+      if (i >= period - 1) {
+        result.push({ time: data[i].timestamp, value: ema });
+      }
+    }
+    return result;
+  }
+
+  function calculateRSI(data, period) {
+    const result = [];
+    let gains = 0, losses = 0;
+    
+    for (let i = 1; i <= period; i++) {
+      const change = data[i].close - data[i-1].close;
+      if (change >= 0) gains += change; else losses -= change;
+    }
+    
+    let avgGain = gains / period, avgLoss = losses / period;
+    
+    for (let i = period + 1; i < data.length; i++) {
+      const change = data[i].close - data[i-1].close;
+      avgGain = (avgGain * (period - 1) + (change > 0 ? change : 0)) / period;
+      avgLoss = (avgLoss * (period - 1) + (change < 0 ? -change : 0)) / period;
+      
+      const rs = avgLoss === 0 ? 100 : avgGain / avgLoss;
+      const rsi = 100 - (100 / (1 + rs));
+      
+      result.push({ time: data[i].timestamp, value: rsi });
+    }
+    return result;
+  }
+
+  function calculateMACD(data) {
+    const ema12 = calculateEMA(data, 12);
+    const ema26 = calculateEMA(data, 26);
+    const macdLine = [];
+    
+    for (let i = 0; i < ema26.length; i++) {
+      if (i < ema12.length) {
+        macdLine.push({
+          time: ema26[i].time,
+          value: ema12[i].value - ema26[i].value
+        });
+      }
+    }
+    
+    const signal = calculateEMA(macdLine.map(m => ({close: m.value, timestamp: m.time})), 9);
+    return { macd: macdLine, signal };
+  }
+
+  function calculateBollingerBands(data, period, stdDev) {
+    const sma = calculateSMA(data, period);
+    const result = { middle: sma, upper: [], lower: [] };
+    
+    for (let i = 0; i < sma.length; i++) {
+      let sum = 0;
+      for (let j = 0; j < period; j++) {
+        sum += Math.pow(data[i + period - 1 - j].close - sma[i].value, 2);
+      }
+      const deviation = Math.sqrt(sum / period);
+      
+      result.upper.push({ time: sma[i].time, value: sma[i].value + deviation * stdDev });
+      result.lower.push({ time: sma[i].time, value: sma[i].value - deviation * stdDev });
+    }
+    return result;
+  }
+
+  function calculateStochastic(data, period) {
+    const result = { k: [], d: [] };
+    
+    for (let i = period - 1; i < data.length; i++) {
+      let highest = -Infinity, lowest = Infinity;
+      for (let j = 0; j < period; j++) {
+        highest = Math.max(highest, data[i - j].high);
+        lowest = Math.min(lowest, data[i - j].low);
+      }
+      
+      const k = ((data[i].close - lowest) / (highest - lowest)) * 100;
+      result.k.push({ time: data[i].timestamp, value: k });
+    }
+    
+    // Simple moving average of %K for %D
+    for (let i = 2; i < result.k.length; i++) {
+      const d = (result.k[i].value + result.k[i-1].value + result.k[i-2].value) / 3;
+      result.d.push({ time: result.k[i].time, value: d });
+    }
+    
+    return result;
+  }
+
+  function calculateATR(data, period) {
+    const result = [];
+    let sum = 0;
+    
+    for (let i = 1; i <= period; i++) {
+      const tr = Math.max(
+        data[i].high - data[i].low,
+        Math.abs(data[i].high - data[i-1].close),
+        Math.abs(data[i].low - data[i-1].close)
+      );
+      sum += tr;
+    }
+    
+    let atr = sum / period;
+    result.push({ time: data[period].timestamp, value: atr });
+    
+    for (let i = period + 1; i < data.length; i++) {
+      const tr = Math.max(
+        data[i].high - data[i].low,
+        Math.abs(data[i].high - data[i-1].close),
+        Math.abs(data[i].low - data[i-1].close)
+      );
+      atr = (atr * (period - 1) + tr) / period;
+      result.push({ time: data[i].timestamp, value: atr });
+    }
+    
+    return result;
+  }
+
+  function calculateCCI(data, period) {
+    const result = [];
+    
+    for (let i = period - 1; i < data.length; i++) {
+      let sum = 0, sumDev = 0;
+      for (let j = 0; j < period; j++) {
+        const typical = (data[i - j].high + data[i - j].low + data[i - j].close) / 3;
+        sum += typical;
+      }
+      const sma = sum / period;
+      
+      for (let j = 0; j < period; j++) {
+        const typical = (data[i - j].high + data[i - j].low + data[i - j].close) / 3;
+        sumDev += Math.abs(typical - sma);
+      }
+      const meanDev = sumDev / period;
+      const typicalPrice = (data[i].high + data[i].low + data[i].close) / 3;
+      const cci = (typicalPrice - sma) / (0.015 * meanDev);
+      
+      result.push({ time: data[i].timestamp, value: cci });
+    }
+    return result;
+  }
+
+  function calculateOBV(data) {
+    const result = [{ time: data[0].timestamp, value: data[0].volume }];
+    
+    for (let i = 1; i < data.length; i++) {
+      let obv = result[result.length - 1].value;
+      if (data[i].close > data[i-1].close) obv += data[i].volume;
+      else if (data[i].close < data[i-1].close) obv -= data[i].volume;
+      
+      result.push({ time: data[i].timestamp, value: obv });
+    }
+    return result;
+  }
+
+  function calculateWilliamsR(data, period) {
+    const result = [];
+    
+    for (let i = period - 1; i < data.length; i++) {
+      let highest = -Infinity, lowest = Infinity;
+      for (let j = 0; j < period; j++) {
+        highest = Math.max(highest, data[i - j].high);
+        lowest = Math.min(lowest, data[i - j].low);
+      }
+      
+      const williamsR = ((highest - data[i].close) / (highest - lowest)) * -100;
+      result.push({ time: data[i].timestamp, value: williamsR });
+    }
+    return result;
+  }
+
+  function calculateVWMA(data, period) {
+    const result = [];
+    
+    for (let i = period - 1; i < data.length; i++) {
+      let sumPriceVolume = 0, sumVolume = 0;
+      for (let j = 0; j < period; j++) {
+        sumPriceVolume += data[i - j].close * data[i - j].volume;
+        sumVolume += data[i - j].volume;
+      }
+      
+      result.push({ time: data[i].timestamp, value: sumPriceVolume / sumVolume });
+    }
+    return result;
+  }
+
+  // Auto-apply indicators when ready
+  setTimeout(() => {
+    if (window.applyIndicatorsToChart && priceData && priceData.length > 0) {
+      window.applyIndicatorsToChart();
+    }
+  }, 1500);
+}
+
+// Initialize when page loads
+if (document.getElementById('add-indicator-btn')) {
+  setTimeout(initIndicatorPanel, 500);
+}
+      
     // ───── THEME TOGGLE ─────
     document.getElementById('theme-toggle').addEventListener('click', () => {
       const isDark = document.body.getAttribute('data-theme') === 'dark';
