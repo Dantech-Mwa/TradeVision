@@ -9,8 +9,8 @@
 [![Live Demo](https://img.shields.io/badge/Live-Demo-2962ff?style=flat-square)](https://dantech-mwa.github.io/TradeVision)
 
 > **Free to view, learn, and use personally.**  
-> **Want to use in business, apps, or sell?** → [Buy Commercial License ($49)](https://gumroad.com/l/tradevision-pro)  
-> **Love the project?** → [Donate any amount (suggested $10–$25)](https://buymeacoffee.com/dantech)
+> **Want to use in business, apps, or sell?** → [Buy Commercial License ($49)](https://wambuamwanza.gumroad.com/l/tradevision-pro)  
+> **Love the project?** → [Donate any amount (suggested $10–$25)](https://buymeacoffee.com/tradevision.pro)
 
 </div>
 
@@ -35,7 +35,7 @@
 
 **TradeVision** is a **fully static, open-source TradingView clone** that runs directly in the browser — no backend, no database, no server costs.
 
-- **Live Demo**: [https://dantech-mwa.github.io/TradeVision](https://dantech-mwa.github.io/TradeVision)
+- **Live Demo**: [https://tradevision.jaydancosmeticshop.store/)
 - **GitHub**: [github.com/Dantech-Mwa/TradeVision](https://github.com/Dantech-Mwa/TradeVision)
 
 ---
