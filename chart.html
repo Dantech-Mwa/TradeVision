@@ -600,7 +600,157 @@
     .indicator-controls button:hover {
       background: var(--card-hover);
     }
+    /* Heatmap Button Styles */
+.heatmap-panel {
+  border-top: 1px solid var(--border);
+  padding-top: 1.5rem;
+}
+
+.heatmap-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 1rem;
+  font-weight: 600;
+  background: linear-gradient(135deg, #2962ff 0%, #2979ff 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(41, 98, 255, 0.25);
+  position: relative;
+  overflow: hidden;
+}
+
+.heatmap-btn:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1e53e5 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(41, 98, 255, 0.35);
+}
+
+.heatmap-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(41, 98, 255, 0.3);
+}
+
+.heatmap-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.6s;
+}
+
+.heatmap-btn:hover::before {
+  left: 100%;
+}
+
+.heatmap-icon {
+  font-size: 1.4rem;
+  color: #ffeb3b;
+  filter: drop-shadow(0 2px 4px rgba(255, 235, 59, 0.3));
+  transition: transform 0.3s ease;
+}
+
+.heatmap-btn:hover .heatmap-icon {
+  transform: scale(1.1) rotate(5deg);
+}
+
+.heatmap-content {
+  flex: 1;
+  text-align: left;
+}
+
+.heatmap-title {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 2px;
+  letter-spacing: -0.2px;
+}
+
+.heatmap-tagline {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 400;
+  line-height: 1.3;
+}
+
+.heatmap-arrow {
+  font-size: 1rem;
+  opacity: 0.8;
+  transition: all 0.3s ease;
+}
+
+.heatmap-btn:hover .heatmap-arrow {
+  transform: translateX(3px);
+  opacity: 1;
+}
+
+/* Pulse animation for attention */
+@keyframes heatmapPulse {
+  0% {
+    box-shadow: 0 4px 12px rgba(41, 98, 255, 0.25);
+  }
+  50% {
+    box-shadow: 0 4px 20px rgba(41, 98, 255, 0.4);
+  }
+  100% {
+    box-shadow: 0 4px 12px rgba(41, 98, 255, 0.25);
+  }
+}
+
+.heatmap-btn {
+  animation: heatmapPulse 3s ease-in-out infinite;
+}
+
+/* Dark theme adjustments */
+[data-theme="dark"] .heatmap-btn {
+  background: linear-gradient(135deg, #2962ff 0%, #1e53e5 100%);
+}
+
+[data-theme="dark"] .heatmap-btn:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1a47c4 100%);
+}
+
+/* Light theme adjustments */
+[data-theme="light"] .heatmap-btn {
+  background: linear-gradient(135deg, #2962ff 0%, #2979ff 100%);
+  color: white;
+}
+
+[data-theme="light"] .heatmap-btn:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1e53e5 100%);
+}
+
+[data-theme="light"] .heatmap-tagline {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .heatmap-btn {
+    padding: 0.875rem;
+    gap: 0.625rem;
+  }
   
+  .heatmap-title {
+    font-size: 0.95rem;
+  }
+  
+  .heatmap-tagline {
+    font-size: 0.75rem;
+  }
+  
+  .heatmap-icon {
+    font-size: 1.2rem;
+  }
+}
   </style>
 </head>
 
@@ -705,8 +855,20 @@
         <!-- ADD THIS CONTAINER -->
         <div id="indicator-list" class="indicator-list"></div>
       </div>
+		<!-- ==== HEATMAP BUTTON SECTION ==== -->
+      <div class="heatmap-panel" style="margin-top: 1.5rem;">
+        <a href="heatmap.html" target="_self" class="heatmap-btn">
+          <i class="fas fa-fire heatmap-icon"></i>
+          <div class="heatmap-content">
+            <div class="heatmap-title">Market Heatmap</div>
+            <div class="heatmap-tagline">Live market performance overview</div>
+          </div>
+          <i class="fas fa-arrow-right heatmap-arrow"></i>
+        </a>
+      </div>
     </div>
   </div>
+    
 
   <!-- MOVED FOOTER OUTSIDE CHART LAYOUT -->
   <footer class="footer">
