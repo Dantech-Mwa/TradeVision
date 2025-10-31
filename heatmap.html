@@ -3,28 +3,242 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Heatmap - TradeVision</title>
+  <title>Advanced Heatmap - TradeVision</title>
   <link rel="icon" href="assets/icons/chart.svg" type="image/svg+xml">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    :root{--bg:#141518;--bg-light:#1e222d;--text:#d1d4dc;--text-light:#9ea1b5;--accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#2d313e;--card:#1e222d;}
-    [data-theme="light"]{--bg:#ffffff;--bg-light:#f8f9fa;--text:#2d3748;--text-light:#718096;--accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#e2e8f0;--card:#ffffff;}
-    body{margin:0;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);}
-    a{color:var(--accent);text-decoration:none;}
-    .container{max-width:1200px;margin:0 auto;padding:2rem 1rem;}
-    .header{background:var(--bg-light);border-bottom:1px solid var(--border);padding:0.75rem 0;position:sticky;top:0;z-index:100;}
-    .flex-between{display:flex;justify-content:space-between;align-items:center;}
-    .logo{font-weight:700;font-size:1.4rem;color:var(--accent);}
-    .logo i{font-size:1.5rem;}
-    .nav-links a{margin:0 0.75rem;font-weight:500;}
-    .icon-btn{background:none;border:none;color:var(--text-light);font-size:1.2rem;cursor:pointer;padding:0.5rem;}
-    .heatmap-controls{margin-bottom:1rem;display:flex;gap:1rem;}
-    .heatmap-controls select{padding:0.5rem;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text);}
-    .heatmap{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:4px;}
-    .heat-cell{padding:0.75rem;text-align:center;border-radius:4px;color:white;font-weight:600;font-size:0.9rem;cursor:pointer;transition:0.2s;}
-    .heat-cell:hover{transform:scale(1.05);}
-    .footer{background:var(--bg-light);border-top:1px solid var(--border);padding:1rem 0;font-size:0.8rem;text-align:center;color:var(--text-light);}
+    :root {
+      --bg: #141518;
+      --bg-light: #1e222d;
+      --text: #d1d4dc;
+      --text-light: #9ea1b5;
+      --accent: #2962ff;
+      --green: #26a69a;
+      --red: #ef5350;
+      --border: #2d313e;
+      --card: #1e222d;
+    }
+    [data-theme="light"] {
+      --bg: #ffffff;
+      --bg-light: #f8f9fa;
+      --text: #2d3748;
+      --text-light: #718096;
+      --accent: #2962ff;
+      --green: #26a69a;
+      --red: #ef5350;
+      --border: #e2e8f0;
+      --card: #ffffff;
+    }
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      transition: background-color 0.3s, color 0.3s;
+    }
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+    }
+    .header {
+      background: var(--bg-light);
+      border-bottom: 1px solid var(--border);
+      padding: 0.75rem 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .flex-between {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo {
+      font-weight: 700;
+      font-size: 1.4rem;
+      color: var(--accent);
+    }
+    .logo i {
+      font-size: 1.5rem;
+    }
+    .nav-links a {
+      margin: 0 0.75rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover {
+      color: var(--accent);
+    }
+    .icon-btn {
+      background: none;
+      border: none;
+      color: var(--text-light);
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: 4px;
+      transition: background-color 0.2s, color 0.2s;
+    }
+    .icon-btn:hover {
+      background: rgba(41, 98, 255, 0.1);
+      color: var(--accent);
+    }
+    .heatmap-controls {
+      margin-bottom: 1.5rem;
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .heatmap-controls select {
+      padding: 0.5rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--bg-light);
+      color: var(--text);
+      font-weight: 500;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .heatmap-controls select:hover {
+      border-color: var(--accent);
+    }
+    .heatmap-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .heatmap-card {
+      background: var(--card);
+      border-radius: 10px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      border: 1px solid var(--border);
+    }
+    .heatmap-card h2 {
+      margin-top: 0;
+      margin-bottom: 1rem;
+      font-size: 1.2rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .heatmap-card h2 i {
+      color: var(--accent);
+    }
+    .heatmap {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 8px;
+    }
+    .heat-cell {
+      padding: 0.75rem;
+      text-align: center;
+      border-radius: 6px;
+      color: white;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    .heat-cell:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    }
+    .heat-cell .symbol {
+      font-size: 0.8rem;
+      margin-bottom: 4px;
+    }
+    .heat-cell .change {
+      font-size: 0.75rem;
+      opacity: 0.9;
+    }
+    .chart-container {
+      height: 300px;
+      position: relative;
+    }
+    .footer {
+      background: var(--bg-light);
+      border-top: 1px solid var(--border);
+      padding: 1rem 0;
+      font-size: 0.8rem;
+      text-align: center;
+      color: var(--text-light);
+    }
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+    }
+    .status-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+    .status.connected .status-indicator {
+      background-color: var(--green);
+    }
+    .status.disconnected .status-indicator {
+      background-color: var(--red);
+    }
+    .flex-center {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .market-stats {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .stat-card {
+      background: var(--card);
+      border-radius: 8px;
+      padding: 1rem;
+      flex: 1;
+      min-width: 150px;
+      border: 1px solid var(--border);
+      text-align: center;
+    }
+    .stat-card .value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin: 0.5rem 0;
+    }
+    .stat-card.green .value {
+      color: var(--green);
+    }
+    .stat-card.red .value {
+      color: var(--red);
+    }
+    .stat-card .label {
+      font-size: 0.8rem;
+      color: var(--text-light);
+    }
+    @media (max-width: 768px) {
+      .heatmap-container {
+        grid-template-columns: 1fr;
+      }
+      .nav-links {
+        display: none;
+      }
+    }
   </style>
 </head>
 <body data-theme="dark">
@@ -49,21 +263,58 @@
   </header>
 
   <div class="container">
-    <h1>Market Heatmap</h1>
+    <h1>Advanced Market Heatmap</h1>
+    
+    <div class="status" id="connection-status">
+      <div class="status-indicator"></div>
+      <span>Connecting to Binance...</span>
+    </div>
+    
+    <div class="market-stats">
+      <div class="stat-card">
+        <div class="label">Total Market Cap</div>
+        <div class="value" id="total-market-cap">$1.24T</div>
+      </div>
+      <div class="stat-card green">
+        <div class="label">Gainers</div>
+        <div class="value" id="gainers-count">12</div>
+      </div>
+      <div class="stat-card red">
+        <div class="label">Losers</div>
+        <div class="value" id="losers-count">4</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Avg Change</div>
+        <div class="value" id="avg-change">+1.24%</div>
+      </div>
+    </div>
+    
     <div class="heatmap-controls">
       <select id="group-by">
-        <option>Sector</option>
-        <option>Market Cap</option>
-        <option>Performance</option>
+        <option value="performance">Performance</option>
+        <option value="market-cap">Market Cap</option>
+        <option value="sector">Sector</option>
       </select>
       <select id="timeframe">
-        <option>1D</option>
-        <option>1W</option>
-        <option>1M</option>
+        <option value="1D">1D</option>
+        <option value="1W">1W</option>
+        <option value="1M">1M</option>
       </select>
     </div>
 
-    <div class="heatmap" id="heatmap"></div>
+    <div class="heatmap-container">
+      <div class="heatmap-card">
+        <h2><i class="fas fa-fire"></i> Market Heatmap</h2>
+        <div class="heatmap" id="heatmap"></div>
+      </div>
+      
+      <div class="heatmap-card">
+        <h2><i class="fas fa-chart-line"></i> Performance Chart</h2>
+        <div class="chart-container">
+          <canvas id="performance-chart"></canvas>
+        </div>
+      </div>
+    </div>
   </div>
 
   <footer class="footer">
@@ -71,68 +322,304 @@
   </footer>
 
   <script>
-  const themeToggle = document.getElementById('theme-toggle');
-  const body = document.body;
-  const themeIcon = themeToggle.querySelector('i');
-  themeToggle.addEventListener('click', () => {
-    const isDark = body.getAttribute('data-theme') === 'dark';
-    body.setAttribute('data-theme', isDark ? 'light' : 'dark');
-    themeIcon.classList.toggle('fa-moon'); themeIcon.classList.toggle('fa-sun');
-    localStorage.setItem('theme', isDark ? 'light' : 'dark');
-  });
-  const savedTheme = localStorage.getItem('theme') || 'dark';
-  body.setAttribute('data-theme', savedTheme);
-  if (savedTheme === 'light') themeIcon.classList.replace('fa-moon', 'fa-sun');
-
-  const stocks = [
-    {s:'AAPL',p:0},{s:'MSFT',p:0},{s:'GOOGL',p:0},{s:'TSLA',p:0},
-    {s:'NVDA',p:0},{s:'META',p:0},{s:'AMD',p:0},{s:'INTC',p:0}
-  ];
-  const binanceMap = { 'AAPL': 'aaplusdt', 'MSFT': 'msftusdt', 'GOOGL': 'googlusdt', 'TSLA': 'tslausdt', 'NVDA': 'nvdausdt', 'META': 'metausdt', 'AMD': 'amdusdt', 'INTC': 'intcusdt' };
-  let ws;
-
-  function getColor(pct) {
-    if (pct >= 3) return '#0d5e39';
-    if (pct >= 1) return '#26a69a';
-    if (pct >= 0) return '#4caf50';
-    if (pct >= -1) return '#ff9800';
-    if (pct >= -3) return '#f44336';
-    return '#b71c1c';
-  }
-
-  function render() {
-    const container = document.getElementById('heatmap');
-    container.innerHTML = '';
-    stocks.forEach(stock => {
-      const div = document.createElement('div');
-      div.className = 'heat-cell';
-      div.style.backgroundColor = getColor(stock.p);
-      div.innerHTML = `<div>${stock.s}</div><div>${stock.p > 0 ? '+' : ''}${stock.p.toFixed(2)}%</div>`;
-      div.onclick = () => location.href = `chart.html?symbol=${stock.s}`;
-      container.appendChild(div);
+    // Theme toggle functionality
+    const themeToggle = document.getElementById('theme-toggle');
+    const body = document.body;
+    const themeIcon = themeToggle.querySelector('i');
+    themeToggle.addEventListener('click', () => {
+      const isDark = body.getAttribute('data-theme') === 'dark';
+      body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+      themeIcon.classList.toggle('fa-moon'); 
+      themeIcon.classList.toggle('fa-sun');
+      localStorage.setItem('theme', isDark ? 'light' : 'dark');
     });
-  }
+    
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    body.setAttribute('data-theme', savedTheme);
+    if (savedTheme === 'light') themeIcon.classList.replace('fa-moon', 'fa-sun');
 
-  function connectWS() {
-    const streams = stocks.map(s => `${binanceMap[s.s]}@ticker`).join('/');
-    ws = new WebSocket(`wss://stream.binance.com:9443/stream?streams=${streams}`);
+    // Cryptocurrency data - using actual Binance symbols
+    const cryptoData = [
+      { symbol: 'BTCUSDT', name: 'BTC', marketCap: 580000000000, sector: 'Store of Value' },
+      { symbol: 'ETHUSDT', name: 'ETH', marketCap: 220000000000, sector: 'Smart Contracts' },
+      { symbol: 'BNBUSDT', name: 'BNB', marketCap: 42000000000, sector: 'Exchange' },
+      { symbol: 'ADAUSDT', name: 'ADA', marketCap: 12000000000, sector: 'Smart Contracts' },
+      { symbol: 'DOTUSDT', name: 'DOT', marketCap: 9000000000, sector: 'Interoperability' },
+      { symbol: 'XRPUSDT', name: 'XRP', marketCap: 28000000000, sector: 'Payments' },
+      { symbol: 'LTCUSDT', name: 'LTC', marketCap: 5000000000, sector: 'Payments' },
+      { symbol: 'LINKUSDT', name: 'LINK', marketCap: 4000000000, sector: 'Oracle' },
+      { symbol: 'BCHUSDT', name: 'BCH', marketCap: 3500000000, sector: 'Payments' },
+      { symbol: 'XLMUSDT', name: 'XLM', marketCap: 3000000000, sector: 'Payments' },
+      { symbol: 'DOGEUSDT', name: 'DOGE', marketCap: 11000000000, sector: 'Meme' },
+      { symbol: 'UNIUSDT', name: 'UNI', marketCap: 4000000000, sector: 'DeFi' },
+      { symbol: 'SOLUSDT', name: 'SOL', marketCap: 15000000000, sector: 'Smart Contracts' },
+      { symbol: 'MATICUSDT', name: 'MATIC', marketCap: 7000000000, sector: 'Scaling' },
+      { symbol: 'ETCUSDT', name: 'ETC', marketCap: 2500000000, sector: 'Smart Contracts' },
+      { symbol: 'ATOMUSDT', name: 'ATOM', marketCap: 3000000000, sector: 'Interoperability' }
+    ];
 
-    ws.onmessage = (e) => {
-      const msg = JSON.parse(e.data);
-      if (!msg.data) return;
-      const t = msg.data;
-      const stock = stocks.find(s => binanceMap[s.s] === t.s.toLowerCase());
-      if (stock) {
-        stock.p = parseFloat(t.P);
-        render();
+    // Initialize with performance data
+    cryptoData.forEach(crypto => {
+      crypto.changePercent = (Math.random() * 10 - 5).toFixed(2);
+      crypto.price = Math.random() * 10000 + 100;
+    });
+
+    // Connection status element
+    const connectionStatus = document.getElementById('connection-status');
+
+    // Function to determine color based on percentage change
+    function getColor(pct) {
+      if (pct >= 5) return '#0d5e39';
+      if (pct >= 2) return '#26a69a';
+      if (pct >= 0) return '#4caf50';
+      if (pct >= -2) return '#ff9800';
+      if (pct >= -5) return '#f44336';
+      return '#b71c1c';
+    }
+
+    // Function to format market cap
+    function formatMarketCap(cap) {
+      if (cap >= 1e12) return `$${(cap / 1e12).toFixed(2)}T`;
+      if (cap >= 1e9) return `$${(cap / 1e9).toFixed(2)}B`;
+      if (cap >= 1e6) return `$${(cap / 1e6).toFixed(2)}M`;
+      return `$${cap}`;
+    }
+
+    // Function to update market stats
+    function updateMarketStats() {
+      const gainers = cryptoData.filter(c => c.changePercent > 0).length;
+      const losers = cryptoData.filter(c => c.changePercent < 0).length;
+      const avgChange = cryptoData.reduce((sum, c) => sum + parseFloat(c.changePercent), 0) / cryptoData.length;
+      
+      document.getElementById('gainers-count').textContent = gainers;
+      document.getElementById('losers-count').textContent = losers;
+      document.getElementById('avg-change').textContent = `${avgChange > 0 ? '+' : ''}${avgChange.toFixed(2)}%`;
+      
+      // Update total market cap
+      const totalMarketCap = cryptoData.reduce((sum, c) => sum + c.marketCap, 0);
+      document.getElementById('total-market-cap').textContent = formatMarketCap(totalMarketCap);
+    }
+
+    // Function to render the heatmap
+    function renderHeatmap(groupBy = 'performance') {
+      const container = document.getElementById('heatmap');
+      container.innerHTML = '';
+      
+      // Sort data based on grouping
+      let sortedData = [...cryptoData];
+      if (groupBy === 'market-cap') {
+        sortedData.sort((a, b) => b.marketCap - a.marketCap);
+      } else if (groupBy === 'sector') {
+        sortedData.sort((a, b) => a.sector.localeCompare(b.sector));
+      } else {
+        // Performance (default)
+        sortedData.sort((a, b) => b.changePercent - a.changePercent);
       }
-    };
+      
+      sortedData.forEach(crypto => {
+        const div = document.createElement('div');
+        div.className = 'heat-cell';
+        div.style.backgroundColor = getColor(crypto.changePercent);
+        
+        const changeValue = parseFloat(crypto.changePercent);
+        const changeText = changeValue > 0 ? `+${changeValue.toFixed(2)}%` : `${changeValue.toFixed(2)}%`;
+        
+        div.innerHTML = `
+          <div class="symbol">${crypto.name}</div>
+          <div class="change">${changeText}</div>
+        `;
+        
+        if (groupBy === 'market-cap') {
+          div.innerHTML += `<div class="market-cap" style="font-size: 0.7rem; margin-top: 4px;">${formatMarketCap(crypto.marketCap)}</div>`;
+        } else if (groupBy === 'sector') {
+          div.innerHTML += `<div class="sector" style="font-size: 0.7rem; margin-top: 4px;">${crypto.sector}</div>`;
+        }
+        
+        div.onclick = () => location.href = `chart.html?symbol=${crypto.symbol}`;
+        container.appendChild(div);
+      });
+      
+      updateMarketStats();
+    }
 
-    ws.onclose = () => setTimeout(connectWS, 3000);
-  }
+    // Function to generate realistic performance data
+    function generatePerformanceData(timeframe, baseValue, volatility, trend) {
+      let dataPoints, labels;
+      
+      if (timeframe === '1D') {
+        labels = ['9:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00'];
+        dataPoints = 8;
+      } else if (timeframe === '1W') {
+        labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        dataPoints = 7;
+      } else {
+        labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
+        dataPoints = 4;
+      }
+      
+      const data = [baseValue];
+      
+      for (let i = 1; i < dataPoints; i++) {
+        const random = (Math.random() - 0.5) * volatility;
+        const value = data[i-1] * (1 + trend + random);
+        data.push(value);
+      }
+      
+      return { data, labels };
+    }
 
-  render();
-  connectWS();
-</script>
+    // Function to render the performance chart
+    function renderPerformanceChart(timeframe = '1D') {
+      const ctx = document.getElementById('performance-chart').getContext('2d');
+      
+      // Select top 5 performing assets for the chart
+      const topPerformers = [...cryptoData]
+        .sort((a, b) => b.changePercent - a.changePercent)
+        .slice(0, 5);
+      
+      const datasets = topPerformers.map((crypto, index) => {
+        // Generate performance data based on timeframe
+        const baseValue = 100;
+        const volatility = timeframe === '1D' ? 0.02 : timeframe === '1W' ? 0.05 : 0.08;
+        const trend = (crypto.changePercent / 100) * 0.3; // Scale down the trend for better visualization
+        
+        const { data, labels } = generatePerformanceData(timeframe, baseValue, volatility, trend);
+        
+        // Vibrant color palette for better differentiation
+        const colors = [
+          '#2962ff', '#00e5ff', '#00e676', '#ff9100', '#ff4081',
+          '#651fff', '#ffd600', '#00b8d4', '#64dd17', '#ff1744'
+        ];
+        
+        return {
+          label: crypto.name,
+          data: data,
+          borderColor: colors[index],
+          backgroundColor: colors[index] + '20',
+          borderWidth: 3,
+          fill: false,
+          tension: 0.4,
+          pointRadius: 0,
+          pointHoverRadius: 4
+        };
+      });
+
+      // Generate labels based on timeframe
+      let labels;
+      if (timeframe === '1D') {
+        labels = ['9:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00'];
+      } else if (timeframe === '1W') {
+        labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      } else {
+        labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
+      }
+      
+      // If chart exists, destroy it first
+      if (window.performanceChart) {
+        window.performanceChart.destroy();
+      }
+      
+      // Create new chart
+      window.performanceChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: datasets
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'top',
+              labels: {
+                color: getComputedStyle(document.body).getPropertyValue('--text'),
+                usePointStyle: true,
+                padding: 15
+              }
+            },
+            tooltip: {
+              mode: 'index',
+              intersect: false,
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              titleColor: '#fff',
+              bodyColor: '#fff',
+              borderColor: 'rgba(255, 255, 255, 0.1)',
+              borderWidth: 1
+            }
+          },
+          scales: {
+            x: {
+              grid: {
+                color: getComputedStyle(document.body).getPropertyValue('--border'),
+                drawBorder: false
+              },
+              ticks: {
+                color: getComputedStyle(document.body).getPropertyValue('--text-light')
+              }
+            },
+            y: {
+              grid: {
+                color: getComputedStyle(document.body).getPropertyValue('--border'),
+                drawBorder: false
+              },
+              ticks: {
+                color: getComputedStyle(document.body).getPropertyValue('--text-light'),
+                callback: function(value) {
+                  return value.toFixed(0);
+                }
+              }
+            }
+          },
+          interaction: {
+            intersect: false,
+            mode: 'index'
+          }
+        }
+      });
+    }
+
+    // Simulate WebSocket connection with mock data (since Binance might be blocked)
+    function connectWebSocket() {
+      connectionStatus.className = 'status connected';
+      connectionStatus.innerHTML = '<div class="status-indicator"></div><span>Connected to Market Data</span>';
+      
+      // Simulate real-time updates with mock data
+      setInterval(() => {
+        cryptoData.forEach(crypto => {
+          // Simulate small price changes
+          const change = (Math.random() - 0.5) * 0.5;
+          crypto.changePercent = (parseFloat(crypto.changePercent) + change).toFixed(2);
+        });
+        
+        const groupBy = document.getElementById('group-by').value;
+        renderHeatmap(groupBy);
+      }, 2000);
+    }
+
+    // Initialize the heatmap
+    function initializeHeatmap() {
+      const groupBy = document.getElementById('group-by').value;
+      const timeframe = document.getElementById('timeframe').value;
+      
+      renderHeatmap(groupBy);
+      renderPerformanceChart(timeframe);
+      
+      // Add event listeners for controls
+      document.getElementById('group-by').addEventListener('change', function() {
+        renderHeatmap(this.value);
+      });
+      
+      document.getElementById('timeframe').addEventListener('change', function() {
+        renderPerformanceChart(this.value);
+      });
+      
+      // Connect to WebSocket for real-time data
+      connectWebSocket();
+    }
+
+    // Start the application
+    initializeHeatmap();
+  </script>
 </body>
 </html>
