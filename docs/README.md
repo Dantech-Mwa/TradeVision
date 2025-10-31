@@ -1,4 +1,4 @@
-# TradeVision – Open Source TradingView Clone
+# TradeVision – Open Source
 
 **Live Demo:** https://github.com/Dantech-Mwa/TradeVision
 
