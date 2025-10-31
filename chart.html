@@ -1387,74 +1387,46 @@
       refreshBtn.addEventListener('click', () => {
         updateAllIndicators();
       });
-      
-// Clear all indicators
-clearBtn.addEventListener('click', () => {
-  clearAllIndicators();
-});
-
-document.getElementById('clear-indicators').addEventListener('click', () => {
-  clearAllIndicators();
-});
-
-// Enhanced clear all function
-function clearAllIndicators() {
-  // 1. Clear all series from the indicator chart
-  clearIndicatorChart();
-  
-  // 2. Clear the active indicators array
-  activeIndicators = [];
-  
-  // 3. Remove from localStorage
-  localStorage.removeItem('chartIndicators');
-  
-  // 4. Update the UI list
-  updateIndicatorList();
-  
-  // 5. Force chart cleanup and refresh
-  if (indicatorsChart) {
-    // Completely destroy and recreate the indicator chart for clean state
-    try {
-      const chartContainer = indicatorsChart.getElement();
-      indicatorsChart.remove();
-      indicatorsChart = null;
-      
-      // Recreate the chart
-      setTimeout(() => {
-        initIndicatorChart();
-      }, 100);
-    } catch (error) {
-      console.log('Chart cleanup completed');
+      // Clear all indicators
+      clearBtn.addEventListener('click', () => {
+        activeIndicators = [];
+        localStorage.removeItem('chartIndicators');
+        updateIndicatorList();
+        clearIndicatorChart();
+      });
     }
-  }
-}
-
-function loadActiveIndicators() {
-  const saved = JSON.parse(localStorage.getItem('chartIndicators') || '[]');
-  activeIndicators = saved;
+document.getElementById('clear-indicators').addEventListener('click', () => {
+  activeIndicators = [];
+  localStorage.removeItem('chartIndicators');
   updateIndicatorList();
-  updateAllIndicators();
-}
+  clearIndicatorChart();          // wipes everything instantly
+});
+    function loadActiveIndicators() {
+      const saved = JSON.parse(localStorage.getItem('chartIndicators') || '[]');
+      activeIndicators = saved;
+      updateIndicatorList();
+      updateAllIndicators();
+    }
 
-function addIndicator(name, params) {
-  // Check if already exists
-  const existingIndex = activeIndicators.findIndex(ind => ind.name === name);
-  if (existingIndex >= 0) {
-    activeIndicators[existingIndex].params = params;
-  } else {
-    activeIndicators.push({
-      name: name,
-      params: params,
-      timestamp: Date.now()
-    });
-  }
-  
-  localStorage.setItem('chartIndicators', JSON.stringify(activeIndicators));
-  updateIndicatorList();
-  updateAllIndicators();
-}
+    function addIndicator(name, params) {
+      // Check if already exists
+      const existingIndex = activeIndicators.findIndex(ind => ind.name === name);
+      if (existingIndex >= 0) {
+        activeIndicators[existingIndex].params = params;
+      } else {
+        activeIndicators.push({
+          name: name,
+          params: params,
+          timestamp: Date.now()
+        });
+      }
+      
+      localStorage.setItem('chartIndicators', JSON.stringify(activeIndicators));
+      updateIndicatorList();
+      updateAllIndicators();
+    }
 
-/* -------------------------------------------------------------
+   /* -------------------------------------------------------------
    INDICATOR REMOVAL – removes the indicator + its series instantly
    ------------------------------------------------------------- */
 function removeIndicator(name) {
@@ -1477,7 +1449,6 @@ function removeIndicator(name) {
     updateAllIndicators();   // will clear again (safe) and plot remaining
   }
 }
-
 /* -------------------------------------------------------------
    Remove every series that was created for a specific indicator
    ------------------------------------------------------------- */
@@ -1544,58 +1515,23 @@ function updateAllIndicators() {
 }
 
 /* -------------------------------------------------------------
-   Enhanced Helper – wipe the whole indicator pane completely
+   Helper – wipe the whole indicator pane (used by many places)
    ------------------------------------------------------------- */
 function clearIndicatorChart() {
-  if (!indicatorsChart) return;
-  
-  try {
-    // Method 1: Remove all series sequentially
-    const seriesToRemove = [...(indicatorsChart._series || [])];
-    seriesToRemove.forEach(series => {
-      try {
-        indicatorsChart.removeSeries(series);
-      } catch (e) {
-        // Series might already be removed
-      }
-    });
-    
-    // Method 2: Force clear by accessing internal series array
-    if (indicatorsChart._series && indicatorsChart._series.length > 0) {
-      while (indicatorsChart._series.length > 0) {
-        try {
-          indicatorsChart.removeSeries(indicatorsChart._series[0]);
-        } catch (e) {
-          break; // Exit if we can't remove anymore
-        }
-      }
-    }
-    
-    // Clear the series map
-    indicatorSeriesMap.clear();
-    
-    // Force a chart resize to trigger redraw
-    setTimeout(() => {
-      if (indicatorsChart) {
-        indicatorsChart.timeScale().fitContent();
-      }
-    }, 50);
-    
-  } catch (error) {
-    console.warn('Error during chart clearing:', error);
+  if (!indicatorsChart || !indicatorsChart._series) return;
+  while (indicatorsChart._series.length) {
+    try { indicatorsChart.removeSeries(indicatorsChart._series[0]); } catch (_) { break; }
   }
+  indicatorSeriesMap.clear();   // also wipe the map
 }
 
-function plotIndicator(name, result, params) {
+    function plotIndicator(name, result, params) {
   // Remove old series for this indicator (if any)
   const oldSeries = indicatorSeriesMap.get(name) || [];
   oldSeries.forEach(s => {
     try { indicatorsChart.removeSeries(s); } catch (_) {}
   });
   indicatorSeriesMap.set(name, []);   // start fresh
-
-  // ... rest of your plotIndicator function remains the same
-}
   // -----------------------------------------------------------------
   // 1. SINGLE-LINE INDICATORS (RSI, SMA, EMA, ATR, CCI, VWAP, OBV …)
   // -----------------------------------------------------------------
