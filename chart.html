@@ -1506,41 +1506,29 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     }
 
 // ───── TRADEVISION AI – Gemini Integration ─────
-const GEMINI_API_KEY = 'AIzaSyA7L2Fv1TUNwMPDwdwW1JqjaCMNiEXb0To';  // Your key
+const GEMINI_API_KEY = 'AIzaSyA7L2Fv1TUNwMPDwdwW1JqjaCMNiEXb0To';
 
 async function tradeVisionAI() {
-  if (!chart || priceData.length < 10) {  // Need some data
-    alert('Load a chart first! (At least 10 candles)');
+  if (!chart || priceData.length < 10) {
+    alert('Load a chart first!');
     return;
   }
 
   const btn = document.getElementById('tradevision-ai-btn');
   const output = document.getElementById('ai-insights-output');
-
-  // UI feedback
   btn.disabled = true;
-  btn.innerHTML = '🔄 AI Analyzing...';
+  btn.innerHTML = '🔄 AI Analyzing';
   output.style.display = 'none';
 
   try {
-    // Summarize recent data (last 30 candles for quick analysis)
     const recent = priceData.slice(-30).map(d => ({
-      time: new Date(d.time * 1000).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit' }),
-      open: d.open.toFixed(2),
-      high: d.high.toFixed(2),
-      low: d.low.toFixed(2),
+      time: new Date(d.time * 1000).toLocaleString(),
       close: d.close.toFixed(2),
-      volume: d.volume.toFixed(0),
       change: ((d.close - d.open) / d.open * 100).toFixed(2) + '%'
     }));
 
-    // Smart prompt: Tailored for trading insights
-    const prompt = `You are TradeVision AI, a helpful trading assistant.
-
-Analyze this ${currentSymbol} chart (${currentInterval} timeframe, last 30 candles):
-${JSON.stringify(recent, null, 2)}
-
-Provide a concise, actionable report:
+    const prompt = `Analyze ${currentSymbol} (${currentInterval}):\n${JSON.stringify(recent.slice(0,5))}\n\nTrend? Pattern? Risk? Suggestion? (under 200 words)`;
+     Provide a concise, actionable report:
 - **Trend**: Bullish, bearish, or sideways? (e.g., "Uptrend with higher highs")
 - **Key Patterns**: Candlestick formations, support/resistance? (e.g., "Bullish engulfing at $60K")
 - **Indicators**: RSI/MACD vibes? (If data suggests; keep simple)
@@ -1550,41 +1538,28 @@ Provide a concise, actionable report:
 Keep it under 250 words, friendly, and beginner-friendly. End with: "Trade smart—DYOR!"
 
 Format as Markdown for clean display.`;
-
-    // Call Gemini API
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent'?key=${GEMINI_API_KEY}`, {
+    const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'X-goog-api-key': GEMINI_API_KEY
+      },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          temperature: 0.7,  // Balanced creativity
-          maxOutputTokens: 400,
-          topP: 0.8
-        }
+        generationConfig: { temperature: 0.7, maxOutputTokens: 400 }
       })
     });
 
-    if (!res.ok) throw new Error(`API error: ${res.status} - ${res.statusText}`);
+    if (!res.ok) throw new Error(`API ${res.status}`);
 
     const data = await res.json();
-    const insight = data.candidates[0].content.parts[0].text.trim();
+    const insight = data.candidates[0].content.parts[0].text;
 
-    // Display
-    output.innerHTML = `
-      <strong>🤖 TradeVision AI Report for ${currentSymbol} (${currentInterval}):</strong>
-      <div style="margin-top: 0.5rem; white-space: pre-wrap;">${insight}</div>
-      <small style="color: var(--text-light); margin-top: 0.5rem; display: block;">(Powered by Google Gemini – Refresh chart for new analysis)</small>
-    `;
+    output.innerHTML = `<strong>🤖 TradeVision AI Report for_______</strong><br>${insight}`;
     output.style.display = 'block';
 
   } catch (error) {
-    console.error('TradeVision AI Error:', error);
-    output.innerHTML = `
-      <strong>🤖 AI Analysis Failed</strong><br>
-      <span style="color: var(--red);">${error.message}</span><br>
-      <small>Tip: Check internet or try again. Free tier limits apply.</small>
-    `;
+    output.innerHTML = `<span style="color:red;">🤖 AI Analysis Failed ${error.message}</span>`;
     output.style.display = 'block';
   } finally {
     btn.disabled = false;
