@@ -1505,7 +1505,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       connectKline(currentInterval);
     }
 
-// ───── TRADEVISION AI – Gemini Integration ─────
+// ───── TRADEVISION AI ─────
 const GEMINI_API_KEY = 'AIzaSyA7L2Fv1TUNwMPDwdwW1JqjaCMNiEXb0To';
 
 async function tradeVisionAI() {
@@ -1527,18 +1527,9 @@ async function tradeVisionAI() {
       change: ((d.close - d.open) / d.open * 100).toFixed(2) + '%'
     }));
 
-    const prompt = `Analyze ${currentSymbol} (${currentInterval}):\n${JSON.stringify(recent.slice(0,5))}\n\nTrend? Pattern? Risk? Suggestion? (under 200 words)`;
-     Provide a concise, actionable report:
-- **Trend**: Bullish, bearish, or sideways? (e.g., "Uptrend with higher highs")
-- **Key Patterns**: Candlestick formations, support/resistance? (e.g., "Bullish engulfing at $60K")
-- **Indicators**: RSI/MACD vibes? (If data suggests; keep simple)
-- **Risk Level**: Low/medium/high? Why?
-- **Suggestion**: Buy/hold/sell? Stop-loss tip?
+    const prompt = `Analyze ${currentSymbol} (${currentInterval}):\n${JSON.stringify(recent.slice(0,5))}\n\nTrend? Pattern? Risk? Suggestion?\n\nProvide a concise, actionable report (under 200 words):\n- **Trend**: Bullish, bearish, or sideways?\n- **Key Patterns**: Candlestick formations, support/resistance?\n- **Indicators**: RSI/MACD vibes? (Keep simple)\n- **Risk Level**: Low/medium/high? Why?\n- **Suggestion**: Buy/hold/sell? Stop-loss tip?\n\nKeep it friendly and beginner-friendly. End with: "Trade smart—DYOR!"\n\nFormat as Markdown.`;
 
-Keep it under 250 words, friendly, and beginner-friendly. End with: "Trade smart—DYOR!"
-
-Format as Markdown for clean display.`;
-    const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent', {
+    const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent',{
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1555,7 +1546,7 @@ Format as Markdown for clean display.`;
     const data = await res.json();
     const insight = data.candidates[0].content.parts[0].text;
 
-    output.innerHTML = `<strong>🤖 TradeVision AI Report for_______</strong><br>${insight}`;
+    output.innerHTML = `<strong>🤖 TradeVision AI Report for ${currentSymbol} (${currentInterval})</strong><br>${insight}`;
     output.style.display = 'block';
 
   } catch (error) {
@@ -1566,7 +1557,6 @@ Format as Markdown for clean display.`;
     btn.innerHTML = '🤖 TradeVision AI – Analyze Chart';
   }
 }
-
     // ───── CHART INITIALISATION ─────
     function initChart() {
       const priceContainer = document.getElementById('price-chart');
