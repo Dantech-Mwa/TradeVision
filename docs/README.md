@@ -1,6 +1,6 @@
 # TradeVision – Open Source TradingView Clone
 
-**Live Demo:** https://yourusername.github.io/TradeVision
+**Live Demo:** https://github.com/Dantech-Mwa/TradeVision
 
 A **fully static**, **no-backend**, **GitHub Pages-hosted** trading platform.
 
