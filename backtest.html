@@ -7,30 +7,48 @@
   <link rel="icon" href="assets/icons/chart.svg" type="image/svg+xml">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <link id="theme-style" rel="stylesheet" href="assets/css/main.css">
-  <link rel="stylesheet" href="assets/css/dark-theme.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root{--bg:#141518;--bg-light:#1e222d;--text:#d1d4dc;--text-light:#9ea1b5;--accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#2d313e;--card:#1e222d;}
     [data-theme="light"]{--bg:#ffffff;--bg-light:#f8f9fa;--text:#2d3748;--text-light:#718096;--accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#e2e8f0;--card:#ffffff;}
-    body{margin:0;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);}
+    body{margin:0;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);transition:background 0.3s,color 0.3s;}
     a{color:var(--accent);text-decoration:none;}
     .container{max-width:1200px;margin:0 auto;padding:2rem 1rem;}
     .header{background:var(--bg-light);border-bottom:1px solid var(--border);padding:0.75rem 0;position:sticky;top:0;z-index:100;}
     .flex-between{display:flex;justify-content:space-between;align-items:center;}
+    .flex-center{display:flex;align-items:center;gap:0.5rem;}
     .logo{font-weight:700;font-size:1.4rem;color:var(--accent);}
     .logo i{font-size:1.5rem;}
-    .nav-links a{margin:0 0.75rem;font-weight:500;}
-    .icon-btn{background:none;border:none;color:var(--text-light);font-size:1.2rem;cursor:pointer;padding:0.5rem;}
+    .nav-links a{margin:0 0.75rem;font-weight:500;transition:color 0.3s;}
+    .nav-links a:hover{color:var(--accent);}
+    .icon-btn{background:none;border:none;color:var(--text-light);font-size:1.2rem;cursor:pointer;padding:0.5rem;border-radius:4px;transition:background 0.3s,color 0.3s;}
+    .icon-btn:hover{background:var(--border);color:var(--text);}
     .backtest-form{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1.5rem;margin-bottom:2rem;}
     .form-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-bottom:1rem;}
-    .form-group label{display:block;margin-bottom:0.25rem;}
-    .form-group input,.form-group select{padding:0.5rem;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text);width:100%;}
-    button.primary{background:var(--accent);color:white;padding:0.75rem 1.5rem;border:none;border-radius:4px;cursor:pointer;}
+    .form-group label{display:block;margin-bottom:0.25rem;font-weight:500;}
+    .form-group input,.form-group select{padding:0.5rem;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text);width:100%;transition:border 0.3s;}
+    .form-group input:focus,.form-group select:focus{outline:none;border-color:var(--accent);}
+    button.primary{background:var(--accent);color:white;padding:0.75rem 1.5rem;border:none;border-radius:4px;cursor:pointer;font-weight:600;transition:background 0.3s;}
+    button.primary:hover{background:#1a4fd8;}
+    button.primary:disabled{background:var(--text-light);cursor:not-allowed;}
     .results{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1.5rem;margin-top:2rem;}
     .metrics{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:1rem;margin-top:1rem;}
     .metric{background:var(--bg-light);padding:1rem;border-radius:6px;text-align:center;}
     .metric-value{font-size:1.5rem;font-weight:700;}
+    .metric.positive .metric-value{color:var(--green);}
+    .metric.negative .metric-value{color:var(--red);}
     .footer{background:var(--bg-light);border-top:1px solid var(--border);padding:1rem 0;font-size:0.8rem;text-align:center;color:var(--text-light);}
+    .loading{display:none;text-align:center;padding:2rem;}
+    .loading-spinner{border:3px solid var(--border);border-top:3px solid var(--accent);border-radius:50%;width:40px;height:40px;animation:spin 1s linear infinite;margin:0 auto 1rem;}
+    @keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
+    .chart-container{margin-top:2rem;height:300px;}
+    .strategy-params{margin-top:1rem;padding:1rem;background:var(--bg-light);border-radius:6px;}
+    .param-group{display:flex;gap:1rem;margin-bottom:0.5rem;}
+    .param-group input{max-width:100px;}
+    .status{display:flex;align-items:center;gap:0.5rem;margin-top:1rem;font-size:0.9rem;}
+    .status.connected{color:var(--green);}
+    .status.disconnected{color:var(--red);}
+    .error-message{background:var(--red);color:white;padding:0.75rem;border-radius:4px;margin:1rem 0;display:none;}
   </style>
 </head>
 <body data-theme="dark">
@@ -56,47 +74,85 @@
 
   <div class="container">
     <h1>Strategy Backtester</h1>
+    
+    <div class="status" id="connection-status">
+      <i class="fas fa-circle"></i>
+      <span>Connecting to Binance...</span>
+    </div>
+
+    <div class="error-message" id="error-message"></div>
 
     <div class="backtest-form">
       <div class="form-row">
         <div class="form-group">
           <label>Symbol</label>
-          <input type="text" id="bt-symbol" value="AAPL">
+          <input type="text" id="bt-symbol" value="BTCUSDT" placeholder="e.g., BTCUSDT, ETHUSDT">
         </div>
         <div class="form-group">
-          <label>Initial Capital</label>
-          <input type="number" id="bt-capital" value="100000">
+          <label>Initial Capital ($)</label>
+          <input type="number" id="bt-capital" value="10000" min="100">
         </div>
         <div class="form-group">
           <label>Commission %</label>
-          <input type="number" id="bt-commission" value="0.1" step="0.01">
+          <input type="number" id="bt-commission" value="0.1" step="0.01" min="0">
         </div>
       </div>
       <div class="form-row">
         <div class="form-group">
           <label>Strategy</label>
           <select id="bt-strategy">
-            <option>SMA Crossover</option>
-            <option>RSI Mean Reversion</option>
-            <option>Bollinger Bands</option>
+            <option value="sma">SMA Crossover</option>
+            <option value="rsi">RSI Mean Reversion</option>
+            <option value="bollinger">Bollinger Bands</option>
           </select>
         </div>
         <div class="form-group">
-          <label>Start Date</label>
-          <input type="date" id="bt-start" value="2024-01-01">
+          <label>Timeframe</label>
+          <select id="bt-timeframe">
+            <option value="1m">1 Minute</option>
+            <option value="5m">5 Minutes</option>
+            <option value="15m">15 Minutes</option>
+            <option value="1h">1 Hour</option>
+            <option value="4h">4 Hours</option>
+            <option value="1d" selected>1 Day</option>
+          </select>
         </div>
         <div class="form-group">
-          <label>End Date</label>
-          <input type="date" id="bt-end" value="2025-01-01">
+          <label>Period (Days)</label>
+          <input type="number" id="bt-period" value="30" min="1" max="365">
         </div>
       </div>
-      <button class="primary" id="run-backtest">Run Backtest</button>
+
+      <div class="strategy-params" id="strategy-params">
+        <div id="sma-params">
+          <h4>SMA Crossover Parameters</h4>
+          <div class="param-group">
+            <div>
+              <label>Fast SMA Period</label>
+              <input type="number" id="sma-fast" value="10" min="1" max="100">
+            </div>
+            <div>
+              <label>Slow SMA Period</label>
+              <input type="number" id="sma-slow" value="20" min="1" max="200">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="primary" id="run-backtest">
+        <i class="fas fa-play"></i> Run Backtest
+      </button>
+    </div>
+
+    <div class="loading" id="loading">
+      <div class="loading-spinner"></div>
+      <p>Fetching market data and running backtest...</p>
     </div>
 
     <div class="results" id="results" style="display:none;">
       <h2>Backtest Results</h2>
       <div class="metrics">
-        <div class="metric">
+        <div class="metric" id="total-return-metric">
           <div class="metric-label">Total Return</div>
           <div class="metric-value" id="total-return">--</div>
         </div>
@@ -112,6 +168,18 @@
           <div class="metric-label">Sharpe Ratio</div>
           <div class="metric-value" id="sharpe">--</div>
         </div>
+        <div class="metric">
+          <div class="metric-label">Total Trades</div>
+          <div class="metric-value" id="total-trades">--</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Profit Factor</div>
+          <div class="metric-value" id="profit-factor">--</div>
+        </div>
+      </div>
+      
+      <div class="chart-container">
+        <canvas id="equity-chart"></canvas>
       </div>
     </div>
   </div>
@@ -121,27 +189,430 @@
   </footer>
 
   <script>
+    class BinanceBacktester {
+      constructor() {
+        this.ws = null;
+        this.isConnected = false;
+        this.historicalData = [];
+        this.currentPrices = {};
+        this.init();
+      }
+
+      init() {
+        this.setupEventListeners();
+        this.connectWebSocket();
+      }
+
+      connectWebSocket() {
+        try {
+          this.ws = new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@kline_1d');
+          
+          this.ws.onopen = () => {
+            this.isConnected = true;
+            this.updateConnectionStatus(true, 'Connected to Binance');
+          };
+
+          this.ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            this.handleMarketData(data);
+          };
+
+          this.ws.onerror = (error) => {
+            console.error('WebSocket error:', error);
+            this.updateConnectionStatus(false, 'Connection error');
+          };
+
+          this.ws.onclose = () => {
+            this.isConnected = false;
+            this.updateConnectionStatus(false, 'Disconnected');
+            // Attempt reconnect after 5 seconds
+            setTimeout(() => this.connectWebSocket(), 5000);
+          };
+
+        } catch (error) {
+          this.showError('Failed to connect to Binance: ' + error.message);
+        }
+      }
+
+      updateConnectionStatus(connected, message) {
+        const statusEl = document.getElementById('connection-status');
+        const icon = statusEl.querySelector('i');
+        
+        if (connected) {
+          statusEl.className = 'status connected';
+          icon.className = 'fas fa-circle';
+          statusEl.innerHTML = `<i class="fas fa-circle"></i> <span>${message}</span>`;
+        } else {
+          statusEl.className = 'status disconnected';
+          icon.className = 'fas fa-circle';
+          statusEl.innerHTML = `<i class="fas fa-circle"></i> <span>${message}</span>`;
+        }
+      }
+
+      async fetchHistoricalData(symbol, timeframe, period) {
+        try {
+          const intervalMap = {
+            '1m': '1m', '5m': '5m', '15m': '15m', 
+            '1h': '1h', '4h': '4h', '1d': '1d'
+          };
+          
+          const limit = Math.min(period * 5, 1000); // Binance max 1000 candles
+          const url = `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${intervalMap[timeframe]}&limit=${limit}`;
+          
+          const response = await fetch(url);
+          if (!response.ok) throw new Error('Failed to fetch historical data');
+          
+          const data = await response.json();
+          return data.map(candle => ({
+            time: candle[0],
+            open: parseFloat(candle[1]),
+            high: parseFloat(candle[2]),
+            low: parseFloat(candle[3]),
+            close: parseFloat(candle[4]),
+            volume: parseFloat(candle[5])
+          }));
+        } catch (error) {
+          throw new Error(`Failed to fetch historical data: ${error.message}`);
+        }
+      }
+
+      calculateSMA(data, period) {
+        const sma = [];
+        for (let i = period - 1; i < data.length; i++) {
+          const sum = data.slice(i - period + 1, i + 1).reduce((a, b) => a + b.close, 0);
+          sma.push(sum / period);
+        }
+        return sma;
+      }
+
+      runSMABacktest(data, fastPeriod, slowPeriod, capital, commission) {
+        if (data.length < slowPeriod) {
+          throw new Error('Not enough data for the selected periods');
+        }
+
+        const fastSMA = this.calculateSMA(data, fastPeriod);
+        const slowSMA = this.calculateSMA(data, slowPeriod);
+        
+        let position = 0;
+        let cash = capital;
+        let trades = [];
+        let equity = [capital];
+        let inPosition = false;
+        let entryPrice = 0;
+
+        // Adjust for SMA offset
+        const offset = slowPeriod - 1;
+        
+        for (let i = offset; i < data.length - 1; i++) {
+          const idx = i - offset;
+          const price = data[i].close;
+          const fast = fastSMA[idx];
+          const slow = slowSMA[idx];
+          
+          if (!inPosition && fast > slow && fastSMA[idx - 1] <= slowSMA[idx - 1]) {
+            // Buy signal
+            const shares = Math.floor(cash / price * (1 - commission/100));
+            if (shares > 0) {
+              position = shares;
+              cash -= shares * price * (1 + commission/100);
+              entryPrice = price;
+              inPosition = true;
+              trades.push({
+                type: 'BUY',
+                price: price,
+                time: data[i].time,
+                shares: shares
+              });
+            }
+          } else if (inPosition && fast < slow && fastSMA[idx - 1] >= slowSMA[idx - 1]) {
+            // Sell signal
+            cash += position * price * (1 - commission/100);
+            trades.push({
+              type: 'SELL',
+              price: price,
+              time: data[i].time,
+              shares: position,
+              pnl: (price - entryPrice) * position
+            });
+            position = 0;
+            inPosition = false;
+          }
+          
+          const currentEquity = cash + (position * price);
+          equity.push(currentEquity);
+        }
+
+        // Close any open position at the end
+        if (inPosition) {
+          const finalPrice = data[data.length - 1].close;
+          cash += position * finalPrice * (1 - commission/100);
+          trades.push({
+            type: 'SELL',
+            price: finalPrice,
+            time: data[data.length - 1].time,
+            shares: position,
+            pnl: (finalPrice - entryPrice) * position
+          });
+        }
+
+        return { trades, equity, finalCapital: cash };
+      }
+
+      calculateMetrics(trades, equity, initialCapital) {
+        if (trades.length === 0) {
+          return {
+            totalReturn: 0,
+            winRate: 0,
+            maxDrawdown: 0,
+            sharpeRatio: 0,
+            totalTrades: 0,
+            profitFactor: 0
+          };
+        }
+
+        const winningTrades = trades.filter(t => t.pnl > 0).length;
+        const totalReturn = ((equity[equity.length - 1] - initialCapital) / initialCapital) * 100;
+        
+        let maxDrawdown = 0;
+        let peak = equity[0];
+        for (let value of equity) {
+          if (value > peak) peak = value;
+          const drawdown = ((peak - value) / peak) * 100;
+          if (drawdown > maxDrawdown) maxDrawdown = drawdown;
+        }
+
+        const profitTrades = trades.filter(t => t.pnl > 0).reduce((sum, t) => sum + t.pnl, 0);
+        const lossTrades = trades.filter(t => t.pnl < 0).reduce((sum, t) => sum + Math.abs(t.pnl), 0);
+        const profitFactor = lossTrades > 0 ? profitTrades / lossTrades : profitTrades > 0 ? Infinity : 0;
+
+        // Simplified Sharpe ratio (assuming risk-free rate of 0)
+        const returns = [];
+        for (let i = 1; i < equity.length; i++) {
+          returns.push((equity[i] - equity[i-1]) / equity[i-1]);
+        }
+        const avgReturn = returns.reduce((a, b) => a + b, 0) / returns.length;
+        const stdDev = Math.sqrt(returns.reduce((a, b) => a + Math.pow(b - avgReturn, 2), 0) / returns.length);
+        const sharpeRatio = stdDev > 0 ? avgReturn / stdDev : 0;
+
+        return {
+          totalReturn,
+          winRate: (winningTrades / trades.length) * 100,
+          maxDrawdown,
+          sharpeRatio,
+          totalTrades: trades.length,
+          profitFactor
+        };
+      }
+
+      setupEventListeners() {
+        document.getElementById('run-backtest').addEventListener('click', () => this.executeBacktest());
+        
+        document.getElementById('bt-strategy').addEventListener('change', (e) => {
+          this.updateStrategyParams(e.target.value);
+        });
+
+        // Initialize strategy params
+        this.updateStrategyParams('sma');
+      }
+
+      updateStrategyParams(strategy) {
+        const paramsEl = document.getElementById('strategy-params');
+        if (strategy === 'sma') {
+          paramsEl.innerHTML = `
+            <div id="sma-params">
+              <h4>SMA Crossover Parameters</h4>
+              <div class="param-group">
+                <div>
+                  <label>Fast SMA Period</label>
+                  <input type="number" id="sma-fast" value="10" min="1" max="100">
+                </div>
+                <div>
+                  <label>Slow SMA Period</label>
+                  <input type="number" id="sma-slow" value="20" min="1" max="200">
+                </div>
+              </div>
+            </div>
+          `;
+        } else if (strategy === 'rsi') {
+          paramsEl.innerHTML = `
+            <div id="rsi-params">
+              <h4>RSI Parameters</h4>
+              <div class="param-group">
+                <div>
+                  <label>RSI Period</label>
+                  <input type="number" id="rsi-period" value="14" min="2" max="50">
+                </div>
+                <div>
+                  <label>Oversold</label>
+                  <input type="number" id="rsi-oversold" value="30" min="1" max="50">
+                </div>
+                <div>
+                  <label>Overbought</label>
+                  <input type="number" id="rsi-overbought" value="70" min="50" max="99">
+                </div>
+              </div>
+            </div>
+          `;
+        }
+      }
+
+      async executeBacktest() {
+        const button = document.getElementById('run-backtest');
+        const loading = document.getElementById('loading');
+        const results = document.getElementById('results');
+        const errorMsg = document.getElementById('error-message');
+        
+        // Reset
+        errorMsg.style.display = 'none';
+        button.disabled = true;
+        loading.style.display = 'block';
+        results.style.display = 'none';
+
+        try {
+          const symbol = document.getElementById('bt-symbol').value.toUpperCase();
+          const capital = parseFloat(document.getElementById('bt-capital').value);
+          const commission = parseFloat(document.getElementById('bt-commission').value);
+          const strategy = document.getElementById('bt-strategy').value;
+          const timeframe = document.getElementById('bt-timeframe').value;
+          const period = parseInt(document.getElementById('bt-period').value);
+
+          // Validate inputs
+          if (!symbol) throw new Error('Please enter a symbol');
+          if (capital < 100) throw new Error('Minimum capital is $100');
+          if (commission < 0) throw new Error('Commission cannot be negative');
+
+          // Fetch historical data
+          const historicalData = await this.fetchHistoricalData(symbol, timeframe, period);
+          if (historicalData.length === 0) throw new Error('No historical data found');
+
+          let backtestResult;
+          if (strategy === 'sma') {
+            const fastPeriod = parseInt(document.getElementById('sma-fast').value);
+            const slowPeriod = parseInt(document.getElementById('sma-slow').value);
+            if (fastPeriod >= slowPeriod) throw new Error('Fast SMA must be less than Slow SMA');
+            
+            backtestResult = this.runSMABacktest(historicalData, fastPeriod, slowPeriod, capital, commission);
+          } else {
+            // For demo, use SMA as fallback
+            backtestResult = this.runSMABacktest(historicalData, 10, 20, capital, commission);
+          }
+
+          const metrics = this.calculateMetrics(backtestResult.trades, backtestResult.equity, capital);
+          this.displayResults(metrics, backtestResult.equity);
+
+        } catch (error) {
+          this.showError(error.message);
+        } finally {
+          button.disabled = false;
+          loading.style.display = 'none';
+        }
+      }
+
+      displayResults(metrics, equity) {
+        const results = document.getElementById('results');
+        results.style.display = 'block';
+
+        // Update metrics
+        document.getElementById('total-return').textContent = metrics.totalReturn.toFixed(2) + '%';
+        document.getElementById('win-rate').textContent = metrics.winRate.toFixed(1) + '%';
+        document.getElementById('max-dd').textContent = metrics.maxDrawdown.toFixed(2) + '%';
+        document.getElementById('sharpe').textContent = metrics.sharpeRatio.toFixed(2);
+        document.getElementById('total-trades').textContent = metrics.totalTrades;
+        document.getElementById('profit-factor').textContent = metrics.profitFactor.toFixed(2);
+
+        // Color code total return
+        const returnMetric = document.getElementById('total-return-metric');
+        returnMetric.className = metrics.totalReturn >= 0 ? 'metric positive' : 'metric negative';
+
+        // Create equity curve chart
+        this.createEquityChart(equity);
+      }
+
+      createEquityChart(equity) {
+        const ctx = document.getElementById('equity-chart').getContext('2d');
+        
+        // Destroy existing chart if it exists
+        if (this.equityChart) {
+          this.equityChart.destroy();
+        }
+
+        this.equityChart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: equity.map((_, i) => `Day ${i + 1}`),
+            datasets: [{
+              label: 'Portfolio Value',
+              data: equity,
+              borderColor: '#2962ff',
+              backgroundColor: 'rgba(41, 98, 255, 0.1)',
+              borderWidth: 2,
+              fill: true,
+              tension: 0.1
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: false
+              }
+            },
+            scales: {
+              x: {
+                grid: {
+                  color: 'rgba(255,255,255,0.1)'
+                }
+              },
+              y: {
+                grid: {
+                  color: 'rgba(255,255,255,0.1)'
+                }
+              }
+            }
+          }
+        });
+      }
+
+      showError(message) {
+        const errorEl = document.getElementById('error-message');
+        errorEl.textContent = message;
+        errorEl.style.display = 'block';
+      }
+
+      handleMarketData(data) {
+        // Update current prices for real-time monitoring
+        this.currentPrices[data.s] = {
+          price: parseFloat(data.k.c),
+          time: data.k.t
+        };
+      }
+    }
+
+    // Theme management
     const themeToggle = document.getElementById('theme-toggle');
     const body = document.body;
     const themeIcon = themeToggle.querySelector('i');
+    
     themeToggle.addEventListener('click', () => {
       const isDark = body.getAttribute('data-theme') === 'dark';
       body.setAttribute('data-theme', isDark ? 'light' : 'dark');
-      themeIcon.classList.toggle('fa-moon'); themeIcon.classList.toggle('fa-sun');
+      themeIcon.classList.toggle('fa-moon');
+      themeIcon.classList.toggle('fa-sun');
       localStorage.setItem('theme', isDark ? 'light' : 'dark');
     });
+
+    // Initialize
     const savedTheme = localStorage.getItem('theme') || 'dark';
     body.setAttribute('data-theme', savedTheme);
-    if (savedTheme === 'light') themeIcon.classList.replace('fa-moon', 'fa-sun');
+    if (savedTheme === 'light') {
+      themeIcon.classList.replace('fa-moon', 'fa-sun');
+    }
 
-    document.getElementById('run-backtest').addEventListener('click', () => {
-      const results = document.getElementById('results');
-      results.style.display = 'block';
-      const ret = (Math.random() * 100 - 20).toFixed(2);
-      document.getElementById('total-return').textContent = ret + '%';
-      document.getElementById('win-rate').textContent = (Math.random() * 30 + 50).toFixed(1) + '%';
-      document.getElementById('max-dd').textContent = (Math.random() * 25).toFixed(1) + '%';
-      document.getElementById('sharpe').textContent = (Math.random() * 2).toFixed(2);
+    // Initialize backtester when page loads
+    let backtester;
+    document.addEventListener('DOMContentLoaded', () => {
+      backtester = new BinanceBacktester();
     });
   </script>
 </body>
