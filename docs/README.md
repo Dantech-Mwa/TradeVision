@@ -92,7 +92,7 @@ You may NOT:Use in commercial products
 Modify or redistribute
 Sell or monetize
 
-Full license: LICENSE (./LICENSE)Contact & SupportEmail: dantech.mwa@gmail.com
+Full license: LICENSE (./LICENSE)Contact & SupportEmail: mwanza.wambua81@gmail.com
 GitHub Issues: Open an issue
 Twitter/X: @DantechMwa (coming soon)
 
