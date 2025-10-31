@@ -600,157 +600,245 @@
     .indicator-controls button:hover {
       background: var(--card-hover);
     }
+    
     /* Heatmap Button Styles */
-.heatmap-panel {
-  border-top: 1px solid var(--border);
-  padding-top: 1.5rem;
-}
+    .heatmap-panel {
+      border-top: 1px solid var(--border);
+      padding-top: 1.5rem;
+    }
 
-.heatmap-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  width: 100%;
-  padding: 1rem;
-  font-weight: 600;
-  background: linear-gradient(135deg, #2962ff 0%, #2979ff 100%);
-  color: white;
-  border: none;
-  border-radius: 12px;
-  cursor: pointer;
-  text-decoration: none;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(41, 98, 255, 0.25);
-  position: relative;
-  overflow: hidden;
-}
+    .heatmap-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      width: 100%;
+      padding: 1rem;
+      font-weight: 600;
+      background: linear-gradient(135deg, #2962ff 0%, #2979ff 100%);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(41, 98, 255, 0.25);
+      position: relative;
+      overflow: hidden;
+    }
 
-.heatmap-btn:hover {
-  background: linear-gradient(135deg, #2563eb 0%, #1e53e5 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(41, 98, 255, 0.35);
-}
+    .heatmap-btn:hover {
+      background: linear-gradient(135deg, #2563eb 0%, #1e53e5 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(41, 98, 255, 0.35);
+    }
 
-.heatmap-btn:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(41, 98, 255, 0.3);
-}
+    .heatmap-btn:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 8px rgba(41, 98, 255, 0.3);
+    }
 
-.heatmap-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: left 0.6s;
-}
+    .heatmap-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: left 0.6s;
+    }
 
-.heatmap-btn:hover::before {
-  left: 100%;
-}
+    .heatmap-btn:hover::before {
+      left: 100%;
+    }
 
-.heatmap-icon {
-  font-size: 1.4rem;
-  color: #ffeb3b;
-  filter: drop-shadow(0 2px 4px rgba(255, 235, 59, 0.3));
-  transition: transform 0.3s ease;
-}
+    .heatmap-icon {
+      font-size: 1.4rem;
+      color: #ffeb3b;
+      filter: drop-shadow(0 2px 4px rgba(255, 235, 59, 0.3));
+      transition: transform 0.3s ease;
+    }
 
-.heatmap-btn:hover .heatmap-icon {
-  transform: scale(1.1) rotate(5deg);
-}
+    .heatmap-btn:hover .heatmap-icon {
+      transform: scale(1.1) rotate(5deg);
+    }
 
-.heatmap-content {
-  flex: 1;
-  text-align: left;
-}
+    .heatmap-content {
+      flex: 1;
+      text-align: left;
+    }
 
-.heatmap-title {
-  font-size: 1rem;
-  font-weight: 700;
-  margin-bottom: 2px;
-  letter-spacing: -0.2px;
-}
+    .heatmap-title {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 2px;
+      letter-spacing: -0.2px;
+    }
 
-.heatmap-tagline {
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.85);
-  font-weight: 400;
-  line-height: 1.3;
-}
+    .heatmap-tagline {
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.85);
+      font-weight: 400;
+      line-height: 1.3;
+    }
 
-.heatmap-arrow {
-  font-size: 1rem;
-  opacity: 0.8;
-  transition: all 0.3s ease;
-}
+    .heatmap-arrow {
+      font-size: 1rem;
+      opacity: 0.8;
+      transition: all 0.3s ease;
+    }
 
-.heatmap-btn:hover .heatmap-arrow {
-  transform: translateX(3px);
-  opacity: 1;
-}
+    .heatmap-btn:hover .heatmap-arrow {
+      transform: translateX(3px);
+      opacity: 1;
+    }
 
-/* Pulse animation for attention */
-@keyframes heatmapPulse {
-  0% {
-    box-shadow: 0 4px 12px rgba(41, 98, 255, 0.25);
-  }
-  50% {
-    box-shadow: 0 4px 20px rgba(41, 98, 255, 0.4);
-  }
-  100% {
-    box-shadow: 0 4px 12px rgba(41, 98, 255, 0.25);
-  }
-}
+    /* Pulse animation for attention */
+    @keyframes heatmapPulse {
+      0% {
+        box-shadow: 0 4px 12px rgba(41, 98, 255, 0.25);
+      }
+      50% {
+        box-shadow: 0 4px 20px rgba(41, 98, 255, 0.4);
+      }
+      100% {
+        box-shadow: 0 4px 12px rgba(41, 98, 255, 0.25);
+      }
+    }
 
-.heatmap-btn {
-  animation: heatmapPulse 3s ease-in-out infinite;
-}
+    .heatmap-btn {
+      animation: heatmapPulse 3s ease-in-out infinite;
+    }
 
-/* Dark theme adjustments */
-[data-theme="dark"] .heatmap-btn {
-  background: linear-gradient(135deg, #2962ff 0%, #1e53e5 100%);
-}
+    /* Dark theme adjustments */
+    [data-theme="dark"] .heatmap-btn {
+      background: linear-gradient(135deg, #2962ff 0%, #1e53e5 100%);
+    }
 
-[data-theme="dark"] .heatmap-btn:hover {
-  background: linear-gradient(135deg, #2563eb 0%, #1a47c4 100%);
-}
+    [data-theme="dark"] .heatmap-btn:hover {
+      background: linear-gradient(135deg, #2563eb 0%, #1a47c4 100%);
+    }
 
-/* Light theme adjustments */
-[data-theme="light"] .heatmap-btn {
-  background: linear-gradient(135deg, #2962ff 0%, #2979ff 100%);
-  color: white;
-}
+    /* Light theme adjustments */
+    [data-theme="light"] .heatmap-btn {
+      background: linear-gradient(135deg, #2962ff 0%, #2979ff 100%);
+      color: white;
+    }
 
-[data-theme="light"] .heatmap-btn:hover {
-  background: linear-gradient(135deg, #2563eb 0%, #1e53e5 100%);
-}
+    [data-theme="light"] .heatmap-btn:hover {
+      background: linear-gradient(135deg, #2563eb 0%, #1e53e5 100%);
+    }
 
-[data-theme="light"] .heatmap-tagline {
-  color: rgba(255, 255, 255, 0.9);
-}
+    [data-theme="light"] .heatmap-tagline {
+      color: rgba(255, 255, 255, 0.9);
+    }
 
-/* Responsive design */
-@media (max-width: 768px) {
-  .heatmap-btn {
-    padding: 0.875rem;
-    gap: 0.625rem;
-  }
-  
-  .heatmap-title {
-    font-size: 0.95rem;
-  }
-  
-  .heatmap-tagline {
-    font-size: 0.75rem;
-  }
-  
-  .heatmap-icon {
-    font-size: 1.2rem;
-  }
-}
+    /* Responsive design */
+    @media (max-width: 768px) {
+      .heatmap-btn {
+        padding: 0.875rem;
+        gap: 0.625rem;
+      }
+      
+      .heatmap-title {
+        font-size: 0.95rem;
+      }
+      
+      .heatmap-tagline {
+        font-size: 0.75rem;
+      }
+      
+      .heatmap-icon {
+        font-size: 1.2rem;
+      }
+    }
+    
+    /* NEW: Chart Controls */
+    .chart-controls {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 25;
+      display: flex;
+      gap: 5px;
+      background: var(--bg-light);
+      border-radius: 6px;
+      padding: 5px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      border: 1px solid var(--border);
+    }
+    
+    .chart-control-btn {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      width: 32px;
+      height: 32px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    
+    .chart-control-btn:hover {
+      background: var(--card-hover);
+      color: var(--accent);
+    }
+    
+    .chart-control-btn.active {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+    
+    /* NEW: Fullscreen mode */
+    body.fullscreen-mode {
+      overflow: hidden;
+    }
+    
+    body.fullscreen-mode .chart-layout {
+      grid-template-columns: 1fr;
+      height: 100vh;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 1000;
+      background: var(--bg);
+    }
+    
+    body.fullscreen-mode .sidebar-left,
+    body.fullscreen-mode .sidebar-right {
+      display: none;
+    }
+    
+    body.fullscreen-mode .header,
+    body.fullscreen-mode .footer {
+      display: none;
+    }
+    
+    body.fullscreen-mode .chart-controls {
+      top: 15px;
+      right: 15px;
+    }
+    
+    body.fullscreen-mode .main-chart {
+      height: 100%;
+    }
+    
+    body.fullscreen-mode #main-chart {
+      height: 60%;
+    }
+    
+    body.fullscreen-mode #volume-chart {
+      height: 15%;
+    }
+    
+    body.fullscreen-mode #indicators-chart {
+      height: 25%;
+    }
   </style>
 </head>
 
@@ -795,6 +883,14 @@
 
     <!-- CENTER CHART + VOLUME + INDICATORS -->
     <div class="main-chart">
+      <!-- NEW: Chart Controls -->
+      <div class="chart-controls">
+        <button class="chart-control-btn" id="zoom-in" title="Zoom In"><i class="fas fa-search-plus"></i></button>
+        <button class="chart-control-btn" id="zoom-out" title="Zoom Out"><i class="fas fa-search-minus"></i></button>
+        <button class="chart-control-btn" id="zoom-reset" title="Reset Zoom"><i class="fas fa-expand-alt"></i></button>
+        <button class="chart-control-btn" id="fullscreen-toggle" title="Fullscreen"><i class="fas fa-expand"></i></button>
+      </div>
+      
       <div class="chart-container">
         <div id="main-chart">
           <div class="chart-inner" id="price-chart"></div>
@@ -838,7 +934,7 @@
         <button class="chart-type-btn" data-type="bar">Bars</button>
       </div>
 
-            <!-- INDICATOR PANEL -->
+      <!-- INDICATOR PANEL -->
       <div class="indicator-panel">
         <div class="panel-title">Active Indicators</div>
         <div class="indicator-controls">
@@ -855,7 +951,8 @@
         <!-- ADD THIS CONTAINER -->
         <div id="indicator-list" class="indicator-list"></div>
       </div>
-		<!-- ==== HEATMAP BUTTON SECTION ==== -->
+      
+      <!-- ==== HEATMAP BUTTON SECTION ==== -->
       <div class="heatmap-panel" style="margin-top: 1.5rem;">
         <a href="heatmap.html" target="_self" class="heatmap-btn">
           <i class="fas fa-fire heatmap-icon"></i>
@@ -885,9 +982,9 @@
     let currentChartType = 'candlestick';
     let lastPrice = 0;
     let activeIndicators = [];
-	// ---------------------------------------------------------------
-// GLOBAL: keep a reference to every series that belongs to an indicator
-// ---------------------------------------------------------------
+    // ---------------------------------------------------------------
+    // GLOBAL: keep a reference to every series that belongs to an indicator
+    // ---------------------------------------------------------------
     const indicatorSeriesMap = new Map();   // key: indicatorName   value: array of series
     
     // ───── DRAWING TOOLS GLOBALS ─────
@@ -899,6 +996,11 @@
     
     let allSymbols = [];
     let symbolInfoCache = {};
+
+    // ───── ZOOM AND FULLSCREEN GLOBALS ─────
+    let isFullscreen = false;
+    let zoomLevel = 1.0;
+    let baseBarSpacing = 6; // Base spacing between bars
 
     // ───── INDICATOR SYSTEM ─────
     const IndicatorMath = {
@@ -1357,7 +1459,14 @@
         height: priceContainer.clientHeight,
         layout: { background: { color: 'transparent' }, textColor: '#d1d4dc' },
         grid: { vertLines: { color: '#2d313e' }, horzLines: { color: '#2d313e' } },
-        timeScale: { borderColor: '#2d313e', timeVisible: true, secondsVisible: false },
+        timeScale: { 
+          borderColor: '#2d313e', 
+          timeVisible: true, 
+          secondsVisible: false,
+          barSpacing: baseBarSpacing,
+          minBarSpacing: 1,
+          rightOffset: 10
+        },
         handleScroll: { mouseWheel: true, pressedMouseMove: true },
         handleScale: { axisPressedMouseMove: true, mouseWheel: true, pinch: true }
       });
@@ -1390,7 +1499,14 @@
         height: indicatorsContainer.clientHeight,
         layout: { background: { color: 'transparent' }, textColor: '#d1d4dc' },
         grid: { vertLines: { color: '#2d313e' }, horzLines: { color: '#2d313e' } },
-        timeScale: { borderColor: '#2d313e', timeVisible: true, secondsVisible: false },
+        timeScale: { 
+          borderColor: '#2d313e', 
+          timeVisible: true, 
+          secondsVisible: false,
+          barSpacing: baseBarSpacing,
+          minBarSpacing: 1,
+          rightOffset: 10
+        },
         handleScroll: { mouseWheel: true, pressedMouseMove: true },
         handleScale: { axisPressedMouseMove: true, mouseWheel: true, pinch: true }
       });
@@ -1406,7 +1522,155 @@
       initDrawingTools(); // INITIALIZE DRAWING TOOLS
       initToolbars();
       initIndicatorPanel();
+      initZoomControls(); // NEW: Initialize zoom controls
       loadActiveIndicators(); // Load indicators from localStorage
+    }
+
+    // ───── ZOOM AND FULLSCREEN CONTROLS ─────
+    function initZoomControls() {
+      const zoomInBtn = document.getElementById('zoom-in');
+      const zoomOutBtn = document.getElementById('zoom-out');
+      const zoomResetBtn = document.getElementById('zoom-reset');
+      const fullscreenToggleBtn = document.getElementById('fullscreen-toggle');
+      
+      // Zoom in - increase bar spacing and price scale
+      zoomInBtn.addEventListener('click', () => {
+        zoomLevel = Math.min(zoomLevel + 0.2, 3.0);
+        applyZoom();
+      });
+      
+      // Zoom out - decrease bar spacing and price scale
+      zoomOutBtn.addEventListener('click', () => {
+        zoomLevel = Math.max(zoomLevel - 0.2, 0.5);
+        applyZoom();
+      });
+      
+      // Reset zoom
+      zoomResetBtn.addEventListener('click', () => {
+        zoomLevel = 1.0;
+        applyZoom();
+        chart.timeScale().fitContent();
+        indicatorsChart.timeScale().fitContent();
+      });
+      
+      // Fullscreen toggle
+      fullscreenToggleBtn.addEventListener('click', toggleFullscreen);
+      
+      // Mouse wheel zoom for price scale
+      document.getElementById('main-chart').addEventListener('wheel', handleWheelZoom, { passive: false });
+      
+      // Touch pinch zoom
+      let initialDistance = 0;
+      let initialZoomLevel = 1.0;
+      
+      document.getElementById('main-chart').addEventListener('touchstart', (e) => {
+        if (e.touches.length === 2) {
+          initialDistance = getTouchDistance(e.touches);
+          initialZoomLevel = zoomLevel;
+        }
+      });
+      
+      document.getElementById('main-chart').addEventListener('touchmove', (e) => {
+        if (e.touches.length === 2) {
+          e.preventDefault();
+          const currentDistance = getTouchDistance(e.touches);
+          const scale = currentDistance / initialDistance;
+          
+          zoomLevel = Math.max(0.5, Math.min(3.0, initialZoomLevel * scale));
+          applyZoom();
+        }
+      });
+    }
+    
+    function handleWheelZoom(e) {
+      e.preventDefault();
+      
+      if (e.ctrlKey || e.metaKey) {
+        // Pinch to zoom on trackpad - adjust zoom level
+        if (e.deltaY < 0) {
+          zoomLevel = Math.min(zoomLevel + 0.1, 3.0);
+        } else {
+          zoomLevel = Math.max(zoomLevel - 0.1, 0.5);
+        }
+        applyZoom();
+      } else {
+        // Regular scroll - navigate through time
+        if (e.deltaY < 0) {
+          chart.timeScale().scrollByPosition(10);
+          indicatorsChart.timeScale().scrollByPosition(10);
+        } else {
+          chart.timeScale().scrollByPosition(-10);
+          indicatorsChart.timeScale().scrollByPosition(-10);
+        }
+      }
+    }
+    
+    function getTouchDistance(touches) {
+      const dx = touches[0].clientX - touches[1].clientX;
+      const dy = touches[0].clientY - touches[1].clientY;
+      return Math.sqrt(dx * dx + dy * dy);
+    }
+    
+    function applyZoom() {
+      // Apply zoom by adjusting bar spacing and price scale
+      const barSpacing = baseBarSpacing * zoomLevel;
+      
+      // Update main chart
+      chart.applyOptions({
+        timeScale: {
+          barSpacing: barSpacing
+        }
+      });
+      
+      // Update indicators chart
+      indicatorsChart.applyOptions({
+        timeScale: {
+          barSpacing: barSpacing
+        }
+      });
+      
+      // Sync time scales
+      syncTimeScales();
+    }
+    
+    function syncTimeScales() {
+      // Get the visible time range from the main chart
+      const mainTimeRange = chart.timeScale().getVisibleRange();
+      if (mainTimeRange) {
+        indicatorsChart.timeScale().setVisibleRange(mainTimeRange);
+      }
+    }
+    
+    function toggleFullscreen() {
+      isFullscreen = !isFullscreen;
+      
+      if (isFullscreen) {
+        document.body.classList.add('fullscreen-mode');
+        document.getElementById('fullscreen-toggle').innerHTML = '<i class="fas fa-compress"></i>';
+      } else {
+        document.body.classList.remove('fullscreen-mode');
+        document.getElementById('fullscreen-toggle').innerHTML = '<i class="fas fa-expand"></i>';
+      }
+      
+      // Resize charts after fullscreen change
+      setTimeout(() => {
+        chart.resize(
+          document.getElementById('price-chart').clientWidth,
+          document.getElementById('price-chart').clientHeight
+        );
+        
+        volumeChart.querySelector('.tv-lightweight-charts').resize(
+          document.getElementById('volume-chart').clientWidth,
+          document.getElementById('volume-chart').clientHeight
+        );
+        
+        indicatorsChart.querySelector('.tv-lightweight-charts').resize(
+          document.getElementById('indicators-chart').clientWidth,
+          document.getElementById('indicators-chart').clientHeight
+        );
+        
+        resizeDrawingCanvas();
+      }, 100);
     }
 
     // ───── INDICATOR MANAGEMENT ─────
@@ -1483,12 +1747,14 @@
         clearIndicatorChart();
       });
     }
-document.getElementById('clear-indicators').addEventListener('click', () => {
-  activeIndicators = [];
-  localStorage.removeItem('chartIndicators');
-  updateIndicatorList();
-  clearIndicatorChart();          // wipes everything instantly
-});
+    
+    document.getElementById('clear-indicators').addEventListener('click', () => {
+      activeIndicators = [];
+      localStorage.removeItem('chartIndicators');
+      updateIndicatorList();
+      clearIndicatorChart();          // wipes everything instantly
+    });
+    
     function loadActiveIndicators() {
       const saved = JSON.parse(localStorage.getItem('chartIndicators') || '[]');
       activeIndicators = saved;
@@ -1514,188 +1780,183 @@ document.getElementById('clear-indicators').addEventListener('click', () => {
       updateAllIndicators();
     }
 
-   /* -------------------------------------------------------------
-   INDICATOR REMOVAL – removes the indicator + its series instantly
-   ------------------------------------------------------------- */
-function removeIndicator(name) {
-  // 1. Remove from the active list
-  activeIndicators = activeIndicators.filter(ind => ind.name !== name);
-  localStorage.setItem('chartIndicators', JSON.stringify(activeIndicators));
+    /* -------------------------------------------------------------
+    INDICATOR REMOVAL – removes the indicator + its series instantly
+    ------------------------------------------------------------- */
+    function removeIndicator(name) {
+      // 1. Remove from the active list
+      activeIndicators = activeIndicators.filter(ind => ind.name !== name);
+      localStorage.setItem('chartIndicators', JSON.stringify(activeIndicators));
 
-  // 2. Update the right-panel list
-  updateIndicatorList();
+      // 2. Update the right-panel list
+      updateIndicatorList();
 
-  // 3. **Delete ONLY the series that belong to this indicator**
-  const seriesArray = indicatorSeriesMap.get(name) || [];
-  seriesArray.forEach(s => {
-    try { indicatorsChart.removeSeries(s); } catch (_) {}
-  });
-  indicatorSeriesMap.delete(name);   // clean the map
+      // 3. **Delete ONLY the series that belong to this indicator**
+      const seriesArray = indicatorSeriesMap.get(name) || [];
+      seriesArray.forEach(s => {
+        try { indicatorsChart.removeSeries(s); } catch (_) {}
+      });
+      indicatorSeriesMap.delete(name);   // clean the map
 
-  // 4. If anything is left → redraw the rest (optional – chart is already clean)
-  if (activeIndicators.length > 0) {
-    updateAllIndicators();   // will clear again (safe) and plot remaining
-  }
-}
-/* -------------------------------------------------------------
-   Remove every series that was created for a specific indicator
-   ------------------------------------------------------------- */
-function removeIndicatorSeries(indicatorName) {
-  if (!indicatorsChart || !indicatorsChart._series) return;
-
-  // Lightweight-Charts stores all series in an internal array
-  const seriesToRemove = indicatorsChart._series.filter(s => {
-    // Series title is set to:  "RSI", "MACD MACD", "Bollinger Bands Upper", …
-    const title = s.options?.().title || '';
-    return title.startsWith(indicatorName);
-  });
-
-  seriesToRemove.forEach(s => {
-    try { indicatorsChart.removeSeries(s); } catch (_) {}
-  });
-}
-
-/* -------------------------------------------------------------
-   Re-build the UI list of active indicators
-   ------------------------------------------------------------- */
-function updateIndicatorList() {
-  const list = document.getElementById('indicator-list');
-  list.innerHTML = '';
-
-  if (activeIndicators.length === 0) {
-    list.innerHTML =
-      '<div class="empty-state" style="color:var(--text-light);padding:.5rem;">No indicators added</div>';
-    return;
-  }
-
-  activeIndicators.forEach(ind => {
-    const item = document.createElement('div');
-    item.className = 'indicator-item';
-    item.innerHTML = `
-      <span class="name">${ind.name}</span>
-      <span class="remove" title="Remove indicator">×</span>
-    `;
-
-    item.querySelector('.remove').addEventListener('click', () => {
-      removeIndicator(ind.name);
-    });
-
-    list.appendChild(item);
-  });
-}
-
-/* -------------------------------------------------------------
-   Re-calculate & re-plot **all remaining** indicators
-   ------------------------------------------------------------- */
-function updateAllIndicators() {
-  if (!priceData.length) return;
-
-  // Clear *everything* first – guarantees a clean slate
-  clearIndicatorChart();
-
-  activeIndicators.forEach(ind => {
-    const cfg = IndicatorConfigs[ind.name];
-    if (!cfg) return;
-
-    const result = cfg.calculate(priceData, ind.params);
-    plotIndicator(ind.name, result, ind.params);
-  });
-}
-
-/* -------------------------------------------------------------
-   Helper – wipe the whole indicator pane (used by many places)
-   ------------------------------------------------------------- */
-function clearIndicatorChart() {
-  if (!indicatorsChart || !indicatorsChart._series) return;
-  while (indicatorsChart._series.length) {
-    try { indicatorsChart.removeSeries(indicatorsChart._series[0]); } catch (_) { break; }
-  }
-  indicatorSeriesMap.clear();   // also wipe the map
-}
-
-    function plotIndicator(name, result, params) {
-  // Remove old series for this indicator (if any)
-  const oldSeries = indicatorSeriesMap.get(name) || [];
-  oldSeries.forEach(s => {
-    try { indicatorsChart.removeSeries(s); } catch (_) {}
-  });
-  indicatorSeriesMap.set(name, []);   // start fresh
-  // -----------------------------------------------------------------
-  // 1. SINGLE-LINE INDICATORS (RSI, SMA, EMA, ATR, CCI, VWAP, OBV …)
-  // -----------------------------------------------------------------
-  if (result.value) {
-    const series = indicatorsChart.addLineSeries({
-      color: getIndicatorColor(name),
-      lineWidth: 2,
-      title: name
-    });
-    const data = priceData.map((d, i) => ({
-      time: d.time,
-      value: result.value[i]
-    })).filter(d => d.value !== null);
-
-    series.setData(data);
-    indicatorSeriesMap.get(name).push(series);
-    return;
-  }
-
-  // -----------------------------------------------------------------
-  // 2. MACD
-  // -----------------------------------------------------------------
-  if (result.macdLine && result.signalLine && result.histogram) {
-    const macd = indicatorsChart.addLineSeries({ color: '#2962ff', lineWidth: 2, title: `${name} MACD` });
-    const signal = indicatorsChart.addLineSeries({ color: '#ff6b6b', lineWidth: 1, title: `${name} Signal` });
-    const hist = indicatorsChart.addHistogramSeries({ color: '#26a69a', title: `${name} Histogram` });
-
-    macd.setData(priceData.map((d,i)=>({time:d.time, value:result.macdLine[i]})).filter(d=>d.value!==null));
-    signal.setData(priceData.map((d,i)=>({time:d.time, value:result.signalLine[i]})).filter(d=>d.value!==null));
-    hist.setData(priceData.map((d,i)=>({time:d.time, value:result.histogram[i],
-          color: result.histogram[i]>=0 ? '#26a69a' : '#ef5350' })).filter(d=>d.value!==null));
-
-    indicatorSeriesMap.get(name).push(macd, signal, hist);
-    return;
-  }
-
-  // -----------------------------------------------------------------
-  // 3. BOLLINGER BANDS
-  // -----------------------------------------------------------------
-  if (result.upper && result.middle && result.lower) {
-    const up   = indicatorsChart.addLineSeries({ color: '#ffa726', lineWidth: 1, title: `${name} Upper` });
-    const mid  = indicatorsChart.addLineSeries({ color: '#2962ff', lineWidth: 1, title: `${name} Middle` });
-    const low  = indicatorsChart.addLineSeries({ color: '#ffa726', lineWidth: 1, title: `${name} Lower` });
-
-    up.setData(priceData.map((d,i)=>({time:d.time, value:result.upper[i]})).filter(d=>d.value!==null));
-    mid.setData(priceData.map((d,i)=>({time:d.time, value:result.middle[i]})).filter(d=>d.value!==null));
-    low.setData(priceData.map((d,i)=>({time:d.time, value:result.lower[i]})).filter(d=>d.value!==null));
-
-    indicatorSeriesMap.get(name).push(up, mid, low);
-    return;
-  }
-
-  // -----------------------------------------------------------------
-  // 4. STOCHASTIC
-  // -----------------------------------------------------------------
-  if (result.k && result.d) {
-    const k = indicatorsChart.addLineSeries({ color: '#2962ff', lineWidth: 2, title: `${name} %K` });
-    const d = indicatorsChart.addLineSeries({ color: '#ff6b6b', lineWidth: 1, title: `${name} %D` });
-
-    k.setData(priceData.map((d,i)=>({time:d.time, value:result.k[i]})).filter(d=>d.value!==null));
-    d.setData(priceData.map((d,i)=>({time:d.time, value:result.d[i]})).filter(d=>d.value!==null));
-
-    indicatorSeriesMap.get(name).push(k, d);
-  }
-}
-    function clearIndicatorChart() {
-      // Remove all series from indicators chart
-      while (indicatorsChart._series && indicatorsChart._series.length > 0) {
-        try {
-          indicatorsChart.removeSeries(indicatorsChart._series[0]);
-        } catch (e) {
-          break;
-        }
+      // 4. If anything is left → redraw the rest (optional – chart is already clean)
+      if (activeIndicators.length > 0) {
+        updateAllIndicators();   // will clear again (safe) and plot remaining
       }
     }
+    
+    /* -------------------------------------------------------------
+    Remove every series that was created for a specific indicator
+    ------------------------------------------------------------- */
+    function removeIndicatorSeries(indicatorName) {
+      if (!indicatorsChart || !indicatorsChart._series) return;
 
+      // Lightweight-Charts stores all series in an internal array
+      const seriesToRemove = indicatorsChart._series.filter(s => {
+        // Series title is set to:  "RSI", "MACD MACD", "Bollinger Bands Upper", …
+        const title = s.options?.().title || '';
+        return title.startsWith(indicatorName);
+      });
+
+      seriesToRemove.forEach(s => {
+        try { indicatorsChart.removeSeries(s); } catch (_) {}
+      });
+    }
+
+    /* -------------------------------------------------------------
+    Re-build the UI list of active indicators
+    ------------------------------------------------------------- */
+    function updateIndicatorList() {
+      const list = document.getElementById('indicator-list');
+      list.innerHTML = '';
+
+      if (activeIndicators.length === 0) {
+        list.innerHTML =
+          '<div class="empty-state" style="color:var(--text-light);padding:.5rem;">No indicators added</div>';
+        return;
+      }
+
+      activeIndicators.forEach(ind => {
+        const item = document.createElement('div');
+        item.className = 'indicator-item';
+        item.innerHTML = `
+          <span class="name">${ind.name}</span>
+          <span class="remove" title="Remove indicator">×</span>
+        `;
+
+        item.querySelector('.remove').addEventListener('click', () => {
+          removeIndicator(ind.name);
+        });
+
+        list.appendChild(item);
+      });
+    }
+
+    /* -------------------------------------------------------------
+    Re-calculate & re-plot **all remaining** indicators
+    ------------------------------------------------------------- */
+    function updateAllIndicators() {
+      if (!priceData.length) return;
+
+      // Clear *everything* first – guarantees a clean slate
+      clearIndicatorChart();
+
+      activeIndicators.forEach(ind => {
+        const cfg = IndicatorConfigs[ind.name];
+        if (!cfg) return;
+
+        const result = cfg.calculate(priceData, ind.params);
+        plotIndicator(ind.name, result, ind.params);
+      });
+      
+      // Sync time scales after updating indicators
+      syncTimeScales();
+    }
+
+    /* -------------------------------------------------------------
+    Helper – wipe the whole indicator pane (used by many places)
+    ------------------------------------------------------------- */
+    function clearIndicatorChart() {
+      if (!indicatorsChart || !indicatorsChart._series) return;
+      while (indicatorsChart._series.length) {
+        try { indicatorsChart.removeSeries(indicatorsChart._series[0]); } catch (_) { break; }
+      }
+      indicatorSeriesMap.clear();   // also wipe the map
+    }
+
+    function plotIndicator(name, result, params) {
+      // Remove old series for this indicator (if any)
+      const oldSeries = indicatorSeriesMap.get(name) || [];
+      oldSeries.forEach(s => {
+        try { indicatorsChart.removeSeries(s); } catch (_) {}
+      });
+      indicatorSeriesMap.set(name, []);   // start fresh
+      
+      // -----------------------------------------------------------------
+      // 1. SINGLE-LINE INDICATORS (RSI, SMA, EMA, ATR, CCI, VWAP, OBV …)
+      // -----------------------------------------------------------------
+      if (result.value) {
+        const series = indicatorsChart.addLineSeries({
+          color: getIndicatorColor(name),
+          lineWidth: 2,
+          title: name
+        });
+        const data = priceData.map((d, i) => ({
+          time: d.time,
+          value: result.value[i]
+        })).filter(d => d.value !== null);
+
+        series.setData(data);
+        indicatorSeriesMap.get(name).push(series);
+        return;
+      }
+
+      // -----------------------------------------------------------------
+      // 2. MACD
+      // -----------------------------------------------------------------
+      if (result.macdLine && result.signalLine && result.histogram) {
+        const macd = indicatorsChart.addLineSeries({ color: '#2962ff', lineWidth: 2, title: `${name} MACD` });
+        const signal = indicatorsChart.addLineSeries({ color: '#ff6b6b', lineWidth: 1, title: `${name} Signal` });
+        const hist = indicatorsChart.addHistogramSeries({ color: '#26a69a', title: `${name} Histogram` });
+
+        macd.setData(priceData.map((d,i)=>({time:d.time, value:result.macdLine[i]})).filter(d=>d.value!==null));
+        signal.setData(priceData.map((d,i)=>({time:d.time, value:result.signalLine[i]})).filter(d=>d.value!==null));
+        hist.setData(priceData.map((d,i)=>({time:d.time, value:result.histogram[i],
+              color: result.histogram[i]>=0 ? '#26a69a' : '#ef5350' })).filter(d=>d.value!==null));
+
+        indicatorSeriesMap.get(name).push(macd, signal, hist);
+        return;
+      }
+
+      // -----------------------------------------------------------------
+      // 3. BOLLINGER BANDS
+      // -----------------------------------------------------------------
+      if (result.upper && result.middle && result.lower) {
+        const up   = indicatorsChart.addLineSeries({ color: '#ffa726', lineWidth: 1, title: `${name} Upper` });
+        const mid  = indicatorsChart.addLineSeries({ color: '#2962ff', lineWidth: 1, title: `${name} Middle` });
+        const low  = indicatorsChart.addLineSeries({ color: '#ffa726', lineWidth: 1, title: `${name} Lower` });
+
+        up.setData(priceData.map((d,i)=>({time:d.time, value:result.upper[i]})).filter(d=>d.value!==null));
+        mid.setData(priceData.map((d,i)=>({time:d.time, value:result.middle[i]})).filter(d=>d.value!==null));
+        low.setData(priceData.map((d,i)=>({time:d.time, value:result.lower[i]})).filter(d=>d.value!==null));
+
+        indicatorSeriesMap.get(name).push(up, mid, low);
+        return;
+      }
+
+      // -----------------------------------------------------------------
+      // 4. STOCHASTIC
+      // -----------------------------------------------------------------
+      if (result.k && result.d) {
+        const k = indicatorsChart.addLineSeries({ color: '#2962ff', lineWidth: 2, title: `${name} %K` });
+        const d = indicatorsChart.addLineSeries({ color: '#ff6b6b', lineWidth: 1, title: `${name} %D` });
+
+        k.setData(priceData.map((d,i)=>({time:d.time, value:result.k[i]})).filter(d=>d.value!==null));
+        d.setData(priceData.map((d,i)=>({time:d.time, value:result.d[i]})).filter(d=>d.value!==null));
+
+        indicatorSeriesMap.get(name).push(k, d);
+      }
+    }
+    
     function getIndicatorColor(name) {
       const colors = {
         'RSI': '#00c853',
@@ -2205,6 +2466,7 @@ function clearIndicatorChart() {
             setTimeout(() => {
               updateChartSeries();
               chart.timeScale().scrollToPosition(-1, false);
+              indicatorsChart.timeScale().scrollToPosition(-1, false);
             }, 50);
           }
           
@@ -2274,6 +2536,7 @@ function clearIndicatorChart() {
       })));
 
       chart.timeScale().fitContent();
+      indicatorsChart.timeScale().fitContent();
     }
 
     // ───── THEME TOGGLE ─────
