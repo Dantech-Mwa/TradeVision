@@ -134,23 +134,19 @@
       box-shadow: 0 2px 10px var(--shadow);
     }
     
-.logo {
-  flex: 1;  /* Takes available space in flex container */
-  max-width: 200px;  /* Adjust as needed for your header width */
-}
-
-.logo-img {
-  width: 100%;       /* Full width of .logo div */
-  height: auto;      /* Maintains aspect ratio */
-  max-height: 40px;  /* Caps height for header fit */
-  vertical-align: middle;
-  border-radius: 4px; /* Optional: subtle rounding */
-  transition: transform 0.2s ease;  /* Smooth hover */
-}
-
-.logo a:hover .logo-img {
-  transform: scale(1.05);  /* Slight zoom on hover */
-}
+    .logo {
+      font-weight: 700;
+      font-size: 1.4rem;
+      color: var(--accent);
+    }
+    
+    .logo-img {
+      width: 28px;
+      height: 28px;
+      margin-right: 0.5rem;
+      vertical-align: middle;
+      border-radius: 4px;
+    }
     
     .search-bar {
       position: relative;
@@ -305,7 +301,7 @@
       position: absolute;
       inset: 0;
       z-index: 1;
-      opacity: 0.80; /* Increased transparency for better chart visibility */
+      opacity: 0.45; /* Increased transparency for better chart visibility */
     }
     
     #background-chart {
@@ -604,32 +600,40 @@
 
   <!-- HEADER -->
   <header class="header">
-  <div class="container flex-between">
-    <div class="logo">
-      <a href="index.html" class="flex-center">
-        <img src="https://raw.githubusercontent.com/Dantech-Mwa/TradeVision/main/components/TradeVision%20Logo.JPG" alt="TradeVision Logo" class="logo-img">
-      </a>
-    </div>
-    <nav class="nav-links">
-      <a href="chart.html">Chart</a>
-      <a href="watchlist.html">Watchlist</a>
-      <a href="screener.html">Screener</a>
-      <a href="ideas.html">Ideas</a>
-      <a href="alerts.html">Alerts</a>
-      <a href="indicators.html">Indicators and Strategies</a>
-    </nav>
-    <div class="search-bar">
-      <input type="text" id="symbol-search" placeholder="Search 2300+ assets (BTC, ETH, AAPL, TSLA...)">
-      <button id="search-go"><i class="fas fa-search"></i></button>
-      <div id="search-suggestions" class="search-suggestions" style="display: none;"></div>
-    </div>
-    <div class="header-actions">
-      <button id="theme-toggle" class="icon-btn"><i class="fas fa-moon"></i></button>
-      <a href="settings.html" class="icon-btn" title="Settings"><i class="fas fa-cog"></i></a>
-      <a href="profile.html" class="icon-btn" title="Profile"><i class="fas fa-user"></i></a>
-    </div>
-  </div>
+    <div class="container flex-between">
+      <div class="logo">
+        <a href="index.html" class="flex-center">
+          <img src="components/Logo-Trade Vision.png" alt="TradeVision Logo" class="logo-img">
+          <span>TradeVision</span>
+        </a>
+      </div>
 
+      <div class="search-bar">
+        <input type="text" id="symbol-search" placeholder="Search symbol (e.g. BTC, ETH)" />
+        <button id="search-btn"><i class="fas fa-search"></i></button>
+      </div>
+
+      <nav class="nav-links">
+        <a href="chart.html">Chart</a>
+        <a href="watchlist.html">Watchlist</a>
+        <a href="screener.html">Screener</a>
+        <a href="ideas.html">Ideas</a>
+        <a href="alerts.html">Alerts</a>
+        <a href="trading.html">Trade</a>
+        <a href="backtest.html">Backtest</a>
+      </nav>
+
+      <div class="header-actions">
+        <button id="theme-toggle" class="icon-btn"><i class="fas fa-moon"></i></button>
+        <a href="profile.html" class="icon-btn"><i class="fas fa-user"></i></a>
+        <a href="settings.html" class="icon-btn"><i class="fas fa-cog"></i></a>
+      </div>
+      
+      <button class="mobile-menu-toggle" id="mobile-menu-toggle">
+        <i class="fas fa-bars"></i>
+      </button>
+    </div>
+    
     <!-- Mobile Menu -->
     <div class="mobile-menu" id="mobile-menu">
       <div class="container">
