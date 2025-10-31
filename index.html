@@ -134,19 +134,23 @@
       box-shadow: 0 2px 10px var(--shadow);
     }
     
-    .logo {
-      font-weight: 700;
-      font-size: 1.4rem;
-      color: var(--accent);
-    }
-    
-    .logo-img {
-      width: 28px;
-      height: 28px;
-      margin-right: 0.5rem;
-      vertical-align: middle;
-      border-radius: 4px;
-    }
+.logo {
+  flex: 1;  /* Takes available space in flex container */
+  max-width: 200px;  /* Adjust as needed for your header width */
+}
+
+.logo-img {
+  width: 100%;       /* Full width of .logo div */
+  height: auto;      /* Maintains aspect ratio */
+  max-height: 40px;  /* Caps height for header fit */
+  vertical-align: middle;
+  border-radius: 4px; /* Optional: subtle rounding */
+  transition: transform 0.2s ease;  /* Smooth hover */
+}
+
+.logo a:hover .logo-img {
+  transform: scale(1.05);  /* Slight zoom on hover */
+}
     
     .search-bar {
       position: relative;
@@ -602,10 +606,10 @@
   <header class="header">
     <div class="container flex-between">
       <div class="logo">
-        <a href="index.html" class="flex-center">
-          <img src="components/Logo-Trade Vision.png" alt="TradeVision Logo" class="logo-img">
-          <span>TradeVision</span>
-        </a>
+  <a href="index.html" class="flex-center">
+    <img src="https://raw.githubusercontent.com/Dantech-Mwa/TradeVision/main/components/TradeVision%20Logo.JPG" alt="TradeVision Logo" class="logo-img">
+  </a>
+</div>
       </div>
 
       <div class="search-bar">
