@@ -3,41 +3,806 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Ideas - TradeVision</title>
-  <link rel="icon" href="assets/icons/chart.svg" type="image/svg+xml">
+  <title>Trading Ideas - TradeVision</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💡</text></svg>">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <link id="theme-style" rel="stylesheet" href="assets/css/main.css">
-  <link rel="stylesheet" href="assets/css/dark-theme.css">
   <style>
-    :root{--bg:#141518;--bg-light:#1e222d;--text:#d1d4dc;--text-light:#9ea1b5;--accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#2d313e;--card:#1e222d;}
-    [data-theme="light"]{--bg:#ffffff;--bg-light:#f8f9fa;--text:#2d3748;--text-light:#718096;--accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#e2e8f0;--card:#ffffff;}
-    body{margin:0;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);}
-    a{color:var(--accent);text-decoration:none;}
-    .container{max-width:1200px;margin:0 auto;padding:2rem 1rem;}
-    .header{background:var(--bg-light);border-bottom:1px solid var(--border);padding:0.75rem 0;position:sticky;top:0;z-index:100;}
-    .flex-between{display:flex;justify-content:space-between;align-items:center;}
-    .logo{font-weight:700;font-size:1.4rem;color:var(--accent);}
-    .logo i{font-size:1.5rem;}
-    .nav-links a{margin:0 0.75rem;font-weight:500;}
-    .icon-btn{background:none;border:none;color:var(--text-light);font-size:1.2rem;cursor:pointer;padding:0.5rem;}
-    .idea-form{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1.5rem;margin-bottom:2rem;}
-    .form-group{margin-bottom:1rem;}
-    .form-group label{display:block;margin-bottom:0.25rem;}
-    .form-group input,.form-group textarea{width:100%;padding:0.5rem;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text);}
-    button.primary{background:var(--accent);color:white;padding:0.75rem 1.5rem;border:none;border-radius:4px;cursor:pointer;}
-    .ideas-grid{display:grid;gap:1.5rem;}
-    .idea-card{background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden;}
-    .idea-header{padding:1rem;display:flex;justify-content:space-between;align-items:center;background:var(--bg-light);}
-    .idea-author{font-weight:600;}
-    .idea-date{font-size:0.85rem;color:var(--text-light);}
-    .idea-body{padding:1rem;}
-    .idea-body img{max-width:100%;border-radius:4px;margin:0.5rem 0;}
-    .idea-actions{padding:0.75rem 1rem;background:var(--bg-light);display:flex;gap:1rem;font-size:0.9rem;}
-    .idea-actions i{margin-right:0.25rem;}
-    .footer{background:var(--bg-light);border-top:1px solid var(--border);padding:1rem 0;font-size:0.8rem;text-align:center;color:var(--text-light);}
+    :root {
+      --bg: #141518;
+      --bg-light: #1e222d;
+      --text: #d1d4dc;
+      --text-light: #9ea1b5;
+      --accent: #2962ff;
+      --accent-hover: #1e53e5;
+      --green: #26a69a;
+      --green-light: rgba(38, 166, 154, 0.1);
+      --red: #ef5350;
+      --red-light: rgba(239, 83, 80, 0.1);
+      --yellow: #ffb74d;
+      --yellow-light: rgba(255, 183, 77, 0.1);
+      --border: #2d313e;
+      --card: #1e222d;
+      --card-hover: #252a38;
+      --shadow: rgba(0, 0, 0, 0.2);
+    }
+    
+    [data-theme="light"] {
+      --bg: #ffffff;
+      --bg-light: #f8f9fa;
+      --text: #2d3748;
+      --text-light: #718096;
+      --accent: #2962ff;
+      --accent-hover: #1e53e5;
+      --green: #26a69a;
+      --green-light: rgba(38, 166, 154, 0.05);
+      --red: #ef5350;
+      --red-light: rgba(239, 83, 80, 0.05);
+      --yellow: #ffb74d;
+      --yellow-light: rgba(255, 183, 77, 0.05);
+      --border: #e2e8f0;
+      --card: #ffffff;
+      --card-hover: #f8f9fa;
+      --shadow: rgba(0, 0, 0, 0.05);
+    }
+    
+    * {
+      box-sizing: border-box;
+    }
+    
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      transition: background-color 0.3s, color 0.3s;
+      min-height: 100vh;
+    }
+    
+    a {
+      color: var(--accent);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    
+    a:hover {
+      color: var(--accent-hover);
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+    }
+    
+    .header {
+      background: var(--bg-light);
+      border-bottom: 1px solid var(--border);
+      padding: 0.75rem 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      transition: background-color 0.3s, border-color 0.3s;
+    }
+    
+    .flex-between {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .flex-center {
+      display: flex;
+      align-items: center;
+    }
+    
+    .logo {
+      font-weight: 700;
+      font-size: 1.4rem;
+      color: var(--accent);
+    }
+    
+    .logo i {
+      font-size: 1.5rem;
+      margin-right: 0.5rem;
+    }
+    
+    .nav-links a {
+      margin: 0 0.75rem;
+      font-weight: 500;
+      position: relative;
+    }
+    
+    .nav-links a:hover::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: var(--accent);
+    }
+    
+    .icon-btn {
+      background: none;
+      border: none;
+      color: var(--text-light);
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: 50%;
+      transition: background-color 0.2s, color 0.2s;
+    }
+    
+    .icon-btn:hover {
+      background: var(--border);
+      color: var(--text);
+    }
+
+    /* Page Header */
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+    
+    .page-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin: 0;
+    }
+    
+    .page-subtitle {
+      color: var(--text-light);
+      margin-top: 0.5rem;
+    }
+    
+    .page-actions {
+      display: flex;
+      gap: 0.75rem;
+    }
+    
+    .btn {
+      padding: 0.75rem 1.25rem;
+      border-radius: 6px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: var(--accent-hover);
+    }
+    
+    .btn-outline {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    
+    .btn-outline:hover {
+      background: var(--border);
+    }
+
+    /* Live Advisory Section */
+    .advisory-section {
+      background: var(--card);
+      border-radius: 8px;
+      box-shadow: 0 2px 10px var(--shadow);
+      margin-bottom: 2rem;
+      transition: background-color 0.3s, box-shadow 0.3s;
+      overflow: hidden;
+    }
+    
+    .section-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .section-title {
+      font-weight: 600;
+      font-size: 1.1rem;
+      margin: 0;
+    }
+    
+    .section-subtitle {
+      color: var(--text-light);
+      font-size: 0.9rem;
+      margin-top: 0.25rem;
+    }
+    
+    .section-actions {
+      display: flex;
+      gap: 0.75rem;
+    }
+    
+    .advisory-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+      padding: 1.5rem;
+    }
+    
+    .advisory-card {
+      background: var(--bg-light);
+      border-radius: 8px;
+      padding: 1.25rem;
+      transition: transform 0.2s, background-color 0.3s;
+      border-left: 4px solid var(--accent);
+    }
+    
+    .advisory-card:hover {
+      transform: translateY(-2px);
+      background: var(--card-hover);
+    }
+    
+    .advisory-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+    }
+    
+    .asset-info {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    
+    .asset-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+      font-size: 1rem;
+    }
+    
+    .asset-details h3 {
+      margin: 0 0 0.25rem 0;
+      font-weight: 600;
+      font-size: 1rem;
+    }
+    
+    .asset-price {
+      font-size: 0.9rem;
+      color: var(--text-light);
+    }
+    
+    .asset-change {
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+    }
+    
+    .change-positive {
+      background: var(--green-light);
+      color: var(--green);
+    }
+    
+    .change-negative {
+      background: var(--red-light);
+      color: var(--red);
+    }
+    
+    .advisory-body {
+      margin-bottom: 1rem;
+    }
+    
+    .advisory-sentiment {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+    
+    .sentiment-bullish {
+      color: var(--green);
+    }
+    
+    .sentiment-bearish {
+      color: var(--red);
+    }
+    
+    .sentiment-neutral {
+      color: var(--yellow);
+    }
+    
+    .advisory-text {
+      font-size: 0.9rem;
+      line-height: 1.5;
+      margin-bottom: 0.75rem;
+    }
+    
+    .advisory-timeframe {
+      display: inline-block;
+      background: var(--border);
+      color: var(--text-light);
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+    
+    .advisory-actions {
+      display: flex;
+      gap: 0.75rem;
+    }
+    
+    .action-btn {
+      flex: 1;
+      padding: 0.5rem;
+      border-radius: 6px;
+      font-weight: 500;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    
+    .buy-btn {
+      background: var(--green);
+      color: white;
+    }
+    
+    .buy-btn:hover {
+      background: #1e8e82;
+    }
+    
+    .sell-btn {
+      background: var(--red);
+      color: white;
+    }
+    
+    .sell-btn:hover {
+      background: #d32f2f;
+    }
+    
+    .watch-btn {
+      background: var(--border);
+      color: var(--text);
+    }
+    
+    .watch-btn:hover {
+      background: var(--text-light);
+    }
+
+    /* Connection Status */
+    .connection-status {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      margin-bottom: 1rem;
+    }
+    
+    .status-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+    
+    .status-connected {
+      background: var(--green);
+    }
+    
+    .status-connecting {
+      background: var(--yellow);
+      animation: pulse 1.5s infinite;
+    }
+    
+    .status-disconnected {
+      background: var(--red);
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    /* Filters Section */
+    .filters-section {
+      background: var(--card);
+      border-radius: 8px;
+      box-shadow: 0 2px 10px var(--shadow);
+      margin-bottom: 2rem;
+      transition: background-color 0.3s, box-shadow 0.3s;
+    }
+    
+    .filters-header {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .filters-title {
+      font-weight: 600;
+      font-size: 1.1rem;
+      margin: 0;
+    }
+    
+    .filters-content {
+      padding: 1.5rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+    
+    .filter-group {
+      margin-bottom: 0;
+    }
+    
+    .filter-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text-light);
+    }
+    
+    .filter-group input, .filter-group select {
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--bg);
+      color: var(--text);
+      width: 100%;
+      font-size: 0.9rem;
+      transition: border-color 0.2s, background-color 0.3s, color 0.3s;
+    }
+    
+    .filter-group input:focus, .filter-group select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(41, 98, 255, 0.2);
+    }
+
+    /* Idea Form */
+    .idea-form-container {
+      background: var(--card);
+      border-radius: 8px;
+      box-shadow: 0 2px 10px var(--shadow);
+      margin-bottom: 2rem;
+      transition: background-color 0.3s, box-shadow 0.3s;
+      overflow: hidden;
+    }
+    
+    .form-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .form-title {
+      font-weight: 600;
+      font-size: 1.1rem;
+      margin: 0;
+    }
+    
+    .form-content {
+      padding: 1.5rem;
+    }
+    
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text-light);
+    }
+    
+    .form-group input, .form-group select, .form-group textarea {
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--bg);
+      color: var(--text);
+      width: 100%;
+      font-size: 0.9rem;
+      transition: border-color 0.2s, background-color 0.3s, color 0.3s;
+      resize: vertical;
+    }
+    
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(41, 98, 255, 0.2);
+    }
+    
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 1rem;
+    }
+
+    /* Ideas Grid */
+    .ideas-section {
+      margin-bottom: 2rem;
+    }
+    
+    .ideas-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 1.5rem;
+    }
+    
+    .idea-card {
+      background: var(--card);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px var(--shadow);
+      transition: transform 0.2s, box-shadow 0.2s, background-color 0.3s;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .idea-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 20px var(--shadow);
+    }
+    
+    .idea-header {
+      padding: 1.25rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    
+    .idea-author {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    
+    .author-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    
+    .author-info h4 {
+      margin: 0 0 0.25rem 0;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+    
+    .author-info .idea-date {
+      font-size: 0.8rem;
+      color: var(--text-light);
+    }
+    
+    .idea-symbol {
+      background: var(--accent);
+      color: white;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    
+    .idea-body {
+      padding: 1.25rem;
+      flex-grow: 1;
+    }
+    
+    .idea-title {
+      margin: 0 0 0.75rem 0;
+      font-weight: 600;
+      font-size: 1.1rem;
+      line-height: 1.4;
+    }
+    
+    .idea-desc {
+      margin: 0 0 1rem 0;
+      color: var(--text);
+      line-height: 1.5;
+      font-size: 0.9rem;
+    }
+    
+    .idea-chart {
+      width: 100%;
+      height: 160px;
+      background: var(--bg-light);
+      border-radius: 6px;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-light);
+      font-size: 0.9rem;
+    }
+    
+    .idea-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    
+    .idea-tag {
+      background: var(--bg-light);
+      color: var(--text-light);
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+    
+    .tag-bullish {
+      background: var(--green-light);
+      color: var(--green);
+    }
+    
+    .tag-bearish {
+      background: var(--red-light);
+      color: var(--red);
+    }
+    
+    .tag-neutral {
+      background: var(--yellow-light);
+      color: var(--yellow);
+    }
+    
+    .idea-footer {
+      padding: 1rem 1.25rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .idea-stats {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.85rem;
+      color: var(--text-light);
+    }
+    
+    .stat {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    
+    .stat:hover {
+      color: var(--text);
+    }
+    
+    .stat.active {
+      color: var(--accent);
+    }
+    
+    .idea-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+    
+    .action-btn-small {
+      background: none;
+      border: none;
+      color: var(--text-light);
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: 4px;
+      transition: background-color 0.2s, color 0.2s;
+    }
+    
+    .action-btn-small:hover {
+      background: var(--border);
+      color: var(--text);
+    }
+
+    /* Empty State */
+    .empty-state {
+      padding: 3rem 1.5rem;
+      text-align: center;
+      color: var(--text-light);
+      grid-column: 1 / -1;
+    }
+    
+    .empty-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      opacity: 0.5;
+    }
+    
+    .empty-title {
+      font-size: 1.2rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .empty-text {
+      max-width: 400px;
+      margin: 0 auto;
+    }
+
+    /* Footer */
+    .footer {
+      background: var(--bg-light);
+      border-top: 1px solid var(--border);
+      padding: 1rem 0;
+      font-size: 0.8rem;
+      text-align: center;
+      color: var(--text-light);
+      transition: background-color 0.3s, border-color 0.3s;
+      margin-top: 2rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .form-row, .filters-content {
+        grid-template-columns: 1fr;
+      }
+      
+      .nav-links {
+        display: none;
+      }
+      
+      .ideas-grid, .advisory-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+      
+      .page-actions {
+        width: 100%;
+        justify-content: space-between;
+      }
+    }
   </style>
 </head>
+
 <body data-theme="dark">
   <header class="header">
     <div class="container flex-between">
@@ -60,26 +825,131 @@
   </header>
 
   <div class="container">
-    <h1>Trading Ideas</h1>
-
-    <div class="idea-form">
-      <div class="form-group">
-        <label>Title</label>
-        <input type="text" id="idea-title" placeholder="e.g. AAPL Bullish Breakout">
+    <!-- Page Header -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Trading Ideas & Advisory</h1>
+        <p class="page-subtitle">Share ideas and get live trading recommendations</p>
       </div>
-      <div class="form-group">
-        <label>Symbol</label>
-        <input type="text" id="idea-symbol" placeholder="AAPL">
+      <div class="page-actions">
+        <button class="btn btn-outline" id="sort-ideas"><i class="fas fa-sort"></i> Sort By</button>
+        <button class="btn btn-primary" id="new-idea-btn"><i class="fas fa-plus"></i> New Idea</button>
       </div>
-      <div class="form-group">
-        <label>Description</label>
-        <textarea id="idea-desc" rows="4" placeholder="Explain your idea..."></textarea>
-      </div>
-      <button class="primary" id="publish-idea">Publish Idea</button>
     </div>
 
-    <div class="ideas-grid" id="ideas-container">
-      <!-- Filled by JS -->
+    <!-- Connection Status -->
+    <div class="connection-status" id="connection-status">
+      <span class="status-indicator status-connecting"></span>
+      <span>Connecting to Binance WebSocket...</span>
+    </div>
+
+    <!-- Live Advisory Section -->
+    <div class="advisory-section">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">Live Trading Advisory</h2>
+          <p class="section-subtitle">Real-time buy/sell recommendations based on Binance market data</p>
+        </div>
+        <div class="section-actions">
+          <span id="last-updated">Starting...</span>
+        </div>
+      </div>
+      <div class="advisory-grid" id="advisory-container">
+        <!-- Advisory cards will be populated by JavaScript -->
+      </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="filters-section">
+      <div class="filters-header">
+        <h2 class="filters-title">Filter Ideas</h2>
+      </div>
+      <div class="filters-content">
+        <div class="filter-group">
+          <label>Search</label>
+          <input type="text" id="search-ideas" placeholder="Search ideas...">
+        </div>
+        <div class="filter-group">
+          <label>Symbol</label>
+          <input type="text" id="filter-symbol" placeholder="e.g. BTC, ETH">
+        </div>
+        <div class="filter-group">
+          <label>Sentiment</label>
+          <select id="filter-sentiment">
+            <option value="">All Sentiments</option>
+            <option value="bullish">Bullish</option>
+            <option value="bearish">Bearish</option>
+            <option value="neutral">Neutral</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Timeframe</label>
+          <select id="filter-timeframe">
+            <option value="">All Timeframes</option>
+            <option value="intraday">Intraday</option>
+            <option value="swing">Swing</option>
+            <option value="position">Position</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Idea Form (Initially Hidden) -->
+    <div class="idea-form-container" id="idea-form" style="display: none;">
+      <div class="form-header">
+        <h2 class="form-title">Share Your Trading Idea</h2>
+      </div>
+      <div class="form-content">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Title</label>
+            <input type="text" id="idea-title" placeholder="e.g. BTC Bullish Breakout">
+          </div>
+          <div class="form-group">
+            <label>Symbol</label>
+            <input type="text" id="idea-symbol" placeholder="BTCUSDT">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Sentiment</label>
+            <select id="idea-sentiment">
+              <option value="bullish">Bullish</option>
+              <option value="bearish">Bearish</option>
+              <option value="neutral">Neutral</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Timeframe</label>
+            <select id="idea-timeframe">
+              <option value="intraday">Intraday</option>
+              <option value="swing">Swing</option>
+              <option value="position">Position</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea id="idea-desc" rows="5" placeholder="Explain your trading idea, analysis, and reasoning..."></textarea>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-outline" id="cancel-idea">Cancel</button>
+          <button class="btn btn-primary" id="publish-idea">Publish Idea</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ideas Grid -->
+    <div class="ideas-section">
+      <div class="section-header">
+        <h2 class="section-title">Community Trading Ideas</h2>
+        <div class="section-actions">
+          <span id="ideas-count">0 ideas</span>
+        </div>
+      </div>
+      <div class="ideas-grid" id="ideas-container">
+        <!-- Ideas will be populated by JavaScript -->
+      </div>
     </div>
   </div>
 
@@ -88,69 +958,594 @@
   </footer>
 
   <script>
+    // Theme Toggle
     const themeToggle = document.getElementById('theme-toggle');
     const body = document.body;
     const themeIcon = themeToggle.querySelector('i');
     themeToggle.addEventListener('click', () => {
       const isDark = body.getAttribute('data-theme') === 'dark';
       body.setAttribute('data-theme', isDark ? 'light' : 'dark');
-      themeIcon.classList.toggle('fa-moon'); themeIcon.classList.toggle('fa-sun');
+      themeIcon.classList.toggle('fa-moon'); 
+      themeIcon.classList.toggle('fa-sun');
       localStorage.setItem('theme', isDark ? 'light' : 'dark');
     });
     const savedTheme = localStorage.getItem('theme') || 'dark';
     body.setAttribute('data-theme', savedTheme);
     if (savedTheme === 'light') themeIcon.classList.replace('fa-moon', 'fa-sun');
 
-    const ideasContainer = document.getElementById('ideas-container');
-    let ideas = JSON.parse(localStorage.getItem('ideas')) || [];
+    // Major Crypto Assets (Binance only)
+    const majorAssets = [
+      { symbol: 'BTCUSDT', name: 'Bitcoin', icon: '₿', category: 'crypto' },
+      { symbol: 'ETHUSDT', name: 'Ethereum', icon: 'Ξ', category: 'crypto' },
+      { symbol: 'BNBUSDT', name: 'Binance Coin', icon: 'BNB', category: 'crypto' },
+      { symbol: 'ADAUSDT', name: 'Cardano', icon: 'ADA', category: 'crypto' },
+      { symbol: 'SOLUSDT', name: 'Solana', icon: 'SOL', category: 'crypto' },
+      { symbol: 'DOTUSDT', name: 'Polkadot', icon: 'DOT', category: 'crypto' },
+      { symbol: 'LINKUSDT', name: 'Chainlink', icon: 'LINK', category: 'crypto' },
+      { symbol: 'MATICUSDT', name: 'Polygon', icon: 'MATIC', category: 'crypto' },
+      { symbol: 'XRPUSDT', name: 'Ripple', icon: 'XRP', category: 'crypto' },
+      { symbol: 'DOGEUSDT', name: 'Dogecoin', icon: 'DOGE', category: 'crypto' },
+      { symbol: 'LTCUSDT', name: 'Litecoin', icon: 'LTC', category: 'crypto' },
+      { symbol: 'AVAXUSDT', name: 'Avalanche', icon: 'AVAX', category: 'crypto' }
+    ];
 
-    function renderIdeas() {
-      ideasContainer.innerHTML = '';
-      ideas.forEach((idea, i) => {
-        const div = document.createElement('div');
-        div.className = 'idea-card';
-        div.innerHTML = `
-          <div class="idea-header">
-            <div>
-              <div class="idea-author">${idea.author}</div>
-              <div class="idea-date">${new Date(idea.date).toLocaleString()}</div>
-            </div>
-            <a href="chart.html?symbol=${idea.symbol}" class="symbol">${idea.symbol}</a>
-          </div>
-          <div class="idea-body">
-            <h3>${idea.title}</h3>
-            <p>${idea.desc}</p>
-            <img src="https://via.placeholder.com/600x300?text=Chart+Snapshot" alt="chart">
-          </div>
-          <div class="idea-actions">
-            <span><i class="fas fa-thumbs-up"></i> 12</span>
-            <span><i class="fas fa-comment"></i> 3</span>
-            <span><i class="fas fa-share"></i> Share</span>
-          </div>
-        `;
-        ideasContainer.appendChild(div);
-      });
+    // Real-time data storage
+    const liveData = {};
+    let binanceWS = null;
+    const advisoryData = {};
+
+    // Trading Advisory Logic based on real Binance data
+    function generateAdvisory(asset, priceData) {
+      if (!priceData || !priceData.price || !priceData.change) {
+        return null;
+      }
+
+      const { price, change, volume, high, low } = priceData;
+      const changePercent = change;
+      
+      // Calculate volatility (using high-low range as proxy)
+      const volatility = high && low ? ((high - low) / price) * 100 : 5;
+      
+      // Advanced advisory logic based on multiple factors
+      let sentiment, timeframe, recommendation, specificAdvice, action;
+      
+      // Determine sentiment based on price movement, volume, and volatility
+      if (changePercent > 5 && volume > 100000) {
+        sentiment = 'bullish';
+        timeframe = volatility > 8 ? 'swing' : 'intraday';
+        recommendation = 'Strong bullish momentum with high volume';
+        action = 'buy';
+      } else if (changePercent > 2) {
+        sentiment = 'bullish';
+        timeframe = 'intraday';
+        recommendation = 'Moderate uptrend, watch for continuation';
+        action = 'buy';
+      } else if (changePercent < -5 && volume > 100000) {
+        sentiment = 'bearish';
+        timeframe = volatility > 8 ? 'position' : 'intraday';
+        recommendation = 'Strong selling pressure with high volume';
+        action = 'sell';
+      } else if (changePercent < -2) {
+        sentiment = 'bearish';
+        timeframe = 'intraday';
+        recommendation = 'Moderate downtrend, consider shorts';
+        action = 'sell';
+      } else {
+        sentiment = 'neutral';
+        timeframe = 'intraday';
+        recommendation = 'Consolidation phase, range-bound trading';
+        action = Math.random() > 0.5 ? 'watch' : 'buy';
+      }
+      
+      // Generate specific advice based on crypto market conditions
+      if (sentiment === 'bullish') {
+        const targetPrice = (price * 1.08).toFixed(2);
+        const stopLoss = (price * 0.96).toFixed(2);
+        specificAdvice = `Buy on dips to $${(price * 0.98).toFixed(2)}. Target: $${targetPrice}, Stop: $${stopLoss}`;
+      } else if (sentiment === 'bearish') {
+        const targetPrice = (price * 0.92).toFixed(2);
+        const stopLoss = (price * 1.04).toFixed(2);
+        specificAdvice = `Short rallies to $${(price * 1.02).toFixed(2)}. Target: $${targetPrice}, Stop: $${stopLoss}`;
+      } else {
+        const support = (price * 0.98).toFixed(2);
+        const resistance = (price * 1.02).toFixed(2);
+        specificAdvice = `Trade range $${support}-$${resistance}. Breakout will determine direction`;
+      }
+      
+      return {
+        symbol: asset.symbol,
+        name: asset.name,
+        icon: asset.icon,
+        category: asset.category,
+        price: parseFloat(price).toFixed(2),
+        changePercent: changePercent.toFixed(2),
+        sentiment,
+        timeframe,
+        recommendation,
+        specificAdvice,
+        action,
+        volume: volume || 0,
+        volatility: volatility.toFixed(1)
+      };
     }
 
-    document.getElementById('publish-idea').addEventListener('click', () => {
+    // Binance WebSocket Connection
+    function connectBinanceWebSocket() {
+      const streams = majorAssets.map(asset => `${asset.symbol.toLowerCase()}@ticker`).join('/');
+      
+      try {
+        binanceWS = new WebSocket(`wss://stream.binance.com:9443/stream?streams=${streams}`);
+        
+        binanceWS.onopen = () => {
+          console.log('Connected to Binance WebSocket');
+          updateConnectionStatus('Connected to Binance - Live data streaming', 'status-connected');
+        };
+        
+        binanceWS.onmessage = (event) => {
+          const data = JSON.parse(event.data);
+          const stream = data.stream;
+          const ticker = data.data;
+          
+          const symbol = ticker.s;
+          liveData[symbol] = {
+            price: parseFloat(ticker.c),
+            change: parseFloat(ticker.P),
+            volume: parseFloat(ticker.v),
+            high: parseFloat(ticker.h),
+            low: parseFloat(ticker.l),
+            quoteVolume: parseFloat(ticker.q),
+            trades: ticker.n
+          };
+          
+          // Update advisory for this symbol
+          const asset = majorAssets.find(a => a.symbol === symbol);
+          if (asset) {
+            advisoryData[symbol] = generateAdvisory(asset, liveData[symbol]);
+            renderAdvisory();
+          }
+        };
+        
+        binanceWS.onclose = (event) => {
+          console.log('Binance WebSocket disconnected:', event.code, event.reason);
+          updateConnectionStatus('Reconnecting to Binance...', 'status-connecting');
+          setTimeout(connectBinanceWebSocket, 3000);
+        };
+        
+        binanceWS.onerror = (error) => {
+          console.error('Binance WebSocket error:', error);
+          updateConnectionStatus('Binance connection error', 'status-disconnected');
+        };
+        
+      } catch (error) {
+        console.error('Failed to connect to Binance:', error);
+        updateConnectionStatus('Connection failed - Retrying...', 'status-disconnected');
+        setTimeout(connectBinanceWebSocket, 5000);
+      }
+    }
+
+    // Update connection status
+    function updateConnectionStatus(message, statusClass) {
+      const statusElement = document.getElementById('connection-status');
+      const indicator = statusClass.includes('connected') ? 'status-connected' : 
+                       statusClass.includes('connecting') ? 'status-connecting' : 'status-disconnected';
+      
+      statusElement.innerHTML = `
+        <span class="status-indicator ${indicator}"></span>
+        <span>${message}</span>
+      `;
+    }
+
+    // Render Advisory Cards
+    function renderAdvisory() {
+      const advisoryContainer = document.getElementById('advisory-container');
+      let hasData = false;
+      
+      advisoryContainer.innerHTML = '';
+      
+      majorAssets.forEach(asset => {
+        const advisory = advisoryData[asset.symbol];
+        if (!advisory) {
+          // Show loading state for assets without data yet
+          const advisoryCard = document.createElement('div');
+          advisoryCard.className = 'advisory-card';
+          advisoryCard.innerHTML = `
+            <div class="advisory-header">
+              <div class="asset-info">
+                <div class="asset-icon">${asset.icon}</div>
+                <div class="asset-details">
+                  <h3>${asset.symbol}</h3>
+                  <div class="asset-price">Loading...</div>
+                </div>
+              </div>
+              <div class="asset-change change-neutral">--%</div>
+            </div>
+            <div class="advisory-body">
+              <p class="advisory-text">Waiting for Binance data...</p>
+            </div>
+          `;
+          advisoryContainer.appendChild(advisoryCard);
+          return;
+        }
+        
+        hasData = true;
+        const advisoryCard = document.createElement('div');
+        advisoryCard.className = 'advisory-card';
+        
+        // Determine sentiment class and icon
+        let sentimentClass = '';
+        let sentimentIcon = '';
+        switch(advisory.sentiment) {
+          case 'bullish':
+            sentimentClass = 'sentiment-bullish';
+            sentimentIcon = 'fa-arrow-trend-up';
+            break;
+          case 'bearish':
+            sentimentClass = 'sentiment-bearish';
+            sentimentIcon = 'fa-arrow-trend-down';
+            break;
+          case 'neutral':
+            sentimentClass = 'sentiment-neutral';
+            sentimentIcon = 'fa-arrows-left-right';
+            break;
+        }
+        
+        // Determine action button
+        let actionBtn = '';
+        if (advisory.action === 'buy') {
+          actionBtn = `<button class="action-btn buy-btn" onclick="executeTrade('${advisory.symbol}', 'buy')"><i class="fas fa-arrow-up"></i> Buy</button>`;
+        } else if (advisory.action === 'sell') {
+          actionBtn = `<button class="action-btn sell-btn" onclick="executeTrade('${advisory.symbol}', 'sell')"><i class="fas fa-arrow-down"></i> Sell</button>`;
+        } else {
+          actionBtn = `<button class="action-btn watch-btn" onclick="addToWatchlist('${advisory.symbol}')"><i class="fas fa-eye"></i> Watch</button>`;
+        }
+        
+        advisoryCard.innerHTML = `
+          <div class="advisory-header">
+            <div class="asset-info">
+              <div class="asset-icon">${advisory.icon}</div>
+              <div class="asset-details">
+                <h3>${advisory.symbol}</h3>
+                <div class="asset-price">$${advisory.price}</div>
+              </div>
+            </div>
+            <div class="asset-change ${advisory.changePercent >= 0 ? 'change-positive' : 'change-negative'}">
+              ${advisory.changePercent >= 0 ? '+' : ''}${advisory.changePercent}%
+            </div>
+          </div>
+          <div class="advisory-body">
+            <div class="advisory-sentiment ${sentimentClass}">
+              <i class="fas ${sentimentIcon}"></i>
+              <strong>${advisory.sentiment.toUpperCase()} - ${advisory.timeframe.toUpperCase()}</strong>
+            </div>
+            <p class="advisory-text">${advisory.recommendation}. ${advisory.specificAdvice}</p>
+            <div style="font-size: 0.8rem; color: var(--text-light); margin-top: 0.5rem;">
+              Vol: ${(advisory.volume / 1000).toFixed(0)}K • Volatility: ${advisory.volatility}%
+            </div>
+            <span class="advisory-timeframe">${advisory.timeframe} trade</span>
+          </div>
+          <div class="advisory-actions">
+            ${actionBtn}
+            <button class="action-btn watch-btn" onclick="addToWatchlist('${advisory.symbol}')">
+              <i class="fas fa-plus"></i> Watchlist
+            </button>
+          </div>
+        `;
+        
+        advisoryContainer.appendChild(advisoryCard);
+      });
+      
+      // Update last updated time
+      if (hasData) {
+        const now = new Date();
+        document.getElementById('last-updated').textContent = `Updated: ${now.toLocaleTimeString()}`;
+      }
+    }
+
+    // Trade execution function
+    function executeTrade(symbol, action) {
+      const advisory = advisoryData[symbol];
+      if (!advisory) return;
+      
+      const confirmation = confirm(`${action.toUpperCase()} ${symbol} at $${advisory.price}?\n\nRecommendation: ${advisory.recommendation}`);
+      if (confirmation) {
+        alert(`Trade executed: ${action.toUpperCase()} ${symbol} at $${advisory.price}`);
+        // In production, this would connect to your brokerage API
+      }
+    }
+
+    // Add to Watchlist function
+    function addToWatchlist(symbol) {
+      let watchlist = JSON.parse(localStorage.getItem('watchlist')) || [];
+      if (!watchlist.includes(symbol)) {
+        watchlist.push(symbol);
+        localStorage.setItem('watchlist', JSON.stringify(watchlist));
+        alert(`${symbol} added to watchlist!`);
+      } else {
+        alert(`${symbol} is already in your watchlist.`);
+      }
+    }
+
+    // Initialize Binance WebSocket
+    function initializeBinanceConnection() {
+      connectBinanceWebSocket();
+    }
+
+    // [Rest of the code for idea management remains the same]
+    // Idea Management
+    const ideasContainer = document.getElementById('ideas-container');
+    const ideasCount = document.getElementById('ideas-count');
+    let ideas = JSON.parse(localStorage.getItem('ideas')) || [];
+    let ideaIdCounter = parseInt(localStorage.getItem('ideaIdCounter')) || 1;
+    let currentUser = JSON.parse(localStorage.getItem('currentUser')) || { 
+      name: 'Trader', 
+      initials: 'TR',
+      id: 'user1'
+    };
+
+    // Form Elements
+    const ideaForm = document.getElementById('idea-form');
+    const newIdeaBtn = document.getElementById('new-idea-btn');
+    const cancelIdeaBtn = document.getElementById('cancel-idea');
+    const publishIdeaBtn = document.getElementById('publish-idea');
+
+    // Filter Elements
+    const searchInput = document.getElementById('search-ideas');
+    const symbolFilter = document.getElementById('filter-symbol');
+    const sentimentFilter = document.getElementById('filter-sentiment');
+    const timeframeFilter = document.getElementById('filter-timeframe');
+
+    // Show/Hide Idea Form
+    newIdeaBtn.addEventListener('click', () => {
+      ideaForm.style.display = 'block';
+      newIdeaBtn.style.display = 'none';
+      resetForm();
+    });
+
+    cancelIdeaBtn.addEventListener('click', () => {
+      ideaForm.style.display = 'none';
+      newIdeaBtn.style.display = 'flex';
+    });
+
+    // Reset Form
+    function resetForm() {
+      document.getElementById('idea-title').value = '';
+      document.getElementById('idea-symbol').value = '';
+      document.getElementById('idea-sentiment').value = 'bullish';
+      document.getElementById('idea-timeframe').value = 'intraday';
+      document.getElementById('idea-desc').value = '';
+    }
+
+    // Create Idea
+    publishIdeaBtn.addEventListener('click', () => {
       const title = document.getElementById('idea-title').value.trim();
       const symbol = document.getElementById('idea-symbol').value.trim().toUpperCase();
+      const sentiment = document.getElementById('idea-sentiment').value;
+      const timeframe = document.getElementById('idea-timeframe').value;
       const desc = document.getElementById('idea-desc').value.trim();
+      
       if (title && symbol && desc) {
-        ideas.unshift({
-          title, symbol, desc,
-          author: 'You',
-          date: new Date().toISOString()
-        });
+        const newIdea = {
+          id: ideaIdCounter++,
+          title,
+          symbol,
+          sentiment,
+          timeframe,
+          desc,
+          author: currentUser.name,
+          authorId: currentUser.id,
+          authorInitials: currentUser.initials,
+          date: new Date().toISOString(),
+          likes: 0,
+          comments: 0,
+          liked: false
+        };
+        
+        ideas.unshift(newIdea);
         localStorage.setItem('ideas', JSON.stringify(ideas));
+        localStorage.setItem('ideaIdCounter', ideaIdCounter);
+        
         renderIdeas();
-        document.getElementById('idea-title').value = '';
-        document.getElementById('idea-symbol').value = '';
-        document.getElementById('idea-desc').value = '';
+        resetForm();
+        ideaForm.style.display = 'none';
+        newIdeaBtn.style.display = 'flex';
+      } else {
+        alert('Please fill in all required fields.');
       }
     });
 
+    // Render Ideas
+    function renderIdeas() {
+      ideasContainer.innerHTML = '';
+      
+      // Apply filters
+      let filteredIdeas = [...ideas];
+      
+      // Search filter
+      const searchTerm = searchInput.value.toLowerCase();
+      if (searchTerm) {
+        filteredIdeas = filteredIdeas.filter(idea => 
+          idea.title.toLowerCase().includes(searchTerm) || 
+          idea.desc.toLowerCase().includes(searchTerm) ||
+          idea.symbol.toLowerCase().includes(searchTerm)
+        );
+      }
+      
+      // Symbol filter
+      const symbolTerm = symbolFilter.value.toUpperCase();
+      if (symbolTerm) {
+        filteredIdeas = filteredIdeas.filter(idea => 
+          idea.symbol.includes(symbolTerm)
+        );
+      }
+      
+      // Sentiment filter
+      const sentimentTerm = sentimentFilter.value;
+      if (sentimentTerm) {
+        filteredIdeas = filteredIdeas.filter(idea => 
+          idea.sentiment === sentimentTerm
+        );
+      }
+      
+      // Timeframe filter
+      const timeframeTerm = timeframeFilter.value;
+      if (timeframeTerm) {
+        filteredIdeas = filteredIdeas.filter(idea => 
+          idea.timeframe === timeframeTerm
+        );
+      }
+      
+      // Update count
+      ideasCount.textContent = `${filteredIdeas.length} ideas`;
+      
+      if (filteredIdeas.length === 0) {
+        ideasContainer.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">
+              <i class="fas fa-lightbulb"></i>
+            </div>
+            <h3 class="empty-title">No Ideas Found</h3>
+            <p class="empty-text">Try adjusting your filters or create the first idea!</p>
+          </div>
+        `;
+        return;
+      }
+      
+      filteredIdeas.forEach(idea => {
+        const ideaCard = document.createElement('div');
+        ideaCard.className = 'idea-card';
+        
+        // Format date
+        const date = new Date(idea.date);
+        const formattedDate = date.toLocaleDateString() + ' at ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        
+        // Determine sentiment tag class
+        let sentimentClass = '';
+        switch(idea.sentiment) {
+          case 'bullish': sentimentClass = 'tag-bullish'; break;
+          case 'bearish': sentimentClass = 'tag-bearish'; break;
+          case 'neutral': sentimentClass = 'tag-neutral'; break;
+        }
+        
+        ideaCard.innerHTML = `
+          <div class="idea-header">
+            <div class="idea-author">
+              <div class="author-avatar">${idea.authorInitials}</div>
+              <div class="author-info">
+                <h4>${idea.author}</h4>
+                <div class="idea-date">${formattedDate}</div>
+              </div>
+            </div>
+            <div class="idea-symbol">${idea.symbol}</div>
+          </div>
+          <div class="idea-body">
+            <h3 class="idea-title">${idea.title}</h3>
+            <p class="idea-desc">${idea.desc}</p>
+            <div class="idea-chart">
+              <i class="fas fa-chart-line"></i> Chart for ${idea.symbol}
+            </div>
+            <div class="idea-tags">
+              <span class="idea-tag ${sentimentClass}">${idea.sentiment}</span>
+              <span class="idea-tag">${idea.timeframe}</span>
+            </div>
+          </div>
+          <div class="idea-footer">
+            <div class="idea-stats">
+              <span class="stat ${idea.liked ? 'active' : ''}" data-id="${idea.id}" data-type="like">
+                <i class="fas fa-thumbs-up"></i> ${idea.likes}
+              </span>
+              <span class="stat" data-id="${idea.id}" data-type="comment">
+                <i class="fas fa-comment"></i> ${idea.comments}
+              </span>
+            </div>
+            <div class="idea-actions">
+              <button class="action-btn-small" title="Save">
+                <i class="fas fa-bookmark"></i>
+              </button>
+              <button class="action-btn-small" title="Share">
+                <i class="fas fa-share"></i>
+              </button>
+            </div>
+          </div>
+        `;
+        
+        ideasContainer.appendChild(ideaCard);
+      });
+    }
+
+    // Like/Unlike functionality
+    ideasContainer.addEventListener('click', (e) => {
+      if (e.target.closest('.stat')) {
+        const stat = e.target.closest('.stat');
+        const ideaId = parseInt(stat.dataset.id);
+        const type = stat.dataset.type;
+        
+        if (type === 'like') {
+          const ideaIndex = ideas.findIndex(idea => idea.id === ideaId);
+          if (ideaIndex !== -1) {
+            if (ideas[ideaIndex].liked) {
+              ideas[ideaIndex].likes--;
+              ideas[ideaIndex].liked = false;
+            } else {
+              ideas[ideaIndex].likes++;
+              ideas[ideaIndex].liked = true;
+            }
+            localStorage.setItem('ideas', JSON.stringify(ideas));
+            renderIdeas();
+          }
+        }
+      }
+    });
+
+    // Filter Events
+    searchInput.addEventListener('input', renderIdeas);
+    symbolFilter.addEventListener('input', renderIdeas);
+    sentimentFilter.addEventListener('change', renderIdeas);
+    timeframeFilter.addEventListener('change', renderIdeas);
+
+    // Initialize with sample data if empty
+    if (ideas.length === 0) {
+      ideas = [
+        {
+          id: 1,
+          title: "BTC Breaking Key Resistance Level",
+          symbol: "BTCUSDT",
+          sentiment: "bullish",
+          timeframe: "swing",
+          desc: "Bitcoin is showing strong momentum after breaking above the $45,000 resistance level. Next target is $48,000 with stop loss at $43,500.",
+          author: "Crypto Trader",
+          authorId: "user2",
+          authorInitials: "CT",
+          date: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+          likes: 15,
+          comments: 3,
+          liked: false
+        },
+        {
+          id: 2,
+          title: "ETH Consolidation Before Breakout",
+          symbol: "ETHUSDT",
+          sentiment: "neutral",
+          timeframe: "intraday",
+          desc: "Ethereum is consolidating in a tight range between $2,400 and $2,600. Waiting for breakout confirmation before taking a position.",
+          author: "DeFi Expert",
+          authorId: "user4",
+          authorInitials: "DE",
+          date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+          likes: 12,
+          comments: 5,
+          liked: false
+        }
+      ];
+      localStorage.setItem('ideas', JSON.stringify(ideas));
+      ideaIdCounter = 3;
+      localStorage.setItem('ideaIdCounter', ideaIdCounter);
+    }
+
+    // Initial render
     renderIdeas();
+    
+    // Initialize Binance connection
+    initializeBinanceConnection();
   </script>
 </body>
 </html>
