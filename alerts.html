@@ -4,34 +4,518 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Alerts - TradeVision</title>
-  <link rel="icon" href="assets/icons/chart.svg" type="image/svg+xml">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔔</text></svg>">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <link id="theme-style" rel="stylesheet" href="assets/css/main.css">
-  <link rel="stylesheet" href="assets/css/dark-theme.css">
   <style>
-    :root{--bg:#141518;--bg-light:#1e222d;--text:#d1d4dc;--text-light:#9ea1b5;--accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#2d313e;--card:#1e222d;}
-    [data-theme="light"]{--bg:#ffffff;--bg-light:#f8f9fa;--text:#2d3748;--text-light:#718096;--accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#e2e8f0;--card:#ffffff;}
-    body{margin:0;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);}
-    a{color:var(--accent);text-decoration:none;}
-    .container{max-width:1000px;margin:0 auto;padding:2rem 1rem;}
-    .header{background:var(--bg-light);border-bottom:1px solid var(--border);padding:0.75rem 0;position:sticky;top:0;z-index:100;}
-    .flex-between{display:flex;justify-content:space-between;align-items:center;}
-    .logo{font-weight:700;font-size:1.4rem;color:var(--accent);}
-    .logo i{font-size:1.5rem;}
-    .nav-links a{margin:0 0.75rem;font-weight:500;}
-    .icon-btn{background:none;border:none;color:var(--text-light);font-size:1.2rem;cursor:pointer;padding:0.5rem;}
-    .alert-form{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1.5rem;margin-bottom:2rem;}
-    .form-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-bottom:1rem;}
-    .form-group label{display:block;margin-bottom:0.25rem;font-size:0.9rem;}
-    .form-group input,.form-group select{padding:0.5rem;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text);width:100%;}
-    button.primary{background:var(--accent);color:white;padding:0.75rem 1.5rem;border:none;border-radius:4px;cursor:pointer;}
-    .alerts-list .alert-item{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1rem;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center;}
-    .alert-item .status{color:var(--green);}
-    .alert-item .delete{color:var(--red);cursor:pointer;}
-    .footer{background:var(--bg-light);border-top:1px solid var(--border);padding:1rem 0;font-size:0.8rem;text-align:center;color:var(--text-light);}
+    :root {
+      --bg: #141518;
+      --bg-light: #1e222d;
+      --text: #d1d4dc;
+      --text-light: #9ea1b5;
+      --accent: #2962ff;
+      --accent-hover: #1e53e5;
+      --green: #26a69a;
+      --green-light: rgba(38, 166, 154, 0.1);
+      --red: #ef5350;
+      --red-light: rgba(239, 83, 80, 0.1);
+      --yellow: #ffb74d;
+      --yellow-light: rgba(255, 183, 77, 0.1);
+      --border: #2d313e;
+      --card: #1e222d;
+      --card-hover: #252a38;
+      --shadow: rgba(0, 0, 0, 0.2);
+    }
+    
+    [data-theme="light"] {
+      --bg: #ffffff;
+      --bg-light: #f8f9fa;
+      --text: #2d3748;
+      --text-light: #718096;
+      --accent: #2962ff;
+      --accent-hover: #1e53e5;
+      --green: #26a69a;
+      --green-light: rgba(38, 166, 154, 0.05);
+      --red: #ef5350;
+      --red-light: rgba(239, 83, 80, 0.05);
+      --yellow: #ffb74d;
+      --yellow-light: rgba(255, 183, 77, 0.05);
+      --border: #e2e8f0;
+      --card: #ffffff;
+      --card-hover: #f8f9fa;
+      --shadow: rgba(0, 0, 0, 0.05);
+    }
+    
+    * {
+      box-sizing: border-box;
+    }
+    
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      transition: background-color 0.3s, color 0.3s;
+      min-height: 100vh;
+    }
+    
+    a {
+      color: var(--accent);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    
+    a:hover {
+      color: var(--accent-hover);
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+    }
+    
+    .header {
+      background: var(--bg-light);
+      border-bottom: 1px solid var(--border);
+      padding: 0.75rem 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      transition: background-color 0.3s, border-color 0.3s;
+    }
+    
+    .flex-between {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .flex-center {
+      display: flex;
+      align-items: center;
+    }
+    
+    .logo {
+      font-weight: 700;
+      font-size: 1.4rem;
+      color: var(--accent);
+    }
+    
+    .logo i {
+      font-size: 1.5rem;
+      margin-right: 0.5rem;
+    }
+    
+    .nav-links a {
+      margin: 0 0.75rem;
+      font-weight: 500;
+      position: relative;
+    }
+    
+    .nav-links a:hover::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: var(--accent);
+    }
+    
+    .icon-btn {
+      background: none;
+      border: none;
+      color: var(--text-light);
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: 50%;
+      transition: background-color 0.2s, color 0.2s;
+    }
+    
+    .icon-btn:hover {
+      background: var(--border);
+      color: var(--text);
+    }
+
+    /* Page Header */
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+    
+    .page-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin: 0;
+    }
+    
+    .page-subtitle {
+      color: var(--text-light);
+      margin-top: 0.5rem;
+    }
+    
+    .page-actions {
+      display: flex;
+      gap: 0.75rem;
+    }
+    
+    .btn {
+      padding: 0.75rem 1.25rem;
+      border-radius: 6px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: var(--accent-hover);
+    }
+    
+    .btn-outline {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    
+    .btn-outline:hover {
+      background: var(--border);
+    }
+
+    /* Alert Form */
+    .alert-form-container {
+      background: var(--card);
+      border-radius: 8px;
+      box-shadow: 0 2px 10px var(--shadow);
+      margin-bottom: 2rem;
+      transition: background-color 0.3s, box-shadow 0.3s;
+      overflow: hidden;
+    }
+    
+    .form-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .form-title {
+      font-weight: 600;
+      font-size: 1.1rem;
+      margin: 0;
+    }
+    
+    .form-content {
+      padding: 1.5rem;
+    }
+    
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text-light);
+    }
+    
+    .form-group input, .form-group select {
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--bg);
+      color: var(--text);
+      width: 100%;
+      font-size: 0.9rem;
+      transition: border-color 0.2s, background-color 0.3s, color 0.3s;
+    }
+    
+    .form-group input:focus, .form-group select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(41, 98, 255, 0.2);
+    }
+    
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 1rem;
+    }
+
+    /* Alerts List */
+    .alerts-section {
+      background: var(--card);
+      border-radius: 8px;
+      box-shadow: 0 2px 10px var(--shadow);
+      transition: background-color 0.3s, box-shadow 0.3s;
+      overflow: hidden;
+    }
+    
+    .section-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .section-title {
+      font-weight: 600;
+      font-size: 1.1rem;
+      margin: 0;
+    }
+    
+    .section-actions {
+      display: flex;
+      gap: 0.75rem;
+    }
+    
+    .alerts-list {
+      padding: 0;
+    }
+    
+    .alert-item {
+      padding: 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background-color 0.2s;
+    }
+    
+    .alert-item:hover {
+      background: var(--card-hover);
+    }
+    
+    .alert-item:last-child {
+      border-bottom: none;
+    }
+    
+    .alert-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    
+    .alert-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--accent);
+      color: white;
+    }
+    
+    .alert-details h3 {
+      margin: 0 0 0.25rem 0;
+      font-weight: 600;
+    }
+    
+    .alert-details p {
+      margin: 0;
+      font-size: 0.9rem;
+      color: var(--text-light);
+    }
+    
+    .alert-meta {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    
+    .alert-status {
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+    
+    .status-active {
+      background: var(--green-light);
+      color: var(--green);
+    }
+    
+    .status-triggered {
+      background: var(--yellow-light);
+      color: var(--yellow);
+    }
+    
+    .status-expired {
+      background: var(--red-light);
+      color: var(--red);
+    }
+    
+    .alert-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+    
+    .action-btn {
+      background: none;
+      border: none;
+      color: var(--text-light);
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: 4px;
+      transition: background-color 0.2s, color 0.2s;
+    }
+    
+    .action-btn:hover {
+      background: var(--border);
+      color: var(--text);
+    }
+    
+    .action-btn.delete:hover {
+      color: var(--red);
+    }
+
+    /* Empty State */
+    .empty-state {
+      padding: 3rem 1.5rem;
+      text-align: center;
+      color: var(--text-light);
+    }
+    
+    .empty-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      opacity: 0.5;
+    }
+    
+    .empty-title {
+      font-size: 1.2rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .empty-text {
+      max-width: 400px;
+      margin: 0 auto;
+    }
+
+    /* Notification Toast */
+    .notification-toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: var(--card);
+      border-radius: 8px;
+      padding: 1rem;
+      box-shadow: 0 4px 12px var(--shadow);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      max-width: 400px;
+      z-index: 1000;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: transform 0.3s, opacity 0.3s;
+    }
+    
+    .notification-toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    
+    .notification-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--yellow);
+      color: white;
+      flex-shrink: 0;
+    }
+    
+    .notification-content h4 {
+      margin: 0 0 0.25rem 0;
+      font-weight: 600;
+    }
+    
+    .notification-content p {
+      margin: 0;
+      font-size: 0.9rem;
+      color: var(--text-light);
+    }
+    
+    .notification-close {
+      background: none;
+      border: none;
+      color: var(--text-light);
+      cursor: pointer;
+      padding: 0.25rem;
+      border-radius: 4px;
+      transition: background-color 0.2s;
+    }
+    
+    .notification-close:hover {
+      background: var(--border);
+    }
+
+    /* Footer */
+    .footer {
+      background: var(--bg-light);
+      border-top: 1px solid var(--border);
+      padding: 1rem 0;
+      font-size: 0.8rem;
+      text-align: center;
+      color: var(--text-light);
+      transition: background-color 0.3s, border-color 0.3s;
+      margin-top: 2rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+      
+      .nav-links {
+        display: none;
+      }
+      
+      .alert-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+      
+      .alert-meta {
+        width: 100%;
+        justify-content: space-between;
+      }
+      
+      .notification-toast {
+        left: 1rem;
+        right: 1rem;
+        max-width: none;
+      }
+    }
   </style>
 </head>
+
 <body data-theme="dark">
   <header class="header">
     <div class="container flex-between">
@@ -54,34 +538,102 @@
   </header>
 
   <div class="container">
-    <h1>Price Alerts</h1>
+    <!-- Page Header -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Price Alerts</h1>
+        <p class="page-subtitle">Get notified when your trading conditions are met</p>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-outline" id="test-notification"><i class="fas fa-bell"></i> Test Notification</button>
+      </div>
+    </div>
 
-    <div class="alert-form">
-      <div class="form-row">
-        <div class="form-group">
-          <label>Symbol</label>
-          <input type="text" id="alert-symbol" placeholder="AAPL" value="AAPL">
+    <!-- Alert Form -->
+    <div class="alert-form-container">
+      <div class="form-header">
+        <h2 class="form-title">Create New Alert</h2>
+      </div>
+      <div class="form-content">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Symbol</label>
+            <input type="text" id="alert-symbol" placeholder="e.g. BTCUSDT, AAPL" value="BTCUSDT">
+          </div>
+          <div class="form-group">
+            <label>Alert Type</label>
+            <select id="alert-type">
+              <option value="price">Price Alert</option>
+              <option value="volume">Volume Alert</option>
+              <option value="change">Percentage Change</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Condition</label>
+            <select id="alert-condition">
+              <option value="above">Crosses Above</option>
+              <option value="below">Crosses Below</option>
+              <option value="greater">Greater Than</option>
+              <option value="less">Less Than</option>
+            </select>
+          </div>
         </div>
-        <div class="form-group">
-          <label>Condition</label>
-          <select id="alert-condition">
-            <option>Crosses Above</option>
-            <option>Crosses Below</option>
-            <option>Greater Than</option>
-            <option>Less Than</option>
-          </select>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Target Value</label>
+            <input type="number" id="alert-value" placeholder="Enter target value" step="0.01">
+          </div>
+          <div class="form-group">
+            <label>Expiration</label>
+            <select id="alert-expiration">
+              <option value="1day">1 Day</option>
+              <option value="1week" selected>1 Week</option>
+              <option value="1month">1 Month</option>
+              <option value="never">Never</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Notification Method</label>
+            <select id="alert-notification">
+              <option value="browser">Browser Notification</option>
+              <option value="email">Email</option>
+              <option value="both">Both</option>
+            </select>
+          </div>
         </div>
-        <div class="form-group">
-          <label>Price</label>
-          <input type="number" id="alert-price" placeholder="180.00" step="0.01">
+        <div class="form-actions">
+          <button class="btn btn-outline" id="reset-form">Reset</button>
+          <button class="btn btn-primary" id="create-alert">Create Alert</button>
         </div>
       </div>
-      <button class="primary" id="create-alert">Create Alert</button>
     </div>
 
-    <div class="alerts-list" id="alerts-list">
-      <!-- Filled by JS -->
+    <!-- Alerts List -->
+    <div class="alerts-section">
+      <div class="section-header">
+        <h2 class="section-title">Your Active Alerts</h2>
+        <div class="section-actions">
+          <button class="btn btn-outline" id="clear-all">Clear All</button>
+        </div>
+      </div>
+      <div class="alerts-list" id="alerts-list">
+        <!-- Alerts will be populated by JavaScript -->
+      </div>
     </div>
+  </div>
+
+  <!-- Notification Toast -->
+  <div class="notification-toast" id="notification-toast">
+    <div class="notification-icon">
+      <i class="fas fa-bell"></i>
+    </div>
+    <div class="notification-content">
+      <h4 id="toast-title">Alert Triggered</h4>
+      <p id="toast-message">Your price alert for BTCUSDT has been triggered.</p>
+    </div>
+    <button class="notification-close" id="toast-close">
+      <i class="fas fa-times"></i>
+    </button>
   </div>
 
   <footer class="footer">
@@ -89,59 +641,272 @@
   </footer>
 
   <script>
+    // Theme Toggle
     const themeToggle = document.getElementById('theme-toggle');
     const body = document.body;
     const themeIcon = themeToggle.querySelector('i');
     themeToggle.addEventListener('click', () => {
       const isDark = body.getAttribute('data-theme') === 'dark';
       body.setAttribute('data-theme', isDark ? 'light' : 'dark');
-      themeIcon.classList.toggle('fa-moon'); themeIcon.classList.toggle('fa-sun');
+      themeIcon.classList.toggle('fa-moon'); 
+      themeIcon.classList.toggle('fa-sun');
       localStorage.setItem('theme', isDark ? 'light' : 'dark');
     });
     const savedTheme = localStorage.getItem('theme') || 'dark';
     body.setAttribute('data-theme', savedTheme);
     if (savedTheme === 'light') themeIcon.classList.replace('fa-moon', 'fa-sun');
 
+    // Alert Management
     const alertsList = document.getElementById('alerts-list');
     let alerts = JSON.parse(localStorage.getItem('alerts')) || [];
+    let alertIdCounter = parseInt(localStorage.getItem('alertIdCounter')) || 1;
 
+    // Notification Toast
+    const notificationToast = document.getElementById('notification-toast');
+    const toastTitle = document.getElementById('toast-title');
+    const toastMessage = document.getElementById('toast-message');
+    const toastClose = document.getElementById('toast-close');
+
+    function showNotification(title, message) {
+      toastTitle.textContent = title;
+      toastMessage.textContent = message;
+      notificationToast.classList.add('show');
+      
+      // Auto hide after 5 seconds
+      setTimeout(() => {
+        hideNotification();
+      }, 5000);
+    }
+
+    function hideNotification() {
+      notificationToast.classList.remove('show');
+    }
+
+    toastClose.addEventListener('click', hideNotification);
+
+    // Test Notification Button
+    document.getElementById('test-notification').addEventListener('click', () => {
+      showNotification('Test Notification', 'This is a test of the notification system.');
+    });
+
+    // Render Alerts
     function renderAlerts() {
       alertsList.innerHTML = '';
-      alerts.forEach((a, i) => {
-        const div = document.createElement('div');
-        div.className = 'alert-item';
-        div.innerHTML = `
-          <div>
-            <strong>${a.symbol}</strong> ${a.condition} <strong>$${a.price}</strong>
-            <span class="status">Active</span>
+      
+      if (alerts.length === 0) {
+        alertsList.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">
+              <i class="fas fa-bell-slash"></i>
+            </div>
+            <h3 class="empty-title">No Alerts Yet</h3>
+            <p class="empty-text">Create your first alert to get notified when your trading conditions are met.</p>
           </div>
-          <i class="fas fa-trash delete" data-index="${i}"></i>
         `;
-        alertsList.appendChild(div);
+        return;
+      }
+      
+      alerts.forEach((alert, index) => {
+        const alertItem = document.createElement('div');
+        alertItem.className = 'alert-item';
+        
+        // Determine status and icon
+        let statusClass = 'status-active';
+        let statusText = 'Active';
+        let icon = 'fa-bell';
+        
+        if (alert.triggered) {
+          statusClass = 'status-triggered';
+          statusText = 'Triggered';
+          icon = 'fa-check-circle';
+        } else if (alert.expired) {
+          statusClass = 'status-expired';
+          statusText = 'Expired';
+          icon = 'fa-clock';
+        }
+        
+        // Format condition text
+        let conditionText = '';
+        switch(alert.condition) {
+          case 'above': conditionText = 'Crosses Above'; break;
+          case 'below': conditionText = 'Crosses Below'; break;
+          case 'greater': conditionText = 'Greater Than'; break;
+          case 'less': conditionText = 'Less Than'; break;
+        }
+        
+        // Format alert type
+        let typeText = '';
+        switch(alert.type) {
+          case 'price': typeText = 'Price'; break;
+          case 'volume': typeText = 'Volume'; break;
+          case 'change': typeText = 'Change %'; break;
+        }
+        
+        alertItem.innerHTML = `
+          <div class="alert-info">
+            <div class="alert-icon">
+              <i class="fas ${icon}"></i>
+            </div>
+            <div class="alert-details">
+              <h3>${alert.symbol} ${typeText} Alert</h3>
+              <p>${conditionText} $${alert.value}</p>
+            </div>
+          </div>
+          <div class="alert-meta">
+            <span class="alert-status ${statusClass}">${statusText}</span>
+            <div class="alert-actions">
+              <button class="action-btn edit" data-id="${alert.id}">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button class="action-btn delete" data-id="${alert.id}">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+        `;
+        
+        alertsList.appendChild(alertItem);
       });
     }
 
+    // Create Alert
     document.getElementById('create-alert').addEventListener('click', () => {
       const symbol = document.getElementById('alert-symbol').value.trim().toUpperCase();
+      const type = document.getElementById('alert-type').value;
       const condition = document.getElementById('alert-condition').value;
-      const price = parseFloat(document.getElementById('alert-price').value);
-      if (symbol && price) {
-        alerts.push({ symbol, condition, price });
+      const value = parseFloat(document.getElementById('alert-value').value);
+      const expiration = document.getElementById('alert-expiration').value;
+      const notification = document.getElementById('alert-notification').value;
+      
+      if (symbol && value) {
+        const newAlert = {
+          id: alertIdCounter++,
+          symbol,
+          type,
+          condition,
+          value,
+          expiration,
+          notification,
+          created: new Date().toISOString(),
+          triggered: false,
+          expired: false
+        };
+        
+        alerts.push(newAlert);
         localStorage.setItem('alerts', JSON.stringify(alerts));
+        localStorage.setItem('alertIdCounter', alertIdCounter);
+        
+        // Show success message
+        showNotification('Alert Created', `Your ${symbol} alert has been created successfully.`);
+        
         renderAlerts();
+        resetForm();
+      } else {
+        showNotification('Missing Information', 'Please fill in all required fields.');
       }
     });
 
-    alertsList.addEventListener('click', e => {
-      if (e.target.classList.contains('delete')) {
-        const i = e.target.dataset.index;
-        alerts.splice(i, 1);
+    // Reset Form
+    document.getElementById('reset-form').addEventListener('click', resetForm);
+    
+    function resetForm() {
+      document.getElementById('alert-symbol').value = 'BTCUSDT';
+      document.getElementById('alert-type').value = 'price';
+      document.getElementById('alert-condition').value = 'above';
+      document.getElementById('alert-value').value = '';
+      document.getElementById('alert-expiration').value = '1week';
+      document.getElementById('alert-notification').value = 'browser';
+    }
+
+    // Delete Alert
+    alertsList.addEventListener('click', (e) => {
+      if (e.target.closest('.delete')) {
+        const alertId = parseInt(e.target.closest('.delete').dataset.id);
+        alerts = alerts.filter(alert => alert.id !== alertId);
         localStorage.setItem('alerts', JSON.stringify(alerts));
         renderAlerts();
+        
+        showNotification('Alert Deleted', 'Your alert has been deleted successfully.');
       }
     });
 
+    // Clear All Alerts
+    document.getElementById('clear-all').addEventListener('click', () => {
+      if (alerts.length > 0) {
+        if (confirm('Are you sure you want to delete all alerts?')) {
+          alerts = [];
+          localStorage.setItem('alerts', JSON.stringify(alerts));
+          renderAlerts();
+          
+          showNotification('All Alerts Cleared', 'All your alerts have been deleted.');
+        }
+      } else {
+        showNotification('No Alerts', 'You have no alerts to clear.');
+      }
+    });
+
+    // Simulate Alert Triggering (for demonstration)
+    function simulateAlertTriggering() {
+      if (alerts.length > 0 && Math.random() < 0.1) { // 10% chance every check
+        const activeAlerts = alerts.filter(alert => !alert.triggered && !alert.expired);
+        if (activeAlerts.length > 0) {
+          const randomAlert = activeAlerts[Math.floor(Math.random() * activeAlerts.length)];
+          randomAlert.triggered = true;
+          localStorage.setItem('alerts', JSON.stringify(alerts));
+          renderAlerts();
+          
+          // Show notification
+          showNotification(
+            'Alert Triggered!', 
+            `${randomAlert.symbol} ${randomAlert.condition === 'above' ? 'rose above' : 'fell below'} $${randomAlert.value}`
+          );
+        }
+      }
+    }
+
+    // Check for expired alerts
+    function checkExpiredAlerts() {
+      const now = new Date();
+      alerts.forEach(alert => {
+        if (!alert.expired && !alert.triggered) {
+          const created = new Date(alert.created);
+          let expirationDate = new Date(created);
+          
+          switch(alert.expiration) {
+            case '1day':
+              expirationDate.setDate(expirationDate.getDate() + 1);
+              break;
+            case '1week':
+              expirationDate.setDate(expirationDate.getDate() + 7);
+              break;
+            case '1month':
+              expirationDate.setMonth(expirationDate.getMonth() + 1);
+              break;
+            case 'never':
+              return; // Skip expiration check for "never" option
+          }
+          
+          if (now > expirationDate) {
+            alert.expired = true;
+          }
+        }
+      });
+      
+      localStorage.setItem('alerts', JSON.stringify(alerts));
+      renderAlerts();
+    }
+
+    // Initialize
     renderAlerts();
+    
+    // Set up periodic checks
+    setInterval(simulateAlertTriggering, 10000); // Check every 10 seconds
+    setInterval(checkExpiredAlerts, 60000); // Check every minute
+
+    // Request browser notification permission
+    if ('Notification' in window) {
+      Notification.requestPermission();
+    }
   </script>
 </body>
 </html>
