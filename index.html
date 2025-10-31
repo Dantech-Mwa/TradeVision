@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TradeVision DJGlobal</title>
+  <title>TradeVision DJGlobal - Professional Trading Charts</title>
 
   <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -15,123 +15,584 @@
   <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4/dist/lightweight-charts.standalone.production.js"></script>
 
   <style>
-    :root{
-      --bg:#141518;--bg-light:#1e222d;--text:#d1d4dc;--text-light:#9ea1b5;
-      --accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#2d313e;--card:#1e222d;
+    :root {
+      --bg: #141518;
+      --bg-light: #1e222d;
+      --text: #d1d4dc;
+      --text-light: #9ea1b5;
+      --accent: #2962ff;
+      --green: #26a69a;
+      --red: #ef5350;
+      --border: #2d313e;
+      --card: #1e222d;
+      --shadow: rgba(0, 0, 0, 0.3);
     }
-    [data-theme="light"]{
-      --bg:#ffffff;--bg-light:#f8f9fa;--text:#2d3748;--text-light:#718096;
-      --accent:#2962ff;--green:#26a69a;--red:#ef5350;--border:#e2e8f0;--card:#ffffff;
+    
+    [data-theme="light"] {
+      --bg: #ffffff;
+      --bg-light: #f8f9fa;
+      --text: #2d3748;
+      --text-light: #718096;
+      --accent: #2962ff;
+      --green: #26a69a;
+      --red: #ef5350;
+      --border: #e2e8f0;
+      --card: #ffffff;
+      --shadow: rgba(0, 0, 0, 0.05);
     }
+    
+    /* Base styles */
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+    
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    
+    a {
+      color: var(--accent);
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+    
+    a:hover {
+      color: var(--accent);
+      text-decoration: underline;
+    }
+    
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+    
+    /* Utility classes */
+    .flex-between {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .flex-center {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .grid-2x2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+    }
+    
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+    
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+    }
+    
+    .section {
+      padding: 4rem 0;
+    }
+    
+    .section-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 2rem;
+      color: var(--text);
+    }
+    
+    @media (max-width: 768px) {
+      .grid-2x2, .grid-3, .grid-4 {
+        grid-template-columns: 1fr;
+      }
+      
+      .section {
+        padding: 2.5rem 0;
+      }
+    }
+    
+    /* Header */
+    .header {
+      background: var(--bg-light);
+      border-bottom: 1px solid var(--border);
+      padding: 0.75rem 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 10px var(--shadow);
+    }
+    
+    .logo {
+      font-weight: 700;
+      font-size: 1.4rem;
+      color: var(--accent);
+    }
+    
     .logo-img {
-  width: 28px;      /* Adjust size as needed (matches FA icon size) */
-  height: 28px;
-  margin-right: 0.5rem;
-  vertical-align: middle;  /* Aligns with text */
-  border-radius: 4px;      /* Optional: subtle rounding */
-}
-    *,*::before,*::after{box-sizing:border-box;}
-    body{margin:0;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;}
-    a{color:var(--accent);text-decoration:none;}
-    .container{max-width:1400px;margin:0 auto;padding:0 1rem;}
-
-    .flex-between{display:flex;justify-content:space-between;align-items:center;}
-    .flex-center{display:flex;align-items:center;gap:.5rem;}
-    .grid-2x2{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;}
-    .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;}
-    @media(max-width:768px){.grid-2x2,.grid-3{grid-template-columns:1fr;}}
-
-    .header{background:var(--bg-light);border-bottom:1px solid var(--border);padding:.75rem 0;position:sticky;top:0;z-index:100;}
-    .logo{font-weight:700;font-size:1.4rem;color:var(--accent);}
-    .logo i{font-size:1.5rem;}
-    .search-bar{position:relative;max-width:300px;width:100%;}
-    .search-bar input{width:100%;padding:.5rem 2.5rem .5rem 1rem;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);}
-    .search-bar button{position:absolute;right:.5rem;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-light);cursor:pointer;}
-    .nav-links a{margin:0 .75rem;font-weight:500;}
-    .icon-btn{background:none;border:none;color:var(--text-light);font-size:1.2rem;cursor:pointer;padding:.5rem;}
-
-    /* --------------------------------------------------- */
-    /* HERO – FULL BACKGROUND CHART (only changes here)   */
-    /* --------------------------------------------------- */
-    .hero-section{
-      position:relative;
-      min-height:70vh;
-      display:flex;
-      align-items:center;
-      overflow:hidden;
-      /* Dark theme – a little lighter than pure black */
-      background:rgba(20, 21, 24, 0.05);
+      width: 28px;
+      height: 28px;
+      margin-right: 0.5rem;
+      vertical-align: middle;
+      border-radius: 4px;
     }
-    [data-theme="light"] .hero-section{
-      background:#f5f7fa;               /* light theme background */
+    
+    .search-bar {
+      position: relative;
+      max-width: 300px;
+      width: 100%;
     }
-
-    .chart-background{
-      position:absolute;
-      inset:0;               /* top/right/bottom/left = 0 */
-      z-index:1;
-      opacity:0.12;          /* subtle in both themes */
+    
+    .search-bar input {
+      width: 100%;
+      padding: 0.5rem 2.5rem 0.5rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--bg);
+      color: var(--text);
+      transition: border-color 0.2s ease;
     }
-    #background-chart{
-      width:100% !important;
-      height:100% !important;
-      position:absolute !important;
-      inset:0 !important;
+    
+    .search-bar input:focus {
+      outline: none;
+      border-color: var(--accent);
     }
-
-    .hero-content{
-      position:relative;
-      z-index:2;
-      text-align:center;
-      width:100%;
-      padding:2rem 0;
+    
+    .search-bar button {
+      position: absolute;
+      right: 0.5rem;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--text-light);
+      cursor: pointer;
     }
-
-    .hero h1{font-size:3rem;margin:0 0 1rem;font-weight:700;}
-    .gradient{background:linear-gradient(90deg,#2962ff,#00bfa5);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-    .hero p{font-size:1.3rem;color:var(--text-light);max-width:700px;margin:0 auto 3rem;line-height:1.8;}
-    .btn-primary,.btn-secondary{display:inline-block;padding:1rem 2rem;border-radius:8px;font-weight:600;margin:0 1rem;font-size:1.1rem;transition:all .3s ease;}
-    .btn-primary{background:var(--accent);color:white;border:none;}
-    .btn-primary:hover{background:#1e53e5;transform:translateY(-2px);box-shadow:0 8px 25px rgba(41,98,255,.3);}
-    .btn-secondary{background:transparent;color:var(--text);border:2px solid var(--border);}
-    .btn-secondary:hover{background:var(--bg-light);transform:translateY(-2px);border-color:var(--accent);}
-
-    /* MINI-CHARTS – **EXACTLY** the original code */
-    .chart-card,.link-card{background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden;}
-    .card-header{padding:.75rem 1rem;display:flex;justify-content:space-between;font-size:.9rem;background:var(--bg-light);}
-    .symbol{font-weight:600;}
-    .chart-container{height:120px;width:100%;position:relative;background:var(--card);overflow:hidden;}
-    .link-card{padding:1.5rem;text-align:center;transition:.2s;}
-    .link-card:hover{background:var(--bg-light);}
-    .link-card i{font-size:1.8rem;margin-bottom:.5rem;color:var(--accent);}
-
-    .mini-charts-grid,.quick-links{margin:3rem 0;}
-    h2{font-size:1.5rem;margin-bottom:1rem;}
-
-    .footer{background:var(--bg-light);border-top:1px solid var(--border);padding:2rem 0 1rem;font-size:.9rem;}
-    .footer-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2rem;margin-bottom:1.5rem;}
-    .footer-grid a{display:block;margin:.4rem 0;color:var(--text-light);}
-    .footer-bottom{text-align:center;color:var(--text-light);}
-
-    @media(max-width:992px){.nav-links,.header-actions>a{display:none;}}
-    @media(max-width:768px){
-      .hero h1{font-size:2.2rem;}
-      .hero p{font-size:1.1rem;}
-      .btn-primary,.btn-secondary{padding:.8rem 1.5rem;font-size:1rem;margin:.5rem;}
+    
+    .nav-links {
+      display: flex;
+      gap: 1rem;
     }
-
-    .status-indicator{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;}
-    .status-connected{background-color:var(--green);}
-    .status-disconnected{background-color:var(--red);}
-    .status-connecting{background-color:#ff9800;animation:pulse 1.5s infinite;}
-    @keyframes pulse{0%{opacity:1}50%{opacity:.5}100%{opacity:1}}
-
-    .features{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:2rem;margin:4rem 0;}
-    .feature{text-align:center;padding:2rem;background:var(--card);border-radius:12px;border:1px solid var(--border);transition:transform .3s ease;cursor:pointer;text-decoration:none;color:inherit;display:block;}
-    .feature:hover{transform:translateY(-5px);border-color:var(--accent);}
-    .feature i{font-size:2.5rem;color:var(--accent);margin-bottom:1rem;}
-    .feature h3{margin:0 0 1rem;font-size:1.3rem;}
-    .feature p{color:var(--text-light);margin:0;line-height:1.6;}
+    
+    .nav-links a {
+      font-weight: 500;
+      padding: 0.5rem 0.75rem;
+      border-radius: 4px;
+      transition: background-color 0.2s ease;
+    }
+    
+    .nav-links a:hover {
+      background: var(--bg);
+      text-decoration: none;
+    }
+    
+    .header-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+    
+    .icon-btn {
+      background: none;
+      border: none;
+      color: var(--text-light);
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: 4px;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+    
+    .icon-btn:hover {
+      background: var(--bg);
+      color: var(--text);
+    }
+    
+    /* Mobile menu */
+    .mobile-menu-toggle {
+      display: none;
+      background: none;
+      border: none;
+      color: var(--text-light);
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+    
+    .mobile-menu {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: var(--bg-light);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem;
+      z-index: 99;
+    }
+    
+    .mobile-menu.active {
+      display: block;
+    }
+    
+    .mobile-nav-links {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    
+    .mobile-nav-links a {
+      padding: 0.75rem 1rem;
+      border-radius: 4px;
+      transition: background-color 0.2s ease;
+    }
+    
+    .mobile-nav-links a:hover {
+      background: var(--bg);
+      text-decoration: none;
+    }
+    
+    @media (max-width: 992px) {
+      .nav-links {
+        display: none;
+      }
+      
+      .mobile-menu-toggle {
+        display: block;
+      }
+      
+      .search-bar {
+        max-width: 200px;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .search-bar {
+        max-width: 150px;
+      }
+    }
+    
+    @media (max-width: 576px) {
+      .search-bar {
+        display: none;
+      }
+    }
+    
+    /* Hero section with more transparent background chart */
+    .hero-section {
+      position: relative;
+      min-height: 70vh;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      background: transparent;
+    }
+    
+    .chart-background {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      opacity: 0.80; /* Increased transparency for better chart visibility */
+    }
+    
+    #background-chart {
+      width: 100% !important;
+      height: 100% !important;
+      position: absolute !important;
+      inset: 0 !important;
+    }
+    
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      width: 100%;
+      padding: 2rem 0;
+    }
+    
+    .hero-title {
+      font-size: 3rem;
+      margin: 0 0 1rem;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+    
+    .gradient {
+      background: linear-gradient(90deg, #2962ff, #00bfa5);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .hero-subtitle {
+      font-size: 1.3rem;
+      color: var(--text-light);
+      max-width: 700px;
+      margin: 0 auto 3rem;
+      line-height: 1.8;
+    }
+    
+    .btn {
+      display: inline-block;
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 1.1rem;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      border: none;
+    }
+    
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: #1e53e5;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(41, 98, 255, 0.3);
+      text-decoration: none;
+    }
+    
+    .btn-secondary {
+      background: transparent;
+      color: var(--text);
+      border: 2px solid var(--border);
+    }
+    
+    .btn-secondary:hover {
+      background: var(--bg-light);
+      transform: translateY(-2px);
+      border-color: var(--accent);
+      text-decoration: none;
+    }
+    
+    .btn-group {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    
+    /* Features section */
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2rem;
+    }
+    
+    .feature {
+      text-align: center;
+      padding: 2.5rem 2rem;
+      background: var(--card);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      transition: transform 0.3s ease, border-color 0.3s ease;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+      box-shadow: 0 4px 12px var(--shadow);
+    }
+    
+    .feature:hover {
+      transform: translateY(-5px);
+      border-color: var(--accent);
+      text-decoration: none;
+      color: inherit;
+    }
+    
+    .feature i {
+      font-size: 2.5rem;
+      color: var(--accent);
+      margin-bottom: 1rem;
+    }
+    
+    .feature h3 {
+      margin: 0 0 1rem;
+      font-size: 1.3rem;
+    }
+    
+    .feature p {
+      color: var(--text-light);
+      margin: 0;
+      line-height: 1.6;
+    }
+    
+    /* Charts section */
+    .chart-card, .link-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px var(--shadow);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    
+    .chart-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px var(--shadow);
+    }
+    
+    .card-header {
+      padding: 0.75rem 1rem;
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.9rem;
+      background: var(--bg-light);
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .symbol {
+      font-weight: 600;
+    }
+    
+    .chart-container {
+      height: 140px; /* Slightly taller for better chart visibility */
+      width: 100%;
+      position: relative;
+      background: var(--card);
+      overflow: hidden;
+    }
+    
+    .link-card {
+      padding: 1.5rem;
+      text-align: center;
+      transition: 0.2s;
+    }
+    
+    .link-card:hover {
+      background: var(--bg-light);
+      text-decoration: none;
+      color: inherit;
+    }
+    
+    .link-card i {
+      font-size: 1.8rem;
+      margin-bottom: 0.5rem;
+      color: var(--accent);
+    }
+    
+    /* Status indicator */
+    .status-indicator {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 5px;
+    }
+    
+    .status-connected {
+      background-color: var(--green);
+    }
+    
+    .status-disconnected {
+      background-color: var(--red);
+    }
+    
+    .status-connecting {
+      background-color: #ff9800;
+      animation: pulse 1.5s infinite;
+    }
+    
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.5; }
+      100% { opacity: 1; }
+    }
+    
+    /* Footer */
+    .footer {
+      background: var(--bg-light);
+      border-top: 1px solid var(--border);
+      padding: 3rem 0 1.5rem;
+      margin-top: 3rem;
+    }
+    
+    .footer-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr); /* Two columns for all screen sizes */
+      gap: 3rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .footer-col {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .footer-col h4 {
+      margin: 0 0 1rem;
+      font-size: 1.2rem;
+      color: var(--text);
+    }
+    
+    .footer-col p {
+      margin: 0 0 1rem;
+      color: var(--text-light);
+      line-height: 1.6;
+    }
+    
+    .footer-links {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+    }
+    
+    .footer-links a {
+      display: block;
+      margin: 0.4rem 0;
+      color: var(--text-light);
+      transition: color 0.2s ease;
+    }
+    
+    .footer-links a:hover {
+      color: var(--accent);
+    }
+    
+    .footer-bottom {
+      text-align: center;
+      color: var(--text-light);
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+    }
+    
+    @media (max-width: 768px) {
+      .hero-title {
+        font-size: 2.2rem;
+      }
+      
+      .hero-subtitle {
+        font-size: 1.1rem;
+      }
+      
+      .btn {
+        padding: 0.8rem 1.5rem;
+        font-size: 1rem;
+      }
+      
+      .btn-group {
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .footer-grid {
+        gap: 2rem;
+      }
+      
+      .footer-links {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 
@@ -141,11 +602,11 @@
   <header class="header">
     <div class="container flex-between">
       <div class="logo">
-  <a href="index.html" class="flex-center">
-    <img src="components/Logo-Trade Vision.png" alt="TradeVision Logo" class="logo-img">
-    <span>TradeVision</span>
-  </a>
-</div>
+        <a href="index.html" class="flex-center">
+          <img src="components/Logo-Trade Vision.png" alt="TradeVision Logo" class="logo-img">
+          <span>TradeVision</span>
+        </a>
+      </div>
 
       <div class="search-bar">
         <input type="text" id="symbol-search" placeholder="Search symbol (e.g. BTC, ETH)" />
@@ -167,6 +628,25 @@
         <a href="profile.html" class="icon-btn"><i class="fas fa-user"></i></a>
         <a href="settings.html" class="icon-btn"><i class="fas fa-cog"></i></a>
       </div>
+      
+      <button class="mobile-menu-toggle" id="mobile-menu-toggle">
+        <i class="fas fa-bars"></i>
+      </button>
+    </div>
+    
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobile-menu">
+      <div class="container">
+        <div class="mobile-nav-links">
+          <a href="chart.html">Chart</a>
+          <a href="watchlist.html">Watchlist</a>
+          <a href="screener.html">Screener</a>
+          <a href="ideas.html">Ideas</a>
+          <a href="alerts.html">Alerts</a>
+          <a href="trading.html">Trade</a>
+          <a href="backtest.html">Backtest</a>
+        </div>
+      </div>
     </div>
   </header>
 
@@ -177,49 +657,50 @@
     </div>
     <div class="container">
       <div class="hero-content">
-        <div class="hero">
-          <h1>Professional Charts. <span class="gradient">Open Source.</span></h1>
-          <p>Analyze markets with 100+ indicators, drawing tools, real-time data, and social ideas.</p>
-          <div class="hero-actions">
-            <a href="chart.html" class="btn-primary">Open Chart</a>
-            <a href="screener.html" class="btn-secondary">Screen Crypto</a>
-          </div>
+        <h1 class="hero-title">Professional Charts. <span class="gradient">Open Source.</span></h1>
+        <p class="hero-subtitle">Analyze markets with 100+ indicators, drawing tools, real-time data, and social ideas.</p>
+        <div class="btn-group">
+          <a href="chart.html" class="btn btn-primary">Open Chart</a>
+          <a href="screener.html" class="btn btn-secondary">Screen Crypto</a>
         </div>
       </div>
     </div>
   </section>
 
   <!-- FEATURES SECTION -->
-  <section class="container">
-    <div class="features">
-      <a href="chart.html" class="feature">
-        <i class="fas fa-chart-line"></i>
-        <h3>Advanced Charts</h3>
-        <p>Professional trading charts with 100+ technical indicators and drawing tools</p>
-      </a>
-      <a href="screener.html" class="feature">
-        <i class="fas fa-bolt"></i>
-        <h3>Real-time Data</h3>
-        <p>Live market data from multiple exchanges with WebSocket connections</p>
-      </a>
-      <a href="pine-editor.html" class="feature">
-        <i class="fas fa-code"></i>
-        <h3>Pine Script</h3>
-        <p>Custom indicators and strategies with our built-in Pine Script editor</p>
-      </a>
-      <a href="ideas.html" class="feature">
-        <i class="fas fa-users"></i>
-        <h3>Community Ideas</h3>
-        <p>Share and discover trading ideas with our vibrant community</p>
-      </a>
+  <section class="section">
+    <div class="container">
+      <h2 class="section-title">Powerful Trading Tools</h2>
+      <div class="features">
+        <a href="chart.html" class="feature">
+          <i class="fas fa-chart-line"></i>
+          <h3>Advanced Charts</h3>
+          <p>Professional trading charts with 100+ technical indicators and drawing tools</p>
+        </a>
+        <a href="screener.html" class="feature">
+          <i class="fas fa-bolt"></i>
+          <h3>Real-time Data</h3>
+          <p>Live market data from multiple exchanges with WebSocket connections</p>
+        </a>
+        <a href="pine-editor.html" class="feature">
+          <i class="fas fa-code"></i>
+          <h3>Pine Script</h3>
+          <p>Custom indicators and strategies with our built-in Pine Script editor</p>
+        </a>
+        <a href="ideas.html" class="feature">
+          <i class="fas fa-users"></i>
+          <h3>Community Ideas</h3>
+          <p>Share and discover trading ideas with our vibrant community</p>
+        </a>
+      </div>
     </div>
   </section>
 
-  <!-- Mini-Charts – **UNTOUCHED ORIGINAL CODE** -->
-  <section class="mini-charts-grid">
+  <!-- LIVE MARKETS SECTION -->
+  <section class="section">
     <div class="container">
       <div class="flex-between">
-        <h2>Live Markets</h2>
+        <h2 class="section-title">Live Markets</h2>
         <div id="connection-status" class="flex-center">
           <span class="status-indicator status-connecting"></span>
           <span>Connecting...</span>
@@ -262,14 +743,23 @@
     </div>
   </section>
 
-  <!-- Quick Links -->
-  <section class="quick-links">
+  <!-- EXPLORE SECTION -->
+  <section class="section">
     <div class="container">
-      <h2>Explore</h2>
+      <h2 class="section-title">Explore</h2>
       <div class="grid-3">
-        <a href="indicators.html" class="link-card"><i class="fas fa-wave-square"></i><span>100+ Indicators</span></a>
-        <a href="drawings.html" class="link-card"><i class="fas fa-pencil-ruler"></i><span>70+ Drawing Tools</span></a>
-        <a href="pine-editor.html" class="link-card"><i class="fas fa-code"></i><span>Pine Script Editor</span></a>
+        <a href="indicators.html" class="link-card">
+          <i class="fas fa-wave-square"></i>
+          <span>100+ Indicators</span>
+        </a>
+        <a href="drawings.html" class="link-card">
+          <i class="fas fa-pencil-ruler"></i>
+          <span>70+ Drawing Tools</span>
+        </a>
+        <a href="pine-editor.html" class="link-card">
+          <i class="fas fa-code"></i>
+          <span>Pine Script Editor</span>
+        </a>
       </div>
     </div>
   </section>
@@ -278,11 +768,43 @@
   <footer class="footer">
     <div class="container">
       <div class="footer-grid">
-        <div><h4>TradeVision</h4><p>Open-source TradingView alternative.</p></div>
-        <div><h4>Pages</h4><a href="about.html">About</a><a href="help.html">Help</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a></div>
-        <div><h4>Community</h4><a href="https://github.com/dantech-mwa/TradeVision">GitHub</a><a href="ideas.html">Ideas</a></div>
+        <div class="footer-col">
+          <h4>TradeVision</h4>
+          <p>Open-source TradingView alternative with professional charts, real-time data, and community features.</p>
+          <div class="footer-links">
+            <div>
+              <a href="about.html">About</a>
+              <a href="help.html">Help</a>
+              <a href="https://github.com/dantech-mwa/TradeVision">GitHub</a>
+            </div>
+            <div>
+              <a href="privacy.html">Privacy</a>
+              <a href="terms.html">Terms</a>
+              <a href="ideas.html">Community Ideas</a>
+            </div>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h4>Quick Links</h4>
+          <div class="footer-links">
+            <div>
+              <a href="chart.html">Chart</a>
+              <a href="watchlist.html">Watchlist</a>
+              <a href="screener.html">Screener</a>
+              <a href="ideas.html">Ideas</a>
+            </div>
+            <div>
+              <a href="alerts.html">Alerts</a>
+              <a href="trading.html">Trade</a>
+              <a href="backtest.html">Backtest</a>
+              <a href="pine-editor.html">Pine Script</a>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="footer-bottom"><p>© 2025 TradeVision. MIT Licensed.</p></div>
+      <div class="footer-bottom">
+        <p>© 2025 TradeVision. MIT Licensed.</p>
+      </div>
     </div>
   </footer>
 
@@ -297,17 +819,6 @@
     const basePrices = {
       'BTCUSDT': 45000, 'ETHUSDT': 2500, 'ADAUSDT': 0.5, 'DOTUSDT': 7
     };
-
-    // SMA CALCULATION
-    function calculateSMA(data, period) {
-      const sma = [];
-      for (let i = period - 1; i < data.length; i++) {
-        let sum = 0;
-        for (let j = 0; j < period; j++) sum += data[i - j].close;
-        sma.push({ time: data[i].time, value: sum / period });
-      }
-      return sma;
-    }
 
     // GENERATE BACKGROUND CANDLES
     function generateBackgroundCandles(count) {
@@ -353,12 +864,12 @@
 
       const isDark = document.body.getAttribute('data-theme') === 'dark';
       const candlestickSeries = backgroundChart.addCandlestickSeries({
-        upColor: isDark ? 'rgba(38,166,154,0.15)' : 'rgba(38,166,154,0.08)',
-        downColor: isDark ? 'rgba(239,83,80,0.15)' : 'rgba(239,83,80,0.08)',
-        borderUpColor: isDark ? 'rgba(38,166,154,0.2)' : 'rgba(38,166,154,0.12)',
-        borderDownColor: isDark ? 'rgba(239,83,80,0.2)' : 'rgba(239,83,80,0.12)',
-        wickUpColor: isDark ? 'rgba(38,166,154,0.2)' : 'rgba(38,166,154,0.12)',
-        wickDownColor: isDark ? 'rgba(239,83,80,0.2)' : 'rgba(239,83,80,0.12)',
+        upColor: isDark ? 'rgba(38,166,154,0.35)' : 'rgba(38,166,154,0.25)',
+        downColor: isDark ? 'rgba(239,83,80,0.35)' : 'rgba(239,83,80,0.25)',
+        borderUpColor: isDark ? 'rgba(38,166,154,0.4)' : 'rgba(38,166,154,0.3)',
+        borderDownColor: isDark ? 'rgba(239,83,80,0.4)' : 'rgba(239,83,80,0.3)',
+        wickUpColor: isDark ? 'rgba(38,166,154,0.4)' : 'rgba(38,166,154,0.3)',
+        wickDownColor: isDark ? 'rgba(239,83,80,0.4)' : 'rgba(239,83,80,0.3)',
         priceLineVisible: false,
         lastValueVisible: false,
       });
@@ -373,95 +884,227 @@
       const series = backgroundChart._series[0];
       if (series) {
         series.applyOptions({
-          upColor: isDark ? 'rgba(38,166,154,0.15)' : 'rgba(38,166,154,0.08)',
-          downColor: isDark ? 'rgba(239,83,80,0.15)' : 'rgba(239,83,80,0.08)',
-          borderUpColor: isDark ? 'rgba(38,166,154,0.2)' : 'rgba(38,166,154,0.12)',
-          borderDownColor: isDark ? 'rgba(239,83,80,0.2)' : 'rgba(239,83,80,0.12)',
-          wickUpColor: isDark ? 'rgba(38,166,154,0.2)' : 'rgba(38,166,154,0.12)',
-          wickDownColor: isDark ? 'rgba(239,83,80,0.2)' : 'rgba(239,83,80,0.12)',
+          upColor: isDark ? 'rgba(38,166,154,0.35)' : 'rgba(38,166,154,0.25)',
+          downColor: isDark ? 'rgba(239,83,80,0.35)' : 'rgba(239,83,80,0.25)',
+          borderUpColor: isDark ? 'rgba(38,166,154,0.4)' : 'rgba(38,166,154,0.3)',
+          borderDownColor: isDark ? 'rgba(239,83,80,0.4)' : 'rgba(239,83,80,0.3)',
+          wickUpColor: isDark ? 'rgba(38,166,154,0.4)' : 'rgba(38,166,154,0.3)',
+          wickDownColor: isDark ? 'rgba(239,83,80,0.4)' : 'rgba(239,83,80,0.3)',
         });
       }
     }
 
-    /* ------------------------------------------------------------------ */
-    /* MINI-CHARTS – **EXACT ORIGINAL CODE** (unchanged)                 */
-    /* ------------------------------------------------------------------ */
+    // PROFESSIONAL MINI CHARTS
     function initializeAllCharts() {
-      console.log('INITIALIZING 5-MINUTE CANDLESTICK CHARTS WITH SMA...');
+      console.log('INITIALIZING PROFESSIONAL MINI CHARTS WITH LIVE DATA...');
       symbols.forEach(symbol => {
         const chartId = `chart-${symbol.toLowerCase().replace('usdt', '')}`;
         const container = document.getElementById(chartId);
         if (!container) return;
         container.innerHTML = '';
 
+        const isDark = document.body.getAttribute('data-theme') === 'dark';
+        
         const chart = LightweightCharts.createChart(container, {
           width: container.clientWidth,
           height: container.clientHeight,
-          layout: { background: { color: 'transparent' }, textColor: '#9ea1b5' },
-          grid: { vertLines: { visible: false }, horzLines: { visible: false } },
-          timeScale: { visible: false, borderVisible: false, rightOffset: 1, barSpacing: 3, minBarSpacing: 1, fixLeftEdge: true, fixRightEdge: true },
-          rightPriceScale: { visible: true, borderVisible: false, scaleMargins: { top: 0.1, bottom: 0.1 }, entireTextOnly: true },
+          layout: { 
+            background: { color: 'transparent' }, 
+            textColor: isDark ? '#6c7280' : '#9ca3af',
+            fontSize: 10,
+            fontFamily: 'Inter, sans-serif'
+          },
+          grid: { 
+            vertLines: { 
+              visible: true, 
+              color: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+              style: 1
+            }, 
+            horzLines: { 
+              visible: true, 
+              color: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+              style: 1
+            }
+          },
+          timeScale: { 
+            visible: false,
+            borderVisible: false,
+            timeVisible: false,
+            rightOffset: 1,
+            barSpacing: 4,
+            minBarSpacing: 2,
+            fixLeftEdge: true,
+            fixRightEdge: true,
+          },
+          rightPriceScale: { 
+            visible: true,
+            borderVisible: false,
+            scaleMargins: { top: 0.1, bottom: 0.1 },
+            entireTextOnly: true,
+            autoScale: true,
+            mode: 1, // Normal mode
+            alignLabels: true
+          },
           leftPriceScale: { visible: false },
-          crosshair: { mode: 0 },
+          crosshair: { 
+            mode: 1, // Normal crosshair
+            vertLine: {
+              visible: false
+            },
+            horzLine: {
+              visible: false
+            }
+          },
           handleScroll: false,
           handleScale: false,
+          kineticScroll: {
+            mouse: false,
+            touch: false
+          }
         });
 
+        // Create professional candlestick series
         const candlestickSeries = chart.addCandlestickSeries({
-          upColor: '#26a69a',
-          downColor: '#ef5350',
-          borderUpColor: '#26a69a',
-          borderDownColor: '#ef5350',
-          wickUpColor: '#26a69a',
-          wickDownColor: '#ef5350',
+          upColor: isDark ? '#26a69a' : '#10b981',
+          downColor: isDark ? '#ef5350' : '#ef4444',
+          borderUpColor: isDark ? '#26a69a' : '#10b981',
+          borderDownColor: isDark ? '#ef5350' : '#ef4444',
+          wickUpColor: isDark ? '#26a69a' : '#10b981',
+          wickDownColor: isDark ? '#ef5350' : '#ef4444',
           priceLineVisible: false,
           lastValueVisible: false,
         });
 
-        const smaSeries = chart.addLineSeries({
-          color: '#2962ff',
-          lineWidth: 1,
-          lineStyle: 0,
-          crosshairMarkerVisible: false,
-          lastValueVisible: false,
-          priceLineVisible: false,
+        // Add volume series (hidden but helps with scaling)
+        const volumeSeries = chart.addHistogramSeries({
+          color: isDark ? 'rgba(41, 98, 255, 0.3)' : 'rgba(41, 98, 255, 0.2)',
+          priceFormat: {
+            type: 'volume',
+          },
+          priceScaleId: '', // Place on own price scale
+          scaleMargins: {
+            top: 0.8,
+            bottom: 0,
+          },
         });
 
-        const sampleCandles = generate5MinuteCandles(25, symbol);
-        const smaData = calculateSMA(sampleCandles, 9);
-        candlestickSeries.setData(sampleCandles);
-        smaSeries.setData(smaData);
+        // Generate realistic initial data
+        const initialData = generateRealisticCandles(25, symbol);
+        candlestickSeries.setData(initialData.candles);
+        volumeSeries.setData(initialData.volumes);
 
-        charts[symbol] = { chart, candlestickSeries, smaSeries, candleData: sampleCandles, smaPeriod: 9 };
+        // Store chart reference
+        charts[symbol] = { 
+          chart, 
+          candlestickSeries, 
+          volumeSeries,
+          candleData: initialData.candles,
+          volumeData: initialData.volumes,
+          lastPrice: initialData.candles[initialData.candles.length - 1].close
+        };
       });
       setTimeout(connectWebSocket, 500);
     }
 
-    function generate5MinuteCandles(count, symbol) {
+    // Generate realistic candle data with volume
+    function generateRealisticCandles(count, symbol) {
       const candles = [];
+      const volumes = [];
       const now = Math.floor(Date.now() / 1000);
       const basePrice = basePrices[symbol];
       let currentPrice = basePrice;
       const volatilities = { 'BTCUSDT': 0.003, 'ETHUSDT': 0.004, 'ADAUSDT': 0.008, 'DOTUSDT': 0.006 };
       const volatility = volatilities[symbol];
+      const baseVolumes = { 'BTCUSDT': 1000, 'ETHUSDT': 5000, 'ADAUSDT': 500000, 'DOTUSDT': 50000 };
+      const baseVolume = baseVolumes[symbol];
+      
       for (let i = count - 1; i >= 0; i--) {
-        const time = now - i * 300;
+        const time = now - i * 300; // 5-minute intervals
+        
+        // Generate realistic price movement
         const priceChange = (Math.random() - 0.5) * 2 * volatility * currentPrice;
         const open = currentPrice;
         const close = open + priceChange;
         const wickSize = volatility * currentPrice * 0.8;
         const high = Math.max(open, close) + Math.random() * wickSize;
         const low = Math.min(open, close) - Math.random() * wickSize;
-        candles.push({ time, open: +open.toFixed(4), high: +high.toFixed(4), low: +low.toFixed(4), close: +close.toFixed(4) });
+        
+        candles.push({ 
+          time, 
+          open: +open.toFixed(4), 
+          high: +high.toFixed(4), 
+          low: +low.toFixed(4), 
+          close: +close.toFixed(4) 
+        });
+        
+        // Generate realistic volume
+        const volume = baseVolume * (0.5 + Math.random());
+        volumes.push({
+          time,
+          value: +volume.toFixed(2),
+          color: close >= open ? 
+            (document.body.getAttribute('data-theme') === 'dark' ? 'rgba(38,166,154,0.3)' : 'rgba(16,185,129,0.3)') : 
+            (document.body.getAttribute('data-theme') === 'dark' ? 'rgba(239,83,80,0.3)' : 'rgba(239,68,68,0.3)')
+        });
+        
         currentPrice = close;
       }
-      return candles;
+      return { candles, volumes };
     }
 
-    function updateSMA(symbol) {
+    // Update chart with new real-time data
+    function updateChart(symbol, price) {
       if (!charts[symbol]) return;
-      const { smaSeries, candleData, smaPeriod } = charts[symbol];
-      smaSeries.setData(calculateSMA(candleData, smaPeriod));
+      
+      const { candlestickSeries, volumeSeries, candleData, volumeData } = charts[symbol];
+      const now = Math.floor(Date.now() / 1000);
+      const currentInterval = Math.floor(now / 300) * 300;
+      const lastCandle = candleData[candleData.length - 1];
+
+      if (lastCandle && Math.floor(lastCandle.time / 300) * 300 === currentInterval) {
+        // Update current candle
+        lastCandle.close = price;
+        lastCandle.high = Math.max(lastCandle.high, price);
+        lastCandle.low = Math.min(lastCandle.low, price);
+        candlestickSeries.update(lastCandle);
+        
+        // Update volume (increase slightly)
+        const lastVolume = volumeData[volumeData.length - 1];
+        lastVolume.value *= 1.01;
+        volumeSeries.update(lastVolume);
+      } else {
+        // Create new candle
+        const newCandle = {
+          time: currentInterval,
+          open: lastCandle ? lastCandle.close : price,
+          high: price,
+          low: price,
+          close: price
+        };
+        
+        const newVolume = {
+          time: currentInterval,
+          value: (volumeData[volumeData.length - 1]?.value || 1000) * 0.8,
+          color: price >= (lastCandle?.close || price) ? 
+            (document.body.getAttribute('data-theme') === 'dark' ? 'rgba(38,166,154,0.3)' : 'rgba(16,185,129,0.3)') : 
+            (document.body.getAttribute('data-theme') === 'dark' ? 'rgba(239,83,80,0.3)' : 'rgba(239,68,68,0.3)')
+        };
+        
+        candleData.push(newCandle);
+        volumeData.push(newVolume);
+        
+        // Keep only last 25 data points
+        if (candleData.length > 25) {
+          candleData.shift();
+          volumeData.shift();
+        }
+        
+        candlestickSeries.setData(candleData);
+        volumeSeries.setData(volumeData);
+      }
+      
+      // Store last price for change calculation
+      charts[symbol].lastPrice = price;
     }
 
     function connectWebSocket() {
@@ -470,12 +1113,32 @@
       const streams = symbols.map(s => `${s.toLowerCase()}@ticker`).join('/');
       ws = new WebSocket(`wss://stream.binance.com:9443/stream?streams=${streams}`);
 
-      ws.onopen = () => { updateConnectionStatus('connected'); connectionAttempts = 0; };
-      ws.onmessage = e => { try { const msg = JSON.parse(e.data); if (msg.data) processTickerData(msg.data); } catch (_) {} };
-      ws.onerror = () => updateConnectionStatus('error');
+      ws.onopen = () => { 
+        updateConnectionStatus('connected'); 
+        connectionAttempts = 0; 
+        console.log('WebSocket connected to Binance');
+      };
+      
+      ws.onmessage = e => { 
+        try { 
+          const msg = JSON.parse(e.data); 
+          if (msg.data) processTickerData(msg.data); 
+        } catch (err) {
+          console.error('Error processing WebSocket message:', err);
+        }
+      };
+      
+      ws.onerror = (err) => {
+        console.error('WebSocket error:', err);
+        updateConnectionStatus('error');
+      };
+      
       ws.onclose = () => {
+        console.log('WebSocket disconnected');
         updateConnectionStatus('connecting');
-        if (connectionAttempts++ < 5) setTimeout(connectWebSocket, Math.min(1000 * Math.pow(2, connectionAttempts), 10000));
+        if (connectionAttempts++ < 5) {
+          setTimeout(connectWebSocket, Math.min(1000 * Math.pow(2, connectionAttempts), 10000));
+        }
       };
     }
 
@@ -483,45 +1146,40 @@
       const symbol = ticker.s;
       const price = parseFloat(ticker.c);
       const changePercent = parseFloat(ticker.P);
+      
       updatePriceDisplay(symbol, price, changePercent);
-      updateChartWith5MinuteCandle(symbol, price);
+      updateChart(symbol, price);
     }
 
     function updatePriceDisplay(symbol, price, changePercent) {
       const card = document.querySelector(`[data-symbol="${symbol}"]`);
       if (!card) return;
+      
       const priceEl = card.querySelector('.price');
       const changeEl = card.querySelector('.change');
-      if (priceEl) priceEl.textContent = formatPrice(price);
+      
+      if (priceEl) {
+        priceEl.textContent = formatPrice(price);
+        // Add animation effect
+        priceEl.style.transition = 'color 0.3s ease';
+        priceEl.style.color = changePercent >= 0 ? 'var(--green)' : 'var(--red)';
+        setTimeout(() => {
+          priceEl.style.color = 'var(--text)';
+        }, 300);
+      }
+      
       if (changeEl) {
         changeEl.textContent = `${changePercent >= 0 ? '+' : ''}${changePercent.toFixed(2)}%`;
         changeEl.style.color = changePercent >= 0 ? 'var(--green)' : 'var(--red)';
+        
+        // Add pulse animation for significant changes
+        if (Math.abs(changePercent) > 1) {
+          changeEl.style.animation = 'pulse 0.5s ease';
+          setTimeout(() => {
+            changeEl.style.animation = '';
+          }, 500);
+        }
       }
-    }
-
-    function updateChartWith5MinuteCandle(symbol, currentPrice) {
-      if (!charts[symbol]) return;
-      const { candlestickSeries, candleData } = charts[symbol];
-      const now = Math.floor(Date.now() / 1000);
-      const currentInterval = Math.floor(now / 300) * 300;
-      const lastCandle = candleData[candleData.length - 1];
-
-      if (lastCandle && Math.floor(lastCandle.time / 300) * 300 === currentInterval) {
-        lastCandle.close = currentPrice;
-        lastCandle.high = Math.max(lastCandle.high, currentPrice);
-        lastCandle.low = Math.min(lastCandle.low, currentPrice);
-        candlestickSeries.update(lastCandle);
-      } else {
-        const newCandle = {
-          time: currentInterval,
-          open: lastCandle ? lastCandle.close : currentPrice,
-          high: currentPrice, low: currentPrice, close: currentPrice
-        };
-        candleData.push(newCandle);
-        if (candleData.length > 25) candleData.shift();
-        candlestickSeries.setData(candleData);
-      }
-      updateSMA(symbol);
     }
 
     function formatPrice(price) {
@@ -535,9 +1193,18 @@
       const indicator = document.querySelector('#connection-status .status-indicator');
       const text = document.querySelector('#connection-status span:last-child');
       switch (status) {
-        case 'connected': indicator.className = 'status-indicator status-connected'; text.textContent = 'Live'; break;
-        case 'connecting': indicator.className = 'status-indicator status-connecting'; text.textContent = 'Connecting...'; break;
-        case 'error': indicator.className = 'status-indicator status-disconnected'; text.textContent = 'Error'; break;
+        case 'connected': 
+          indicator.className = 'status-indicator status-connected'; 
+          text.textContent = 'Live'; 
+          break;
+        case 'connecting': 
+          indicator.className = 'status-indicator status-connecting'; 
+          text.textContent = 'Connecting...'; 
+          break;
+        case 'error': 
+          indicator.className = 'status-indicator status-disconnected'; 
+          text.textContent = 'Error'; 
+          break;
       }
     }
 
@@ -546,7 +1213,34 @@
       const isDark = document.body.getAttribute('data-theme') === 'dark';
       document.body.setAttribute('data-theme', isDark ? 'light' : 'dark');
       localStorage.setItem('theme', isDark ? 'light' : 'dark');
-      setTimeout(updateBackgroundChartTheme, 50);
+      
+      // Update all mini charts theme
+      setTimeout(() => {
+        Object.keys(charts).forEach(symbol => {
+          const { chart, candlestickSeries, volumeSeries } = charts[symbol];
+          const isDarkNow = document.body.getAttribute('data-theme') === 'dark';
+          
+          chart.applyOptions({
+            layout: {
+              textColor: isDarkNow ? '#6c7280' : '#9ca3af'
+            },
+            grid: {
+              vertLines: { color: isDarkNow ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' },
+              horzLines: { color: isDarkNow ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }
+            }
+          });
+          
+          candlestickSeries.applyOptions({
+            upColor: isDarkNow ? '#26a69a' : '#10b981',
+            downColor: isDarkNow ? '#ef5350' : '#ef4444',
+            borderUpColor: isDarkNow ? '#26a69a' : '#10b981',
+            borderDownColor: isDarkNow ? '#ef5350' : '#ef4444',
+            wickUpColor: isDarkNow ? '#26a69a' : '#10b981',
+            wickDownColor: isDarkNow ? '#ef5350' : '#ef4444'
+          });
+        });
+        updateBackgroundChartTheme();
+      }, 50);
     });
 
     // SEARCH
@@ -556,6 +1250,24 @@
     });
     document.getElementById('symbol-search').addEventListener('keypress', e => {
       if (e.key === 'Enter') document.getElementById('search-btn').click();
+    });
+
+    // MOBILE MENU TOGGLE
+    document.getElementById('mobile-menu-toggle').addEventListener('click', () => {
+      const mobileMenu = document.getElementById('mobile-menu');
+      mobileMenu.classList.toggle('active');
+    });
+
+    // Close mobile menu when clicking outside
+    document.addEventListener('click', (e) => {
+      const mobileMenu = document.getElementById('mobile-menu');
+      const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+      
+      if (mobileMenu.classList.contains('active') && 
+          !mobileMenu.contains(e.target) && 
+          !mobileMenuToggle.contains(e.target)) {
+        mobileMenu.classList.remove('active');
+      }
     });
 
     // RESIZE
