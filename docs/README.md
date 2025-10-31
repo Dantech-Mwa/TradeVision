@@ -4,8 +4,8 @@
 ### Open Source TradingView Clone — **View Free. Use Commercially? Pay.**
 
 [![License: Restricted](https://img.shields.io/badge/License-Restricted-red?style=flat-square)](#license)
-[![Donate](https://img.shields.io/badge/Support-Donate-%23ffdd00?style=flat-square)](https://buymeacoffee.com/dantech)
-[![Buy Pro](https://img.shields.io/badge/Buy-Pro%20Version-%2449-blue?style=flat-square)](https://gumroad.com/l/tradevision-pro)
+[![Donate](https://img.shields.io/badge/Support-Donate-%23ffdd00?style=flat-square)](https://buymeacoffee.com/tradevision.pro)
+[![Buy Pro](https://img.shields.io/badge/Buy-Pro%20Version-%2449-blue?style=flat-square)](https://wambuamwanza.gumroad.com/l/tradevision-pro)
 [![Live Demo](https://img.shields.io/badge/Live-Demo-2962ff?style=flat-square)](https://dantech-mwa.github.io/TradeVision)
 
 > **Free to view, learn, and use personally.**  
