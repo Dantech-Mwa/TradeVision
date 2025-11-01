@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
   <title>Chart - TradeVision</title>
   <link rel="icon" href="assets/icons/chart.svg" type="image/svg+xml">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -51,6 +51,7 @@
       background: var(--bg);
       color: var(--text);
       transition: background-color 0.3s, color 0.3s;
+      overflow-x: hidden;
     }
     
     a {
@@ -100,6 +101,7 @@
       margin: 0 .75rem;
       font-weight: 500;
       position: relative;
+      font-size: 0.9rem;
     }
     
     .nav-links a:hover::after {
@@ -132,6 +134,19 @@
       display: flex;
       align-items: center;
       gap: 0.5rem;
+    }
+
+    @media (max-width: 768px) {
+      .nav-links {
+        display: none;
+      }
+      .search-bar {
+        flex: 1;
+        margin: 0 0.5rem;
+      }
+      .header .mobile-menu-btn {
+        display: block;
+      }
     }
 
     .chart-layout {
@@ -399,17 +414,6 @@
       transition: background-color 0.3s, border-color 0.3s;
     }
     
-    @media (max-width: 992px) {
-      .chart-layout {
-        grid-template-columns: 1fr;
-      }
-      
-      .sidebar-left, .sidebar-right {
-        display: none;
-      }
-    }
-
-    /* DRAWING CANVAS - FIXED POSITIONING */
     #drawing-canvas {
       position: absolute;
       top: 0;
@@ -437,7 +441,6 @@
       pointer-events: auto !important;
     }
     
-    /* Price flash animations */
     .flash-green {
       animation: flashGreen 0.8s ease;
     }
@@ -456,7 +459,6 @@
       50% { color: var(--red); }
     }
     
-    /* Search bar in header */
     .search-bar {
       margin-left: auto;
       max-width: 300px;
@@ -498,7 +500,6 @@
       color: var(--accent-hover);
     }
 
-    /* Search suggestions */
     .search-suggestions {
       position: absolute;
       top: 100%;
@@ -550,7 +551,6 @@
       border-radius: 4px;
     }
 
-    /* Loading states */
     .loading {
       opacity: 0.6;
       pointer-events: none;
@@ -565,7 +565,6 @@
       text-align: center;
     }
 
-    /* FIX: Ensure chart container doesn't block interactions */
     .tv-lightweight-charts {
       pointer-events: none !important;
     }
@@ -580,7 +579,6 @@
       pointer-events: none !important;
     }
 
-    /* Indicator panel styles */
     .indicator-controls {
       display: flex;
       gap: 0.5rem;
@@ -600,8 +598,7 @@
     .indicator-controls button:hover {
       background: var(--card-hover);
     }
-    
-    /* Heatmap Button Styles */
+
     .heatmap-panel {
       border-top: 1px solid var(--border);
       padding-top: 1.5rem;
@@ -693,24 +690,16 @@
       opacity: 1;
     }
 
-    /* Pulse animation for attention */
     @keyframes heatmapPulse {
-      0% {
-        box-shadow: 0 4px 12px rgba(41, 98, 255, 0.25);
-      }
-      50% {
-        box-shadow: 0 4px 20px rgba(41, 98, 255, 0.4);
-      }
-      100% {
-        box-shadow: 0 4px 12px rgba(41, 98, 255, 0.25);
-      }
+      0% { box-shadow: 0 4px 12px rgba(41, 98, 255, 0.25); }
+      50% { box-shadow: 0 4px 20px rgba(41, 98, 255, 0.4); }
+      100% { box-shadow: 0 4px 12px rgba(41, 98, 255, 0.25); }
     }
 
     .heatmap-btn {
       animation: heatmapPulse 3s ease-in-out infinite;
     }
 
-    /* Dark theme adjustments */
     [data-theme="dark"] .heatmap-btn {
       background: linear-gradient(135deg, #2962ff 0%, #1e53e5 100%);
     }
@@ -719,7 +708,6 @@
       background: linear-gradient(135deg, #2563eb 0%, #1a47c4 100%);
     }
 
-    /* Light theme adjustments */
     [data-theme="light"] .heatmap-btn {
       background: linear-gradient(135deg, #2962ff 0%, #2979ff 100%);
       color: white;
@@ -733,7 +721,6 @@
       color: rgba(255, 255, 255, 0.9);
     }
 
-    /* Responsive design */
     @media (max-width: 768px) {
       .heatmap-btn {
         padding: 0.875rem;
@@ -753,7 +740,6 @@
       }
     }
     
-    /* NEW: Chart Controls */
     .chart-controls {
       position: absolute;
       top: 10px;
@@ -792,8 +778,7 @@
       color: white;
       border-color: var(--accent);
     }
-    
-    /* NEW: Fullscreen mode */
+
     body.fullscreen-mode {
       overflow: hidden;
     }
@@ -839,86 +824,229 @@
     body.fullscreen-mode #indicators-chart {
       height: 25%;
     }
-	.ai-panel {
-  position: relative;
-  z-index: 30;
-}
 
-#tradevision-ai-btn {
-  font-weight: 600;
-  transition: all 0.3s ease;
-}
+    .ai-panel {
+      position: relative;
+      z-index: 30;
+    }
 
-#tradevision-ai-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(41, 98, 255, 0.3);
-}
+    #tradevision-ai-btn {
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
 
-#ai-insights-output {
-  color: var(--text);
-  animation: fadeIn 0.3s ease;
-}
+    #tradevision-ai-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(41, 98, 255, 0.3);
+    }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+    #ai-insights-output {
+      color: var(--text);
+      animation: fadeIn 0.3s ease;
+    }
 
-[data-theme="light"] #ai-insights-output {
-  background: #f8f9fa;
-  border-left-color: #2962ff;
-}
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    [data-theme="light"] #ai-insights-output {
+      background: #f8f9fa;
+      border-left-color: #2962ff;
+    }
+
+    @media (max-width: 992px) {
+      .chart-layout {
+        grid-template-columns: 1fr;
+        height: calc(100vh - 60px);
+      }
+      
+      .sidebar-left, .sidebar-right {
+        position: fixed;
+        top: 60px;
+        bottom: 0;
+        width: 280px;
+        z-index: 100;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+      }
+      
+      .sidebar-left.show {
+        transform: translateX(0);
+      }
+      
+      .sidebar-right {
+        right: 0;
+        left: auto;
+        transform: translateX(100%);
+        border-left: none;
+        border-right: 1px solid var(--border);
+      }
+      
+      .sidebar-right.show {
+        transform: translateX(0);
+      }
+      
+      .mobile-toolbar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: var(--bg-light);
+        border-top: 1px solid var(--border);
+        padding: 0.5rem;
+        display: flex;
+        justify-content: space-around;
+        z-index: 90;
+        overflow-x: auto;
+        white-space: nowrap;
+      }
+      
+      .mobile-tool-group {
+        display: flex;
+        gap: 0.5rem;
+        padding: 0 0.5rem;
+      }
+      
+      .mobile-tool-btn {
+        background: var(--card);
+        border: 1px solid var(--border);
+        color: var(--text);
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      
+      .mobile-tool-btn.active {
+        background: var(--accent);
+        color: white;
+        border-color: var(--accent);
+      }
+      
+      .mobile-tool-btn:hover {
+        background: var(--card-hover);
+      }
+      
+      .mobile-fab {
+        position: fixed;
+        bottom: 70px;
+        right: 16px;
+        background: var(--accent);
+        color: white;
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        box-shadow: 0 4px 12px rgba(41, 98, 255, 0.4);
+        z-index: 95;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+      
+      .mobile-fab:hover {
+        transform: scale(1.1);
+        box-shadow: 0 6px 20px rgba(41, 98, 255, 0.5);
+      }
+      
+      .mobile-fab:active {
+        transform: scale(0.95);
+      }
+      
+      .mobile-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 80;
+        display: none;
+      }
+      
+      .mobile-overlay.show {
+        display: block;
+      }
+      
+      .main-chart {
+        padding-bottom: 60px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .chart-controls {
+        top: 8px;
+        right: 8px;
+        padding: 4px;
+        gap: 4px;
+      }
+      
+      .chart-control-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 0.9rem;
+      }
+      
+      .symbol-info h2 {
+        font-size: 1.1rem;
+      }
+      
+      .symbol-info .price {
+        font-size: 1rem;
+      }
+    }
   </style>
   <!-- Google Tag Manager -->
-<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-})(window,document,'script','dataLayer','GTM-TSXGBB76');</script>
-<!-- End Google Tag Manager -->
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-L7SHGV8S75"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-L7SHGV8S75');
-</script>
+  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-TSXGBB76');</script>
+  <!-- End Google Tag Manager -->
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-L7SHGV8S75"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-L7SHGV8S75');
+  </script>
 </head>
 
 <body data-theme="dark">
   <!-- Google Tag Manager (noscript) -->
-<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TSXGBB76"
-height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-<!-- End Google Tag Manager (noscript) -->
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TSXGBB76"
+  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  <!-- End Google Tag Manager (noscript) -->
+
   <header class="header">
     <div class="container flex-between">
-      <div class="logo"><a href="index.html" class="flex-center"><i class="fas fa-chart-line"></i><span>TradeVision</span></a></div>
-      <nav class="nav-links">
-        <a href="chart.html">Chart</a>
-        <a href="watchlist.html">Watchlist</a>
-        <a href="screener.html">Screener</a>
-        <a href="ideas.html">Ideas</a>
-        <a href="alerts.html">Alerts</a>
-        <a href="indicators.html">Indicators and Strategies</a>
-      </nav>
+      <button class="icon-btn mobile-menu-btn" id="mobile-left-toggle"><i class="fas fa-tools"></i></button>
+      <div class="logo"><a href="index.html"><i class="fas fa-chart-line"></i><span>TradeVision</span></a></div>
       <div class="search-bar">
-        <input type="text" id="symbol-search" placeholder="Search 2300+ assets (BTC, ETH, AAPL, TSLA...)">
+        <input type="text" id="symbol-search" placeholder="BTC, ETH, AAPL...">
         <button id="search-go"><i class="fas fa-search"></i></button>
         <div id="search-suggestions" class="search-suggestions" style="display: none;"></div>
       </div>
       <div class="header-actions">
+        <button id="mobile-right-toggle" class="icon-btn"><i class="fas fa-info-circle"></i></button>
         <button id="theme-toggle" class="icon-btn"><i class="fas fa-moon"></i></button>
-        <a href="settings.html" class="icon-btn" title="Settings"><i class="fas fa-cog"></i></a>
-        <a href="profile.html" class="icon-btn" title="Profile"><i class="fas fa-user"></i></a>
       </div>
     </div>
   </header>
 
   <div class="chart-layout">
     <!-- LEFT TOOLS -->
-    <div class="sidebar-left">
+    <div class="sidebar-left" id="left-sidebar">
       <button data-tool="cursor" class="active"><i class="fas fa-mouse-pointer"></i><span>Select</span></button>
       <button data-tool="line"><i class="fas fa-minus"></i><span>Line</span></button>
       <button data-tool="trendline"><i class="fas fa-chart-line"></i><span>Trend</span></button>
@@ -930,41 +1058,27 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <button data-tool="clear" style="margin-top: auto; background: var(--red); color: white;"><i class="fas fa-trash"></i><span>Clear</span></button>
     </div>
 
-    <!-- CENTER CHART + VOLUME + INDICATORS -->
+    <!-- CENTER CHART -->
     <div class="main-chart">
-      <!-- NEW: Chart Controls -->
       <div class="chart-controls">
-        <button class="chart-control-btn" id="zoom-in" title="Zoom In"><i class="fas fa-search-plus"></i></button>
-        <button class="chart-control-btn" id="zoom-out" title="Zoom Out"><i class="fas fa-search-minus"></i></button>
-        <button class="chart-control-btn" id="zoom-reset" title="Reset Zoom"><i class="fas fa-expand-alt"></i></button>
-        <button class="chart-control-btn" id="fullscreen-toggle" title="Fullscreen"><i class="fas fa-expand"></i></button>
+        <button class="chart-control-btn" id="zoom-in"><i class="fas fa-search-plus"></i></button>
+        <button class="chart-control-btn" id="zoom-out"><i class="fas fa-search-minus"></i></button>
+        <button class="chart-control-btn" id="zoom-reset"><i class="fas fa-expand-alt"></i></button>
+        <button class="chart-control-btn" id="fullscreen-toggle"><i class="fas fa-expand"></i></button>
       </div>
       
       <div class="chart-container">
-        <div id="main-chart">
-          <div class="chart-inner" id="price-chart"></div>
-          <canvas id="drawing-canvas"></canvas>
-        </div>
-        <div id="volume-chart">
-          <div class="chart-inner" id="volume-indicator"></div>
-        </div>
-        <div id="indicators-chart">
-          <div class="chart-inner" id="indicators-container"></div>
-        </div>
+        <div id="main-chart"><div class="chart-inner" id="price-chart"></div><canvas id="drawing-canvas"></canvas></div>
+        <div id="volume-chart"><div class="chart-inner" id="volume-indicator"></div></div>
+        <div id="indicators-chart"><div class="chart-inner" id="indicators-container"></div></div>
       </div>
     </div>
 
     <!-- RIGHT PANEL -->
-    <div class="sidebar-right">
+    <div class="sidebar-right" id="right-sidebar">
       <div class="symbol-info">
-        <div>
-          <h2 id="symbol-name">BTCUSDT</h2>
-          <div id="symbol-exchange">BINANCE</div>
-        </div>
-        <div>
-          <div class="price" id="current-price">--</div>
-          <div class="change" id="price-change">--</div>
-        </div>
+        <div><h2 id="symbol-name">BTCUSDT</h2><div id="symbol-exchange">BINANCE</div></div>
+        <div><div class="price" id="current-price">--</div><div class="change" id="price-change">--</div></div>
       </div>
 
       <div class="timeframe-bar">
@@ -983,7 +1097,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <button class="chart-type-btn" data-type="bar">Bars</button>
       </div>
 
-      <!-- INDICATOR PANEL -->
       <div class="indicator-panel">
         <div class="panel-title">Active Indicators</div>
         <div class="indicator-controls">
@@ -992,43 +1105,64 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         </div>
         <button id="add-indicator-btn" class="add-btn">+ Add Indicator</button>
 
-        <div id="indicator-search-container" class="search-container" style="display:none;position:relative;">
-          <input type="text" id="indicator-search-input" placeholder="Search RSI, MACD, Bollinger..." autocomplete="off">
+        <div id="indicator-search-container" class="search-container" style="display:none;">
+          <input type="text" id="indicator-search-input" placeholder="RSI, MACD, Bollinger..." autocomplete="off">
           <div id="indicator-dropdown" class="dropdown-list"></div>
         </div>
 
-        <!-- ADD THIS CONTAINER -->
         <div id="indicator-list" class="indicator-list"></div>
       </div>
-	  <!-- AI INSIGHTS BUTTON -->
-<div class="ai-panel" style="margin-top: 1.5rem; border-top: 1px solid var(--border); padding-top: 1rem;">
-  <button id="tradevision-ai-btn" class="add-btn" style="background: linear-gradient(135deg, #2962ff, #1e53e5);">
-    🤖 TradeVision AI – Analyze Chart
-  </button>
-  <div id="ai-insights-output" style="display: none; margin-top: 1rem; padding: 1rem; background: var(--card); border-radius: 6px; font-size: 0.9rem; line-height: 1.4; border-left: 3px solid var(--accent);">
-    <!-- AI response will appear here -->
-  </div>
-</div>
+
+      <div class="ai-panel" style="margin-top: 1.5rem; border-top: 1px solid var(--border); padding-top: 1rem;">
+        <button id="tradevision-ai-btn" class="add-btn" style="background: linear-gradient(135deg, #2962ff, #1e53e5);">
+          TradeVision AI – Analyze Chart
+        </button>
+        <div id="ai-insights-output" style="display: none; margin-top: 1rem; padding: 1rem; background: var(--card); border-radius: 6px; font-size: 0.9rem; line-height: 1.4; border-left: 3px solid var(--accent);"></div>
+      </div>
       
-      <!-- ==== HEATMAP BUTTON SECTION ==== -->
       <div class="heatmap-panel" style="margin-top: 1.5rem;">
         <a href="heatmap.html" target="_self" class="heatmap-btn">
           <i class="fas fa-fire heatmap-icon"></i>
           <div class="heatmap-content">
             <div class="heatmap-title">Market Heatmap</div>
-            <div class="heatmap-tagline">Live market performance overview</div>
+            <div class="heatmap-tagline">Live market performance</div>
           </div>
           <i class="fas fa-arrow-right heatmap-arrow"></i>
         </a>
       </div>
     </div>
   </div>
-    
 
-  <!-- MOVED FOOTER OUTSIDE CHART LAYOUT -->
+  <!-- MOBILE TOOLBAR -->
+  <div class="mobile-toolbar" id="mobile-toolbar">
+    <div class="mobile-tool-group">
+      <button class="mobile-tool-btn active" data-tool="cursor"><i class="fas fa-mouse-pointer"></i></button>
+      <button class="mobile-tool-btn" data-tool="line"><i class="fas fa-minus"></i></button>
+      <button class="mobile-tool-btn" data-tool="trendline"><i class="fas fa-chart-line"></i></button>
+      <button class="mobile-tool-btn" data-tool="horizontal"><i class="fas fa-grip-lines"></i></button>
+    </div>
+    <div class="mobile-tool-group">
+      <button class="mobile-tool-btn" data-tool="fib-retracement"><i class="fas fa-ruler"></i></button>
+      <button class="mobile-tool-btn" data-tool="rectangle"><i class="fas fa-square"></i></button>
+      <button class="mobile-tool-btn" data-tool="text"><i class="fas fa-font"></i></button>
+      <button class="mobile-tool-btn" data-tool="arrow"><i class="fas fa-arrow-up"></i></button>
+    </div>
+    <div class="mobile-tool-group">
+      <button class="mobile-tool-btn" data-tool="clear" style="background: var(--red); color: white;"><i class="fas fa-trash"></i></button>
+    </div>
+  </div>
+
+  <!-- FAB BUTTONS -->
+  <button class="mobile-fab" id="mobile-fab-zoom"><i class="fas fa-search"></i></button>
+  <button class="mobile-fab" id="mobile-fab-fullscreen" style="bottom: 130px;"><i class="fas fa-expand"></i></button>
+
+  <!-- OVERLAY -->
+  <div class="mobile-overlay" id="mobile-overlay"></div>
+
   <footer class="footer">
     <div class="container">© 2025 TradeVision. Open Source.</div>
   </footer>
+
   <script>
     // ───── GLOBALS ─────
     const urlParams = new URLSearchParams(location.search);
@@ -1040,29 +1174,20 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     let currentChartType = 'candlestick';
     let lastPrice = 0;
     let activeIndicators = [];
-    // ---------------------------------------------------------------
-    // GLOBAL: keep a reference to every series that belongs to an indicator
-    // ---------------------------------------------------------------
-    const indicatorSeriesMap = new Map();   // key: indicatorName   value: array of series
-    
-    // ───── DRAWING TOOLS GLOBALS ─────
+    const indicatorSeriesMap = new Map();
     let activeTool = 'cursor';
     let drawings = [];
     let currentDrawing = null;
     let isDrawing = false;
     let drawingCanvas, drawingCtx;
-    
     let allSymbols = [];
     let symbolInfoCache = {};
-
-    // ───── ZOOM AND FULLSCREEN GLOBALS ─────
     let isFullscreen = false;
     let zoomLevel = 1.0;
-    let baseBarSpacing = 6; // Base spacing between bars
+    let baseBarSpacing = 6;
 
-    // ───── INDICATOR SYSTEM ─────
+    // ───── INDICATOR MATH ─────
     const IndicatorMath = {
-      // Simple Moving Average
       sma(data, period, key = 'close') {
         const result = new Array(data.length).fill(null);
         for (let i = period - 1; i < data.length; i++) {
@@ -1074,98 +1199,63 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         }
         return result;
       },
-
-      // Exponential Moving Average
       ema(data, period, key = 'close') {
         const result = new Array(data.length).fill(null);
         const k = 2 / (period + 1);
-        
-        // First EMA value is SMA
         let sum = 0;
         for (let i = 0; i < period; i++) {
           sum += data[i][key];
         }
         result[period - 1] = sum / period;
-        
-        // Calculate subsequent EMA values
         for (let i = period; i < data.length; i++) {
           result[i] = (data[i][key] * k) + (result[i - 1] * (1 - k));
         }
         return result;
       },
-
-      // Relative Strength Index
       rsi(data, period = 14) {
         const result = new Array(data.length).fill(null);
-        const gains = [];
-        const losses = [];
-        
-        // Calculate gains and losses
+        const gains = [], losses = [];
         for (let i = 1; i < data.length; i++) {
           const change = data[i].close - data[i - 1].close;
           gains.push(change > 0 ? change : 0);
           losses.push(change < 0 ? Math.abs(change) : 0);
         }
-        
-        // Calculate first RSI value
         let avgGain = gains.slice(0, period).reduce((a, b) => a + b, 0) / period;
         let avgLoss = losses.slice(0, period).reduce((a, b) => a + b, 0) / period;
-        
         result[period] = 100 - (100 / (1 + (avgGain / (avgLoss || 0.001))));
-        
-        // Calculate subsequent RSI values
         for (let i = period + 1; i < data.length; i++) {
           avgGain = ((avgGain * (period - 1)) + gains[i - 1]) / period;
           avgLoss = ((avgLoss * (period - 1)) + losses[i - 1]) / period;
           result[i] = 100 - (100 / (1 + (avgGain / (avgLoss || 0.001))));
         }
-        
         return result;
       },
-
-      // Moving Average Convergence Divergence
       macd(data, fastPeriod = 12, slowPeriod = 26, signalPeriod = 9) {
         const fastEMA = this.ema(data, fastPeriod);
         const slowEMA = this.ema(data, slowPeriod);
-        
-        const macdLine = fastEMA.map((fast, i) => 
-          fast !== null && slowEMA[i] !== null ? fast - slowEMA[i] : null
-        );
-        
-        // Calculate signal line (EMA of MACD line)
+        const macdLine = fastEMA.map((fast, i) => fast !== null && slowEMA[i] !== null ? fast - slowEMA[i] : null);
         const signalLine = new Array(data.length).fill(null);
-        let signalSum = 0;
-        let signalCount = 0;
-        
+        let signalSum = 0, signalCount = 0;
         for (let i = slowPeriod - 1; i < slowPeriod - 1 + signalPeriod; i++) {
           if (macdLine[i] !== null) {
             signalSum += macdLine[i];
             signalCount++;
           }
         }
-        
         if (signalCount > 0) {
           signalLine[slowPeriod - 1 + signalPeriod - 1] = signalSum / signalCount;
-          
           const k = 2 / (signalPeriod + 1);
           for (let i = slowPeriod + signalPeriod - 1; i < data.length; i++) {
             signalLine[i] = (macdLine[i] * k) + (signalLine[i - 1] * (1 - k));
           }
         }
-        
-        const histogram = macdLine.map((macd, i) => 
-          macd !== null && signalLine[i] !== null ? macd - signalLine[i] : null
-        );
-        
+        const histogram = macdLine.map((macd, i) => macd !== null && signalLine[i] !== null ? macd - signalLine[i] : null);
         return { macdLine, signalLine, histogram };
       },
-
-      // Bollinger Bands
       bollingerBands(data, period = 20, multiplier = 2) {
         const sma = this.sma(data, period);
         const upper = new Array(data.length).fill(null);
         const lower = new Array(data.length).fill(null);
-        
         for (let i = period - 1; i < data.length; i++) {
           let sumSquared = 0;
           for (let j = 0; j < period; j++) {
@@ -1175,28 +1265,19 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           upper[i] = sma[i] + (multiplier * stdDev);
           lower[i] = sma[i] - (multiplier * stdDev);
         }
-        
         return { upper, middle: sma, lower };
       },
-
-      // Stochastic Oscillator
       stochastic(data, kPeriod = 14, dPeriod = 3) {
         const k = new Array(data.length).fill(null);
         const d = new Array(data.length).fill(null);
-        
         for (let i = kPeriod - 1; i < data.length; i++) {
-          let high = -Infinity;
-          let low = Infinity;
-          
+          let high = -Infinity, low = Infinity;
           for (let j = 0; j < kPeriod; j++) {
             high = Math.max(high, data[i - j].high);
             low = Math.min(low, data[i - j].low);
           }
-          
           k[i] = ((data[i].close - low) / (high - low)) * 100;
         }
-        
-        // Calculate %D (SMA of %K)
         for (let i = kPeriod + dPeriod - 2; i < data.length; i++) {
           let sum = 0;
           for (let j = 0; j < dPeriod; j++) {
@@ -1204,74 +1285,53 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           }
           d[i] = sum / dPeriod;
         }
-        
         return { k, d };
       },
-
-      // Average True Range
       atr(data, period = 14) {
         const tr = new Array(data.length).fill(null);
-        
         for (let i = 1; i < data.length; i++) {
           const highLow = data[i].high - data[i].low;
           const highClose = Math.abs(data[i].high - data[i - 1].close);
           const lowClose = Math.abs(data[i].low - data[i - 1].close);
           tr[i] = Math.max(highLow, highClose, lowClose);
         }
-        
         return this.sma(tr.map((t, i) => ({ close: t })), period);
       },
-
-      // Commodity Channel Index
       cci(data, period = 20) {
         const result = new Array(data.length).fill(null);
-        
         for (let i = period - 1; i < data.length; i++) {
           let sumTP = 0;
           const tps = [];
-          
           for (let j = 0; j < period; j++) {
             const tp = (data[i - j].high + data[i - j].low + data[i - j].close) / 3;
             sumTP += tp;
             tps.push(tp);
           }
-          
           const smaTP = sumTP / period;
           let meanDev = 0;
-          
           for (let j = 0; j < period; j++) {
             meanDev += Math.abs(tps[j] - smaTP);
           }
           meanDev /= period;
-          
           const currentTP = (data[i].high + data[i].low + data[i].close) / 3;
           result[i] = (currentTP - smaTP) / (0.015 * meanDev);
         }
-        
         return result;
       },
-
-      // Volume Weighted Average Price
       vwap(data) {
         const result = new Array(data.length).fill(null);
-        let cumulativePV = 0;
-        let cumulativeVolume = 0;
-        
+        let cumulativePV = 0, cumulativeVolume = 0;
         for (let i = 0; i < data.length; i++) {
           const typicalPrice = (data[i].high + data[i].low + data[i].close) / 3;
           cumulativePV += typicalPrice * data[i].volume;
           cumulativeVolume += data[i].volume;
           result[i] = cumulativePV / cumulativeVolume;
         }
-        
         return result;
       },
-
-      // On Balance Volume
       obv(data) {
         const result = new Array(data.length).fill(null);
         result[0] = data[0].volume;
-        
         for (let i = 1; i < data.length; i++) {
           if (data[i].close > data[i - 1].close) {
             result[i] = result[i - 1] + data[i].volume;
@@ -1281,81 +1341,27 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             result[i] = result[i - 1];
           }
         }
-        
         return result;
       }
     };
 
     const IndicatorConfigs = {
-      'RSI': {
-        name: 'Relative Strength Index (RSI)',
-        description: 'Measures the speed and change of price movements',
-        defaultParams: { period: 14 },
-        calculate: (data, params) => ({ value: IndicatorMath.rsi(data, params.period) })
-      },
-      'MACD': {
-        name: 'Moving Average Convergence Divergence (MACD)',
-        description: 'Trend-following momentum indicator',
-        defaultParams: { fastPeriod: 12, slowPeriod: 26, signalPeriod: 9 },
-        calculate: (data, params) => IndicatorMath.macd(data, params.fastPeriod, params.slowPeriod, params.signalPeriod)
-      },
-      'BOLLINGER BANDS': {
-        name: 'Bollinger Bands',
-        description: 'Volatility bands placed above and below a moving average',
-        defaultParams: { period: 20, multiplier: 2 },
-        calculate: (data, params) => IndicatorMath.bollingerBands(data, params.period, params.multiplier)
-      },
-      'STOCHASTIC': {
-        name: 'Stochastic Oscillator',
-        description: 'Momentum indicator comparing closing price to price range',
-        defaultParams: { kPeriod: 14, dPeriod: 3 },
-        calculate: (data, params) => IndicatorMath.stochastic(data, params.kPeriod, params.dPeriod)
-      },
-      'SMA': {
-        name: 'Simple Moving Average (SMA)',
-        description: 'Average of closing prices over a specified period',
-        defaultParams: { period: 20 },
-        calculate: (data, params) => ({ value: IndicatorMath.sma(data, params.period) })
-      },
-      'EMA': {
-        name: 'Exponential Moving Average (EMA)',
-        description: 'Weighted average giving more importance to recent prices',
-        defaultParams: { period: 20 },
-        calculate: (data, params) => ({ value: IndicatorMath.ema(data, params.period) })
-      },
-      'ATR': {
-        name: 'Average True Range (ATR)',
-        description: 'Measures market volatility',
-        defaultParams: { period: 14 },
-        calculate: (data, params) => ({ value: IndicatorMath.atr(data, params.period) })
-      },
-      'CCI': {
-        name: 'Commodity Channel Index (CCI)',
-        description: 'Identifies cyclical trends in prices',
-        defaultParams: { period: 20 },
-        calculate: (data, params) => ({ value: IndicatorMath.cci(data, params.period) })
-      },
-      'VWAP': {
-        name: 'Volume Weighted Average Price (VWAP)',
-        description: 'Average price weighted by volume',
-        defaultParams: {},
-        calculate: (data, params) => ({ value: IndicatorMath.vwap(data) })
-      },
-      'OBV': {
-        name: 'On Balance Volume (OBV)',
-        description: 'Momentum indicator using volume flow',
-        defaultParams: {},
-        calculate: (data, params) => ({ value: IndicatorMath.obv(data) })
-      }
+      'RSI': { name: 'Relative Strength Index (RSI)', description: 'Measures the speed and change of price movements', defaultParams: { period: 14 }, calculate: (data, params) => ({ value: IndicatorMath.rsi(data, params.period) }) },
+      'MACD': { name: 'Moving Average Convergence Divergence (MACD)', description: 'Trend-following momentum indicator', defaultParams: { fastPeriod: 12, slowPeriod: 26, signalPeriod: 9 }, calculate: (data, params) => IndicatorMath.macd(data, params.fastPeriod, params.slowPeriod, params.signalPeriod) },
+      'BOLLINGER BANDS': { name: 'Bollinger Bands', description: 'Volatility bands placed above and below a moving average', defaultParams: { period: 20, multiplier: 2 }, calculate: (data, params) => IndicatorMath.bollingerBands(data, params.period, params.multiplier) },
+      'STOCHASTIC': { name: 'Stochastic Oscillator', description: 'Momentum indicator comparing closing price to price range', defaultParams: { kPeriod: 14, dPeriod: 3 }, calculate: (data, params) => IndicatorMath.stochastic(data, params.kPeriod, params.dPeriod) },
+      'SMA': { name: 'Simple Moving Average (SMA)', description: 'Average of closing prices over a specified period', defaultParams: { period: 20 }, calculate: (data, params) => ({ value: IndicatorMath.sma(data, params.period) }) },
+      'EMA': { name: 'Exponential Moving Average (EMA)', description: 'Weighted average giving more importance to recent prices', defaultParams: { period: 20 }, calculate: (data, params) => ({ value: IndicatorMath.ema(data, params.period) }) },
+      'ATR': { name: 'Average True Range (ATR)', description: 'Measures market volatility', defaultParams: { period: 14 }, calculate: (data, params) => ({ value: IndicatorMath.atr(data, params.period) }) },
+      'CCI': { name: 'Commodity Channel Index (CCI)', description: 'Identifies cyclical trends in prices', defaultParams: { period: 20 }, calculate: (data, params) => ({ value: IndicatorMath.cci(data, params.period) }) },
+      'VWAP': { name: 'Volume Weighted Average Price (VWAP)', description: 'Average price weighted by volume', defaultParams: {}, calculate: (data, params) => ({ value: IndicatorMath.vwap(data) }) },
+      'OBV': { name: 'On Balance Volume (OBV)', description: 'Momentum indicator using volume flow', defaultParams: {}, calculate: (data, params) => ({ value: IndicatorMath.obv(data) }) }
     };
 
-    // ───── BINANCE SYMBOL MANAGEMENT ─────
     async function loadAllSymbols() {
       try {
-        console.log('Loading Binance symbol list...');
         const response = await fetch('https://api.binance.com/api/v3/exchangeInfo');
         const data = await response.json();
-        
         allSymbols = data.symbols
           .filter(s => s.status === 'TRADING' && (s.quoteAsset === 'USDT' || s.quoteAsset === 'BUSD'))
           .map(s => ({
@@ -1364,12 +1370,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             quoteAsset: s.quoteAsset,
             name: `${s.baseAsset}/${s.quoteAsset}`
           }));
-        
-        console.log(`Loaded ${allSymbols.length} trading symbols`);
-        return allSymbols;
       } catch (error) {
-        console.error('Error loading symbols:', error);
-        // Fallback to major symbols if API fails
         allSymbols = [
           { symbol: 'BTCUSDT', baseAsset: 'BTC', quoteAsset: 'USDT', name: 'Bitcoin/USDT' },
           { symbol: 'ETHUSDT', baseAsset: 'ETH', quoteAsset: 'USDT', name: 'Ethereum/USDT' },
@@ -1381,7 +1382,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           { symbol: 'LINKUSDT', baseAsset: 'LINK', quoteAsset: 'USDT', name: 'Chainlink/USDT' },
           { symbol: 'BCHUSDT', baseAsset: 'BCH', quoteAsset: 'USDT', name: 'Bitcoin Cash/USDT' }
         ];
-        return allSymbols;
       }
     }
 
@@ -1392,14 +1392,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     function getExchangeInfo(symbol) {
       const info = validateSymbol(symbol);
       if (!info) return 'UNKNOWN';
-      
-      if (info.quoteAsset === 'USDT' || info.quoteAsset === 'BUSD') {
-        return 'BINANCE';
-      }
-      return info.quoteAsset;
+      return info.quoteAsset === 'USDT' || info.quoteAsset === 'BUSD' ? 'BINANCE' : info.quoteAsset;
     }
 
-    // ───── SEARCH SUGGESTIONS ─────
     function initSearch() {
       const searchInput = document.getElementById('symbol-search');
       const suggestionsContainer = document.getElementById('search-suggestions');
@@ -1407,34 +1402,19 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
       searchInput.addEventListener('input', (e) => {
         const query = e.target.value.trim().toUpperCase();
-        
         if (query.length < 1) {
           suggestionsContainer.style.display = 'none';
           return;
         }
-
         const matches = allSymbols
-          .filter(s => 
-            s.symbol.includes(query) || 
-            s.baseAsset.includes(query) ||
-            s.name.toUpperCase().includes(query)
-          )
+          .filter(s => s.symbol.includes(query) || s.baseAsset.includes(query) || s.name.toUpperCase().includes(query))
           .slice(0, 10);
-
-        if (matches.length === 0) {
-          suggestionsContainer.innerHTML = '<div class="suggestion-item">No symbols found</div>';
-        } else {
-          suggestionsContainer.innerHTML = matches.map(s => `
-            <div class="suggestion-item" data-symbol="${s.symbol}">
-              <div>
-                <div class="suggestion-symbol">${s.symbol}</div>
-                <div class="suggestion-name">${s.name}</div>
-              </div>
-              <div class="suggestion-exchange">${s.quoteAsset}</div>
-            </div>
-          `).join('');
-        }
-        
+        suggestionsContainer.innerHTML = matches.length === 0 ? '<div class="suggestion-item">No symbols found</div>' : matches.map(s => `
+          <div class="suggestion-item" data-symbol="${s.symbol}">
+            <div><div class="suggestion-symbol">${s.symbol}</div><div class="suggestion-name">${s.name}</div></div>
+            <div class="suggestion-exchange">${s.quoteAsset}</div>
+          </div>
+        `).join('');
         suggestionsContainer.style.display = 'block';
       });
 
@@ -1451,18 +1431,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       searchInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
           const symbol = searchInput.value.trim().toUpperCase();
-          if (symbol) {
-            switchSymbol(symbol);
-          }
+          if (symbol) switchSymbol(symbol);
           suggestionsContainer.style.display = 'none';
         }
       });
 
       searchGo.addEventListener('click', () => {
         const symbol = searchInput.value.trim().toUpperCase();
-        if (symbol) {
-          switchSymbol(symbol);
-        }
+        if (symbol) switchSymbol(symbol);
         suggestionsContainer.style.display = 'none';
       });
 
@@ -1473,109 +1449,79 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       });
     }
 
-    // ───── SYMBOL SWITCHING ─────
     function switchSymbol(newSymbol) {
       if (!validateSymbol(newSymbol)) {
-        alert(`Symbol "${newSymbol}" not found on Binance. Please use format like BTCUSDT, ETHUSDT, etc.`);
+        alert(`Symbol "${newSymbol}" not found on Binance.`);
         return;
       }
-
       currentSymbol = newSymbol;
-      
-      // Update URL without page reload
       const url = new URL(location);
       url.searchParams.set('symbol', newSymbol);
       window.history.replaceState({}, '', url);
-      
-      // Update UI
       document.getElementById('symbol-name').textContent = newSymbol;
       document.getElementById('symbol-exchange').textContent = getExchangeInfo(newSymbol);
       document.getElementById('current-price').textContent = '--';
       document.getElementById('price-change').textContent = '--';
-      
-      // Reset data and reconnect
       priceData = [];
       lastPrice = 0;
-      
       if (klineWs) klineWs.close();
       if (tickerWs) tickerWs.close();
-      
       loadHistory(currentInterval);
       connectTicker();
       connectKline(currentInterval);
     }
 
-async function tradeVisionAI() {
-  if (!chart || priceData.length < 10) {
-    alert('Load a chart first!');
-    return;
-  }
-
-  const btn = document.getElementById('tradevision-ai-btn');
-  const output = document.getElementById('ai-insights-output');
-  btn.disabled = true;
-  btn.innerHTML = 'AI Analyzing';
-  output.style.display = 'none';
-
-  try {
-    const recent = priceData.slice(-30).map(d => ({
-      time: new Date(d.time * 1000).toLocaleString(),
-      close: d.close.toFixed(2),
-      change: ((d.close - d.open) / d.open * 100).toFixed(2) + '%'
-    }));
-
-    const prompt = `Analyze ${currentSymbol} (${currentInterval}):\n${JSON.stringify(recent.slice(0,5))}\n\nProvide a concise report (under 200 words):\n- Trend\n- Key Patterns\n- Risk Level\n- Suggestion\nEnd with: "Trade smart—DYOR!"`;
-
-    // CORRECT URL
-    const res = await fetch('https://tradevision-ptrsuo0z0-dantech-mwas-projects.vercel.app/api/gemini', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt })
-    });
-
-    if (!res.ok) {
-      const err = await res.text();
-      throw new Error(`HTTP ${res.status}: ${err}`);
+    async function tradeVisionAI() {
+      if (!chart || priceData.length < 10) {
+        alert('Load a chart first!');
+        return;
+      }
+      const btn = document.getElementById('tradevision-ai-btn');
+      const output = document.getElementById('ai-insights-output');
+      btn.disabled = true;
+      btn.innerHTML = 'AI Analyzing';
+      output.style.display = 'none';
+      try {
+        const recent = priceData.slice(-30).map(d => ({
+          time: new Date(d.time * 1000).toLocaleString(),
+          close: d.close.toFixed(2),
+          change: ((d.close - d.open) / d.open * 100).toFixed(2) + '%'
+        }));
+        const prompt = `Analyze ${currentSymbol} (${currentInterval}):\n${JSON.stringify(recent.slice(0,5))}\n\nProvide a concise report (under 200 words):\n- Trend\n- Key Patterns\n- Risk Level\n- Suggestion\nEnd with: "Trade smart—DYOR!"`;
+        const res = await fetch('https://tradevision-ptrsuo0z0-dantech-mwas-projects.vercel.app/api/gemini', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt })
+        });
+        if (!res.ok) {
+          const err = await res.text();
+          throw new Error(`HTTP ${res.status}: ${err}`);
+        }
+        const data = await res.json();
+        const insight = data.insight;
+        output.innerHTML = `<strong>TradeVision AI Report for ${currentSymbol} (${currentInterval})</strong><br><div style="margin-top:0.5rem; white-space:pre-wrap; font-size:0.9rem;">${insight}</div>`;
+        output.style.display = 'block';
+      } catch (error) {
+        console.error('AI Error:', error);
+        output.innerHTML = `<span style="color:red;">AI Failed: ${error.message}</span>`;
+        output.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = 'TradeVision AI – Analyze Chart';
+      }
     }
 
-    const data = await res.json();
-    const insight = data.insight;
-
-    output.innerHTML = `
-      <strong>TradeVision AI Report for ${currentSymbol} (${currentInterval})</strong><br>
-      <div style="margin-top:0.5rem; white-space:pre-wrap; font-size:0.9rem;">${insight}</div>
-    `;
-    output.style.display = 'block';
-
-  } catch (error) {
-    console.error('AI Error:', error);
-    output.innerHTML = `<span style="color:red;">AI Failed: ${error.message}</span>`;
-    output.style.display = 'block';
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = 'TradeVision AI – Analyze Chart';
-  }
-}
-    // ───── CHART INITIALISATION ─────
     function initChart() {
       const priceContainer = document.getElementById('price-chart');
       const volumeContainer = document.getElementById('volume-indicator');
       const indicatorsContainer = document.getElementById('indicators-container');
       
-      // Main price chart (45%)
       chart = LightweightCharts.createChart(priceContainer, {
         width: priceContainer.clientWidth,
         height: priceContainer.clientHeight,
         layout: { background: { color: 'transparent' }, textColor: '#d1d4dc' },
         grid: { vertLines: { color: '#2d313e' }, horzLines: { color: '#2d313e' } },
-        timeScale: { 
-          borderColor: '#2d313e', 
-          timeVisible: true, 
-          secondsVisible: false,
-          barSpacing: baseBarSpacing,
-          minBarSpacing: 1,
-          rightOffset: 10
-        },
+        timeScale: { borderColor: '#2d313e', timeVisible: true, secondsVisible: false, barSpacing: baseBarSpacing, minBarSpacing: 1, rightOffset: 10 },
         handleScroll: { mouseWheel: true, pressedMouseMove: true },
         handleScale: { axisPressedMouseMove: true, mouseWheel: true, pinch: true }
       });
@@ -1586,7 +1532,6 @@ async function tradeVisionAI() {
         borderUpColor: '#26a69a', borderDownColor: '#ef5350'
       });
 
-      // Volume chart (15%)
       const volumeChart = LightweightCharts.createChart(volumeContainer, {
         width: volumeContainer.clientWidth,
         height: volumeContainer.clientHeight,
@@ -1597,67 +1542,47 @@ async function tradeVisionAI() {
         handleScale: false
       });
 
-      volumeSeries = volumeChart.addHistogramSeries({
-        color: '#26a69a80',
-        priceFormat: { type: 'volume' }
-      });
+      volumeSeries = volumeChart.addHistogramSeries({ color: '#26a69a80', priceFormat: { type: 'volume' } });
 
-      // Indicators chart (40%)
       indicatorsChart = LightweightCharts.createChart(indicatorsContainer, {
         width: indicatorsContainer.clientWidth,
         height: indicatorsContainer.clientHeight,
         layout: { background: { color: 'transparent' }, textColor: '#d1d4dc' },
         grid: { vertLines: { color: '#2d313e' }, horzLines: { color: '#2d313e' } },
-        timeScale: { 
-          borderColor: '#2d313e', 
-          timeVisible: true, 
-          secondsVisible: false,
-          barSpacing: baseBarSpacing,
-          minBarSpacing: 1,
-          rightOffset: 10
-        },
+        timeScale: { borderColor: '#2d313e', timeVisible: true, secondsVisible: false, barSpacing: baseBarSpacing, minBarSpacing: 1, rightOffset: 10 },
         handleScroll: { mouseWheel: true, pressedMouseMove: true },
         handleScale: { axisPressedMouseMove: true, mouseWheel: true, pinch: true }
       });
 
-      // Initialize with current symbol
       document.getElementById('symbol-name').textContent = currentSymbol;
       document.getElementById('symbol-exchange').textContent = getExchangeInfo(currentSymbol);
-      
-      // Load data
       loadHistory(currentInterval);
       connectTicker();
       connectKline(currentInterval);
-      initDrawingTools(); // INITIALIZE DRAWING TOOLS
+      initDrawingTools();
       initToolbars();
       initIndicatorPanel();
-      initZoomControls(); // NEW: Initialize zoom controls
-      loadActiveIndicators(); // Load indicators from localStorage
-	  
-	  // Add AI button listener
-document.getElementById('tradevision-ai-btn').addEventListener('click', tradeVisionAI);
+      initZoomControls();
+      loadActiveIndicators();
+      document.getElementById('tradevision-ai-btn').addEventListener('click', tradeVisionAI);
     }
 
-    // ───── ZOOM AND FULLSCREEN CONTROLS ─────
     function initZoomControls() {
       const zoomInBtn = document.getElementById('zoom-in');
       const zoomOutBtn = document.getElementById('zoom-out');
       const zoomResetBtn = document.getElementById('zoom-reset');
       const fullscreenToggleBtn = document.getElementById('fullscreen-toggle');
       
-      // Zoom in - increase bar spacing and price scale
       zoomInBtn.addEventListener('click', () => {
         zoomLevel = Math.min(zoomLevel + 0.2, 3.0);
         applyZoom();
       });
       
-      // Zoom out - decrease bar spacing and price scale
       zoomOutBtn.addEventListener('click', () => {
         zoomLevel = Math.max(zoomLevel - 0.2, 0.5);
         applyZoom();
       });
       
-      // Reset zoom
       zoomResetBtn.addEventListener('click', () => {
         zoomLevel = 1.0;
         applyZoom();
@@ -1665,16 +1590,11 @@ document.getElementById('tradevision-ai-btn').addEventListener('click', tradeVis
         indicatorsChart.timeScale().fitContent();
       });
       
-      // Fullscreen toggle
       fullscreenToggleBtn.addEventListener('click', toggleFullscreen);
       
-      // Mouse wheel zoom for price scale
       document.getElementById('main-chart').addEventListener('wheel', handleWheelZoom, { passive: false });
       
-      // Touch pinch zoom
-      let initialDistance = 0;
-      let initialZoomLevel = 1.0;
-      
+      let initialDistance = 0, initialZoomLevel = 1.0;
       document.getElementById('main-chart').addEventListener('touchstart', (e) => {
         if (e.touches.length === 2) {
           initialDistance = getTouchDistance(e.touches);
@@ -1687,7 +1607,6 @@ document.getElementById('tradevision-ai-btn').addEventListener('click', tradeVis
           e.preventDefault();
           const currentDistance = getTouchDistance(e.touches);
           const scale = currentDistance / initialDistance;
-          
           zoomLevel = Math.max(0.5, Math.min(3.0, initialZoomLevel * scale));
           applyZoom();
         }
@@ -1696,9 +1615,7 @@ document.getElementById('tradevision-ai-btn').addEventListener('click', tradeVis
     
     function handleWheelZoom(e) {
       e.preventDefault();
-      
       if (e.ctrlKey || e.metaKey) {
-        // Pinch to zoom on trackpad - adjust zoom level
         if (e.deltaY < 0) {
           zoomLevel = Math.min(zoomLevel + 0.1, 3.0);
         } else {
@@ -1706,7 +1623,6 @@ document.getElementById('tradevision-ai-btn').addEventListener('click', tradeVis
         }
         applyZoom();
       } else {
-        // Regular scroll - navigate through time
         if (e.deltaY < 0) {
           chart.timeScale().scrollByPosition(10);
           indicatorsChart.timeScale().scrollByPosition(10);
@@ -1724,29 +1640,13 @@ document.getElementById('tradevision-ai-btn').addEventListener('click', tradeVis
     }
     
     function applyZoom() {
-      // Apply zoom by adjusting bar spacing and price scale
       const barSpacing = baseBarSpacing * zoomLevel;
-      
-      // Update main chart
-      chart.applyOptions({
-        timeScale: {
-          barSpacing: barSpacing
-        }
-      });
-      
-      // Update indicators chart
-      indicatorsChart.applyOptions({
-        timeScale: {
-          barSpacing: barSpacing
-        }
-      });
-      
-      // Sync time scales
+      chart.applyOptions({ timeScale: { barSpacing } });
+      indicatorsChart.applyOptions({ timeScale: { barSpacing } });
       syncTimeScales();
     }
     
     function syncTimeScales() {
-      // Get the visible time range from the main chart
       const mainTimeRange = chart.timeScale().getVisibleRange();
       if (mainTimeRange) {
         indicatorsChart.timeScale().setVisibleRange(mainTimeRange);
@@ -1755,7 +1655,6 @@ document.getElementById('tradevision-ai-btn').addEventListener('click', tradeVis
     
     function toggleFullscreen() {
       isFullscreen = !isFullscreen;
-      
       if (isFullscreen) {
         document.body.classList.add('fullscreen-mode');
         document.getElementById('fullscreen-toggle').innerHTML = '<i class="fas fa-compress"></i>';
@@ -1763,29 +1662,14 @@ document.getElementById('tradevision-ai-btn').addEventListener('click', tradeVis
         document.body.classList.remove('fullscreen-mode');
         document.getElementById('fullscreen-toggle').innerHTML = '<i class="fas fa-expand"></i>';
       }
-      
-      // Resize charts after fullscreen change
       setTimeout(() => {
-        chart.resize(
-          document.getElementById('price-chart').clientWidth,
-          document.getElementById('price-chart').clientHeight
-        );
-        
-        volumeChart.querySelector('.tv-lightweight-charts').resize(
-          document.getElementById('volume-chart').clientWidth,
-          document.getElementById('volume-chart').clientHeight
-        );
-        
-        indicatorsChart.querySelector('.tv-lightweight-charts').resize(
-          document.getElementById('indicators-chart').clientWidth,
-          document.getElementById('indicators-chart').clientHeight
-        );
-        
+        chart.resize(document.getElementById('price-chart').clientWidth, document.getElementById('price-chart').clientHeight);
+        volumeChart.querySelector('.tv-lightweight-charts').resize(document.getElementById('volume-chart').clientWidth, document.getElementById('volume-chart').clientHeight);
+        indicatorsChart.querySelector('.tv-lightweight-charts').resize(document.getElementById('indicators-chart').clientWidth, document.getElementById('indicators-chart').clientHeight);
         resizeDrawingCanvas();
       }, 100);
     }
 
-    // ───── INDICATOR MANAGEMENT ─────
     function initIndicatorPanel() {
       const addBtn = document.getElementById('add-indicator-btn');
       const searchContainer = document.getElementById('indicator-search-container');
@@ -1794,9 +1678,6 @@ document.getElementById('tradevision-ai-btn').addEventListener('click', tradeVis
       const refreshBtn = document.getElementById('refresh-indicators');
       const clearBtn = document.getElementById('clear-indicators');
       
-      if (!addBtn || !searchContainer || !searchInput || !dropdown) return;
-      
-      // Toggle search visibility
       addBtn.addEventListener('click', () => {
         const isVisible = searchContainer.style.display === 'block';
         searchContainer.style.display = isVisible ? 'none' : 'block';
@@ -1807,30 +1688,21 @@ document.getElementById('tradevision-ai-btn').addEventListener('click', tradeVis
         }
       });
       
-      // Search functionality
       searchInput.addEventListener('input', () => {
         const query = searchInput.value.trim().toLowerCase();
         if (!query) {
           dropdown.innerHTML = '<div class="dropdown-item">Start typing indicator name...</div>';
           return;
         }
-        
-        // Get all available indicators
         const allIndicators = Object.keys(IndicatorConfigs);
         const matches = allIndicators.filter(ind => ind.toLowerCase().includes(query));
-        
-        if (matches.length === 0) {
-          dropdown.innerHTML = '<div class="dropdown-item">No indicators found</div>';
-        } else {
-          dropdown.innerHTML = matches.map(ind => `
-            <div class="dropdown-item" data-indicator="${ind}">
-              ${IndicatorConfigs[ind].name}
-            </div>
-          `).join('');
-        }
+        dropdown.innerHTML = matches.length === 0 ? '<div class="dropdown-item">No indicators found</div>' : matches.map(ind => `
+          <div class="dropdown-item" data-indicator="${ind}">
+            ${IndicatorConfigs[ind].name}
+          </div>
+        `).join('');
       });
       
-      // Add indicator on click
       dropdown.addEventListener('click', (e) => {
         const item = e.target.closest('.dropdown-item');
         if (item && item.dataset.indicator) {
@@ -1840,18 +1712,15 @@ document.getElementById('tradevision-ai-btn').addEventListener('click', tradeVis
         }
       });
       
-      // Close search when clicking outside
       document.addEventListener('click', (e) => {
         if (!addBtn.contains(e.target) && !searchContainer.contains(e.target)) {
           searchContainer.style.display = 'none';
         }
       });
       
-      // Refresh indicators
       refreshBtn.addEventListener('click', () => {
         updateAllIndicators();
       });
-      // Clear all indicators
       clearBtn.addEventListener('click', () => {
         activeIndicators = [];
         localStorage.removeItem('chartIndicators');
@@ -1859,12 +1728,12 @@ document.getElementById('tradevision-ai-btn').addEventListener('click', tradeVis
         clearIndicatorChart();
       });
     }
-    
+
     document.getElementById('clear-indicators').addEventListener('click', () => {
       activeIndicators = [];
       localStorage.removeItem('chartIndicators');
       updateIndicatorList();
-      clearIndicatorChart();          // wipes everything instantly
+      clearIndicatorChart();
     });
     
     function loadActiveIndicators() {
@@ -1875,78 +1744,38 @@ document.getElementById('tradevision-ai-btn').addEventListener('click', tradeVis
     }
 
     function addIndicator(name, params) {
-      // Check if already exists
       const existingIndex = activeIndicators.findIndex(ind => ind.name === name);
       if (existingIndex >= 0) {
         activeIndicators[existingIndex].params = params;
       } else {
-        activeIndicators.push({
-          name: name,
-          params: params,
-          timestamp: Date.now()
-        });
+        activeIndicators.push({ name, params, timestamp: Date.now() });
       }
-      
       localStorage.setItem('chartIndicators', JSON.stringify(activeIndicators));
       updateIndicatorList();
       updateAllIndicators();
     }
 
-    /* -------------------------------------------------------------
-    INDICATOR REMOVAL – removes the indicator + its series instantly
-    ------------------------------------------------------------- */
     function removeIndicator(name) {
-      // 1. Remove from the active list
       activeIndicators = activeIndicators.filter(ind => ind.name !== name);
       localStorage.setItem('chartIndicators', JSON.stringify(activeIndicators));
-
-      // 2. Update the right-panel list
       updateIndicatorList();
-
-      // 3. **Delete ONLY the series that belong to this indicator**
       const seriesArray = indicatorSeriesMap.get(name) || [];
       seriesArray.forEach(s => {
         try { indicatorsChart.removeSeries(s); } catch (_) {}
       });
-      indicatorSeriesMap.delete(name);   // clean the map
-
-      // 4. If anything is left → redraw the rest (optional – chart is already clean)
+      indicatorSeriesMap.delete(name);
       if (activeIndicators.length > 0) {
-        updateAllIndicators();   // will clear again (safe) and plot remaining
+        updateAllIndicators();
       }
     }
     
-    /* -------------------------------------------------------------
-    Remove every series that was created for a specific indicator
-    ------------------------------------------------------------- */
-    function removeIndicatorSeries(indicatorName) {
-      if (!indicatorsChart || !indicatorsChart._series) return;
-
-      // Lightweight-Charts stores all series in an internal array
-      const seriesToRemove = indicatorsChart._series.filter(s => {
-        // Series title is set to:  "RSI", "MACD MACD", "Bollinger Bands Upper", …
-        const title = s.options?.().title || '';
-        return title.startsWith(indicatorName);
-      });
-
-      seriesToRemove.forEach(s => {
-        try { indicatorsChart.removeSeries(s); } catch (_) {}
-      });
-    }
-
-    /* -------------------------------------------------------------
-    Re-build the UI list of active indicators
-    ------------------------------------------------------------- */
     function updateIndicatorList() {
       const list = document.getElementById('indicator-list');
       list.innerHTML = '';
-
       if (activeIndicators.length === 0) {
-        list.innerHTML =
-          '<div class="empty-state" style="color:var(--text-light);padding:.5rem;">No indicators added</div>';
+        list.innerHTML = '<div class="empty-state" style="color:var(--text-light);padding:.5rem;">No indicators added</div>';
         return;
       }
-
       activeIndicators.forEach(ind => {
         const item = document.createElement('div');
         item.className = 'indicator-item';
@@ -1954,739 +1783,487 @@ document.getElementById('tradevision-ai-btn').addEventListener('click', tradeVis
           <span class="name">${ind.name}</span>
           <span class="remove" title="Remove indicator">×</span>
         `;
-
         item.querySelector('.remove').addEventListener('click', () => {
           removeIndicator(ind.name);
         });
-
         list.appendChild(item);
       });
     }
 
-    /* -------------------------------------------------------------
-    Re-calculate & re-plot **all remaining** indicators
-    ------------------------------------------------------------- */
     function updateAllIndicators() {
       if (!priceData.length) return;
-
-      // Clear *everything* first – guarantees a clean slate
       clearIndicatorChart();
-
       activeIndicators.forEach(ind => {
         const cfg = IndicatorConfigs[ind.name];
         if (!cfg) return;
-
         const result = cfg.calculate(priceData, ind.params);
         plotIndicator(ind.name, result, ind.params);
       });
-      
-      // Sync time scales after updating indicators
       syncTimeScales();
     }
 
-    /* -------------------------------------------------------------
-    Helper – wipe the whole indicator pane (used by many places)
-    ------------------------------------------------------------- */
     function clearIndicatorChart() {
       if (!indicatorsChart || !indicatorsChart._series) return;
       while (indicatorsChart._series.length) {
         try { indicatorsChart.removeSeries(indicatorsChart._series[0]); } catch (_) { break; }
       }
-      indicatorSeriesMap.clear();   // also wipe the map
+      indicatorSeriesMap.clear();
     }
 
     function plotIndicator(name, result, params) {
-      // Remove old series for this indicator (if any)
       const oldSeries = indicatorSeriesMap.get(name) || [];
       oldSeries.forEach(s => {
         try { indicatorsChart.removeSeries(s); } catch (_) {}
       });
-      indicatorSeriesMap.set(name, []);   // start fresh
+      indicatorSeriesMap.set(name, []);
       
-      // -----------------------------------------------------------------
-      // 1. SINGLE-LINE INDICATORS (RSI, SMA, EMA, ATR, CCI, VWAP, OBV …)
-      // -----------------------------------------------------------------
       if (result.value) {
-        const series = indicatorsChart.addLineSeries({
-          color: getIndicatorColor(name),
-          lineWidth: 2,
-          title: name
-        });
-        const data = priceData.map((d, i) => ({
-          time: d.time,
-          value: result.value[i]
-        })).filter(d => d.value !== null);
-
+        const series = indicatorsChart.addLineSeries({ color: getIndicatorColor(name), lineWidth: 2, title: name });
+        const data = priceData.map((d, i) => ({ time: d.time, value: result.value[i] })).filter(d => d.value !== null);
         series.setData(data);
         indicatorSeriesMap.get(name).push(series);
         return;
       }
 
-      // -----------------------------------------------------------------
-      // 2. MACD
-      // -----------------------------------------------------------------
       if (result.macdLine && result.signalLine && result.histogram) {
         const macd = indicatorsChart.addLineSeries({ color: '#2962ff', lineWidth: 2, title: `${name} MACD` });
         const signal = indicatorsChart.addLineSeries({ color: '#ff6b6b', lineWidth: 1, title: `${name} Signal` });
         const hist = indicatorsChart.addHistogramSeries({ color: '#26a69a', title: `${name} Histogram` });
-
         macd.setData(priceData.map((d,i)=>({time:d.time, value:result.macdLine[i]})).filter(d=>d.value!==null));
         signal.setData(priceData.map((d,i)=>({time:d.time, value:result.signalLine[i]})).filter(d=>d.value!==null));
-        hist.setData(priceData.map((d,i)=>({time:d.time, value:result.histogram[i],
-              color: result.histogram[i]>=0 ? '#26a69a' : '#ef5350' })).filter(d=>d.value!==null));
-
+        hist.setData(priceData.map((d,i)=>({time:d.time, value:result.histogram[i], color: result.histogram[i]>=0 ? '#26a69a' : '#ef5350' })).filter(d=>d.value!==null));
         indicatorSeriesMap.get(name).push(macd, signal, hist);
         return;
       }
 
-      // -----------------------------------------------------------------
-      // 3. BOLLINGER BANDS
-      // -----------------------------------------------------------------
       if (result.upper && result.middle && result.lower) {
-        const up   = indicatorsChart.addLineSeries({ color: '#ffa726', lineWidth: 1, title: `${name} Upper` });
-        const mid  = indicatorsChart.addLineSeries({ color: '#2962ff', lineWidth: 1, title: `${name} Middle` });
-        const low  = indicatorsChart.addLineSeries({ color: '#ffa726', lineWidth: 1, title: `${name} Lower` });
-
+        const up = indicatorsChart.addLineSeries({ color: '#ffa726', lineWidth: 1, title: `${name} Upper` });
+        const mid = indicatorsChart.addLineSeries({ color: '#2962ff', lineWidth: 1, title: `${name} Middle` });
+        const low = indicatorsChart.addLineSeries({ color: '#ffa726', lineWidth: 1, title: `${name} Lower` });
         up.setData(priceData.map((d,i)=>({time:d.time, value:result.upper[i]})).filter(d=>d.value!==null));
         mid.setData(priceData.map((d,i)=>({time:d.time, value:result.middle[i]})).filter(d=>d.value!==null));
         low.setData(priceData.map((d,i)=>({time:d.time, value:result.lower[i]})).filter(d=>d.value!==null));
-
         indicatorSeriesMap.get(name).push(up, mid, low);
         return;
       }
 
-      // -----------------------------------------------------------------
-      // 4. STOCHASTIC
-      // -----------------------------------------------------------------
       if (result.k && result.d) {
         const k = indicatorsChart.addLineSeries({ color: '#2962ff', lineWidth: 2, title: `${name} %K` });
         const d = indicatorsChart.addLineSeries({ color: '#ff6b6b', lineWidth: 1, title: `${name} %D` });
-
-        k.setData(priceData.map((d,i)=>({time:d.time, value:result.k[i]})).filter(d=>d.value!==null));
+                k.setData(priceData.map((d,i)=>({time:d.time, value:result.k[i]})).filter(d=>d.value!==null));
         d.setData(priceData.map((d,i)=>({time:d.time, value:result.d[i]})).filter(d=>d.value!==null));
-
         indicatorSeriesMap.get(name).push(k, d);
+        return;
       }
     }
-    
+
     function getIndicatorColor(name) {
       const colors = {
-        'RSI': '#00c853',
         'SMA': '#2962ff',
-        'EMA': '#ff6d00',
-        'ATR': '#aa00ff',
-        'CCI': '#ffab00',
-        'VWAP': '#00b8d4',
-        'OBV': '#00bfa5'
+        'EMA': '#ff6b6b',
+        'RSI': '#ffa726',
+        'MACD': '#26a69a',
+        'BOLLINGER BANDS': '#9c27b0',
+        'STOCHASTIC': '#00bcd4',
+        'ATR': '#8bc34a',
+        'CCI': '#ff9800',
+        'VWAP': '#e91e63',
+        'OBV': '#607d8b'
       };
-      return colors[name] || '#9e9e9e';
+      return colors[name] || '#2962ff';
     }
 
-    // ───── DRAWING TOOLS IMPLEMENTATION ─────
-    function initDrawingTools() {
-      drawingCanvas = document.getElementById('drawing-canvas');
-      drawingCtx = drawingCanvas.getContext('2d');
-      
-      // Set canvas size to match container
-      function resizeDrawingCanvas() {
-        const container = document.getElementById('main-chart');
-        drawingCanvas.width = container.clientWidth;
-        drawingCanvas.height = container.clientHeight;
-        redrawAllDrawings();
+    async function loadHistory(interval) {
+      try {
+        const limit = 500;
+        const response = await fetch(`https://api.binance.com/api/v3/klines?symbol=${currentSymbol}&interval=${interval}&limit=${limit}`);
+        const rawData = await response.json();
+        priceData = rawData.map(d => ({
+          time: d[0] / 1000,
+          open: parseFloat(d[1]),
+          high: parseFloat(d[2]),
+          low: parseFloat(d[3]),
+          close: parseFloat(d[4]),
+          volume: parseFloat(d[5])
+        }));
+        updateChart();
+        updateVolume();
+        updateAllIndicators();
+      } catch (error) {
+        console.error('History load error:', error);
+        showError('Failed to load chart data');
       }
-      
-      resizeDrawingCanvas();
-      window.addEventListener('resize', resizeDrawingCanvas);
-      
-      setupDrawingEvents();
-      console.log('Drawing tools initialized!');
     }
 
-    function setupDrawingEvents() {
-      let startX, startY;
-      
-      // MOUSE DOWN - Start drawing
-      drawingCanvas.addEventListener('mousedown', (e) => {
-        if (activeTool === 'cursor' || activeTool === 'clear') return;
-        
-        // Handle text tool separately
-        if (activeTool === 'text') {
-          createTextInput(e.offsetX, e.offsetY);
-          return; // Don't proceed with normal drawing flow for text
-        }
-        
-        // For other drawing tools
-        isDrawing = true;
-        startX = e.offsetX;
-        startY = e.offsetY;
-        
-        currentDrawing = {
-          type: activeTool,
-          points: [{x: startX, y: startY}],
-          color: '#2962ff',
-          lineWidth: 2
+    function updateChart() {
+      if (!priceSeries) return;
+      priceSeries.setData(priceData);
+      if (currentChartType === 'line') {
+        priceSeries.applyOptions({ priceLineVisible: false, lastValueVisible: false });
+        const lineData = priceData.map(d => ({ time: d.time, value: d.close }));
+        priceSeries.setData(lineData);
+      } else if (currentChartType === 'area') {
+        priceSeries.applyOptions({ topColor: 'rgba(38, 166, 154, 0.4)', bottomColor: 'rgba(38, 166, 154, 0.1)', lineColor: '#26a69a' });
+      } else {
+        priceSeries.applyOptions({ topColor: 'transparent', bottomColor: 'transparent' });
+      }
+      chart.timeScale().fitContent();
+    }
+
+    function updateVolume() {
+      if (!volumeSeries) return;
+      const volData = priceData.map(d => ({
+        time: d.time,
+        value: d.volume,
+        color: d.close >= d.open ? 'rgba(38, 166, 154, 0.5)' : 'rgba(239, 83, 80, 0.5)'
+      }));
+      volumeSeries.setData(volData);
+    }
+
+    function connectKline(interval) {
+      if (klineWs) klineWs.close();
+      klineWs = new WebSocket(`wss://stream.binance.com:9443/ws/${currentSymbol.toLowerCase()}@kline_${interval}`);
+      klineWs.onmessage = (event) => {
+        const msg = JSON.parse(event.data);
+        const k = msg.k;
+        if (!k.x) return;
+        const newCandle = {
+          time: k.t / 1000,
+          open: parseFloat(k.o),
+          high: parseFloat(k.h),
+          low: parseFloat(k.l),
+          close: parseFloat(k.c),
+          volume: parseFloat(k.v)
         };
-      });
-      
-      // MOUSE MOVE - Draw preview (only for non-text tools)
-      drawingCanvas.addEventListener('mousemove', (e) => {
-        if (!isDrawing || !currentDrawing || activeTool === 'text') return;
-        
-        const currentX = e.offsetX;
-        const currentY = e.offsetY;
-        
-        // Update current drawing
-        if (currentDrawing.points.length === 1) {
-          currentDrawing.points.push({x: currentX, y: currentY});
+        const existing = priceData.find(d => d.time === newCandle.time);
+        if (existing) {
+          Object.assign(existing, newCandle);
         } else {
-          currentDrawing.points[1] = {x: currentX, y: currentY};
+          priceData.push(newCandle);
+          if (priceData.length > 1000) priceData.shift();
         }
-        
-        // Redraw everything including preview
-        redrawAllDrawings();
-        drawPreview(currentDrawing);
-      });
-      
-      // MOUSE UP - Finalize drawing (only for non-text tools)
-      drawingCanvas.addEventListener('mouseup', (e) => {
-        if (!isDrawing || !currentDrawing || activeTool === 'text') return;
-        
-        isDrawing = false;
-        
-        // Only save if we have a valid drawing (not a click)
-        if (currentDrawing.points.length === 2) {
-          drawings.push({...currentDrawing});
-        }
-        
-        currentDrawing = null;
-        redrawAllDrawings();
-      });
-    }
-
-    function createTextInput(x, y) {
-      console.log('Creating text input at:', x, y);
-      
-      // Remove existing text input
-      const existingInput = document.querySelector('.drawing-text-input');
-      if (existingInput) {
-        existingInput.remove();
-      }
-      
-      // Create new text input
-      const textInput = document.createElement('input');
-      textInput.type = 'text';
-      textInput.className = 'drawing-text-input';
-      textInput.style.left = x + 'px';
-      textInput.style.top = y + 'px';
-      textInput.placeholder = 'Type text here...';
-      textInput.style.zIndex = '10000';
-      textInput.style.position = 'absolute';
-      textInput.style.background = 'var(--card)';
-      textInput.style.border = '2px solid var(--accent)';
-      textInput.style.borderRadius = '4px';
-      textInput.style.padding = '8px 12px';
-      textInput.style.color = 'var(--text)';
-      textInput.style.fontFamily = 'Inter, sans-serif';
-      textInput.style.fontSize = '14px';
-      textInput.style.outline = 'none';
-      textInput.style.minWidth = '150px';
-      textInput.style.boxShadow = '0 2px 10px rgba(0,0,0,0.3)';
-      textInput.style.pointerEvents = 'auto';
-      
-      // Add to chart container
-      const chartContainer = document.getElementById('main-chart');
-      chartContainer.appendChild(textInput);
-      
-      // Focus with a slight delay
-      setTimeout(() => {
-        textInput.focus();
-        textInput.select();
-      }, 50);
-      
-      console.log('Text input created and added to DOM');
-      
-      // Handle text completion
-      const completeText = () => {
-        console.log('Completing text:', textInput.value);
-        if (textInput.value.trim()) {
-          drawings.push({
-            type: 'text',
-            x: parseInt(textInput.style.left),
-            y: parseInt(textInput.style.top),
-            text: textInput.value.trim(),
-            color: '#2962ff',
-            font: '14px Inter'
-          });
-          redrawAllDrawings();
-          console.log('Text saved to drawings');
-        }
-        
-        // Remove the input
-        if (textInput.parentNode) {
-          textInput.parentNode.removeChild(textInput);
-        }
+        updateChart();
+        updateVolume();
+        updateAllIndicators();
       };
-      
-      // Event listeners
-      textInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          e.stopPropagation();
-          completeText();
-        } else if (e.key === 'Escape') {
-          e.preventDefault();
-          e.stopPropagation();
-          if (textInput.parentNode) {
-            textInput.parentNode.removeChild(textInput);
-          }
+      klineWs.onerror = () => console.error('Kline WS error');
+    }
+
+    function connectTicker() {
+      if (tickerWs) tickerWs.close();
+      tickerWs = new WebSocket(`wss://stream.binance.com:9443/ws/${currentSymbol.toLowerCase()}@ticker`);
+      tickerWs.onmessage = (event) => {
+        const msg = JSON.parse(event.data);
+        const price = parseFloat(msg.c);
+        const change = ((price - lastPrice) / lastPrice * 100).toFixed(2);
+        if (lastPrice === 0) {
+          document.getElementById('current-price').textContent = price.toFixed(2);
+        } else {
+          const priceEl = document.getElementById('current-price');
+          const changeEl = document.getElementById('price-change');
+          priceEl.textContent = price.toFixed(2);
+          changeEl.textContent = (change >= 0 ? '+' : '') + change + '%';
+          changeEl.className = change >= 0 ? 'change' : 'change negative';
+          priceEl.classList.add(change >= 0 ? 'flash-green' : 'flash-red');
+          setTimeout(() => priceEl.classList.remove('flash-green', 'flash-red'), 800);
         }
-      });
-      
-      // Handle clicks outside the text input
-      const handleOutsideClick = (e) => {
-        if (!textInput.parentNode) {
-          document.removeEventListener('mousedown', handleOutsideClick);
-          return;
-        }
-        
-        if (!textInput.contains(e.target)) {
-          completeText();
-          document.removeEventListener('mousedown', handleOutsideClick);
-        }
+        lastPrice = price;
       };
-      
-      // Add the outside click listener after a short delay
-      setTimeout(() => {
-        document.addEventListener('mousedown', handleOutsideClick);
-      }, 100);
-      
-      // Prevent drawing tools from interfering
-      textInput.addEventListener('mousedown', (e) => {
-        e.stopPropagation();
-      });
-      
-      textInput.addEventListener('click', (e) => {
-        e.stopPropagation();
-      });
-      
-      textInput.addEventListener('focus', (e) => {
-        e.stopPropagation();
-      });
-      
-      textInput.addEventListener('blur', (e) => {
-        e.stopPropagation();
-      });
+      tickerWs.onerror = () => console.error('Ticker WS error');
     }
 
-    function drawPreview(drawing) {
-      drawingCtx.strokeStyle = drawing.color;
-      drawingCtx.lineWidth = drawing.lineWidth;
-      drawingCtx.beginPath();
-      
-      switch(drawing.type) {
-        case 'line':
-        case 'trendline':
-          drawingCtx.moveTo(drawing.points[0].x, drawing.points[0].y);
-          drawingCtx.lineTo(drawing.points[1].x, drawing.points[1].y);
-          break;
-          
-        case 'horizontal':
-          drawingCtx.moveTo(0, drawing.points[0].y);
-          drawingCtx.lineTo(drawingCanvas.width, drawing.points[0].y);
-          break;
-          
-        case 'rectangle':
-          const rect = drawing.points;
-          drawingCtx.rect(rect[0].x, rect[0].y, rect[1].x - rect[0].x, rect[1].y - rect[0].y);
-          break;
-          
-        case 'arrow':
-          drawArrow(drawingCtx, drawing.points[0].x, drawing.points[0].y, drawing.points[1].x, drawing.points[1].y);
-          break;
-          
-        case 'fib-retracement':
-          drawFibRetracement(drawingCtx, drawing.points[0].x, drawing.points[0].y, drawing.points[1].x, drawing.points[1].y);
-          break;
-      }
-      
-      drawingCtx.stroke();
-    }
-
-    function redrawAllDrawings() {
-      // Clear canvas
-      drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
-      
-      // Redraw all saved drawings
-      drawings.forEach(drawing => {
-        drawingCtx.strokeStyle = drawing.color;
-        drawingCtx.fillStyle = drawing.color;
-        drawingCtx.lineWidth = drawing.lineWidth || 2;
-        
-        switch(drawing.type) {
-          case 'line':
-          case 'trendline':
-            drawingCtx.beginPath();
-            drawingCtx.moveTo(drawing.points[0].x, drawing.points[0].y);
-            drawingCtx.lineTo(drawing.points[1].x, drawing.points[1].y);
-            drawingCtx.stroke();
-            break;
-            
-          case 'horizontal':
-            drawingCtx.beginPath();
-            drawingCtx.moveTo(0, drawing.points[0].y);
-            drawingCtx.lineTo(drawingCanvas.width, drawing.points[0].y);
-            drawingCtx.stroke();
-            break;
-            
-          case 'rectangle':
-            drawingCtx.beginPath();
-            const rect = drawing.points;
-            drawingCtx.rect(rect[0].x, rect[0].y, rect[1].x - rect[0].x, rect[1].y - rect[0].y);
-            drawingCtx.stroke();
-            break;
-            
-          case 'arrow':
-            drawArrow(drawingCtx, drawing.points[0].x, drawing.points[0].y, drawing.points[1].x, drawing.points[1].y);
-            break;
-            
-          case 'fib-retracement':
-            drawFibRetracement(drawingCtx, drawing.points[0].x, drawing.points[0].y, drawing.points[1].x, drawing.points[1].y);
-            break;
-            
-          case 'text':
-            drawingCtx.font = drawing.font || '14px Inter';
-            drawingCtx.fillText(drawing.text, drawing.x, drawing.y);
-            break;
-        }
-      });
-    }
-
-    function drawArrow(ctx, fromX, fromY, toX, toY) {
-      const headlen = 15;
-      const angle = Math.atan2(toY - fromY, toX - fromX);
-      
-      ctx.beginPath();
-      ctx.moveTo(fromX, fromY);
-      ctx.lineTo(toX, toY);
-      ctx.moveTo(toX, toY);
-      ctx.lineTo(toX - headlen * Math.cos(angle - Math.PI/6), toY - headlen * Math.sin(angle - Math.PI/6));
-      ctx.moveTo(toX, toY);
-      ctx.lineTo(toX - headlen * Math.cos(angle + Math.PI/6), toY - headlen * Math.sin(angle + Math.PI/6));
-      ctx.stroke();
-    }
-
-    function drawFibRetracement(ctx, startX, startY, endX, endY) {
-      const levels = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1];
-      const diff = endY - startY;
-      
-      levels.forEach(level => {
-        const y = startY + diff * level;
-        
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(drawingCanvas.width, y);
-        
-        // Dashed line for Fib levels
-        ctx.setLineDash([5, 3]);
-        ctx.stroke();
-        ctx.setLineDash([]);
-        
-        // Level label
-        ctx.font = '12px Inter';
-        ctx.fillText((level * 100).toFixed(1) + '%', 10, y - 5);
-      });
-    }
-
-    // ───── TOOLBAR CONTROLS ─────
     function initToolbars() {
-      // Timeframe buttons
       document.querySelectorAll('.timeframe-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           document.querySelectorAll('.timeframe-btn').forEach(b => b.classList.remove('active'));
           btn.classList.add('active');
           currentInterval = btn.dataset.interval;
-          console.log(`Changing interval to: ${currentInterval}`);
           loadHistory(currentInterval);
           connectKline(currentInterval);
         });
       });
 
-      // Chart type buttons
       document.querySelectorAll('.chart-type-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           document.querySelectorAll('.chart-type-btn').forEach(b => b.classList.remove('active'));
           btn.classList.add('active');
           currentChartType = btn.dataset.type;
-          updateChartSeries();
+          if (currentChartType === 'line') {
+            const lineSeries = chart.addLineSeries({ color: '#2962ff', lineWidth: 2 });
+            lineSeries.setData(priceData.map(d => ({ time: d.time, value: d.close })));
+            chart.removeSeries(priceSeries);
+            priceSeries = lineSeries;
+          } else if (currentChartType === 'candlestick') {
+            const candleSeries = chart.addCandlestickSeries({
+              upColor: '#26a69a', downColor: '#ef5350',
+              wickUpColor: '#26a69a', wickDownColor: '#ef5350'
+            });
+            candleSeries.setData(priceData);
+            chart.removeSeries(priceSeries);
+            priceSeries = candleSeries;
+          }
+          updateChart();
         });
       });
 
-      // Drawing tools
-      const toolButtons = document.querySelectorAll('.sidebar-left button[data-tool]');
-      
-      toolButtons.forEach(btn => {
+      // Desktop tools
+      document.querySelectorAll('.sidebar-left button[data-tool]').forEach(btn => {
         btn.addEventListener('click', () => {
-          const tool = btn.dataset.tool;
-          
-          // Update active button
-          toolButtons.forEach(b => b.classList.remove('active'));
+          document.querySelectorAll('.sidebar-left button').forEach(b => b.classList.remove('active'));
           btn.classList.add('active');
-          
-          // Handle special tools
-          if (tool === 'clear') {
+          activeTool = btn.dataset.tool;
+          if (activeTool === 'clear') {
             drawings = [];
-            redrawAllDrawings();
+            redrawCanvas();
+            btn.classList.remove('active');
+            document.querySelector('.sidebar-left button[data-tool="cursor"]').classList.add('active');
             activeTool = 'cursor';
-            document.querySelector('[data-tool="cursor"]').classList.add('active');
-          } else {
-            activeTool = tool;
           }
-          
-          console.log(`Tool selected: ${activeTool}`);
+        });
+      });
+
+      // Mobile tools
+      document.querySelectorAll('.mobile-tool-btn[data-tool]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (btn.dataset.tool === 'clear') {
+            drawings = [];
+            redrawCanvas();
+            document.querySelectorAll('.mobile-tool-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector('.mobile-tool-btn[data-tool="cursor"]').classList.add('active');
+            activeTool = 'cursor';
+            return;
+          }
+          document.querySelectorAll('.mobile-tool-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          activeTool = btn.dataset.tool;
         });
       });
     }
 
-    // ───── REAL DATA ONLY - NO MOCK DATA ─────
-    async function loadHistory(interval) {
-      try {
-        const limit = 500;
-        console.log(`Loading history for ${currentSymbol} with interval ${interval}`);
-        
-        const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=${currentSymbol}&interval=${interval}&limit=${limit}`);
-        
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
+    function initDrawingTools() {
+      drawingCanvas = document.getElementById('drawing-canvas');
+      drawingCtx = drawingCanvas.getContext('2d');
+      resizeDrawingCanvas();
+
+      let startX, startY, isDown = false;
+
+      drawingCanvas.addEventListener('mousedown', (e) => {
+        if (activeTool === 'cursor') return;
+        const rect = drawingCanvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        startX = x; startY = y; isDown = true;
+        currentDrawing = { tool: activeTool, points: [{ x, y }], color: '#2962ff', width: 2 };
+      });
+
+      drawingCanvas.addEventListener('mousemove', (e) => {
+        if (!isDown || activeTool === 'cursor') return;
+        const rect = drawingCanvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        currentDrawing.points.push({ x, y });
+        redrawCanvas();
+      });
+
+      drawingCanvas.addEventListener('mouseup', () => {
+        if (!isDown) return;
+        isDown = false;
+        if (currentDrawing && currentDrawing.points.length > 1) {
+          drawings.push(currentDrawing);
         }
-        
-        const raw = await res.json();
-        
-        if (!Array.isArray(raw) || raw.length === 0) {
-          throw new Error('No data received from Binance');
+        currentDrawing = null;
+        redrawCanvas();
+      });
+
+      drawingCanvas.addEventListener('mouseleave', () => {
+        isDown = false;
+        currentDrawing = null;
+      });
+
+      // Touch support
+      drawingCanvas.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        if (activeTool === 'cursor') return;
+        const rect = drawingCanvas.getBoundingClientRect();
+        const touch = e.touches[0];
+        const x = touch.clientX - rect.left;
+        const y = touch.clientY - rect.top;
+        startX = x; startY = y; isDown = true;
+        currentDrawing = { tool: activeTool, points: [{ x, y }], color: '#2962ff', width: 2 };
+      });
+
+      drawingCanvas.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        if (!isDown || activeTool === 'cursor') return;
+        const rect = drawingCanvas.getBoundingClientRect();
+        const touch = e.touches[0];
+        const x = touch.clientX - rect.left;
+        const y = touch.clientY - rect.top;
+        currentDrawing.points.push({ x, y });
+        redrawCanvas();
+      });
+
+      drawingCanvas.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        isDown = false;
+        if (currentDrawing && currentDrawing.points.length > 1) {
+          drawings.push(currentDrawing);
         }
-        
-        priceData = raw.map(k => ({
-          time: k[0] / 1000,
-          open: parseFloat(k[1]),
-          high: parseFloat(k[2]),
-          low: parseFloat(k[3]),
-          close: parseFloat(k[4]),
-          volume: parseFloat(k[5])
-        }));
-        
-        updateChartSeries();
-        updateAllIndicators(); // Update indicators when new data loads
-        
-      } catch (error) {
-        console.error('Error loading history:', error);
-        showError(`Failed to load data for ${currentSymbol}. Please check the symbol and try again.`);
+        currentDrawing = null;
+        redrawCanvas();
+      });
+
+      window.addEventListener('resize', resizeDrawingCanvas);
+    }
+
+    function resizeDrawingCanvas() {
+      const rect = document.getElementById('main-chart').getBoundingClientRect();
+      drawingCanvas.width = rect.width;
+      drawingCanvas.height = rect.height;
+      redrawCanvas();
+    }
+
+    function redrawCanvas() {
+      drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+      drawings.forEach(d => drawShape(d));
+      if (currentDrawing) drawShape(currentDrawing);
+    }
+
+    function drawShape(shape) {
+      drawingCtx.strokeStyle = shape.color;
+      drawingCtx.lineWidth = shape.width;
+      drawingCtx.fillStyle = shape.color + '33';
+
+      const points = shape.points;
+      if (points.length < 2) return;
+
+      drawingCtx.beginPath();
+      drawingCtx.moveTo(points[0].x, points[0].y);
+
+      if (shape.tool === 'line' || shape.tool === 'trendline' || shape.tool === 'arrow') {
+        drawingCtx.lineTo(points[points.length - 1].x, points[points.length - 1].y);
+        drawingCtx.stroke();
+        if (shape.tool === 'arrow') {
+          const headlen = 15;
+          const angle = Math.atan2(points[points.length - 1].y - points[0].y, points[points.length - 1].x - points[0].x);
+          drawingCtx.beginPath();
+          drawingCtx.moveTo(points[points.length - 1].x, points[points.length - 1].y);
+          drawingCtx.lineTo(points[points.length - 1].x - headlen * Math.cos(angle - Math.PI / 6), points[points.length - 1].y - headlen * Math.sin(angle - Math.PI / 6));
+          drawingCtx.moveTo(points[points.length - 1].x, points[points.length - 1].y);
+          drawingCtx.lineTo(points[points.length - 1].x - headlen * Math.cos(angle + Math.PI / 6), points[points.length - 1].y - headlen * Math.sin(angle + Math.PI / 6));
+          drawingCtx.stroke();
+        }
+      } else if (shape.tool === 'horizontal') {
+        drawingCtx.beginPath();
+        drawingCtx.moveTo(0, points[0].y);
+        drawingCtx.lineTo(drawingCanvas.width, points[0].y);
+        drawingCtx.stroke();
+      } else if (shape.tool === 'rectangle') {
+        const width = points[points.length - 1].x - points[0].x;
+        const height = points[points.length - 1].y - points[0].y;
+        drawingCtx.strokeRect(points[0].x, points[0].y, width, height);
+        drawingCtx.fillRect(points[0].x, points[0].y, width, height);
+      } else if (shape.tool === 'text') {
+        drawingCtx.font = '16px Inter';
+        drawingCtx.fillStyle = shape.color;
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'drawing-text-input';
+        input.style.left = points[0].x + 'px';
+        input.style.top = points[0].y + 'px';
+        document.getElementById('main-chart').appendChild(input);
+        input.focus();
+        input.addEventListener('blur', () => {
+          const text = input.value.trim();
+          if (text) {
+            drawingCtx.fillText(text, points[0].x, points[0].y + 16);
+            shape.text = text;
+          }
+          input.remove();
+        });
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') input.blur();
+        });
+      } else if (shape.tool === 'fib-retracement') {
+        const x1 = points[0].x, y1 = points[0].y;
+        const x2 = points[points.length - 1].x, y2 = points[points.length - 1].y;
+        const levels = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1];
+        levels.forEach(level => {
+          const y = y1 + (y2 - y1) * level;
+          drawingCtx.beginPath();
+          drawingCtx.moveTo(Math.min(x1, x2), y);
+          drawingCtx.lineTo(Math.max(x1, x2), y);
+          drawingCtx.stroke();
+          drawingCtx.fillText((level * 100).toFixed(1) + '%', Math.max(x1, x2) + 5, y + 5);
+        });
       }
     }
 
-    function showError(message) {
-      // Remove any existing error
-      const existingError = document.querySelector('.error-message');
-      if (existingError) existingError.remove();
-      
-      const errorDiv = document.createElement('div');
-      errorDiv.className = 'error-message';
-      errorDiv.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${message}`;
-      document.querySelector('.main-chart').prepend(errorDiv);
-      
-      setTimeout(() => {
-        if (errorDiv.parentNode) {
-          errorDiv.remove();
-        }
-      }, 5000);
+    function showError(msg) {
+      const container = document.querySelector('.sidebar-right');
+      const error = document.createElement('div');
+      error.className = 'error-message';
+      error.textContent = msg;
+      container.insertBefore(error, container.firstChild);
+      setTimeout(() => error.remove(), 5000);
     }
 
-    // ───── LIVE TICKER ─────
-    function connectTicker() {
-      if (tickerWs) tickerWs.close();
-      
-      const tickerSymbol = currentSymbol.toLowerCase();
-      tickerWs = new WebSocket(`wss://stream.binance.com:9443/ws/${tickerSymbol}@ticker`);
-      
-      tickerWs.onmessage = e => {
-        try {
-          const t = JSON.parse(e.data);
-          const price = parseFloat(t.c);
-          const el = document.getElementById('current-price');
+    // Mobile sidebar toggles
+    document.getElementById('mobile-left-toggle').addEventListener('click', () => {
+      document.getElementById('left-sidebar').classList.toggle('show');
+      document.getElementById('mobile-overlay').classList.toggle('show');
+    });
 
-          if (lastPrice && price !== lastPrice) {
-            el.classList.add(price > lastPrice ? 'flash-green' : 'flash-red');
-            setTimeout(() => el.classList.remove('flash-green', 'flash-red'), 800);
-          }
+    document.getElementById('mobile-right-toggle').addEventListener('click', () => {
+      document.getElementById('right-sidebar').classList.toggle('show');
+      document.getElementById('mobile-overlay').classList.toggle('show');
+    });
 
-          el.textContent = price.toFixed(getPricePrecision(price));
-          const change = parseFloat(t.P);
-          const chgEl = document.getElementById('price-change');
-          chgEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
-          chgEl.className = change >= 0 ? 'change' : 'change negative';
-          lastPrice = price;
-        } catch (error) {
-          console.error('Error parsing ticker data:', error);
-        }
-      };
-      
-      tickerWs.onclose = () => {
-        console.log('Ticker WebSocket closed, reconnecting...');
-        setTimeout(connectTicker, 3000);
-      };
-      
-      tickerWs.onerror = (err) => {
-        console.error('Ticker WebSocket error:', err);
-      };
-    }
+    document.getElementById('mobile-overlay').addEventListener('click', () => {
+      document.getElementById('left-sidebar').classList.remove('show');
+      document.getElementById('right-sidebar').classList.remove('show');
+      document.getElementById('mobile-overlay').classList.remove('show');
+    });
 
-    function getPricePrecision(price) {
-      if (price > 1000) return 2;
-      if (price > 100) return 3;
-      if (price > 10) return 4;
-      if (price > 1) return 5;
-      return 6;
-    }
-
-    // ───── LIVE KLINE ─────
-    function connectKline(interval) {
-      if (klineWs) klineWs.close();
-      
-      const klineSymbol = currentSymbol.toLowerCase();
-      klineWs = new WebSocket(`wss://stream.binance.com:9443/ws/${klineSymbol}@kline_${interval}`);
-      
-      klineWs.onmessage = e => {
-        try {
-          const k = JSON.parse(e.data).k;
-          const bar = {
-            time: k.t / 1000,
-            open: parseFloat(k.o),
-            high: parseFloat(k.h),
-            low: parseFloat(k.l),
-            close: parseFloat(k.c),
-            volume: parseFloat(k.v)
-          };
-
-          const idx = priceData.findIndex(d => d.time === bar.time);
-          if (idx >= 0) {
-            priceData[idx] = bar;
-            priceSeries.update(bar);
-            const volColor = bar.close >= bar.open ? '#26a69a80' : '#ef535080';
-            volumeSeries.update({ time: bar.time, value: bar.volume, color: volColor });
-          } else {
-            priceData.push(bar);
-            if (priceData.length > 1000) priceData.shift();
-            setTimeout(() => {
-              updateChartSeries();
-              chart.timeScale().scrollToPosition(-1, false);
-              indicatorsChart.timeScale().scrollToPosition(-1, false);
-            }, 50);
-          }
-          
-          // Update indicators with new data
-          updateAllIndicators();
-        } catch (error) {
-          console.error('Error parsing kline data:', error);
-        }
-      };
-      
-      klineWs.onclose = () => {
-        console.log('Kline WebSocket closed, reconnecting...');
-        setTimeout(() => connectKline(currentInterval), 3000);
-      };
-      
-      klineWs.onerror = (err) => {
-        console.error('Kline WebSocket error:', err);
-      };
-    }
-
-    // ───── CHART TYPE SWITCH ─────
-    function updateChartSeries() {
-      if (!chart || !priceData.length) return;
-
-      chart.removeSeries(priceSeries);
-
-      if (currentChartType === 'line') {
-        priceSeries = chart.addLineSeries({ color: '#2962ff', lineWidth: 2 });
-        priceSeries.setData(priceData.map(d => ({ time: d.time, value: d.close })));
-      } else if (currentChartType === 'area') {
-        priceSeries = chart.addAreaSeries({ 
-          lineColor: '#2962ff', 
-          topColor: '#2962ff40', 
-          bottomColor: '#2962ff10', 
-          lineWidth: 2 
-        });
-        priceSeries.setData(priceData.map(d => ({ time: d.time, value: d.close })));
-      } else if (currentChartType === 'bar') {
-        priceSeries = chart.addBarSeries({ upColor: '#26a69a', downColor: '#ef5350' });
-        priceSeries.setData(priceData.map(d => ({ 
-          time: d.time, 
-          open: d.open, 
-          high: d.high, 
-          low: d.low, 
-          close: d.close 
-        })));
-      } else {
-        priceSeries = chart.addCandlestickSeries({
-          upColor: '#26a69a', downColor: '#ef5350',
-          wickUpColor: '#26a69a', wickDownColor: '#ef5350',
-          borderUpColor: '#26a69a', borderDownColor: '#ef5350'
-        });
-        priceSeries.setData(priceData.map(d => ({ 
-          time: d.time, 
-          open: d.open, 
-          high: d.high, 
-          low: d.low, 
-          close: d.close 
-        })));
-      }
-
-      // Update volume
-      volumeSeries.setData(priceData.map(d => ({
-        time: d.time,
-        value: d.volume,
-        color: d.close >= d.open ? '#26a69a80' : '#ef535080'
-      })));
-
-      chart.timeScale().fitContent();
-      indicatorsChart.timeScale().fitContent();
-    }
-
-    // ───── THEME TOGGLE ─────
+    // Theme toggle
     document.getElementById('theme-toggle').addEventListener('click', () => {
-      const isDark = document.body.getAttribute('data-theme') === 'dark';
-      document.body.setAttribute('data-theme', isDark ? 'light' : 'dark');
-      const themeIcon = document.querySelector('#theme-toggle i');
-      themeIcon.classList.toggle('fa-moon');
-      themeIcon.classList.toggle('fa-sun');
+      const body = document.body;
+      const isDark = body.getAttribute('data-theme') === 'dark';
+      body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+      document.getElementById('theme-toggle').innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
       localStorage.setItem('theme', isDark ? 'light' : 'dark');
     });
-    
-    // Apply saved theme
+
+    // Load theme
     const savedTheme = localStorage.getItem('theme') || 'dark';
     document.body.setAttribute('data-theme', savedTheme);
-    if (savedTheme === 'light') {
-      document.querySelector('#theme-toggle i').classList.replace('fa-moon', 'fa-sun');
-    }
+    document.getElementById('theme-toggle').innerHTML = savedTheme === 'dark' ? '<i class="fas fa-moon"></i>' : '<i class="fas fa-sun"></i>';
 
-    // ───── INITIALIZATION ─────
-    async function initializeApp() {
+    // Mobile FABs
+    document.getElementById('mobile-fab-zoom').addEventListener('click', () => {
+      chart.timeScale().fitContent();
+      indicatorsChart.timeScale().fitContent();
+    });
+
+    document.getElementById('mobile-fab-fullscreen').addEventListener('click', toggleFullscreen);
+
+    // Initialize
+    window.addEventListener('load', async () => {
       await loadAllSymbols();
       initSearch();
-      
-      if (typeof LightweightCharts !== 'undefined') {
-        initChart();
-      } else {
-        const check = setInterval(() => {
-          if (typeof LightweightCharts !== 'undefined') {
-            clearInterval(check);
-            initChart();
-          }
-        }, 50);
-      }
-    }
+      initChart();
+    });
 
-    // Start the application
-    initializeApp();
+    // Responsive resize
+    window.addEventListener('resize', () => {
+      if (!chart) return;
+      chart.resize(document.getElementById('price-chart').clientWidth, document.getElementById('price-chart').clientHeight);
+      indicatorsChart.resize(document.getElementById('indicators-container').clientWidth, document.getElementById('indicators-container').clientHeight);
+      resizeDrawingCanvas();
+    });
+
+    // Prevent context menu on canvas
+    drawingCanvas.addEventListener('contextmenu', e => e.preventDefault());
   </script>
 </body>
 </html>
