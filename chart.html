@@ -1526,13 +1526,17 @@ async function tradeVisionAI() {
 
     const prompt = `Analyze ${currentSymbol} (${currentInterval}):\n${JSON.stringify(recent.slice(0,5))}\n\nProvide a concise report (under 200 words):\n- Trend\n- Key Patterns\n- Risk Level\n- Suggestion\nEnd with: "Trade smart—DYOR!"`;
 
-    const res = await fetch('https://trade-vision-git-main-dantech-mwas-projects.vercel.app/api/gemini', {
+    // CORRECT URL
+    const res = await fetch('https://tradevision-ptrsuo0z0-dantech-mwas-projects.vercel.app/api/gemini', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ prompt })
     });
 
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(`HTTP ${res.status}: ${err}`);
+    }
 
     const data = await res.json();
     const insight = data.insight;
@@ -1544,6 +1548,7 @@ async function tradeVisionAI() {
     output.style.display = 'block';
 
   } catch (error) {
+    console.error('AI Error:', error);
     output.innerHTML = `<span style="color:red;">AI Failed: ${error.message}</span>`;
     output.style.display = 'block';
   } finally {
