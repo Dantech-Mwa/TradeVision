@@ -8,6 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.js"></script>
   <style>
     :root {
       --bg: #141518;
@@ -25,6 +26,7 @@
       --card: #1e222d;
       --success: #00c853;
       --warning: #ffab00;
+      --purple: #7e57c2;
     }
     
     [data-theme="light"] {
@@ -43,6 +45,7 @@
       --card: #ffffff;
       --success: #00c853;
       --warning: #ffab00;
+      --purple: #7e57c2;
     }
     
     * {
@@ -70,7 +73,7 @@
     }
     
     .container {
-      max-width: 1200px;
+      max-width: 1400px;
       margin: 0 auto;
       padding: 0 1rem;
     }
@@ -159,7 +162,7 @@
     
     .trading-container {
       display: grid;
-      grid-template-columns: 1fr 300px;
+      grid-template-columns: 1fr 350px;
       gap: 1.5rem;
       margin: 2rem 0;
     }
@@ -202,7 +205,7 @@
       font-size: 0.9rem;
     }
     
-    .form-group input, .form-group select {
+    .form-group input, .form-group select, .form-group textarea {
       padding: 0.75rem;
       border: 1px solid var(--border);
       border-radius: 6px;
@@ -213,7 +216,7 @@
       font-size: 0.95rem;
     }
     
-    .form-group input:focus, .form-group select:focus {
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
       outline: none;
       border-color: var(--accent);
       box-shadow: 0 0 0 2px rgba(41, 98, 255, 0.2);
@@ -274,6 +277,15 @@
       background: var(--bg-lighter);
     }
     
+    .btn-purple {
+      background: var(--purple);
+      color: white;
+    }
+    
+    .btn-purple:hover {
+      background: #6a4bac;
+    }
+    
     .market-info {
       display: flex;
       justify-content: space-between;
@@ -292,6 +304,38 @@
     
     .price-change.negative {
       color: var(--red);
+    }
+    
+    .order-options {
+      background: var(--bg-light);
+      padding: 1rem;
+      border-radius: 8px;
+      margin-top: 1rem;
+    }
+    
+    .order-options h4 {
+      margin-bottom: 0.75rem;
+      font-size: 1rem;
+    }
+    
+    .risk-calculator {
+      background: var(--bg-light);
+      padding: 1rem;
+      border-radius: 8px;
+      margin-top: 1rem;
+    }
+    
+    .risk-calculator h4 {
+      margin-bottom: 0.75rem;
+      font-size: 1rem;
+    }
+    
+    .risk-result {
+      margin-top: 0.75rem;
+      padding: 0.75rem;
+      background: var(--bg);
+      border-radius: 6px;
+      font-size: 0.9rem;
     }
     
     .positions-table {
@@ -374,7 +418,7 @@
       gap: 1.5rem;
     }
     
-    .wallet-card, .market-card {
+    .wallet-card, .market-card, .api-card, .risk-card {
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: 12px;
@@ -382,7 +426,7 @@
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
     
-    .wallet-card h3, .market-card h3 {
+    .wallet-card h3, .market-card h3, .api-card h3, .risk-card h3 {
       margin-bottom: 1rem;
       font-size: 1.1rem;
       display: flex;
@@ -390,7 +434,7 @@
       gap: 0.5rem;
     }
     
-    .wallet-card h3 i, .market-card h3 i {
+    .wallet-card h3 i, .market-card h3 i, .api-card h3 i, .risk-card h3 i {
       color: var(--accent);
     }
     
@@ -422,6 +466,15 @@
       justify-content: space-between;
       padding: 0.75rem 0;
       border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    .market-item:hover {
+      background: var(--bg-light);
+      border-radius: 4px;
+      padding-left: 0.5rem;
+      padding-right: 0.5rem;
     }
     
     .market-item:last-child {
@@ -456,6 +509,111 @@
       background: rgba(239, 83, 80, 0.1);
       color: var(--red);
       border: 1px solid rgba(239, 83, 80, 0.2);
+    }
+    
+    .tab-container {
+      margin-top: 1rem;
+    }
+    
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 1rem;
+    }
+    
+    .tab {
+      padding: 0.75rem 1.5rem;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    
+    .tab.active {
+      border-bottom: 2px solid var(--accent);
+      color: var(--accent);
+    }
+    
+    .tab-content {
+      display: none;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    .api-keys-list {
+      margin-top: 1rem;
+    }
+    
+    .api-key-item {
+      background: var(--bg-light);
+      padding: 1rem;
+      border-radius: 6px;
+      margin-bottom: 0.75rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .api-key-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+    
+    .btn-sm {
+      padding: 0.5rem 0.75rem;
+      font-size: 0.8rem;
+    }
+    
+    .btn-danger {
+      background: var(--red);
+      color: white;
+    }
+    
+    .btn-danger:hover {
+      background: var(--red-hover);
+    }
+    
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .modal.active {
+      display: flex;
+    }
+    
+    .modal-content {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 2rem;
+      width: 90%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+    
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      color: var(--text-light);
+      cursor: pointer;
     }
     
     .footer {
@@ -497,6 +655,10 @@
       border-left: 4px solid var(--red);
     }
     
+    .notification.warning {
+      border-left: 4px solid var(--warning);
+    }
+    
     .notification i {
       font-size: 1.2rem;
     }
@@ -509,13 +671,56 @@
       color: var(--red);
     }
     
-    @media (max-width: 968px) {
+    .notification.warning i {
+      color: var(--warning);
+    }
+    
+    .two-factor-setup {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: var(--bg-light);
+      border-radius: 8px;
+    }
+    
+    .qrcode {
+      text-align: center;
+      margin: 1rem 0;
+    }
+    
+    .qrcode img {
+      max-width: 200px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+    
+    .performance-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    
+    .stat {
+      background: var(--bg-light);
+      padding: 1rem;
+      border-radius: 8px;
+      text-align: center;
+    }
+    
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+    }
+    
+    .stat-label {
+      font-size: 0.8rem;
+      color: var(--text-light);
+    }
+    
+    @media (max-width: 1200px) {
       .trading-container {
         grid-template-columns: 1fr;
-      }
-      
-      .nav-links {
-        display: none;
       }
     }
     
@@ -525,6 +730,14 @@
       }
       
       .trading-buttons {
+        grid-template-columns: 1fr;
+      }
+      
+      .nav-links {
+        display: none;
+      }
+      
+      .performance-stats {
         grid-template-columns: 1fr;
       }
     }
@@ -555,12 +768,12 @@
     <div class="trading-container">
       <div class="main-content">
         <div class="trading-panel">
-          <h2><i class="fas fa-exchange-alt"></i> Trade</h2>
+          <h2><i class="fas fa-exchange-alt"></i> Advanced Trading</h2>
           
           <div class="form-row">
             <div class="form-group">
               <label>Symbol</label>
-              <input type="text" id="trade-symbol" value="BTCUSDT" placeholder="e.g., BTCUSDT, ETHUSDT">
+              <input type="text" id="trade-symbol" value="BTC-USD" placeholder="e.g., BTC-USD, ETH-USD">
             </div>
             <div class="form-group">
               <label>Quantity</label>
@@ -572,16 +785,62 @@
             <div class="form-group">
               <label>Order Type</label>
               <select id="trade-type">
-                <option>Market</option>
-                <option>Limit</option>
-                <option>Stop Loss</option>
-                <option>Take Profit</option>
+                <option value="market">Market</option>
+                <option value="limit">Limit</option>
+                <option value="stop">Stop Loss</option>
+                <option value="take_profit">Take Profit</option>
+                <option value="oco">OCO (One-Cancels-Other)</option>
+                <option value="trailing_stop">Trailing Stop</option>
               </select>
             </div>
             <div class="form-group">
               <label>Price ($)</label>
-              <input type="number" id="trade-price" value="0" step="0.01" disabled>
-              <small style="color: var(--text-light); margin-top: 0.25rem; display: block;">Market orders use current price</small>
+              <input type="number" id="trade-price" value="0" step="0.01">
+            </div>
+          </div>
+          
+          <div class="order-options" id="advanced-options">
+            <h4><i class="fas fa-cog"></i> Advanced Order Options</h4>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Stop Price</label>
+                <input type="number" id="stop-price" step="0.01" placeholder="Stop loss price">
+              </div>
+              <div class="form-group">
+                <label>Take Profit</label>
+                <input type="number" id="take-profit" step="0.01" placeholder="Take profit price">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Trailing Stop %</label>
+                <input type="number" id="trailing-stop" step="0.1" placeholder="e.g., 5%">
+              </div>
+              <div class="form-group">
+                <label>Time in Force</label>
+                <select id="time-in-force">
+                  <option value="GTC">GTC (Good Till Cancel)</option>
+                  <option value="IOC">IOC (Immediate or Cancel)</option>
+                  <option value="FOK">FOK (Fill or Kill)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          
+          <div class="risk-calculator">
+            <h4><i class="fas fa-calculator"></i> Risk Management</h4>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Risk %</label>
+                <input type="number" id="risk-percent" value="2" min="0.1" max="100" step="0.1">
+              </div>
+              <div class="form-group">
+                <label>Stop Loss %</label>
+                <input type="number" id="stop-loss-percent" value="5" min="0.1" max="50" step="0.1">
+              </div>
+            </div>
+            <div class="risk-result" id="risk-result">
+              Position Size: <span id="position-size">0</span> | Risk Amount: $<span id="risk-amount">0</span>
             </div>
           </div>
           
@@ -607,41 +866,139 @@
           
           <div class="status disconnected" id="connection-status">
             <i class="fas fa-circle"></i>
-            <span>Connecting to Binance...</span>
+            <span>Connecting to Exchange...</span>
           </div>
         </div>
 
-        <div class="positions-table">
-          <h2><i class="fas fa-list"></i> Open Positions</h2>
-          <div class="table-container">
-            <table id="positions-table">
-              <thead>
-                <tr>
-                  <th>Symbol</th>
-                  <th>Side</th>
-                  <th>Qty</th>
-                  <th>Entry</th>
-                  <th>Current</th>
-                  <th>P&L</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                <!-- Positions will be populated by JavaScript -->
-              </tbody>
-            </table>
+        <div class="tab-container">
+          <div class="tabs">
+            <div class="tab active" data-tab="positions">Open Positions</div>
+            <div class="tab" data-tab="orders">Active Orders</div>
+            <div class="tab" data-tab="history">Trade History</div>
+            <div class="tab" data-tab="performance">Performance</div>
+          </div>
+          
+          <div class="tab-content active" id="positions-tab">
+            <div class="positions-table">
+              <h2><i class="fas fa-list"></i> Open Positions</h2>
+              <div class="table-container">
+                <table id="positions-table">
+                  <thead>
+                    <tr>
+                      <th>Symbol</th>
+                      <th>Side</th>
+                      <th>Qty</th>
+                      <th>Entry</th>
+                      <th>Current</th>
+                      <th>P&L</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <!-- Positions will be populated by JavaScript -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          
+          <div class="tab-content" id="orders-tab">
+            <div class="positions-table">
+              <h2><i class="fas fa-clock"></i> Active Orders</h2>
+              <div class="table-container">
+                <table id="orders-table">
+                  <thead>
+                    <tr>
+                      <th>Symbol</th>
+                      <th>Type</th>
+                      <th>Side</th>
+                      <th>Qty</th>
+                      <th>Price</th>
+                      <th>Status</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <!-- Orders will be populated by JavaScript -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          
+          <div class="tab-content" id="history-tab">
+            <div class="positions-table">
+              <h2><i class="fas fa-history"></i> Trade History</h2>
+              <div class="table-container">
+                <table id="history-table">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Symbol</th>
+                      <th>Side</th>
+                      <th>Qty</th>
+                      <th>Price</th>
+                      <th>P&L</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <!-- History will be populated by JavaScript -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          
+          <div class="tab-content" id="performance-tab">
+            <div class="positions-table">
+              <h2><i class="fas fa-chart-bar"></i> Performance Analytics</h2>
+              <div class="performance-stats">
+                <div class="stat">
+                  <div class="stat-value" id="total-return">0%</div>
+                  <div class="stat-label">Total Return</div>
+                </div>
+                <div class="stat">
+                  <div class="stat-value" id="win-rate">0%</div>
+                  <div class="stat-label">Win Rate</div>
+                </div>
+                <div class="stat">
+                  <div class="stat-value" id="avg-win">$0</div>
+                  <div class="stat-label">Avg. Win</div>
+                </div>
+                <div class="stat">
+                  <div class="stat-value" id="avg-loss">$0</div>
+                  <div class="stat-label">Avg. Loss</div>
+                </div>
+                <div class="stat">
+                  <div class="stat-value" id="profit-factor">0.00</div>
+                  <div class="stat-label">Profit Factor</div>
+                </div>
+                <div class="stat">
+                  <div class="stat-value" id="max-dd">0%</div>
+                  <div class="stat-label">Max Drawdown</div>
+                </div>
+              </div>
+              <div style="margin-top: 1.5rem; height: 300px;">
+                <canvas id="performance-chart"></canvas>
+              </div>
+            </div>
           </div>
         </div>
       </div>
       
       <div class="sidebar">
         <div class="wallet-card">
-          <h3><i class="fas fa-wallet"></i> Paper Wallet</h3>
+          <h3><i class="fas fa-wallet"></i> Portfolio</h3>
           <div class="balance" id="wallet-balance">$100,000.00</div>
           <div class="balance-change positive" id="wallet-change">+0.00% Today</div>
-          <button class="btn btn-secondary" style="margin-top: 1rem; width: 100%;">
-            <i class="fas fa-plus"></i> Add Funds
-          </button>
+          <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+            <button class="btn btn-secondary btn-sm" id="add-funds-btn">
+              <i class="fas fa-plus"></i> Add Funds
+            </button>
+            <button class="btn btn-purple btn-sm" id="margin-toggle">
+              <i class="fas fa-exchange-alt"></i> Margin: Off
+            </button>
+          </div>
         </div>
         
         <div class="market-card">
@@ -649,6 +1006,135 @@
           <ul class="market-list" id="market-list">
             <!-- Market data will be populated by JavaScript -->
           </ul>
+        </div>
+        
+        <div class="api-card">
+          <h3><i class="fas fa-key"></i> Exchange Connections</h3>
+          <div class="status disconnected" id="binance-status">
+            <i class="fas fa-circle"></i>
+            <span>Binance: Disconnected</span>
+          </div>
+          <div class="status disconnected" id="coinbase-status">
+            <i class="fas fa-circle"></i>
+            <span>Coinbase: Disconnected</span>
+          </div>
+          <div class="status disconnected" id="kraken-status">
+            <i class="fas fa-circle"></i>
+            <span>Kraken: Disconnected</span>
+          </div>
+          <button class="btn btn-secondary" style="margin-top: 1rem; width: 100%;" id="manage-apis-btn">
+            <i class="fas fa-cog"></i> Manage API Keys
+          </button>
+        </div>
+        
+        <div class="risk-card">
+          <h3><i class="fas fa-shield-alt"></i> Risk Limits</h3>
+          <div class="form-group">
+            <label>Max Risk Per Trade (%)</label>
+            <input type="number" id="max-risk" value="2" min="0.1" max="10" step="0.1">
+          </div>
+          <div class="form-group">
+            <label>Daily Loss Limit ($)</label>
+            <input type="number" id="daily-loss-limit" value="1000" min="10" step="10">
+          </div>
+          <button class="btn btn-secondary" style="width: 100%; margin-top: 0.5rem;">
+            <i class="fas fa-save"></i> Save Limits
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- API Keys Modal -->
+  <div class="modal" id="api-keys-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Manage Exchange API Keys</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="tab-container">
+        <div class="tabs">
+          <div class="tab active" data-tab="binance-api">Binance</div>
+          <div class="tab" data-tab="coinbase-api">Coinbase</div>
+          <div class="tab" data-tab="kraken-api">Kraken</div>
+          <div class="tab" data-tab="security">Security</div>
+        </div>
+        
+        <div class="tab-content active" id="binance-api-tab">
+          <div class="form-group">
+            <label>API Key</label>
+            <input type="text" id="binance-api-key" placeholder="Enter Binance API Key">
+          </div>
+          <div class="form-group">
+            <label>Secret Key</label>
+            <input type="password" id="binance-secret-key" placeholder="Enter Binance Secret Key">
+          </div>
+          <div class="form-group">
+            <label>Passphrase (if required)</label>
+            <input type="password" id="binance-passphrase" placeholder="Enter passphrase">
+          </div>
+          <button class="btn btn-buy" style="width: 100%; margin-top: 1rem;" id="save-binance-keys">
+            <i class="fas fa-save"></i> Save Binance Keys
+          </button>
+        </div>
+        
+        <div class="tab-content" id="coinbase-api-tab">
+          <div class="form-group">
+            <label>API Key</label>
+            <input type="text" id="coinbase-api-key" placeholder="Enter Coinbase API Key">
+          </div>
+          <div class="form-group">
+            <label>Secret Key</label>
+            <input type="password" id="coinbase-secret-key" placeholder="Enter Coinbase Secret Key">
+          </div>
+          <button class="btn btn-buy" style="width: 100%; margin-top: 1rem;" id="save-coinbase-keys">
+            <i class="fas fa-save"></i> Save Coinbase Keys
+          </button>
+        </div>
+        
+        <div class="tab-content" id="kraken-api-tab">
+          <div class="form-group">
+            <label>API Key</label>
+            <input type="text" id="kraken-api-key" placeholder="Enter Kraken API Key">
+          </div>
+          <div class="form-group">
+            <label>Private Key</label>
+            <input type="password" id="kraken-private-key" placeholder="Enter Kraken Private Key">
+          </div>
+          <button class="btn btn-buy" style="width: 100%; margin-top: 1rem;" id="save-kraken-keys">
+            <i class="fas fa-save"></i> Save Kraken Keys
+          </button>
+        </div>
+        
+        <div class="tab-content" id="security-tab">
+          <h4>Two-Factor Authentication</h4>
+          <p style="margin-bottom: 1rem; font-size: 0.9rem;">Enable 2FA for enhanced security</p>
+          
+          <div class="two-factor-setup" id="2fa-setup">
+            <div class="form-group">
+              <label>Enable 2FA</label>
+              <select id="enable-2fa">
+                <option value="false">Disabled</option>
+                <option value="true">Enabled</option>
+              </select>
+            </div>
+            <div id="2fa-options" style="display: none;">
+              <div class="qrcode">
+                <div style="background: white; padding: 1rem; display: inline-block; border-radius: 8px;">
+                  <!-- QR Code would be generated here -->
+                  <div style="text-align: center; color: black; font-weight: bold;">QR Code Placeholder</div>
+                  <div style="font-size: 0.8rem; color: black; margin-top: 0.5rem;">Scan with Google Authenticator</div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Verification Code</label>
+                <input type="text" id="2fa-code" placeholder="Enter 6-digit code">
+              </div>
+              <button class="btn btn-buy" style="width: 100%;">
+                <i class="fas fa-check"></i> Verify & Enable
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -664,14 +1150,942 @@
 
   <footer class="footer">
     <div class="container">
-      <p>© 2025 TradeVision. Open Source. <strong>Paper Trading Only - Not Real Money</strong></p>
+      <p>© 2025 TradeVision. Open Source. <strong>Advanced Trading Platform</strong></p>
       <p style="margin-top: 0.5rem; font-size: 0.8rem;">
-        This is a demonstration platform. For real trading, you will be redirected to Binance.
+        Trade with caution. Cryptocurrency trading involves substantial risk of loss.
       </p>
     </div>
   </footer>
 
   <script>
+    // Advanced Trading Platform Implementation
+    class AdvancedTradingPlatform {
+      constructor() {
+        this.wsConnections = {};
+        this.isConnected = false;
+        this.positions = JSON.parse(localStorage.getItem('positions')) || [];
+        this.orders = JSON.parse(localStorage.getItem('orders')) || [];
+        this.tradeHistory = JSON.parse(localStorage.getItem('tradeHistory')) || [];
+        this.balance = parseFloat(localStorage.getItem('balance')) || 100000;
+        this.currentPrices = {};
+        this.apiKeys = JSON.parse(localStorage.getItem('apiKeys')) || {};
+        this.riskSettings = JSON.parse(localStorage.getItem('riskSettings')) || {
+          maxRiskPerTrade: 2,
+          dailyLossLimit: 1000,
+          useMargin: false
+        };
+        this.performanceData = JSON.parse(localStorage.getItem('performanceData')) || {
+          totalReturn: 0,
+          winRate: 0,
+          avgWin: 0,
+          avgLoss: 0,
+          profitFactor: 0,
+          maxDrawdown: 0,
+          equityCurve: []
+        };
+        
+        this.init();
+      }
+      
+      init() {
+        this.setupEventListeners();
+        this.connectToExchanges();
+        this.renderAllData();
+        this.updateRiskCalculator();
+        this.calculatePerformance();
+        
+        // Initialize tabs
+        this.setupTabs();
+        
+        // Load saved API keys
+        this.loadApiKeys();
+      }
+      
+      setupTabs() {
+        const tabs = document.querySelectorAll('.tab');
+        tabs.forEach(tab => {
+          tab.addEventListener('click', () => {
+            const tabName = tab.getAttribute('data-tab');
+            
+            // Update active tab
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            
+            // Show corresponding content
+            document.querySelectorAll('.tab-content').forEach(content => {
+              content.classList.remove('active');
+            });
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+          });
+        });
+        
+        // Setup modal tabs
+        const modalTabs = document.querySelectorAll('#api-keys-modal .tab');
+        modalTabs.forEach(tab => {
+          tab.addEventListener('click', () => {
+            const tabName = tab.getAttribute('data-tab');
+            
+            // Update active tab
+            modalTabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            
+            // Show corresponding content
+            document.querySelectorAll('#api-keys-modal .tab-content').forEach(content => {
+              content.classList.remove('active');
+            });
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+          });
+        });
+      }
+      
+      connectToExchanges() {
+        // Connect to Binance
+        this.connectToBinance();
+        
+        // Connect to Coinbase (will attempt even without API keys for demo)
+        this.connectToCoinbase();
+        
+        // Connect to Kraken if API keys are available
+        if (this.apiKeys.kraken) {
+          this.connectToKraken();
+        }
+      }
+      
+      connectToBinance() {
+        try {
+          // Connect to Binance WebSocket for multiple symbols
+          const symbols = ['btcusdt', 'ethusdt', 'adausdt', 'dotusdt', 'linkusdt'];
+          
+          symbols.forEach(symbol => {
+            const ws = new WebSocket(`wss://stream.binance.com:9443/ws/${symbol}@ticker`);
+            
+            ws.onopen = () => {
+              this.updateExchangeStatus('binance', true);
+              this.isConnected = true;
+            };
+            
+            ws.onmessage = (event) => {
+              const data = JSON.parse(event.data);
+              this.handleMarketData(data, 'binance');
+            };
+            
+            ws.onerror = (error) => {
+              console.error('Binance WebSocket error:', error);
+              this.updateExchangeStatus('binance', false);
+            };
+            
+            ws.onclose = () => {
+              this.updateExchangeStatus('binance', false);
+              // Attempt to reconnect after 5 seconds
+              setTimeout(() => this.connectToBinance(), 5000);
+            };
+            
+            this.wsConnections[`binance_${symbol}`] = ws;
+          });
+        } catch (error) {
+          console.error('Failed to connect to Binance:', error);
+          this.updateExchangeStatus('binance', false);
+        }
+      }
+      
+      connectToCoinbase() {
+        try {
+          // Coinbase WebSocket connection
+          const ws = new WebSocket('wss://ws-feed.pro.coinbase.com');
+          
+          const subscribeMessage = {
+            type: 'subscribe',
+            product_ids: ['BTC-USD', 'ETH-USD', 'ADA-USD', 'DOT-USD', 'LINK-USD'],
+            channels: ['ticker']
+          };
+          
+          ws.onopen = () => {
+            ws.send(JSON.stringify(subscribeMessage));
+            this.updateExchangeStatus('coinbase', true);
+          };
+          
+          ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            if (data.type === 'ticker') {
+              this.handleCoinbaseData(data);
+            }
+          };
+          
+          ws.onerror = (error) => {
+            console.error('Coinbase WebSocket error:', error);
+            this.updateExchangeStatus('coinbase', false);
+          };
+          
+          ws.onclose = () => {
+            this.updateExchangeStatus('coinbase', false);
+            // Attempt to reconnect after 5 seconds
+            setTimeout(() => this.connectToCoinbase(), 5000);
+          };
+          
+          this.wsConnections['coinbase'] = ws;
+        } catch (error) {
+          console.error('Failed to connect to Coinbase:', error);
+          this.updateExchangeStatus('coinbase', false);
+        }
+      }
+      
+      connectToKraken() {
+        // Implementation for Kraken WebSocket connection
+        // This would require API keys for real connection
+        this.updateExchangeStatus('kraken', false); // Set to false for demo
+      }
+      
+      handleCoinbaseData(data) {
+        const symbol = data.product_id;
+        const price = parseFloat(data.price);
+        const change = data.price && data.open_24h ? 
+          ((price - parseFloat(data.open_24h)) / parseFloat(data.open_24h)) * 100 : 0;
+        
+        this.currentPrices[symbol] = {
+          price,
+          change,
+          exchange: 'coinbase'
+        };
+        
+        // Update UI if this is the selected symbol
+        const currentSymbol = document.getElementById('trade-symbol').value;
+        if (symbol === currentSymbol) {
+          document.getElementById('current-price').textContent = `$${price.toFixed(2)}`;
+          
+          const changeElement = document.getElementById('price-change');
+          changeElement.textContent = `${change > 0 ? '+' : ''}${change.toFixed(2)}%`;
+          changeElement.className = `price-change ${change >= 0 ? 'positive' : 'negative'}`;
+          
+          // Update price input for limit orders
+          const orderType = document.getElementById('trade-type').value;
+          if (orderType === 'limit') {
+            document.getElementById('trade-price').value = price.toFixed(2);
+          }
+        }
+        
+        // Update market overview
+        this.updateMarketOverview();
+        
+        // Update positions with current prices
+        this.renderPositions();
+        
+        // Update risk calculator
+        this.updateRiskCalculator();
+      }
+      
+      updateExchangeStatus(exchange, connected) {
+        const statusElement = document.getElementById(`${exchange}-status`);
+        if (statusElement) {
+          statusElement.className = `status ${connected ? 'connected' : 'disconnected'}`;
+          statusElement.innerHTML = `<i class="fas fa-circle"></i> <span>${exchange.charAt(0).toUpperCase() + exchange.slice(1)}: ${connected ? 'Connected' : 'Disconnected'}</span>`;
+        }
+      }
+      
+      handleMarketData(data, exchange) {
+        const symbol = data.s;
+        const price = parseFloat(data.c);
+        const change = parseFloat(data.P);
+        
+        this.currentPrices[symbol] = {
+          price,
+          change,
+          exchange
+        };
+        
+        // Update UI if this is the selected symbol
+        const currentSymbol = document.getElementById('trade-symbol').value;
+        if (symbol === currentSymbol) {
+          document.getElementById('current-price').textContent = `$${price.toFixed(2)}`;
+          
+          const changeElement = document.getElementById('price-change');
+          changeElement.textContent = `${change > 0 ? '+' : ''}${change.toFixed(2)}%`;
+          changeElement.className = `price-change ${change >= 0 ? 'positive' : 'negative'}`;
+          
+          // Update price input for limit orders
+          const orderType = document.getElementById('trade-type').value;
+          if (orderType === 'limit') {
+            document.getElementById('trade-price').value = price.toFixed(2);
+          }
+        }
+        
+        // Update market overview
+        this.updateMarketOverview();
+        
+        // Update positions with current prices
+        this.renderPositions();
+        
+        // Update risk calculator
+        this.updateRiskCalculator();
+      }
+      
+      updateMarketOverview() {
+        const marketList = document.getElementById('market-list');
+        const popularSymbols = ['BTC-USD', 'ETH-USD', 'ADA-USD', 'DOT-USD', 'LINK-USD'];
+        
+        marketList.innerHTML = '';
+        
+        popularSymbols.forEach(symbol => {
+          const marketData = this.currentPrices[symbol];
+          const price = marketData ? marketData.price : (Math.random() * 100 + 10);
+          const change = marketData ? marketData.change : (Math.random() * 10 - 5);
+          
+          const listItem = document.createElement('li');
+          listItem.className = 'market-item';
+          listItem.innerHTML = `
+            <span class="symbol">${symbol}</span>
+            <span class="price">$${parseFloat(price).toFixed(2)}</span>
+            <span class="price-change ${parseFloat(change) >= 0 ? 'positive' : 'negative'}">
+              ${parseFloat(change) >= 0 ? '+' : ''}${change.toFixed(2)}%
+            </span>
+          `;
+          
+          // Add click event to select symbol
+          listItem.addEventListener('click', () => {
+            document.getElementById('trade-symbol').value = symbol;
+            this.updateCurrentPrice();
+          });
+          
+          marketList.appendChild(listItem);
+        });
+      }
+      
+      setupEventListeners() {
+        // Buy button
+        document.getElementById('buy-btn').addEventListener('click', () => {
+          this.executeOrder('buy');
+        });
+        
+        // Sell button
+        document.getElementById('sell-btn').addEventListener('click', () => {
+          this.executeOrder('sell');
+        });
+        
+        // Order type change
+        document.getElementById('trade-type').addEventListener('change', (e) => {
+          this.handleOrderTypeChange(e.target.value);
+        });
+        
+        // Symbol change
+        document.getElementById('trade-symbol').addEventListener('change', () => {
+          this.updateCurrentPrice();
+        });
+        
+        // Risk calculation inputs
+        document.getElementById('risk-percent').addEventListener('input', () => {
+          this.updateRiskCalculator();
+        });
+        
+        document.getElementById('stop-loss-percent').addEventListener('input', () => {
+          this.updateRiskCalculator();
+        });
+        
+        // Close position
+        document.querySelector('#positions-table tbody').addEventListener('click', (e) => {
+          if (e.target.classList.contains('close-pos')) {
+            this.closePosition(parseInt(e.target.dataset.index));
+          }
+        });
+        
+        // Cancel order
+        document.querySelector('#orders-table tbody').addEventListener('click', (e) => {
+          if (e.target.classList.contains('cancel-order')) {
+            this.cancelOrder(parseInt(e.target.dataset.index));
+          }
+        });
+        
+        // Manage APIs button
+        document.getElementById('manage-apis-btn').addEventListener('click', () => {
+          this.showApiKeysModal();
+        });
+        
+        // Save API keys buttons
+        document.getElementById('save-binance-keys').addEventListener('click', () => {
+          this.saveApiKeys('binance');
+        });
+        
+        document.getElementById('save-coinbase-keys').addEventListener('click', () => {
+          this.saveApiKeys('coinbase');
+        });
+        
+        document.getElementById('save-kraken-keys').addEventListener('click', () => {
+          this.saveApiKeys('kraken');
+        });
+        
+        // Modal close
+        document.querySelector('.modal-close').addEventListener('click', () => {
+          document.getElementById('api-keys-modal').classList.remove('active');
+        });
+        
+        // 2FA toggle
+        document.getElementById('enable-2fa').addEventListener('change', (e) => {
+          document.getElementById('2fa-options').style.display = e.target.value === 'true' ? 'block' : 'none';
+        });
+        
+        // Margin toggle
+        document.getElementById('margin-toggle').addEventListener('click', (e) => {
+          this.toggleMarginTrading(e.target);
+        });
+        
+        // Close modal when clicking outside
+        window.addEventListener('click', (e) => {
+          if (e.target === document.getElementById('api-keys-modal')) {
+            document.getElementById('api-keys-modal').classList.remove('active');
+          }
+        });
+      }
+      
+      handleOrderTypeChange(orderType) {
+        const priceInput = document.getElementById('trade-price');
+        const advancedOptions = document.getElementById('advanced-options');
+        
+        if (orderType === 'market') {
+          priceInput.disabled = true;
+          priceInput.value = '0';
+          advancedOptions.style.display = 'none';
+        } else {
+          priceInput.disabled = false;
+          const currentSymbol = document.getElementById('trade-symbol').value;
+          const marketData = this.currentPrices[currentSymbol];
+          priceInput.value = marketData ? marketData.price.toFixed(2) : '0';
+          advancedOptions.style.display = 'block';
+        }
+        
+        // Show/hide specific options based on order type
+        const stopPrice = document.getElementById('stop-price');
+        const takeProfit = document.getElementById('take-profit');
+        const trailingStop = document.getElementById('trailing-stop');
+        
+        if (orderType === 'stop') {
+          stopPrice.style.display = 'block';
+          takeProfit.style.display = 'none';
+          trailingStop.style.display = 'none';
+        } else if (orderType === 'take_profit') {
+          stopPrice.style.display = 'none';
+          takeProfit.style.display = 'block';
+          trailingStop.style.display = 'none';
+        } else if (orderType === 'trailing_stop') {
+          stopPrice.style.display = 'none';
+          takeProfit.style.display = 'none';
+          trailingStop.style.display = 'block';
+        } else if (orderType === 'oco') {
+          stopPrice.style.display = 'block';
+          takeProfit.style.display = 'block';
+          trailingStop.style.display = 'none';
+        } else {
+          stopPrice.style.display = 'block';
+          takeProfit.style.display = 'block';
+          trailingStop.style.display = 'block';
+        }
+      }
+      
+      updateCurrentPrice() {
+        const symbol = document.getElementById('trade-symbol').value;
+        const marketData = this.currentPrices[symbol];
+        
+        if (marketData) {
+          document.getElementById('current-price').textContent = `$${marketData.price.toFixed(2)}`;
+          
+          // Update price input for limit orders
+          const orderType = document.getElementById('trade-type').value;
+          if (orderType !== 'market') {
+            document.getElementById('trade-price').value = marketData.price.toFixed(2);
+          }
+        } else {
+          document.getElementById('current-price').textContent = '--';
+        }
+        
+        // Update risk calculator
+        this.updateRiskCalculator();
+      }
+      
+      updateRiskCalculator() {
+        const riskPercent = parseFloat(document.getElementById('risk-percent').value) || 0;
+        const stopLossPercent = parseFloat(document.getElementById('stop-loss-percent').value) || 0;
+        const symbol = document.getElementById('trade-symbol').value;
+        const marketData = this.currentPrices[symbol];
+        
+        if (riskPercent > 0 && stopLossPercent > 0 && marketData) {
+          const riskAmount = (this.balance * riskPercent) / 100;
+          const price = marketData.price;
+          const stopDistance = price * (stopLossPercent / 100);
+          const positionSize = riskAmount / stopDistance;
+          
+          document.getElementById('position-size').textContent = positionSize.toFixed(4);
+          document.getElementById('risk-amount').textContent = riskAmount.toFixed(2);
+        }
+      }
+      
+      executeOrder(side) {
+        const symbol = document.getElementById('trade-symbol').value.trim();
+        const qty = parseFloat(document.getElementById('trade-qty').value);
+        const orderType = document.getElementById('trade-type').value;
+        const price = parseFloat(document.getElementById('trade-price').value) || 0;
+        
+        if (!symbol) {
+          this.showNotification('Please enter a symbol', 'error');
+          return;
+        }
+        
+        if (!qty || qty <= 0) {
+          this.showNotification('Please enter a valid quantity', 'error');
+          return;
+        }
+        
+        // Check risk limits
+        if (!this.checkRiskLimits(side, qty, price)) {
+          this.showNotification('Order exceeds risk limits', 'error');
+          return;
+        }
+        
+        // For demonstration, we'll simulate a paper trade
+        // In a real implementation, this would connect to exchange API
+        if (side === 'buy') {
+          this.placeAdvancedOrder(symbol, qty, orderType, price, 'buy');
+        } else {
+          this.placeAdvancedOrder(symbol, qty, orderType, price, 'sell');
+        }
+      }
+      
+      checkRiskLimits(side, qty, price) {
+        const cost = qty * price;
+        const riskPercent = (cost / this.balance) * 100;
+        
+        // Check max risk per trade
+        if (riskPercent > this.riskSettings.maxRiskPerTrade) {
+          return false;
+        }
+        
+        // Additional risk checks would go here
+        // (daily loss limits, margin requirements, etc.)
+        
+        return true;
+      }
+      
+      placeAdvancedOrder(symbol, qty, orderType, price, side) {
+        const marketData = this.currentPrices[symbol];
+        const currentPrice = marketData ? marketData.price : price;
+        
+        // Create order object
+        const order = {
+          id: this.generateOrderId(),
+          symbol,
+          qty,
+          orderType,
+          side,
+          price: orderType === 'market' ? currentPrice : price,
+          status: 'open',
+          timestamp: new Date().toISOString(),
+          stopPrice: document.getElementById('stop-price').value || null,
+          takeProfit: document.getElementById('take-profit').value || null,
+          trailingStop: document.getElementById('trailing-stop').value || null
+        };
+        
+        // Add to orders list
+        this.orders.push(order);
+        localStorage.setItem('orders', JSON.stringify(this.orders));
+        
+        // For market orders, execute immediately
+        if (orderType === 'market') {
+          this.executeMarketOrder(order);
+        }
+        
+        this.renderOrders();
+        this.showNotification(`${side.toUpperCase()} ${orderType} order placed for ${qty} ${symbol}`, 'success');
+      }
+      
+      executeMarketOrder(order) {
+        const { symbol, qty, side, price } = order;
+        const cost = qty * price;
+        
+        if (side === 'buy') {
+          if (cost > this.balance) {
+            this.showNotification('Insufficient balance for this trade', 'error');
+            return;
+          }
+          
+          this.balance -= cost;
+          this.positions.push({
+            symbol,
+            qty,
+            entry: price,
+            side: 'buy',
+            timestamp: new Date().toISOString()
+          });
+        } else {
+          // Selling from existing long position
+          const longPosition = this.positions.find(p => 
+            p.symbol === symbol && p.side === 'buy'
+          );
+          
+          if (longPosition && longPosition.qty >= qty) {
+            const profit = (price - longPosition.entry) * qty;
+            this.balance += qty * price;
+            
+            // Add to trade history
+            this.tradeHistory.push({
+              symbol,
+              qty,
+              side: 'sell',
+              price,
+              pnl: profit,
+              timestamp: new Date().toISOString()
+            });
+            
+            if (longPosition.qty === qty) {
+              // Close entire position
+              this.positions = this.positions.filter(p => p !== longPosition);
+            } else {
+              // Reduce position
+              longPosition.qty -= qty;
+            }
+          } else {
+            // Opening a short position (simplified)
+            this.showNotification('Short selling requires margin trading', 'warning');
+            return;
+          }
+        }
+        
+        // Update order status
+        order.status = 'filled';
+        order.filledAt = new Date().toISOString();
+        
+        // Save to localStorage
+        localStorage.setItem('positions', JSON.stringify(this.positions));
+        localStorage.setItem('orders', JSON.stringify(this.orders));
+        localStorage.setItem('tradeHistory', JSON.stringify(this.tradeHistory));
+        localStorage.setItem('balance', this.balance.toString());
+        
+        this.renderPositions();
+        this.renderOrders();
+        this.renderTradeHistory();
+        this.updateWalletDisplay();
+        this.calculatePerformance();
+      }
+      
+      closePosition(index) {
+        if (index >= 0 && index < this.positions.length) {
+          const position = this.positions[index];
+          const currentPrice = this.currentPrices[position.symbol] ? 
+            this.currentPrices[position.symbol].price : position.entry;
+          const profit = (currentPrice - position.entry) * position.qty * (position.side === 'buy' ? 1 : -1);
+          
+          this.balance += position.qty * currentPrice;
+          
+          // Add to trade history
+          this.tradeHistory.push({
+            symbol: position.symbol,
+            qty: position.qty,
+            side: 'sell',
+            price: currentPrice,
+            pnl: profit,
+            timestamp: new Date().toISOString()
+          });
+          
+          this.positions.splice(index, 1);
+          
+          localStorage.setItem('positions', JSON.stringify(this.positions));
+          localStorage.setItem('tradeHistory', JSON.stringify(this.tradeHistory));
+          localStorage.setItem('balance', this.balance.toString());
+          
+          this.renderPositions();
+          this.renderTradeHistory();
+          this.updateWalletDisplay();
+          this.calculatePerformance();
+          this.showNotification(`Position closed: ${position.symbol} - P&L: $${profit.toFixed(2)}`, 'success');
+        }
+      }
+      
+      cancelOrder(index) {
+        if (index >= 0 && index < this.orders.length) {
+          const order = this.orders[index];
+          this.orders.splice(index, 1);
+          localStorage.setItem('orders', JSON.stringify(this.orders));
+          this.renderOrders();
+          this.showNotification(`Order cancelled: ${order.symbol}`, 'success');
+        }
+      }
+      
+      toggleMarginTrading(button) {
+        this.riskSettings.useMargin = !this.riskSettings.useMargin;
+        localStorage.setItem('riskSettings', JSON.stringify(this.riskSettings));
+        
+        button.innerHTML = this.riskSettings.useMargin ? 
+          '<i class="fas fa-exchange-alt"></i> Margin: On' : 
+          '<i class="fas fa-exchange-alt"></i> Margin: Off';
+        
+        button.className = this.riskSettings.useMargin ? 
+          'btn btn-purple btn-sm' : 'btn btn-secondary btn-sm';
+        
+        this.showNotification(
+          this.riskSettings.useMargin ? 'Margin trading enabled' : 'Margin trading disabled',
+          'success'
+        );
+      }
+      
+      showApiKeysModal() {
+        // Load existing API keys if available
+        this.loadApiKeys();
+        document.getElementById('api-keys-modal').classList.add('active');
+      }
+      
+      loadApiKeys() {
+        // Load saved API keys into the form
+        if (this.apiKeys.binance) {
+          document.getElementById('binance-api-key').value = this.apiKeys.binance.apiKey || '';
+          // Note: In a real app, we wouldn't pre-fill secret keys for security
+        }
+        
+        if (this.apiKeys.coinbase) {
+          document.getElementById('coinbase-api-key').value = this.apiKeys.coinbase.apiKey || '';
+        }
+        
+        if (this.apiKeys.kraken) {
+          document.getElementById('kraken-api-key').value = this.apiKeys.kraken.apiKey || '';
+        }
+      }
+      
+      saveApiKeys(exchange) {
+        const apiKey = document.getElementById(`${exchange}-api-key`).value;
+        const secretKey = document.getElementById(`${exchange}-secret-key`).value;
+        
+        if (!apiKey || !secretKey) {
+          this.showNotification('Please enter both API key and secret key', 'error');
+          return;
+        }
+        
+        // Encrypt and save API keys (simplified - in production use proper encryption)
+        this.apiKeys[exchange] = {
+          apiKey: apiKey,
+          secretKey: CryptoJS.AES.encrypt(secretKey, 'tradevision-secure-key').toString(),
+          timestamp: new Date().toISOString()
+        };
+        
+        localStorage.setItem('apiKeys', JSON.stringify(this.apiKeys));
+        
+        this.showNotification(`${exchange.charAt(0).toUpperCase() + exchange.slice(1)} API keys saved successfully`, 'success');
+        
+        // Reconnect to exchange if applicable
+        if (exchange === 'coinbase') {
+          this.connectToCoinbase();
+        } else if (exchange === 'kraken') {
+          this.connectToKraken();
+        }
+      }
+      
+      renderAllData() {
+        this.renderPositions();
+        this.renderOrders();
+        this.renderTradeHistory();
+        this.updateWalletDisplay();
+        this.updateMarketOverview();
+      }
+      
+      renderPositions() {
+        const tbody = document.querySelector('#positions-table tbody');
+        tbody.innerHTML = '';
+        
+        if (this.positions.length === 0) {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-light);">No open positions</td>`;
+          tbody.appendChild(tr);
+          return;
+        }
+        
+        this.positions.forEach((p, i) => {
+          const current = this.currentPrices[p.symbol] ? this.currentPrices[p.symbol].price : p.entry;
+          const pl = (current - p.entry) * p.qty * (p.side === 'buy' ? 1 : -1);
+          const plPercent = ((current - p.entry) / p.entry) * 100 * (p.side === 'buy' ? 1 : -1);
+          
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${p.symbol}</td>
+            <td><span class="${p.side === 'buy' ? 'profit' : 'loss'}">${p.side.toUpperCase()}</span></td>
+            <td>${p.qty}</td>
+            <td>$${p.entry.toFixed(2)}</td>
+            <td>$${current.toFixed(2)}</td>
+            <td class="${pl >= 0 ? 'profit' : 'loss'}">$${pl.toFixed(2)} (${plPercent.toFixed(2)}%)</td>
+            <td><button class="close-pos" data-index="${i}">Close</button></td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+      
+      renderOrders() {
+        const tbody = document.querySelector('#orders-table tbody');
+        tbody.innerHTML = '';
+        
+        if (this.orders.length === 0) {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-light);">No active orders</td>`;
+          tbody.appendChild(tr);
+          return;
+        }
+        
+        this.orders.filter(order => order.status === 'open').forEach((order, i) => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${order.symbol}</td>
+            <td>${order.orderType}</td>
+            <td><span class="${order.side === 'buy' ? 'profit' : 'loss'}">${order.side.toUpperCase()}</span></td>
+            <td>${order.qty}</td>
+            <td>$${order.price.toFixed(2)}</td>
+            <td>${order.status}</td>
+            <td><button class="cancel-order btn-danger btn-sm" data-index="${i}">Cancel</button></td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+      
+      renderTradeHistory() {
+        const tbody = document.querySelector('#history-table tbody');
+        tbody.innerHTML = '';
+        
+        if (this.tradeHistory.length === 0) {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-light);">No trade history</td>`;
+          tbody.appendChild(tr);
+          return;
+        }
+        
+        // Show last 10 trades
+        const recentTrades = this.tradeHistory.slice(-10).reverse();
+        
+        recentTrades.forEach(trade => {
+          const date = new Date(trade.timestamp).toLocaleDateString();
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${date}</td>
+            <td>${trade.symbol}</td>
+            <td><span class="${trade.side === 'buy' ? 'profit' : 'loss'}">${trade.side.toUpperCase()}</span></td>
+            <td>${trade.qty}</td>
+            <td>$${trade.price.toFixed(2)}</td>
+            <td class="${trade.pnl >= 0 ? 'profit' : 'loss'}">$${trade.pnl.toFixed(2)}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+      
+      calculatePerformance() {
+        if (this.tradeHistory.length === 0) return;
+        
+        const winningTrades = this.tradeHistory.filter(t => t.pnl > 0);
+        const losingTrades = this.tradeHistory.filter(t => t.pnl < 0);
+        
+        const totalReturn = ((this.balance - 100000) / 100000) * 100;
+        const winRate = (winningTrades.length / this.tradeHistory.length) * 100;
+        const avgWin = winningTrades.length > 0 ? 
+          winningTrades.reduce((sum, t) => sum + t.pnl, 0) / winningTrades.length : 0;
+        const avgLoss = losingTrades.length > 0 ? 
+          losingTrades.reduce((sum, t) => sum + Math.abs(t.pnl), 0) / losingTrades.length : 0;
+        const profitFactor = losingTrades.length > 0 ? 
+          (winningTrades.reduce((sum, t) => sum + t.pnl, 0) / losingTrades.reduce((sum, t) => sum + Math.abs(t.pnl), 0)) : 
+          winningTrades.length > 0 ? Infinity : 0;
+        
+        // Update performance stats
+        document.getElementById('total-return').textContent = `${totalReturn.toFixed(2)}%`;
+        document.getElementById('win-rate').textContent = `${winRate.toFixed(1)}%`;
+        document.getElementById('avg-win').textContent = `$${avgWin.toFixed(2)}`;
+        document.getElementById('avg-loss').textContent = `$${avgLoss.toFixed(2)}`;
+        document.getElementById('profit-factor').textContent = profitFactor.toFixed(2);
+        
+        // Update performance chart
+        this.updatePerformanceChart();
+      }
+      
+      updatePerformanceChart() {
+        const ctx = document.getElementById('performance-chart').getContext('2d');
+        
+        // Simple equity curve for demonstration
+        const equityData = [];
+        let equity = 100000;
+        
+        for (let i = 0; i < 30; i++) {
+          // Simulate random daily P&L
+          const dailyChange = (Math.random() - 0.45) * 0.02 * equity;
+          equity += dailyChange;
+          equityData.push(equity);
+        }
+        
+        // Destroy existing chart if it exists
+        if (this.performanceChart) {
+          this.performanceChart.destroy();
+        }
+        
+        this.performanceChart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: Array.from({length: 30}, (_, i) => `Day ${i+1}`),
+            datasets: [{
+              label: 'Portfolio Value',
+              data: equityData,
+              borderColor: '#2962ff',
+              backgroundColor: 'rgba(41, 98, 255, 0.1)',
+              borderWidth: 2,
+              fill: true,
+              tension: 0.1
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: false
+              }
+            },
+            scales: {
+              x: {
+                grid: {
+                  color: 'rgba(255,255,255,0.1)'
+                }
+              },
+              y: {
+                grid: {
+                  color: 'rgba(255,255,255,0.1)'
+                }
+              }
+            }
+          }
+        });
+      }
+      
+      updateWalletDisplay() {
+        document.getElementById('wallet-balance').textContent = `$${this.balance.toFixed(2)}`;
+        
+        // Calculate today's change (simplified)
+        const initialBalance = 100000;
+        const change = ((this.balance - initialBalance) / initialBalance) * 100;
+        const changeElement = document.getElementById('wallet-change');
+        
+        changeElement.textContent = `${change >= 0 ? '+' : ''}${change.toFixed(2)}% All Time`;
+        changeElement.className = `balance-change ${change >= 0 ? 'positive' : 'negative'}`;
+      }
+      
+      showNotification(message, type = 'success') {
+        const notification = document.getElementById('notification');
+        const icon = notification.querySelector('i');
+        const title = notification.querySelector('.notification-title');
+        const msg = notification.querySelector('.notification-message');
+        
+        notification.className = `notification ${type}`;
+        title.textContent = type === 'success' ? 'Success' : 
+                           type === 'error' ? 'Error' : 'Warning';
+        msg.textContent = message;
+        icon.className = type === 'success' ? 'fas fa-check-circle' : 
+                        type === 'error' ? 'fas fa-exclamation-circle' : 'fas fa-exclamation-triangle';
+        
+        notification.classList.add('show');
+        
+        setTimeout(() => {
+          notification.classList.remove('show');
+        }, 5000);
+      }
+      
+      generateOrderId() {
+        return 'ORD_' + Math.random().toString(36).substr(2, 9).toUpperCase();
+      }
+    }
+
     // Theme Management
     const themeToggle = document.getElementById('theme-toggle');
     const body = document.body;
@@ -691,365 +2105,9 @@
       themeIcon.classList.replace('fa-moon', 'fa-sun');
     }
 
-    // Trading Platform Class
-    class TradingPlatform {
-      constructor() {
-        this.ws = null;
-        this.isConnected = false;
-        this.positions = JSON.parse(localStorage.getItem('positions')) || [];
-        this.balance = parseFloat(localStorage.getItem('balance')) || 100000;
-        this.currentPrices = {};
-        this.init();
-      }
-      
-      init() {
-        this.setupEventListeners();
-        this.connectToBinance();
-        this.renderPositions();
-        this.updateWalletDisplay();
-        this.loadMarketData();
-      }
-      
-      connectToBinance() {
-        try {
-          // Connect to Binance WebSocket for real-time data
-          this.ws = new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@ticker');
-          
-          this.ws.onopen = () => {
-            this.isConnected = true;
-            this.updateConnectionStatus(true, 'Connected to Binance');
-          };
-          
-          this.ws.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            this.handleMarketData(data);
-          };
-          
-          this.ws.onerror = (error) => {
-            console.error('WebSocket error:', error);
-            this.updateConnectionStatus(false, 'Connection error');
-          };
-          
-          this.ws.onclose = () => {
-            this.isConnected = false;
-            this.updateConnectionStatus(false, 'Disconnected');
-            // Attempt to reconnect after 5 seconds
-            setTimeout(() => this.connectToBinance(), 5000);
-          };
-        } catch (error) {
-          console.error('Failed to connect to Binance:', error);
-          this.updateConnectionStatus(false, 'Connection failed');
-        }
-      }
-      
-      handleMarketData(data) {
-        // Update current price display
-        const symbol = data.s;
-        const price = parseFloat(data.c);
-        const change = parseFloat(data.P);
-        
-        this.currentPrices[symbol] = price;
-        
-        // Update UI if this is the selected symbol
-        const currentSymbol = document.getElementById('trade-symbol').value.toUpperCase();
-        if (symbol === currentSymbol) {
-          document.getElementById('current-price').textContent = `$${price.toFixed(2)}`;
-          
-          const changeElement = document.getElementById('price-change');
-          changeElement.textContent = `${change > 0 ? '+' : ''}${change.toFixed(2)}%`;
-          changeElement.className = `price-change ${change >= 0 ? 'positive' : 'negative'}`;
-          
-          // Update price input for limit orders
-          const orderType = document.getElementById('trade-type').value;
-          if (orderType === 'Limit') {
-            document.getElementById('trade-price').value = price.toFixed(2);
-          }
-        }
-        
-        // Update market overview
-        this.updateMarketOverview();
-        
-        // Update positions with current prices
-        this.renderPositions();
-      }
-      
-      updateMarketOverview() {
-        const marketList = document.getElementById('market-list');
-        const popularSymbols = ['BTCUSDT', 'ETHUSDT', 'ADAUSDT', 'DOTUSDT', 'LINKUSDT'];
-        
-        marketList.innerHTML = '';
-        
-        popularSymbols.forEach(symbol => {
-          const price = this.currentPrices[symbol] || (Math.random() * 100 + 10).toFixed(2);
-          const change = (Math.random() * 10 - 5).toFixed(2);
-          
-          const listItem = document.createElement('li');
-          listItem.className = 'market-item';
-          listItem.innerHTML = `
-            <span class="symbol">${symbol}</span>
-            <span class="price">$${parseFloat(price).toFixed(2)}</span>
-            <span class="price-change ${parseFloat(change) >= 0 ? 'positive' : 'negative'}">
-              ${parseFloat(change) >= 0 ? '+' : ''}${change}%
-            </span>
-          `;
-          marketList.appendChild(listItem);
-        });
-      }
-      
-      setupEventListeners() {
-        // Buy button - redirects to Binance for real trading
-        document.getElementById('buy-btn').addEventListener('click', () => {
-          this.executeOrder('buy');
-        });
-        
-        // Sell button - redirects to Binance for real trading
-        document.getElementById('sell-btn').addEventListener('click', () => {
-          this.executeOrder('sell');
-        });
-        
-        // Order type change
-        document.getElementById('trade-type').addEventListener('change', (e) => {
-          const priceInput = document.getElementById('trade-price');
-          if (e.target.value === 'Market') {
-            priceInput.disabled = true;
-            priceInput.value = '0';
-          } else {
-            priceInput.disabled = false;
-            const currentSymbol = document.getElementById('trade-symbol').value.toUpperCase();
-            priceInput.value = this.currentPrices[currentSymbol] ? this.currentPrices[currentSymbol].toFixed(2) : '0';
-          }
-        });
-        
-        // Symbol change
-        document.getElementById('trade-symbol').addEventListener('change', () => {
-          this.updateCurrentPrice();
-        });
-        
-        // Close position
-        document.querySelector('#positions-table tbody').addEventListener('click', (e) => {
-          if (e.target.classList.contains('close-pos')) {
-            this.closePosition(parseInt(e.target.dataset.index));
-          }
-        });
-      }
-      
-      updateCurrentPrice() {
-        const symbol = document.getElementById('trade-symbol').value.toUpperCase();
-        const price = this.currentPrices[symbol];
-        
-        if (price) {
-          document.getElementById('current-price').textContent = `$${price.toFixed(2)}`;
-          
-          // Update price input for limit orders
-          const orderType = document.getElementById('trade-type').value;
-          if (orderType !== 'Market') {
-            document.getElementById('trade-price').value = price.toFixed(2);
-          }
-        } else {
-          document.getElementById('current-price').textContent = '--';
-        }
-      }
-      
-      executeOrder(side) {
-        const symbol = document.getElementById('trade-symbol').value.trim().toUpperCase();
-        const qty = parseFloat(document.getElementById('trade-qty').value);
-        const orderType = document.getElementById('trade-type').value;
-        
-        if (!symbol) {
-          this.showNotification('Please enter a symbol', 'error');
-          return;
-        }
-        
-        if (!qty || qty <= 0) {
-          this.showNotification('Please enter a valid quantity', 'error');
-          return;
-        }
-        
-        // For demonstration, we'll simulate a paper trade
-        // In a real implementation, this would connect to Binance API
-        if (side === 'buy') {
-          this.placePaperBuyOrder(symbol, qty);
-        } else {
-          this.placePaperSellOrder(symbol, qty);
-        }
-        
-        // For real trading, redirect to Binance
-        this.redirectToBinance(symbol, side);
-      }
-      
-      placePaperBuyOrder(symbol, qty) {
-        const price = this.currentPrices[symbol] || (Math.random() * 100 + 10);
-        const cost = qty * price;
-        
-        if (cost > this.balance) {
-          this.showNotification('Insufficient balance for this trade', 'error');
-          return;
-        }
-        
-        this.balance -= cost;
-        this.positions.push({
-          symbol,
-          qty,
-          entry: price,
-          side: 'buy',
-          timestamp: new Date().toISOString()
-        });
-        
-        localStorage.setItem('positions', JSON.stringify(this.positions));
-        localStorage.setItem('balance', this.balance.toString());
-        
-        this.renderPositions();
-        this.updateWalletDisplay();
-        this.showNotification(`Paper BUY order executed: ${qty} ${symbol} @ $${price.toFixed(2)}`, 'success');
-      }
-      
-      placePaperSellOrder(symbol, qty) {
-        const price = this.currentPrices[symbol] || (Math.random() * 100 + 10);
-        
-        // Check if we have a long position to sell
-        const longPosition = this.positions.find(p => 
-          p.symbol === symbol && p.side === 'buy'
-        );
-        
-        if (longPosition && longPosition.qty >= qty) {
-          // Selling from existing long position
-          const profit = (price - longPosition.entry) * qty;
-          this.balance += qty * price;
-          
-          if (longPosition.qty === qty) {
-            // Close entire position
-            this.positions = this.positions.filter(p => p !== longPosition);
-          } else {
-            // Reduce position
-            longPosition.qty -= qty;
-          }
-        } else {
-          // Opening a short position (not implemented in this demo)
-          this.showNotification('Short selling not implemented in demo', 'error');
-          return;
-        }
-        
-        localStorage.setItem('positions', JSON.stringify(this.positions));
-        localStorage.setItem('balance', this.balance.toString());
-        
-        this.renderPositions();
-        this.updateWalletDisplay();
-        this.showNotification(`Paper SELL order executed: ${qty} ${symbol} @ $${price.toFixed(2)}`, 'success');
-      }
-      
-      closePosition(index) {
-        if (index >= 0 && index < this.positions.length) {
-          const position = this.positions[index];
-          const currentPrice = this.currentPrices[position.symbol] || position.entry;
-          const profit = (currentPrice - position.entry) * position.qty * (position.side === 'buy' ? 1 : -1);
-          
-          this.balance += position.qty * currentPrice;
-          this.positions.splice(index, 1);
-          
-          localStorage.setItem('positions', JSON.stringify(this.positions));
-          localStorage.setItem('balance', this.balance.toString());
-          
-          this.renderPositions();
-          this.updateWalletDisplay();
-          this.showNotification(`Position closed: ${position.symbol} - P&L: $${profit.toFixed(2)}`, 'success');
-        }
-      }
-      
-      redirectToBinance(symbol, side) {
-        // Redirect to Binance for actual trading
-        const binanceUrl = `https://www.binance.com/en/trade/${symbol}?type=spot`;
-        window.open(binanceUrl, '_blank');
-        
-        // Show message about redirection
-        setTimeout(() => {
-          this.showNotification(`Redirecting to Binance for ${side.toUpperCase()} order...`, 'success');
-        }, 500);
-      }
-      
-      renderPositions() {
-        const tbody = document.querySelector('#positions-table tbody');
-        tbody.innerHTML = '';
-        
-        if (this.positions.length === 0) {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `<td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-light);">No open positions</td>`;
-          tbody.appendChild(tr);
-          return;
-        }
-        
-        this.positions.forEach((p, i) => {
-          const current = this.currentPrices[p.symbol] || p.entry;
-          const pl = (current - p.entry) * p.qty * (p.side === 'buy' ? 1 : -1);
-          const plPercent = ((current - p.entry) / p.entry) * 100 * (p.side === 'buy' ? 1 : -1);
-          
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td>${p.symbol}</td>
-            <td><span class="${p.side === 'buy' ? 'profit' : 'loss'}">${p.side.toUpperCase()}</span></td>
-            <td>${p.qty}</td>
-            <td>$${p.entry.toFixed(2)}</td>
-            <td>$${current.toFixed(2)}</td>
-            <td class="${pl >= 0 ? 'profit' : 'loss'}">$${pl.toFixed(2)} (${plPercent.toFixed(2)}%)</td>
-            <td><button class="close-pos" data-index="${i}">Close</button></td>
-          `;
-          tbody.appendChild(tr);
-        });
-      }
-      
-      updateWalletDisplay() {
-        document.getElementById('wallet-balance').textContent = `$${this.balance.toFixed(2)}`;
-        
-        // Calculate today's change (simplified)
-        const initialBalance = 100000;
-        const change = ((this.balance - initialBalance) / initialBalance) * 100;
-        const changeElement = document.getElementById('wallet-change');
-        
-        changeElement.textContent = `${change >= 0 ? '+' : ''}${change.toFixed(2)}% Today`;
-        changeElement.className = `balance-change ${change >= 0 ? 'positive' : 'negative'}`;
-      }
-      
-      updateConnectionStatus(connected, message) {
-        const statusEl = document.getElementById('connection-status');
-        
-        if (connected) {
-          statusEl.className = 'status connected';
-          statusEl.innerHTML = `<i class="fas fa-circle"></i> <span>${message}</span>`;
-        } else {
-          statusEl.className = 'status disconnected';
-          statusEl.innerHTML = `<i class="fas fa-circle"></i> <span>${message}</span>`;
-        }
-      }
-      
-      showNotification(message, type = 'success') {
-        const notification = document.getElementById('notification');
-        const icon = notification.querySelector('i');
-        const title = notification.querySelector('.notification-title');
-        const msg = notification.querySelector('.notification-message');
-        
-        notification.className = `notification ${type}`;
-        title.textContent = type === 'success' ? 'Order Executed' : 'Error';
-        msg.textContent = message;
-        icon.className = type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
-        
-        notification.classList.add('show');
-        
-        setTimeout(() => {
-          notification.classList.remove('show');
-        }, 5000);
-      }
-      
-      loadMarketData() {
-        // Simulate loading market data
-        setTimeout(() => {
-          this.updateMarketOverview();
-          this.updateCurrentPrice();
-        }, 1000);
-      }
-    }
-
-    // Initialize the trading platform when the page loads
+    // Initialize the advanced trading platform when the page loads
     document.addEventListener('DOMContentLoaded', () => {
-      const tradingPlatform = new TradingPlatform();
+      const tradingPlatform = new AdvancedTradingPlatform();
     });
   </script>
 </body>
