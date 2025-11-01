@@ -1,8 +1,7 @@
-// api/gemini.js — SERVER-SIDE ONLY (Never exposed to users)
-const GEMINI_KEY = 'AIzaSyA7L2Fv1TUNwMPDwdwW1JqjaCMNiEXb0To'; // Your key — safe here
+// api/gemini.js
+const GEMINI_KEY = 'AIzaSyA7L2Fv1TUNwMPDwdwW1JqjaCMNiEXb0To';
 
 export default async function handler(req, res) {
-  // Only allow POST
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -23,25 +22,22 @@ export default async function handler(req, res) {
         },
         body: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: {
-            temperature: 0.7,
-            maxOutputTokens: 400
-          }
+          generationConfig: { temperature: 0.7, maxOutputTokens: 400 }
         })
       }
     );
 
+    const data = await response.json();
+
     if (!response.ok) {
-      const err = await response.text();
-      throw new Error(`Gemini API error: ${response.status} - ${err}`);
+      throw new Error(data.error?.message || 'Gemini API error');
     }
 
-    const data = await response.json();
-    const insight = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response from AI';
+    const insight = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response';
 
     res.status(200).json({ insight });
   } catch (error) {
-    console.error('Gemini Proxy Error:', error);
-    res.status(500).json({ error: 'AI analysis failed' });
+    console.error('Gemini error:', error);
+    res.status(500).json({ error: error.message });
   }
 }
