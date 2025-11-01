@@ -1505,9 +1505,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       connectKline(currentInterval);
     }
 
-// ───── TRADEVISION AI ─────
-const GEMINI_API_KEY = 'AIzaSyA7L2Fv1TUNwMPDwdwW1JqjaCMNiEXb0To';
-
 async function tradeVisionAI() {
   if (!chart || priceData.length < 10) {
     alert('Load a chart first!');
@@ -1517,7 +1514,7 @@ async function tradeVisionAI() {
   const btn = document.getElementById('tradevision-ai-btn');
   const output = document.getElementById('ai-insights-output');
   btn.disabled = true;
-  btn.innerHTML = '🔄 AI Analyzing';
+  btn.innerHTML = 'AI Analyzing';
   output.style.display = 'none';
 
   try {
@@ -1527,34 +1524,31 @@ async function tradeVisionAI() {
       change: ((d.close - d.open) / d.open * 100).toFixed(2) + '%'
     }));
 
-    const prompt = `Analyze ${currentSymbol} (${currentInterval}):\n${JSON.stringify(recent.slice(0,5))}\n\nTrend? Pattern? Risk? Suggestion?\n\nProvide a concise, actionable report (under 200 words):\n- **Trend**: Bullish, bearish, or sideways?\n- **Key Patterns**: Candlestick formations, support/resistance?\n- **Indicators**: RSI/MACD vibes? (Keep simple)\n- **Risk Level**: Low/medium/high? Why?\n- **Suggestion**: Buy/hold/sell? Stop-loss tip?\n\nKeep it friendly and beginner-friendly. End with: "Trade smart—DYOR!"\n\nFormat as Markdown.`;
+    const prompt = `Analyze ${currentSymbol} (${currentInterval}):\n${JSON.stringify(recent.slice(0,5))}\n\nProvide a concise report (under 200 words):\n- Trend\n- Key Patterns\n- Risk Level\n- Suggestion\nEnd with: "Trade smart—DYOR!"`;
 
-    const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent',{
+    const res = await fetch('https://your-vercel-app.vercel.app/api/gemini', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-goog-api-key': GEMINI_API_KEY
-      },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.7, maxOutputTokens: 400 }
-      })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt })
     });
 
-    if (!res.ok) throw new Error(`API ${res.status}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
     const data = await res.json();
-    const insight = data.candidates[0].content.parts[0].text;
+    const insight = data.insight;
 
-    output.innerHTML = `<strong>🤖 TradeVision AI Report for ${currentSymbol} (${currentInterval})</strong><br>${insight}`;
+    output.innerHTML = `
+      <strong>TradeVision AI Report for ${currentSymbol} (${currentInterval})</strong><br>
+      <div style="margin-top:0.5rem; white-space:pre-wrap; font-size:0.9rem;">${insight}</div>
+    `;
     output.style.display = 'block';
 
   } catch (error) {
-    output.innerHTML = `<span style="color:red;">🤖 AI Analysis Failed ${error.message}</span>`;
+    output.innerHTML = `<span style="color:red;">AI Failed: ${error.message}</span>`;
     output.style.display = 'block';
   } finally {
     btn.disabled = false;
-    btn.innerHTML = '🤖 TradeVision AI – Analyze Chart';
+    btn.innerHTML = 'TradeVision AI – Analyze Chart';
   }
 }
     // ───── CHART INITIALISATION ─────
