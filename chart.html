@@ -1029,20 +1029,38 @@
   <!-- End Google Tag Manager (noscript) -->
 
   <header class="header">
-    <div class="container flex-between">
-      <button class="icon-btn mobile-menu-btn" id="mobile-left-toggle"><i class="fas fa-tools"></i></button>
-      <div class="logo"><a href="index.html"><i class="fas fa-chart-line"></i><span>TradeVision</span></a></div>
-      <div class="search-bar">
-        <input type="text" id="symbol-search" placeholder="BTC, ETH, AAPL...">
-        <button id="search-go"><i class="fas fa-search"></i></button>
-        <div id="search-suggestions" class="search-suggestions" style="display: none;"></div>
-      </div>
-      <div class="header-actions">
-        <button id="mobile-right-toggle" class="icon-btn"><i class="fas fa-info-circle"></i></button>
-        <button id="theme-toggle" class="icon-btn"><i class="fas fa-moon"></i></button>
-      </div>
+  <div class="container flex-between">
+    <!-- Mobile Menu Button (visible only on mobile) -->
+    <button class="icon-btn mobile-menu-btn" id="mobile-left-toggle"><i class="fas fa-tools"></i></button>
+
+    <!-- Logo -->
+    <div class="logo"><a href="index.html"><i class="fas fa-chart-line"></i><span>TradeVision</span></a></div>
+
+    <!-- Desktop Navigation Links (hidden on mobile) -->
+    <nav class="nav-links">
+      <a href="index.html">Charts</a>
+      <a href="heatmap.html">Heatmap</a>
+      <a href="screener.html">Screener</a>
+      <a href="alerts.html">Alerts</a>
+      <a href="about.html">About</a>
+    </nav>
+
+    <!-- Search Bar -->
+    <div class="search-bar">
+      <input type="text" id="symbol-search" placeholder="BTC, ETH, AAPL...">
+      <button id="search-go"><i class="fas fa-search"></i></button>
+      <div id="search-suggestions" class="search-suggestions" style="display: none;"></div>
     </div>
-  </header>
+
+    <!-- Right Header Actions -->
+    <div class="header-actions">
+      <!-- Mobile Right Sidebar Toggle -->
+      <button id="mobile-right-toggle" class="icon-btn"><i class="fas fa-info-circle"></i></button>
+      <!-- Theme Toggle -->
+      <button id="theme-toggle" class="icon-btn"><i class="fas fa-moon"></i></button>
+    </div>
+  </div>
+</header>
 
   <div class="chart-layout">
     <!-- LEFT TOOLS -->
@@ -1950,28 +1968,32 @@
     }
 
     function connectTicker() {
-      if (tickerWs) tickerWs.close();
-      tickerWs = new WebSocket(`wss://stream.binance.com:9443/ws/${currentSymbol.toLowerCase()}@ticker`);
-      tickerWs.onmessage = (event) => {
-        const msg = JSON.parse(event.data);
-        const price = parseFloat(msg.c);
-        const change = ((price - lastPrice) / lastPrice * 100).toFixed(2);
-        if (lastPrice === 0) {
-          document.getElementById('current-price').textContent = price.toFixed(2);
-        } else {
-          const priceEl = document.getElementById('current-price');
-          const changeEl = document.getElementById('price-change');
-          priceEl.textContent = price.toFixed(2);
-          changeEl.textContent = (change >= 0 ? '+' : '') + change + '%';
-          changeEl.className = change >= 0 ? 'change' : 'change negative';
-          priceEl.classList.add(change >= 0 ? 'flash-green' : 'flash-red');
-          setTimeout(() => priceEl.classList.remove('flash-green', 'flash-red'), 800);
-        }
-        lastPrice = price;
-      };
-      tickerWs.onerror = () => console.error('Ticker WS error');
-    }
+  if (tickerWs) tickerWs.close();
+  tickerWs = new WebSocket(`wss://stream.binance.com:9443/ws/${currentSymbol.toLowerCase()}@ticker`);
+  
+  tickerWs.onmessage = (event) => {
+    const msg = JSON.parse(event.data);
+    
+    const price = parseFloat(msg.c);
+    const change24h = parseFloat(msg.P);
 
+    const priceEl = document.getElementById('current-price');
+    const changeEl = document.getElementById('price-change');
+
+    priceEl.textContent = price.toFixed(2);
+    changeEl.textContent = (change24h >= 0 ? '+' : '') + change24h.toFixed(2) + '%';
+    changeEl.className = change24h >= 0 ? 'change' : 'change negative';
+
+    priceEl.classList.remove('flash-green', 'flash-red');
+    void priceEl.offsetWidth;
+    priceEl.classList.add(change24h >= 0 ? 'flash-green' : 'flash-red');
+    setTimeout(() => priceEl.classList.remove('flash-green', 'flash-red'), 800);
+
+    lastPrice = price;
+  };
+
+  tickerWs.onerror = () => console.error('Ticker WS error');
+}
     function initToolbars() {
       document.querySelectorAll('.timeframe-btn').forEach(btn => {
         btn.addEventListener('click', () => {
