@@ -23,6 +23,7 @@
       --border: #2d313e;
       --card: #1e222d;
       --card-hover: #252a38;
+      --accent-light: rgba(41, 98, 255, 0.1);
     }
     
     [data-theme="light"] {
@@ -39,6 +40,7 @@
       --border: #e2e8f0;
       --card: #ffffff;
       --card-hover: #f8f9fa;
+      --accent-light: rgba(41, 98, 255, 0.1);
     }
     
     *, *::before, *::after {
@@ -74,6 +76,12 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+    }
+    
+    .flex-center {
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     
     .header {
@@ -748,45 +756,121 @@
       color: rgba(255, 255, 255, 0.9);
     }
 
-    /* NEW: Chart Controls */
-    .chart-controls {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      z-index: 25;
-      display: flex;
-      gap: 5px;
-      background: var(--bg-light);
-      border-radius: 6px;
-      padding: 5px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-      border: 1px solid var(--border);
-    }
-    
-    .chart-control-btn {
-      background: var(--card);
-      border: 1px solid var(--border);
-      color: var(--text);
-      width: 32px;
-      height: 32px;
-      border-radius: 4px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s;
-    }
-    
-    .chart-control-btn:hover {
-      background: var(--card-hover);
-      color: var(--accent);
-    }
-    
-    .chart-control-btn.active {
-      background: var(--accent);
-      color: white;
-      border-color: var(--accent);
-    }
+ /* NEW: Chart Controls - Position on left side */
+/* FIX: Chart Controls - Remove white background and improve positioning */
+.chart-controls {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 25;
+  display: flex;
+  gap: 5px;
+  background: transparent !important; /* Remove white background */
+  border-radius: 6px;
+  padding: 5px;
+  box-shadow: none !important; /* Remove shadow that creates white effect */
+  border: none !important; /* Remove border */
+}
+
+.chart-control-btn {
+  background: var(--bg-light);
+  border: 1px solid var(--border);
+  color: var(--text);
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  opacity: 0.8; /* Make slightly transparent */
+}
+
+.chart-control-btn:hover {
+  background: var(--card-hover);
+  color: var(--accent);
+  opacity: 1;
+}
+
+/* Mobile fixes */
+@media (max-width: 992px) {
+  .chart-controls {
+    top: 5px;
+    left: 5px;
+    flex-direction: row;
+    background: transparent !important;
+  }
+  
+  .chart-control-btn {
+    width: 36px;
+    height: 36px;
+    background: rgba(30, 34, 45, 0.9); /* Semi-transparent dark background */
+    backdrop-filter: blur(5px); /* Glass effect */
+  }
+  
+  /* Ensure main chart scales are visible */
+  #main-chart {
+    height: 50%;
+  }
+  
+  /* Fix for Lightweight Charts scale positioning */
+  .tv-lightweight-charts .price-scale {
+    width: auto !important;
+    min-width: 50px !important;
+  }
+}
+
+@media (max-width: 576px) {
+  .chart-controls {
+    top: 5px;
+    left: 5px;
+    gap: 3px;
+  }
+  
+  .chart-control-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 0.8rem;
+    background: rgba(30, 34, 45, 0.85);
+  }
+  
+  /* Ensure chart containers have proper spacing */
+  #main-chart {
+    height: 50%;
+    padding: 0; /* Remove any padding that might cause issues */
+  }
+}
+  #volume-chart {
+    height: 15%;
+    min-height: 70px;
+  }
+  
+  #indicators-chart {
+    height: 35%;
+  }
+  
+  /* Improve scale text readability */
+  .tv-lightweight-charts .price-scale {
+    width: 55px !important;
+  }
+  
+  .tv-lightweight-charts .pane-legend {
+    font-size: 9px !important;
+    padding: 1px 3px !important;
+  }
+  
+  /* Ensure time scale is visible */
+  .tv-lightweight-charts .time-scale {
+    height: 25px !important;
+  }
+}
+
+/* Fullscreen mode adjustments */
+body.fullscreen-mode .chart-controls {
+  top: 15px;
+  left: 15px; /* Changed from right: 15px */
+}
     
     /* NEW: Fullscreen mode */
     body.fullscreen-mode {
@@ -1059,6 +1143,7 @@
       
       #volume-chart {
         height: 15%;
+        min-height: 80px;
       }
       
       #indicators-chart {
@@ -1163,6 +1248,11 @@
         color: white;
         border-color: var(--accent);
       }
+      
+      /* Fix chart scales on mobile */
+      .tv-lightweight-charts .pane-legend {
+        font-size: 10px !important;
+      }
     }
 
     /* Small mobile devices */
@@ -1220,32 +1310,30 @@
       .mobile-indicators-grid {
         grid-template-columns: 1fr;
       }
+      
+      /* Ensure charts have proper dimensions */
+      #main-chart {
+        height: 50%;
+      }
+      
+      #volume-chart {
+        height: 15%;
+        min-height: 70px;
+      }
+      
+      #indicators-chart {
+        height: 35%;
+      }
+      
+      /* Improve scale visibility on small screens */
+      .tv-lightweight-charts .pane-legend {
+        font-size: 9px !important;
+      }
     }
   </style>
-  <!-- Google Tag Manager -->
-  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-  })(window,document,'script','dataLayer','GTM-TSXGBB76');</script>
-  <!-- End Google Tag Manager -->
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-L7SHGV8S75"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-
-    gtag('config', 'G-L7SHGV8S75');
-  </script>
 </head>
 
 <body data-theme="dark">
-  <!-- Google Tag Manager (noscript) -->
-  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TSXGBB76"
-  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-  <!-- End Google Tag Manager (noscript) -->
-  
   <!-- Desktop Header -->
   <header class="header">
     <div class="container flex-between">
@@ -1536,7 +1624,7 @@
     // ───── GLOBALS ─────
     const urlParams = new URLSearchParams(location.search);
     let currentSymbol = (urlParams.get('symbol') || 'BTCUSDT').toUpperCase();
-    let chart, priceSeries, volumeSeries, indicatorsChart;
+    let chart, priceSeries, volumeSeries, indicatorsChart, volumeChart;
     let priceData = [];
     let klineWs, tickerWs;
     let currentInterval = '15m';
@@ -1911,6 +1999,8 @@
       const suggestionsContainer = document.getElementById('search-suggestions');
       const searchGo = document.getElementById('search-go');
 
+      if (!searchInput || !suggestionsContainer || !searchGo) return;
+
       searchInput.addEventListener('input', (e) => {
         const query = e.target.value.trim().toUpperCase();
         
@@ -1984,6 +2074,8 @@
       const searchInput = document.getElementById('mobile-symbol-search');
       const suggestionsContainer = document.getElementById('mobile-search-suggestions');
       const searchGo = document.getElementById('mobile-search-go');
+
+      if (!searchInput || !suggestionsContainer || !searchGo) return;
 
       searchInput.addEventListener('input', (e) => {
         const query = e.target.value.trim().toUpperCase();
@@ -2097,6 +2189,8 @@
 
       const btn = document.getElementById('tradevision-ai-btn');
       const output = document.getElementById('ai-insights-output');
+      if (!btn || !output) return;
+
       btn.disabled = true;
       btn.innerHTML = 'AI Analyzing';
       output.style.display = 'none';
@@ -2110,7 +2204,6 @@
 
         const prompt = `Analyze ${currentSymbol} (${currentInterval}):\n${JSON.stringify(recent.slice(0,5))}\n\nProvide a concise report (under 200 words):\n- Trend\n- Key Patterns\n- Risk Level\n- Suggestion\nEnd with: "Trade smart—DYOR!"`;
 
-        // CORRECT URL
         const res = await fetch('https://tradevision-ptrsuo0z0-dantech-mwas-projects.vercel.app/api/gemini', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -2147,6 +2240,11 @@
       const volumeContainer = document.getElementById('volume-indicator');
       const indicatorsContainer = document.getElementById('indicators-container');
       
+      if (!priceContainer || !volumeContainer || !indicatorsContainer) {
+        console.error('Chart containers not found');
+        return;
+      }
+
       // Main price chart
       chart = LightweightCharts.createChart(priceContainer, {
         width: priceContainer.clientWidth,
@@ -2171,13 +2269,20 @@
         borderUpColor: '#26a69a', borderDownColor: '#ef5350'
       });
 
-      // Volume chart
-      const volumeChart = LightweightCharts.createChart(volumeContainer, {
+      // Volume chart - FIXED to show scales
+      volumeChart = LightweightCharts.createChart(volumeContainer, {
         width: volumeContainer.clientWidth,
         height: volumeContainer.clientHeight,
         layout: { background: { color: 'transparent' }, textColor: '#9ea1b5' },
         grid: { vertLines: { visible: false }, horzLines: { visible: false } },
-        timeScale: { visible: false },
+        timeScale: { 
+          visible: true, // Show time scale
+          borderColor: '#2d313e'
+        },
+        rightPriceScale: {
+          visible: true, // Show price scale
+          borderColor: '#2d313e'
+        },
         handleScroll: false,
         handleScale: false
       });
@@ -2222,39 +2327,86 @@
       
       // Add AI button listener
       document.getElementById('tradevision-ai-btn').addEventListener('click', tradeVisionAI);
+      
+      // Add resize handler
+      window.addEventListener('resize', handleResize);
     }
+
+    // ───── RESIZE HANDLER ─────
+    // ───── RESIZE HANDLER ─────
+function handleResize() {
+  if (chart) {
+    const priceContainer = document.getElementById('price-chart');
+    if (priceContainer) {
+      chart.resize(priceContainer.clientWidth, priceContainer.clientHeight);
+    }
+  }
+  
+  if (volumeChart) {
+    const volumeContainer = document.getElementById('volume-indicator');
+    if (volumeContainer) {
+      volumeChart.resize(volumeContainer.clientWidth, volumeContainer.clientHeight);
+    }
+  }
+  
+  if (indicatorsChart) {
+    const indicatorsContainer = document.getElementById('indicators-container');
+    if (indicatorsContainer) {
+      indicatorsChart.resize(indicatorsContainer.clientWidth, indicatorsContainer.clientHeight);
+    }
+  }
+  
+  // Update mobile state
+  isMobile = window.innerWidth <= 992;
+  
+  // On mobile, ensure charts have proper scale margins
+  if (isMobile) {
+    // Add slight delay to ensure DOM is updated
+    setTimeout(() => {
+      if (chart) {
+        chart.applyOptions({
+          rightPriceScale: {
+            width: 60 // Ensure price scale has enough space
+          }
+        });
+      }
+    }, 100);
+  }
+  
+  resizeDrawingCanvas();
+}
 
     // ───── MOBILE CONTROLS ─────
     function initMobileControls() {
       // Mobile menu toggle
-      document.getElementById('mobile-menu-toggle').addEventListener('click', () => {
-        toggleMobilePanel('mobile-nav');
-      });
+      const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+      if (mobileMenuToggle) {
+        mobileMenuToggle.addEventListener('click', () => {
+          toggleMobilePanel('mobile-nav');
+        });
+      }
       
       // Mobile toolbar buttons
-      document.getElementById('mobile-tools-toggle').addEventListener('click', () => {
-        toggleMobilePanel('mobile-drawing-panel');
-      });
+      const toolsToggle = document.getElementById('mobile-tools-toggle');
+      const indicatorsToggle = document.getElementById('mobile-indicators-toggle');
+      const timeframeToggle = document.getElementById('mobile-timeframe-toggle');
+      const chartTypeToggle = document.getElementById('mobile-chart-type-toggle');
+      const settingsToggle = document.getElementById('mobile-settings-toggle');
       
-      document.getElementById('mobile-indicators-toggle').addEventListener('click', () => {
+      if (toolsToggle) toolsToggle.addEventListener('click', () => toggleMobilePanel('mobile-drawing-panel'));
+      if (indicatorsToggle) indicatorsToggle.addEventListener('click', () => {
         toggleMobilePanel('mobile-indicators-panel');
         updateMobileIndicatorList();
       });
-      
-      document.getElementById('mobile-timeframe-toggle').addEventListener('click', () => {
-        toggleMobilePanel('mobile-timeframe-panel');
-      });
-      
-      document.getElementById('mobile-chart-type-toggle').addEventListener('click', () => {
-        toggleMobilePanel('mobile-chart-type-panel');
-      });
-      
-      document.getElementById('mobile-settings-toggle').addEventListener('click', () => {
-        toggleMobilePanel('mobile-nav');
-      });
+      if (timeframeToggle) timeframeToggle.addEventListener('click', () => toggleMobilePanel('mobile-timeframe-panel'));
+      if (chartTypeToggle) chartTypeToggle.addEventListener('click', () => toggleMobilePanel('mobile-chart-type-panel'));
+      if (settingsToggle) settingsToggle.addEventListener('click', () => toggleMobilePanel('mobile-nav'));
       
       // Mobile overlay click
-      document.getElementById('mobile-overlay').addEventListener('click', closeMobilePanel);
+      const overlay = document.getElementById('mobile-overlay');
+      if (overlay) {
+        overlay.addEventListener('click', closeMobilePanel);
+      }
       
       // Mobile timeframe buttons
       document.querySelectorAll('.mobile-timeframe-btn').forEach(btn => {
@@ -2267,7 +2419,6 @@
           });
           btn.classList.add('active');
           currentInterval = btn.dataset.interval;
-          console.log(`Changing interval to: ${currentInterval}`);
           loadHistory(currentInterval);
           connectKline(currentInterval);
           closeMobilePanel();
@@ -2295,7 +2446,6 @@
         btn.addEventListener('click', () => {
           const tool = btn.dataset.tool;
           
-          // Update active button
           document.querySelectorAll('.mobile-drawing-btn').forEach(b => b.classList.remove('active'));
           document.querySelectorAll('.sidebar-left button').forEach(b => {
             if (b.dataset.tool === tool) {
@@ -2304,7 +2454,6 @@
           });
           btn.classList.add('active');
           
-          // Handle special tools
           if (tool === 'clear') {
             drawings = [];
             redrawAllDrawings();
@@ -2315,7 +2464,6 @@
             activeTool = tool;
           }
           
-          console.log(`Tool selected: ${activeTool}`);
           closeMobilePanel();
         });
       });
@@ -2330,21 +2478,29 @@
       });
       
       // Mobile clear indicators
-      document.getElementById('mobile-clear-indicators').addEventListener('click', () => {
-        activeIndicators = [];
-        localStorage.removeItem('chartIndicators');
-        updateIndicatorList();
-        updateMobileIndicatorList();
-        clearIndicatorChart();
-        closeMobilePanel();
-      });
+      const mobileClearIndicators = document.getElementById('mobile-clear-indicators');
+      if (mobileClearIndicators) {
+        mobileClearIndicators.addEventListener('click', () => {
+          activeIndicators = [];
+          localStorage.removeItem('chartIndicators');
+          updateIndicatorList();
+          updateMobileIndicatorList();
+          clearIndicatorChart();
+          closeMobilePanel();
+        });
+      }
       
       // Mobile theme toggle
-      document.getElementById('mobile-theme-toggle').addEventListener('click', toggleTheme);
+      const mobileThemeToggle = document.getElementById('mobile-theme-toggle');
+      if (mobileThemeToggle) {
+        mobileThemeToggle.addEventListener('click', toggleTheme);
+      }
     }
     
     function updateMobileIndicatorList() {
       const list = document.getElementById('mobile-indicator-list');
+      if (!list) return;
+
       list.innerHTML = '';
 
       if (activeIndicators.length === 0) {
@@ -2374,16 +2530,14 @@
       const panel = document.getElementById(panelId);
       const overlay = document.getElementById('mobile-overlay');
       
+      if (!panel || !overlay) return;
+      
       if (activeMobilePanel === panelId) {
-        // Close the panel if it's already open
         panel.style.display = 'none';
         overlay.classList.remove('active');
         activeMobilePanel = null;
       } else {
-        // Close any open panel first
         closeMobilePanel();
-        
-        // Open the new panel
         panel.style.display = 'block';
         overlay.classList.add('active');
         activeMobilePanel = panelId;
@@ -2407,7 +2561,7 @@
       });
       
       const overlay = document.getElementById('mobile-overlay');
-      overlay.classList.remove('active');
+      if (overlay) overlay.classList.remove('active');
       
       activeMobilePanel = null;
     }
@@ -2419,19 +2573,18 @@
       const zoomResetBtn = document.getElementById('zoom-reset');
       const fullscreenToggleBtn = document.getElementById('fullscreen-toggle');
       
-      // Zoom in - increase bar spacing and price scale
+      if (!zoomInBtn || !zoomOutBtn || !zoomResetBtn || !fullscreenToggleBtn) return;
+      
       zoomInBtn.addEventListener('click', () => {
         zoomLevel = Math.min(zoomLevel + 0.2, 3.0);
         applyZoom();
       });
       
-      // Zoom out - decrease bar spacing and price scale
       zoomOutBtn.addEventListener('click', () => {
         zoomLevel = Math.max(zoomLevel - 0.2, 0.5);
         applyZoom();
       });
       
-      // Reset zoom
       zoomResetBtn.addEventListener('click', () => {
         zoomLevel = 1.0;
         applyZoom();
@@ -2439,88 +2592,28 @@
         indicatorsChart.timeScale().fitContent();
       });
       
-      // Fullscreen toggle
       fullscreenToggleBtn.addEventListener('click', toggleFullscreen);
-      
-      // Mouse wheel zoom for price scale
-      document.getElementById('main-chart').addEventListener('wheel', handleWheelZoom, { passive: false });
-      
-      // Touch pinch zoom
-      let initialDistance = 0;
-      let initialZoomLevel = 1.0;
-      
-      document.getElementById('main-chart').addEventListener('touchstart', (e) => {
-        if (e.touches.length === 2) {
-          initialDistance = getTouchDistance(e.touches);
-          initialZoomLevel = zoomLevel;
-        }
-      });
-      
-      document.getElementById('main-chart').addEventListener('touchmove', (e) => {
-        if (e.touches.length === 2) {
-          e.preventDefault();
-          const currentDistance = getTouchDistance(e.touches);
-          const scale = currentDistance / initialDistance;
-          
-          zoomLevel = Math.max(0.5, Math.min(3.0, initialZoomLevel * scale));
-          applyZoom();
-        }
-      });
-    }
-    
-    function handleWheelZoom(e) {
-      e.preventDefault();
-      
-      if (e.ctrlKey || e.metaKey) {
-        // Pinch to zoom on trackpad - adjust zoom level
-        if (e.deltaY < 0) {
-          zoomLevel = Math.min(zoomLevel + 0.1, 3.0);
-        } else {
-          zoomLevel = Math.max(zoomLevel - 0.1, 0.5);
-        }
-        applyZoom();
-      } else {
-        // Regular scroll - navigate through time
-        if (e.deltaY < 0) {
-          chart.timeScale().scrollByPosition(10);
-          indicatorsChart.timeScale().scrollByPosition(10);
-        } else {
-          chart.timeScale().scrollByPosition(-10);
-          indicatorsChart.timeScale().scrollByPosition(-10);
-        }
-      }
-    }
-    
-    function getTouchDistance(touches) {
-      const dx = touches[0].clientX - touches[1].clientX;
-      const dy = touches[0].clientY - touches[1].clientY;
-      return Math.sqrt(dx * dx + dy * dy);
     }
     
     function applyZoom() {
-      // Apply zoom by adjusting bar spacing and price scale
       const barSpacing = baseBarSpacing * zoomLevel;
       
-      // Update main chart
       chart.applyOptions({
         timeScale: {
           barSpacing: barSpacing
         }
       });
       
-      // Update indicators chart
       indicatorsChart.applyOptions({
         timeScale: {
           barSpacing: barSpacing
         }
       });
       
-      // Sync time scales
       syncTimeScales();
     }
     
     function syncTimeScales() {
-      // Get the visible time range from the main chart
       const mainTimeRange = chart.timeScale().getVisibleRange();
       if (mainTimeRange) {
         indicatorsChart.timeScale().setVisibleRange(mainTimeRange);
@@ -2538,28 +2631,8 @@
         document.getElementById('fullscreen-toggle').innerHTML = '<i class="fas fa-expand"></i>';
       }
       
-      // Resize charts after fullscreen change
       setTimeout(() => {
-        chart.resize(
-          document.getElementById('price-chart').clientWidth,
-          document.getElementById('price-chart').clientHeight
-        );
-        
-        // Fix for volume chart reference
-        const volumeChartElement = document.querySelector('#volume-chart .tv-lightweight-charts');
-        if (volumeChartElement) {
-          volumeChartElement.resize(
-            document.getElementById('volume-chart').clientWidth,
-            document.getElementById('volume-chart').clientHeight
-          );
-        }
-        
-        indicatorsChart.resize(
-          document.getElementById('indicators-chart').clientWidth,
-          document.getElementById('indicators-chart').clientHeight
-        );
-        
-        resizeDrawingCanvas();
+        handleResize();
       }, 100);
     }
 
@@ -2574,7 +2647,6 @@
       
       if (!addBtn || !searchContainer || !searchInput || !dropdown) return;
       
-      // Toggle search visibility
       addBtn.addEventListener('click', () => {
         const isVisible = searchContainer.style.display === 'block';
         searchContainer.style.display = isVisible ? 'none' : 'block';
@@ -2585,7 +2657,6 @@
         }
       });
       
-      // Search functionality
       searchInput.addEventListener('input', () => {
         const query = searchInput.value.trim().toLowerCase();
         if (!query) {
@@ -2593,7 +2664,6 @@
           return;
         }
         
-        // Get all available indicators
         const allIndicators = Object.keys(IndicatorConfigs);
         const matches = allIndicators.filter(ind => ind.toLowerCase().includes(query));
         
@@ -2608,7 +2678,6 @@
         }
       });
       
-      // Add indicator on click
       dropdown.addEventListener('click', (e) => {
         const item = e.target.closest('.dropdown-item');
         if (item && item.dataset.indicator) {
@@ -2616,33 +2685,33 @@
           searchContainer.style.display = 'none';
           searchInput.value = '';
           
-          // Close mobile panel if on mobile
           if (isMobile) {
             closeMobilePanel();
           }
         }
       });
       
-      // Close search when clicking outside
       document.addEventListener('click', (e) => {
         if (!addBtn.contains(e.target) && !searchContainer.contains(e.target)) {
           searchContainer.style.display = 'none';
         }
       });
       
-      // Refresh indicators
-      refreshBtn.addEventListener('click', () => {
-        updateAllIndicators();
-      });
+      if (refreshBtn) {
+        refreshBtn.addEventListener('click', () => {
+          updateAllIndicators();
+        });
+      }
       
-      // Clear all indicators
-      clearBtn.addEventListener('click', () => {
-        activeIndicators = [];
-        localStorage.removeItem('chartIndicators');
-        updateIndicatorList();
-        updateMobileIndicatorList();
-        clearIndicatorChart();
-      });
+      if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+          activeIndicators = [];
+          localStorage.removeItem('chartIndicators');
+          updateIndicatorList();
+          updateMobileIndicatorList();
+          clearIndicatorChart();
+        });
+      }
     }
     
     function loadActiveIndicators() {
@@ -2654,7 +2723,6 @@
     }
 
     function addIndicator(name, params) {
-      // Check if already exists
       const existingIndex = activeIndicators.findIndex(ind => ind.name === name);
       if (existingIndex >= 0) {
         activeIndicators[existingIndex].params = params;
@@ -2673,44 +2741,27 @@
     }
 
     function removeIndicator(name) {
-      // 1. Remove from the active list
       activeIndicators = activeIndicators.filter(ind => ind.name !== name);
       localStorage.setItem('chartIndicators', JSON.stringify(activeIndicators));
 
-      // 2. Update the right-panel list
       updateIndicatorList();
       updateMobileIndicatorList();
 
-      // 3. **Delete ONLY the series that belong to this indicator**
       const seriesArray = indicatorSeriesMap.get(name) || [];
       seriesArray.forEach(s => {
         try { indicatorsChart.removeSeries(s); } catch (_) {}
       });
-      indicatorSeriesMap.delete(name);   // clean the map
+      indicatorSeriesMap.delete(name);
 
-      // 4. If anything is left → redraw the rest (optional – chart is already clean)
       if (activeIndicators.length > 0) {
-        updateAllIndicators();   // will clear again (safe) and plot remaining
+        updateAllIndicators();
       }
-    }
-    
-    function removeIndicatorSeries(indicatorName) {
-      if (!indicatorsChart || !indicatorsChart._series) return;
-
-      // Lightweight-Charts stores all series in an internal array
-      const seriesToRemove = indicatorsChart._series.filter(s => {
-        // Series title is set to:  "RSI", "MACD MACD", "Bollinger Bands Upper", …
-        const title = s.options?.().title || '';
-        return title.startsWith(indicatorName);
-      });
-
-      seriesToRemove.forEach(s => {
-        try { indicatorsChart.removeSeries(s); } catch (_) {}
-      });
     }
 
     function updateIndicatorList() {
       const list = document.getElementById('indicator-list');
+      if (!list) return;
+
       list.innerHTML = '';
 
       if (activeIndicators.length === 0) {
@@ -2735,106 +2786,234 @@
       });
     }
 
-    function updateAllIndicators() {
-      if (!priceData.length) return;
+   // FIX: Complete indicator update system to prevent Y-axis pushing
+// FIX: Complete indicator update system - WORKING VERSION
+function updateAllIndicators() {
+    if (!priceData.length || !indicatorsChart) return;
 
-      // Clear *everything* first – guarantees a clean slate
-      clearIndicatorChart();
+    // Store current visible range before update
+    const mainTimeRange = chart.timeScale().getVisibleRange();
+    const indicatorsTimeRange = indicatorsChart.timeScale().getVisibleRange();
 
-      activeIndicators.forEach(ind => {
+    clearIndicatorChart();
+
+    // Apply consistent scale options before creating any series
+    indicatorsChart.applyOptions({
+        rightPriceScale: {
+            autoScale: true,
+            scaleMargins: {
+                top: 0.05,
+                bottom: 0.05
+            },
+            borderVisible: true,
+            entireTextOnly: false
+        },
+        leftPriceScale: {
+            visible: false
+        }
+    });
+
+    activeIndicators.forEach(ind => {
         const cfg = IndicatorConfigs[ind.name];
         if (!cfg) return;
 
-        const result = cfg.calculate(priceData, ind.params);
-        plotIndicator(ind.name, result, ind.params);
-      });
-      
-      // Sync time scales after updating indicators
-      syncTimeScales();
-    }
+        try {
+            const result = cfg.calculate(priceData, ind.params);
+            plotIndicator(ind.name, result, ind.params);
+        } catch (error) {
+            console.error(`Error calculating indicator ${ind.name}:`, error);
+        }
+    });
+    
+    // Restore visible ranges to prevent chart jumping
+    setTimeout(() => {
+        if (mainTimeRange && chart) {
+            try {
+                chart.timeScale().setVisibleRange(mainTimeRange);
+            } catch (e) {
+                // Ignore range setting errors
+            }
+        }
+        if (indicatorsTimeRange && indicatorsChart) {
+            try {
+                indicatorsChart.timeScale().setVisibleRange(indicatorsTimeRange);
+            } catch (e) {
+                // Ignore range setting errors
+            }
+        }
+    }, 100);
+    
+    resizeDrawingCanvas();
+}
 
-    function clearIndicatorChart() {
-      if (!indicatorsChart || !indicatorsChart._series) return;
-      while (indicatorsChart._series.length) {
-        try { indicatorsChart.removeSeries(indicatorsChart._series[0]); } catch (_) { break; }
-      }
-      indicatorSeriesMap.clear();   // also wipe the map
-    }
-
-    function plotIndicator(name, result, params) {
-      // Remove old series for this indicator (if any)
-      const oldSeries = indicatorSeriesMap.get(name) || [];
-      oldSeries.forEach(s => {
-        try { indicatorsChart.removeSeries(s); } catch (_) {}
-      });
-      indicatorSeriesMap.set(name, []);   // start fresh
-      
-      // -----------------------------------------------------------------
-      // 1. SINGLE-LINE INDICATORS (RSI, SMA, EMA, ATR, CCI, VWAP, OBV …)
-      // -----------------------------------------------------------------
-      if (result.value) {
+// FIX: Complete plotIndicator function - WORKING VERSION
+function plotIndicator(name, result, params) {
+    // Remove old series for this indicator
+    const oldSeries = indicatorSeriesMap.get(name) || [];
+    oldSeries.forEach(s => {
+        try { 
+            indicatorsChart.removeSeries(s); 
+        } catch (_) {}
+    });
+    indicatorSeriesMap.set(name, []);
+    
+    if (result.value) {
+        // Single value indicators (RSI, SMA, EMA, ATR, CCI, VWAP, OBV)
+        const validValues = result.value.filter(v => v !== null && !isNaN(v));
+        if (validValues.length === 0) return;
+        
         const series = indicatorsChart.addLineSeries({
-          color: getIndicatorColor(name),
-          lineWidth: 2,
-          title: name
+            color: getIndicatorColor(name),
+            lineWidth: 2,
+            title: name,
+            priceScaleId: 'right'
         });
+        
         const data = priceData.map((d, i) => ({
-          time: d.time,
-          value: result.value[i]
-        })).filter(d => d.value !== null);
+            time: d.time,
+            value: result.value[i]
+        })).filter(d => d.value !== null && !isNaN(d.value));
 
-        series.setData(data);
-        indicatorSeriesMap.get(name).push(series);
+        if (data.length > 0) {
+            series.setData(data);
+            indicatorSeriesMap.get(name).push(series);
+        }
         return;
-      }
+    }
 
-      // -----------------------------------------------------------------
-      // 2. MACD
-      // -----------------------------------------------------------------
-      if (result.macdLine && result.signalLine && result.histogram) {
-        const macd = indicatorsChart.addLineSeries({ color: '#2962ff', lineWidth: 2, title: `${name} MACD` });
-        const signal = indicatorsChart.addLineSeries({ color: '#ff6b6b', lineWidth: 1, title: `${name} Signal` });
-        const hist = indicatorsChart.addHistogramSeries({ color: '#26a69a', title: `${name} Histogram` });
+    if (result.macdLine && result.signalLine && result.histogram) {
+        // MACD indicator
+        const macdData = priceData.map((d,i) => ({time:d.time, value:result.macdLine[i]})).filter(d => d.value !== null && !isNaN(d.value));
+        const signalData = priceData.map((d,i) => ({time:d.time, value:result.signalLine[i]})).filter(d => d.value !== null && !isNaN(d.value));
+        const histData = priceData.map((d,i) => ({
+            time: d.time, 
+            value: result.histogram[i],
+            color: result.histogram[i] >= 0 ? '#26a69a' : '#ef5350'
+        })).filter(d => d.value !== null && !isNaN(d.value));
+        
+        if (macdData.length === 0) return;
+        
+        const macd = indicatorsChart.addLineSeries({ 
+            color: '#2962ff', 
+            lineWidth: 2, 
+            title: `${name} MACD`,
+            priceScaleId: 'right'
+        });
+        
+        const signal = indicatorsChart.addLineSeries({ 
+            color: '#ff6b6b', 
+            lineWidth: 1, 
+            title: `${name} Signal`,
+            priceScaleId: 'right' 
+        });
+        
+        const hist = indicatorsChart.addHistogramSeries({ 
+            color: '#26a69a', 
+            title: `${name} Histogram`,
+            priceScaleId: 'right' 
+        });
 
-        macd.setData(priceData.map((d,i)=>({time:d.time, value:result.macdLine[i]})).filter(d=>d.value!==null));
-        signal.setData(priceData.map((d,i)=>({time:d.time, value:result.signalLine[i]})).filter(d=>d.value!==null));
-        hist.setData(priceData.map((d,i)=>({time:d.time, value:result.histogram[i],
-              color: result.histogram[i]>=0 ? '#26a69a' : '#ef5350' })).filter(d=>d.value!==null));
+        if (macdData.length > 0) macd.setData(macdData);
+        if (signalData.length > 0) signal.setData(signalData);
+        if (histData.length > 0) hist.setData(histData);
 
         indicatorSeriesMap.get(name).push(macd, signal, hist);
         return;
-      }
+    }
 
-      // -----------------------------------------------------------------
-      // 3. BOLLINGER BANDS
-      // -----------------------------------------------------------------
-      if (result.upper && result.middle && result.lower) {
-        const up   = indicatorsChart.addLineSeries({ color: '#ffa726', lineWidth: 1, title: `${name} Upper` });
-        const mid  = indicatorsChart.addLineSeries({ color: '#2962ff', lineWidth: 1, title: `${name} Middle` });
-        const low  = indicatorsChart.addLineSeries({ color: '#ffa726', lineWidth: 1, title: `${name} Lower` });
+    if (result.upper && result.middle && result.lower) {
+        // Bollinger Bands
+        const upperData = priceData.map((d,i) => ({time:d.time, value:result.upper[i]})).filter(d => d.value !== null && !isNaN(d.value));
+        const middleData = priceData.map((d,i) => ({time:d.time, value:result.middle[i]})).filter(d => d.value !== null && !isNaN(d.value));
+        const lowerData = priceData.map((d,i) => ({time:d.time, value:result.lower[i]})).filter(d => d.value !== null && !isNaN(d.value));
+        
+        if (upperData.length === 0) return;
+        
+        const up = indicatorsChart.addLineSeries({ 
+            color: '#ffa726', 
+            lineWidth: 1, 
+            title: `${name} Upper`,
+            priceScaleId: 'right'
+        });
+        const mid = indicatorsChart.addLineSeries({ 
+            color: '#2962ff', 
+            lineWidth: 1, 
+            title: `${name} Middle`,
+            priceScaleId: 'right' 
+        });
+        const low = indicatorsChart.addLineSeries({ 
+            color: '#ffa726', 
+            lineWidth: 1, 
+            title: `${name} Lower`,
+            priceScaleId: 'right' 
+        });
 
-        up.setData(priceData.map((d,i)=>({time:d.time, value:result.upper[i]})).filter(d=>d.value!==null));
-        mid.setData(priceData.map((d,i)=>({time:d.time, value:result.middle[i]})).filter(d=>d.value!==null));
-        low.setData(priceData.map((d,i)=>({time:d.time, value:result.lower[i]})).filter(d=>d.value!==null));
+        if (upperData.length > 0) up.setData(upperData);
+        if (middleData.length > 0) mid.setData(middleData);
+        if (lowerData.length > 0) low.setData(lowerData);
 
         indicatorSeriesMap.get(name).push(up, mid, low);
         return;
-      }
+    }
 
-      // -----------------------------------------------------------------
-      // 4. STOCHASTIC
-      // -----------------------------------------------------------------
-      if (result.k && result.d) {
-        const k = indicatorsChart.addLineSeries({ color: '#2962ff', lineWidth: 2, title: `${name} %K` });
-        const d = indicatorsChart.addLineSeries({ color: '#ff6b6b', lineWidth: 1, title: `${name} %D` });
+    if (result.k && result.d) {
+        // Stochastic
+        const kData = priceData.map((d,i) => ({time:d.time, value:result.k[i]})).filter(d => d.value !== null && !isNaN(d.value));
+        const dData = priceData.map((d,i) => ({time:d.time, value:result.d[i]})).filter(d => d.value !== null && !isNaN(d.value));
+        
+        if (kData.length === 0) return;
+        
+        const k = indicatorsChart.addLineSeries({ 
+            color: '#2962ff', 
+            lineWidth: 2, 
+            title: `${name} %K`,
+            priceScaleId: 'right'
+        });
+        const d = indicatorsChart.addLineSeries({ 
+            color: '#ff6b6b', 
+            lineWidth: 1, 
+            title: `${name} %D`,
+            priceScaleId: 'right' 
+        });
 
-        k.setData(priceData.map((d,i)=>({time:d.time, value:result.k[i]})).filter(d=>d.value!==null));
-        d.setData(priceData.map((d,i)=>({time:d.time, value:result.d[i]})).filter(d=>d.value!==null));
+        if (kData.length > 0) k.setData(kData);
+        if (dData.length > 0) d.setData(dData);
 
         indicatorSeriesMap.get(name).push(k, d);
-      }
     }
+}
+
+// FIX: Clear indicator chart properly
+function clearIndicatorChart() {
+    if (!indicatorsChart) return;
     
+    try {
+        // Remove all series safely
+        indicatorSeriesMap.forEach((seriesArray, indicatorName) => {
+            seriesArray.forEach(series => {
+                try {
+                    indicatorsChart.removeSeries(series);
+                } catch (error) {
+                    // Ignore removal errors
+                }
+            });
+        });
+        indicatorSeriesMap.clear();
+        
+        // Reset chart options
+        indicatorsChart.applyOptions({
+            rightPriceScale: {
+                autoScale: true,
+                scaleMargins: {
+                    top: 0.05,
+                    bottom: 0.05
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Error clearing indicator chart:', error);
+    }
+}
     function getIndicatorColor(name) {
       const colors = {
         'RSI': '#00c853',
@@ -2851,11 +3030,14 @@
     // ───── DRAWING TOOLS IMPLEMENTATION ─────
     function initDrawingTools() {
       drawingCanvas = document.getElementById('drawing-canvas');
+      if (!drawingCanvas) return;
+      
       drawingCtx = drawingCanvas.getContext('2d');
       
-      // Set canvas size to match container
       function resizeDrawingCanvas() {
         const container = document.getElementById('main-chart');
+        if (!container) return;
+        
         drawingCanvas.width = container.clientWidth;
         drawingCanvas.height = container.clientHeight;
         redrawAllDrawings();
@@ -2865,23 +3047,19 @@
       window.addEventListener('resize', resizeDrawingCanvas);
       
       setupDrawingEvents();
-      console.log('Drawing tools initialized!');
     }
 
     function setupDrawingEvents() {
       let startX, startY;
       
-      // MOUSE DOWN - Start drawing
       drawingCanvas.addEventListener('mousedown', (e) => {
         if (activeTool === 'cursor' || activeTool === 'clear') return;
         
-        // Handle text tool separately
         if (activeTool === 'text') {
           createTextInput(e.offsetX, e.offsetY);
-          return; // Don't proceed with normal drawing flow for text
+          return;
         }
         
-        // For other drawing tools
         isDrawing = true;
         startX = e.offsetX;
         startY = e.offsetY;
@@ -2894,7 +3072,6 @@
         };
       });
       
-      // TOUCH START - For mobile devices
       drawingCanvas.addEventListener('touchstart', (e) => {
         if (activeTool === 'cursor' || activeTool === 'clear') return;
         
@@ -2904,13 +3081,11 @@
         const offsetX = touch.clientX - rect.left;
         const offsetY = touch.clientY - rect.top;
         
-        // Handle text tool separately
         if (activeTool === 'text') {
           createTextInput(offsetX, offsetY);
           return;
         }
         
-        // For other drawing tools
         isDrawing = true;
         startX = offsetX;
         startY = offsetY;
@@ -2923,26 +3098,22 @@
         };
       });
       
-      // MOUSE MOVE - Draw preview (only for non-text tools)
       drawingCanvas.addEventListener('mousemove', (e) => {
         if (!isDrawing || !currentDrawing || activeTool === 'text') return;
         
         const currentX = e.offsetX;
         const currentY = e.offsetY;
         
-        // Update current drawing
         if (currentDrawing.points.length === 1) {
           currentDrawing.points.push({x: currentX, y: currentY});
         } else {
           currentDrawing.points[1] = {x: currentX, y: currentY};
         }
         
-        // Redraw everything including preview
         redrawAllDrawings();
         drawPreview(currentDrawing);
       });
       
-      // TOUCH MOVE - For mobile devices
       drawingCanvas.addEventListener('touchmove', (e) => {
         if (!isDrawing || !currentDrawing || activeTool === 'text') return;
         
@@ -2952,25 +3123,21 @@
         const currentX = touch.clientX - rect.left;
         const currentY = touch.clientY - rect.top;
         
-        // Update current drawing
         if (currentDrawing.points.length === 1) {
           currentDrawing.points.push({x: currentX, y: currentY});
         } else {
           currentDrawing.points[1] = {x: currentX, y: currentY};
         }
         
-        // Redraw everything including preview
         redrawAllDrawings();
         drawPreview(currentDrawing);
       });
       
-      // MOUSE UP - Finalize drawing (only for non-text tools)
       drawingCanvas.addEventListener('mouseup', (e) => {
         if (!isDrawing || !currentDrawing || activeTool === 'text') return;
         
         isDrawing = false;
         
-        // Only save if we have a valid drawing (not a click)
         if (currentDrawing.points.length === 2) {
           drawings.push({...currentDrawing});
         }
@@ -2979,13 +3146,11 @@
         redrawAllDrawings();
       });
       
-      // TOUCH END - For mobile devices
       drawingCanvas.addEventListener('touchend', (e) => {
         if (!isDrawing || !currentDrawing || activeTool === 'text') return;
         
         isDrawing = false;
         
-        // Only save if we have a valid drawing (not a tap)
         if (currentDrawing.points.length === 2) {
           drawings.push({...currentDrawing});
         }
@@ -2996,15 +3161,11 @@
     }
 
     function createTextInput(x, y) {
-      console.log('Creating text input at:', x, y);
-      
-      // Remove existing text input
       const existingInput = document.querySelector('.drawing-text-input');
       if (existingInput) {
         existingInput.remove();
       }
       
-      // Create new text input
       const textInput = document.createElement('input');
       textInput.type = 'text';
       textInput.className = 'drawing-text-input';
@@ -3025,21 +3186,17 @@
       textInput.style.boxShadow = '0 2px 10px rgba(0,0,0,0.3)';
       textInput.style.pointerEvents = 'auto';
       
-      // Add to chart container
       const chartContainer = document.getElementById('main-chart');
+      if (!chartContainer) return;
+      
       chartContainer.appendChild(textInput);
       
-      // Focus with a slight delay
       setTimeout(() => {
         textInput.focus();
         textInput.select();
       }, 50);
       
-      console.log('Text input created and added to DOM');
-      
-      // Handle text completion
       const completeText = () => {
-        console.log('Completing text:', textInput.value);
         if (textInput.value.trim()) {
           drawings.push({
             type: 'text',
@@ -3050,16 +3207,13 @@
             font: '14px Inter'
           });
           redrawAllDrawings();
-          console.log('Text saved to drawings');
         }
         
-        // Remove the input
         if (textInput.parentNode) {
           textInput.parentNode.removeChild(textInput);
         }
       };
       
-      // Event listeners
       textInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
           e.preventDefault();
@@ -3074,7 +3228,6 @@
         }
       });
       
-      // Handle clicks outside the text input
       const handleOutsideClick = (e) => {
         if (!textInput.parentNode) {
           document.removeEventListener('mousedown', handleOutsideClick);
@@ -3087,25 +3240,15 @@
         }
       };
       
-      // Add the outside click listener after a short delay
       setTimeout(() => {
         document.addEventListener('mousedown', handleOutsideClick);
       }, 100);
       
-      // Prevent drawing tools from interfering
       textInput.addEventListener('mousedown', (e) => {
         e.stopPropagation();
       });
       
       textInput.addEventListener('click', (e) => {
-        e.stopPropagation();
-      });
-      
-      textInput.addEventListener('focus', (e) => {
-        e.stopPropagation();
-      });
-      
-      textInput.addEventListener('blur', (e) => {
         e.stopPropagation();
       });
     }
@@ -3145,10 +3288,10 @@
     }
 
     function redrawAllDrawings() {
-      // Clear canvas
+      if (!drawingCtx) return;
+      
       drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
       
-      // Redraw all saved drawings
       drawings.forEach(drawing => {
         drawingCtx.strokeStyle = drawing.color;
         drawingCtx.fillStyle = drawing.color;
@@ -3218,12 +3361,10 @@
         ctx.moveTo(0, y);
         ctx.lineTo(drawingCanvas.width, y);
         
-        // Dashed line for Fib levels
         ctx.setLineDash([5, 3]);
         ctx.stroke();
         ctx.setLineDash([]);
         
-        // Level label
         ctx.font = '12px Inter';
         ctx.fillText((level * 100).toFixed(1) + '%', 10, y - 5);
       });
@@ -3242,7 +3383,6 @@
           });
           btn.classList.add('active');
           currentInterval = btn.dataset.interval;
-          console.log(`Changing interval to: ${currentInterval}`);
           loadHistory(currentInterval);
           connectKline(currentInterval);
         });
@@ -3270,7 +3410,6 @@
         btn.addEventListener('click', () => {
           const tool = btn.dataset.tool;
           
-          // Update active button
           toolButtons.forEach(b => b.classList.remove('active'));
           document.querySelectorAll('.mobile-drawing-btn').forEach(b => {
             if (b.dataset.tool === tool) {
@@ -3279,7 +3418,6 @@
           });
           btn.classList.add('active');
           
-          // Handle special tools
           if (tool === 'clear') {
             drawings = [];
             redrawAllDrawings();
@@ -3289,8 +3427,6 @@
           } else {
             activeTool = tool;
           }
-          
-          console.log(`Tool selected: ${activeTool}`);
         });
       });
     }
@@ -3323,7 +3459,7 @@
         }));
         
         updateChartSeries();
-        updateAllIndicators(); // Update indicators when new data loads
+        updateAllIndicators();
         
       } catch (error) {
         console.error('Error loading history:', error);
@@ -3332,7 +3468,6 @@
     }
 
     function showError(message) {
-      // Remove any existing error
       const existingError = document.querySelector('.error-message');
       if (existingError) existingError.remove();
       
@@ -3396,56 +3531,58 @@
     }
 
     // ───── LIVE KLINE ─────
-    function connectKline(interval) {
-      if (klineWs) klineWs.close();
-      
-      const klineSymbol = currentSymbol.toLowerCase();
-      klineWs = new WebSocket(`wss://stream.binance.com:9443/ws/${klineSymbol}@kline_${interval}`);
-      
-      klineWs.onmessage = e => {
-        try {
-          const k = JSON.parse(e.data).k;
-          const bar = {
-            time: k.t / 1000,
-            open: parseFloat(k.o),
-            high: parseFloat(k.h),
-            low: parseFloat(k.l),
-            close: parseFloat(k.c),
-            volume: parseFloat(k.v)
-          };
+    // FIX: Improved kline handler to prevent indicator chart jumping
+function connectKline(interval) {
+  if (klineWs) klineWs.close();
+  
+  const klineSymbol = currentSymbol.toLowerCase();
+  klineWs = new WebSocket(`wss://stream.binance.com:9443/ws/${klineSymbol}@kline_${interval}`);
+  
+  klineWs.onmessage = e => {
+    try {
+      const k = JSON.parse(e.data).k;
+      const bar = {
+        time: k.t / 1000,
+        open: parseFloat(k.o),
+        high: parseFloat(k.h),
+        low: parseFloat(k.l),
+        close: parseFloat(k.c),
+        volume: parseFloat(k.v)
+      };
 
-          const idx = priceData.findIndex(d => d.time === bar.time);
-          if (idx >= 0) {
-            priceData[idx] = bar;
-            priceSeries.update(bar);
-            const volColor = bar.close >= bar.open ? '#26a69a80' : '#ef535080';
-            volumeSeries.update({ time: bar.time, value: bar.volume, color: volColor });
-          } else {
-            priceData.push(bar);
-            if (priceData.length > 1000) priceData.shift();
-            setTimeout(() => {
-              updateChartSeries();
-              chart.timeScale().scrollToPosition(-1, false);
-              indicatorsChart.timeScale().scrollToPosition(-1, false);
-            }, 50);
-          }
-          
-          // Update indicators with new data
-          updateAllIndicators();
-        } catch (error) {
-          console.error('Error parsing kline data:', error);
-        }
-      };
+      const idx = priceData.findIndex(d => d.time === bar.time);
+      if (idx >= 0) {
+        priceData[idx] = bar;
+        priceSeries.update(bar);
+        const volColor = bar.close >= bar.open ? '#26a69a80' : '#ef535080';
+        volumeSeries.update({ time: bar.time, value: bar.volume, color: volColor });
+      } else {
+        priceData.push(bar);
+        if (priceData.length > 1000) priceData.shift();
+        setTimeout(() => {
+          updateChartSeries();
+          // Don't auto-scroll indicators chart to prevent jumping
+          chart.timeScale().scrollToPosition(-1, false);
+        }, 50);
+      }
       
-      klineWs.onclose = () => {
-        console.log('Kline WebSocket closed, reconnecting...');
-        setTimeout(() => connectKline(currentInterval), 3000);
-      };
+      // Update indicators without resetting view
+      updateAllIndicators();
       
-      klineWs.onerror = (err) => {
-        console.error('Kline WebSocket error:', err);
-      };
+    } catch (error) {
+      console.error('Error parsing kline data:', error);
     }
+  };
+  
+  klineWs.onclose = () => {
+    console.log('Kline WebSocket closed, reconnecting...');
+    setTimeout(() => connectKline(currentInterval), 3000);
+  };
+  
+  klineWs.onerror = (err) => {
+    console.error('Kline WebSocket error:', err);
+  };
+}
 
     // ───── CHART TYPE SWITCH ─────
     function updateChartSeries() {
@@ -3528,7 +3665,10 @@
       initMobileSearch();
       
       // Add theme toggle listeners
-      document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+      const themeToggle = document.getElementById('theme-toggle');
+      if (themeToggle) {
+        themeToggle.addEventListener('click', toggleTheme);
+      }
       
       if (typeof LightweightCharts !== 'undefined') {
         initChart();
