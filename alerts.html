@@ -75,6 +75,7 @@
       padding: 2rem 1rem;
     }
     
+    /* Header Styles */
     .header {
       background: var(--bg-light);
       border-bottom: 1px solid var(--border);
@@ -83,6 +84,12 @@
       top: 0;
       z-index: 100;
       transition: background-color 0.3s, border-color 0.3s;
+    }
+    
+    .header-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1rem;
     }
     
     .flex-between {
@@ -100,27 +107,56 @@
       font-weight: 700;
       font-size: 1.4rem;
       color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
     
     .logo i {
       font-size: 1.5rem;
-      margin-right: 0.5rem;
+    }
+    
+    .nav-container {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    
+    .nav-links {
+      display: flex;
+      gap: 1.5rem;
     }
     
     .nav-links a {
-      margin: 0 0.75rem;
       font-weight: 500;
+      transition: color 0.2s;
+      padding: 0.5rem 0;
       position: relative;
     }
     
-    .nav-links a:hover::after {
+    .nav-links a:hover {
+      color: var(--accent);
+    }
+    
+    .nav-links a::after {
       content: '';
       position: absolute;
-      bottom: -5px;
+      bottom: 0;
       left: 0;
-      width: 100%;
+      width: 0;
       height: 2px;
       background: var(--accent);
+      transition: width 0.3s;
+    }
+    
+    .nav-links a:hover::after {
+      width: 100%;
+    }
+    
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
     
     .icon-btn {
@@ -130,13 +166,61 @@
       font-size: 1.2rem;
       cursor: pointer;
       padding: 0.5rem;
-      border-radius: 50%;
-      transition: background-color 0.2s, color 0.2s;
+      border-radius: 6px;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     
     .icon-btn:hover {
-      background: var(--border);
+      background: rgba(255, 255, 255, 0.05);
       color: var(--text);
+    }
+    
+    /* Mobile Navigation */
+    .mobile-menu-toggle {
+      display: none;
+      background: none;
+      border: none;
+      color: var(--text);
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0.5rem;
+    }
+    
+    .mobile-nav {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: var(--bg-light);
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      z-index: 99;
+      padding: 1rem;
+    }
+    
+    .mobile-nav.active {
+      display: block;
+    }
+    
+    .mobile-nav-links {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    
+    .mobile-nav-links a {
+      padding: 0.75rem 1rem;
+      border-radius: 6px;
+      transition: background 0.2s;
+      font-weight: 500;
+    }
+    
+    .mobile-nav-links a:hover {
+      background: rgba(255, 255, 255, 0.05);
     }
 
     /* Page Header */
@@ -488,12 +572,31 @@
 
     /* Responsive */
     @media (max-width: 768px) {
-      .form-row {
-        grid-template-columns: 1fr;
+      .container {
+        padding: 1.5rem 1rem;
       }
       
       .nav-links {
         display: none;
+      }
+      
+      .mobile-menu-toggle {
+        display: block;
+      }
+      
+      .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+      
+      .page-actions {
+        width: 100%;
+        justify-content: space-between;
+      }
+      
+      .form-row {
+        grid-template-columns: 1fr;
       }
       
       .alert-item {
@@ -512,15 +615,150 @@
         right: 1rem;
         max-width: none;
       }
+      
+      .form-actions {
+        flex-direction: column;
+      }
+      
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+    
+    @media (max-width: 576px) {
+      .container {
+        padding: 1rem 0.75rem;
+      }
+      
+      .header-container {
+        padding: 0 0.75rem;
+      }
+      
+      .logo {
+        font-size: 1.2rem;
+      }
+      
+      .logo i {
+        font-size: 1.3rem;
+      }
+      
+      .mobile-nav {
+        padding: 0.75rem;
+      }
+      
+      .page-title {
+        font-size: 1.5rem;
+      }
+      
+      .form-header, .form-content {
+        padding: 1rem;
+      }
+      
+      .section-header {
+        padding: 1rem;
+      }
+      
+      .alert-item {
+        padding: 1rem;
+      }
+      
+      .alert-info {
+        gap: 0.75rem;
+      }
+      
+      .alert-icon {
+        width: 36px;
+        height: 36px;
+      }
+      
+      .alert-details h3 {
+        font-size: 1rem;
+      }
+      
+      .alert-details p {
+        font-size: 0.85rem;
+      }
+      
+      .alert-status {
+        font-size: 0.75rem;
+        padding: 0.2rem 0.6rem;
+      }
+      
+      .action-btn {
+        padding: 0.4rem;
+      }
+      
+      .notification-toast {
+        padding: 0.75rem;
+      }
+      
+      .notification-icon {
+        width: 36px;
+        height: 36px;
+      }
     }
   </style>
+  <!-- Google Tag Manager -->
+  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-TSXGBB76');</script>
+  <!-- End Google Tag Manager -->
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-L7SHGV8S75"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-L7SHGV8S75');
+  </script>
 </head>
 
 <body data-theme="dark">
+  <!-- Google Tag Manager (noscript) -->
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TSXGBB76"
+  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  <!-- End Google Tag Manager (noscript) -->
+  
   <header class="header">
-    <div class="container flex-between">
-      <div class="logo"><a href="index.html" class="flex-center"><i class="fas fa-chart-line"></i><span>TradeVision</span></a></div>
-      <nav class="nav-links">
+    <div class="header-container flex-between">
+      <div class="logo">
+        <a href="index.html" class="flex-center">
+          <i class="fas fa-chart-line"></i>
+          <span>TradeVision</span>
+        </a>
+      </div>
+      
+      <div class="nav-container">
+        <nav class="nav-links">
+          <a href="chart.html">Chart</a>
+          <a href="watchlist.html">Watchlist</a>
+          <a href="screener.html">Screener</a>
+          <a href="ideas.html">Ideas</a>
+          <a href="alerts.html">Alerts</a>
+          <a href="trading.html">Trade</a>
+          <a href="backtest.html">Backtest</a>
+        </nav>
+        
+        <div class="header-actions">
+          <button id="theme-toggle" class="icon-btn" aria-label="Toggle theme">
+            <i class="fas fa-moon"></i>
+          </button>
+          <a href="profile.html" class="icon-btn"><i class="fas fa-user"></i></a>
+          <a href="settings.html" class="icon-btn"><i class="fas fa-cog"></i></a>
+          <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Toggle menu">
+            <i class="fas fa-bars"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Mobile Navigation Menu -->
+    <div class="mobile-nav" id="mobile-nav">
+      <div class="mobile-nav-links">
         <a href="chart.html">Chart</a>
         <a href="watchlist.html">Watchlist</a>
         <a href="screener.html">Screener</a>
@@ -528,11 +766,6 @@
         <a href="alerts.html">Alerts</a>
         <a href="trading.html">Trade</a>
         <a href="backtest.html">Backtest</a>
-      </nav>
-      <div class="header-actions">
-        <button id="theme-toggle" class="icon-btn"><i class="fas fa-moon"></i></button>
-        <a href="profile.html" class="icon-btn"><i class="fas fa-user"></i></a>
-        <a href="settings.html" class="icon-btn"><i class="fas fa-cog"></i></a>
       </div>
     </div>
   </header>
@@ -655,6 +888,26 @@
     const savedTheme = localStorage.getItem('theme') || 'dark';
     body.setAttribute('data-theme', savedTheme);
     if (savedTheme === 'light') themeIcon.classList.replace('fa-moon', 'fa-sun');
+
+    // Mobile Menu Toggle
+    const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+    const mobileNav = document.getElementById('mobile-nav');
+    mobileMenuToggle.addEventListener('click', () => {
+      mobileNav.classList.toggle('active');
+      const icon = mobileMenuToggle.querySelector('i');
+      icon.classList.toggle('fa-bars');
+      icon.classList.toggle('fa-times');
+    });
+
+    // Close mobile menu when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!mobileMenuToggle.contains(e.target) && !mobileNav.contains(e.target)) {
+        mobileNav.classList.remove('active');
+        const icon = mobileMenuToggle.querySelector('i');
+        icon.classList.add('fa-bars');
+        icon.classList.remove('fa-times');
+      }
+    });
 
     // Alert Management
     const alertsList = document.getElementById('alerts-list');
