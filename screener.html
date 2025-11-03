@@ -78,6 +78,7 @@
       padding: 2rem 1rem;
     }
     
+    /* Header Styles */
     .header {
       background: var(--bg-light);
       border-bottom: 1px solid var(--border);
@@ -86,6 +87,12 @@
       top: 0;
       z-index: 100;
       transition: background-color 0.3s, border-color 0.3s;
+    }
+    
+    .header-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 1rem;
     }
     
     .flex-between {
@@ -103,27 +110,56 @@
       font-weight: 700;
       font-size: 1.4rem;
       color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
     
     .logo i {
       font-size: 1.5rem;
-      margin-right: 0.5rem;
+    }
+    
+    .nav-container {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    
+    .nav-links {
+      display: flex;
+      gap: 1.5rem;
     }
     
     .nav-links a {
-      margin: 0 0.75rem;
       font-weight: 500;
+      transition: color 0.2s;
+      padding: 0.5rem 0;
       position: relative;
     }
     
-    .nav-links a:hover::after {
+    .nav-links a:hover {
+      color: var(--accent);
+    }
+    
+    .nav-links a::after {
       content: '';
       position: absolute;
-      bottom: -5px;
+      bottom: 0;
       left: 0;
-      width: 100%;
+      width: 0;
       height: 2px;
       background: var(--accent);
+      transition: width 0.3s;
+    }
+    
+    .nav-links a:hover::after {
+      width: 100%;
+    }
+    
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
     
     .icon-btn {
@@ -133,13 +169,61 @@
       font-size: 1.2rem;
       cursor: pointer;
       padding: 0.5rem;
-      border-radius: 50%;
-      transition: background-color 0.2s, color 0.2s;
+      border-radius: 6px;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     
     .icon-btn:hover {
-      background: var(--border);
+      background: rgba(255, 255, 255, 0.05);
       color: var(--text);
+    }
+    
+    /* Mobile Navigation */
+    .mobile-menu-toggle {
+      display: none;
+      background: none;
+      border: none;
+      color: var(--text);
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0.5rem;
+    }
+    
+    .mobile-nav {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: var(--bg-light);
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      z-index: 99;
+      padding: 1rem;
+    }
+    
+    .mobile-nav.active {
+      display: block;
+    }
+    
+    .mobile-nav-links {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    
+    .mobile-nav-links a {
+      padding: 0.75rem 1rem;
+      border-radius: 6px;
+      transition: background 0.2s;
+      font-weight: 500;
+    }
+    
+    .mobile-nav-links a:hover {
+      background: rgba(255, 255, 255, 0.05);
     }
 
     /* Page Header */
@@ -359,7 +443,7 @@
       border-bottom: none;
     }
 
-    /* Table Section */
+    /* Table Section - Mobile Optimized */
     .table-section {
       background: var(--card);
       border-radius: 8px;
@@ -395,19 +479,21 @@
       font-size: 0.9rem;
     }
     
-    table {
+    /* Desktop Table */
+    .desktop-table {
       width: 100%;
       border-collapse: collapse;
+      display: table;
     }
     
-    th, td {
+    .desktop-table th, .desktop-table td {
       padding: 1rem;
       text-align: left;
       border-bottom: 1px solid var(--border);
       transition: background-color 0.3s, border-color 0.3s;
     }
     
-    th {
+    .desktop-table th {
       background: var(--table-header);
       font-weight: 600;
       cursor: pointer;
@@ -415,33 +501,74 @@
       user-select: none;
     }
     
-    th.sortable:hover {
+    .desktop-table th.sortable:hover {
       background: var(--card-hover);
     }
     
-    th.sortable::after {
+    .desktop-table th.sortable::after {
       content: '↕';
       margin-left: 0.5rem;
       opacity: 0.5;
     }
     
-    th.sort-asc::after {
+    .desktop-table th.sort-asc::after {
       content: '↑';
       opacity: 1;
     }
     
-    th.sort-desc::after {
+    .desktop-table th.sort-desc::after {
       content: '↓';
       opacity: 1;
     }
     
-    tbody tr {
+    .desktop-table tbody tr {
       background: var(--table-row);
       transition: background-color 0.2s;
     }
     
-    tbody tr:hover {
+    .desktop-table tbody tr:hover {
       background: var(--table-row-hover);
+    }
+    
+    /* Mobile Table */
+    .mobile-table {
+      display: none;
+      padding: 0.5rem;
+    }
+    
+    .mobile-table-item {
+      background: var(--table-row);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+      box-shadow: 0 2px 5px var(--shadow);
+      transition: background-color 0.2s;
+    }
+    
+    .mobile-table-item:hover {
+      background: var(--table-row-hover);
+    }
+    
+    .mobile-table-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+    
+    .mobile-table-row:last-child {
+      margin-bottom: 0;
+    }
+    
+    .mobile-table-label {
+      font-weight: 500;
+      color: var(--text-light);
+      font-size: 0.85rem;
+    }
+    
+    .mobile-table-value {
+      font-weight: 500;
+      text-align: right;
     }
     
     .symbol {
@@ -637,6 +764,10 @@
 
     /* Responsive */
     @media (max-width: 768px) {
+      .container {
+        padding: 1.5rem 1rem;
+      }
+      
       .filters-content {
         grid-template-columns: 1fr;
       }
@@ -645,12 +776,8 @@
         display: none;
       }
       
-      th, td {
-        padding: 0.75rem 0.5rem;
-      }
-      
-      .table-section {
-        overflow-x: auto;
+      .mobile-menu-toggle {
+        display: block;
       }
       
       .page-header {
@@ -667,6 +794,78 @@
       .stats-bar {
         flex-direction: column;
         gap: 1rem;
+      }
+      
+      /* Switch to mobile table */
+      .desktop-table {
+        display: none;
+      }
+      
+      .mobile-table {
+        display: block;
+      }
+      
+      .table-header {
+        padding: 1rem;
+      }
+    }
+    
+    @media (max-width: 576px) {
+      .container {
+        padding: 1rem 0.75rem;
+      }
+      
+      .header-container {
+        padding: 0 0.75rem;
+      }
+      
+      .logo {
+        font-size: 1.2rem;
+      }
+      
+      .logo i {
+        font-size: 1.3rem;
+      }
+      
+      .mobile-nav {
+        padding: 0.75rem;
+      }
+      
+      .page-title {
+        font-size: 1.5rem;
+      }
+      
+      .stat-card {
+        padding: 0.75rem 1rem;
+      }
+      
+      .stat-value {
+        font-size: 1.3rem;
+      }
+      
+      .filters-header, .filters-content {
+        padding: 1rem;
+      }
+      
+      .table-header {
+        padding: 0.75rem;
+      }
+      
+      .mobile-table {
+        padding: 0.25rem;
+      }
+      
+      .mobile-table-item {
+        padding: 0.75rem;
+      }
+      
+      .action-btn {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.75rem;
+      }
+      
+      .modal-content {
+        padding: 1.5rem;
       }
     }
   </style>
@@ -693,18 +892,44 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TSXGBB76"
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- End Google Tag Manager (noscript) -->
+  
   <header class="header">
-    <div class="container flex-between">
-      <div class="logo"><a href="index.html" class="flex-center"><i class="fas fa-filter"></i><span>Screener</span></a></div>
-      <nav class="nav-links">
+    <div class="header-container flex-between">
+      <div class="logo">
+        <a href="index.html" class="flex-center">
+          <i class="fas fa-filter"></i>
+          <span>TradeVision</span>
+        </a>
+      </div>
+      
+      <div class="nav-container">
+        <nav class="nav-links">
+          <a href="chart.html">Chart</a>
+          <a href="watchlist.html">Watchlist</a>
+          <a href="screener.html">Screener</a>
+          <a href="ideas.html">Ideas</a>
+          <a href="alerts.html">Alerts</a>
+        </nav>
+        
+        <div class="header-actions">
+          <button id="theme-toggle" class="icon-btn" aria-label="Toggle theme">
+            <i class="fas fa-moon"></i>
+          </button>
+          <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Toggle menu">
+            <i class="fas fa-bars"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Mobile Navigation Menu -->
+    <div class="mobile-nav" id="mobile-nav">
+      <div class="mobile-nav-links">
         <a href="chart.html">Chart</a>
         <a href="watchlist.html">Watchlist</a>
         <a href="screener.html">Screener</a>
         <a href="ideas.html">Ideas</a>
         <a href="alerts.html">Alerts</a>
-      </nav>
-      <div class="header-actions">
-        <button id="theme-toggle" class="icon-btn"><i class="fas fa-moon"></i></button>
       </div>
     </div>
   </header>
@@ -809,7 +1034,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           </select>
         </div>
       </div>
-      <table id="screener-table">
+      
+      <!-- Desktop Table -->
+      <table id="screener-table" class="desktop-table">
         <thead>
           <tr>
             <th class="sortable" data-col="symbol">Symbol</th>
@@ -825,6 +1052,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <tr><td colspan="7" class="loading">Loading live data with market cap and FDV ratios...</td></tr>
         </tbody>
       </table>
+      
+      <!-- Mobile Table -->
+      <div id="mobile-screener-body" class="mobile-table">
+        <!-- Filled by JavaScript -->
+      </div>
     </div>
   </div>
 
@@ -890,6 +1122,26 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     const savedTheme = localStorage.getItem('theme') || 'dark';
     body.setAttribute('data-theme', savedTheme);
     if (savedTheme === 'light') themeIcon.classList.replace('fa-moon', 'fa-sun');
+
+    // Mobile Menu Toggle
+    const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+    const mobileNav = document.getElementById('mobile-nav');
+    mobileMenuToggle.addEventListener('click', () => {
+      mobileNav.classList.toggle('active');
+      const icon = mobileMenuToggle.querySelector('i');
+      icon.classList.toggle('fa-bars');
+      icon.classList.toggle('fa-times');
+    });
+
+    // Close mobile menu when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!mobileMenuToggle.contains(e.target) && !mobileNav.contains(e.target)) {
+        mobileNav.classList.remove('active');
+        const icon = mobileMenuToggle.querySelector('i');
+        icon.classList.add('fa-bars');
+        icon.classList.remove('fa-times');
+      }
+    });
 
     // API URLs
     const BINANCE_INFO_URL = 'https://api.binance.com/api/v3/exchangeInfo';
@@ -1081,7 +1333,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
     // Render Table
     function renderTable(symbols) {
-      const tbody = document.getElementById('screener-body');
       const filtered = symbols.filter(s => {
         const search = document.getElementById('symbol-search-input').value.toLowerCase();
         if (search && !s.name.toLowerCase().includes(search) && !s.symbol.toLowerCase().includes(search)) return false;
@@ -1124,8 +1375,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         return sortAsc ? valA - valB : valB - valA;
       });
 
+      // Render Desktop Table
+      const tbody = document.getElementById('screener-body');
       if (filtered.length === 0) {
         tbody.innerHTML = '<tr><td colspan="7" class="no-results">No results found. Try adjusting your filters.</td></tr>';
+        document.getElementById('mobile-screener-body').innerHTML = '<div class="no-results">No results found. Try adjusting your filters.</div>';
         return;
       }
 
@@ -1147,6 +1401,49 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           <td>${formatFDVRatio(marketInfo.fdvRatio)}</td>
           <td><button class="${buttonClass}" data-sym="${s.symbol}" ${isInWatchlist ? 'disabled' : ''}>${buttonText}</button></td>
         </tr>`;
+      }).join('');
+      
+      // Render Mobile Table
+      const mobileBody = document.getElementById('mobile-screener-body');
+      mobileBody.innerHTML = filtered.map(s => {
+        const live = liveData[s.symbol] || {};
+        const marketInfo = marketCapData[s.symbol] || {};
+        const changeClass = live.change >= 0 ? 'change' : 'change negative';
+        const watchlist = JSON.parse(localStorage.getItem('watchlist')) || [];
+        const isInWatchlist = watchlist.includes(s.symbol);
+        const buttonText = isInWatchlist ? 'Added' : '+ Watch';
+        const buttonClass = isInWatchlist ? 'action-btn added' : 'action-btn';
+        
+        return `<div class="mobile-table-item">
+          <div class="mobile-table-row">
+            <div class="mobile-table-label">Symbol</div>
+            <div class="mobile-table-value"><a href="chart.html?symbol=${s.symbol}" class="symbol">${s.symbol}</a></div>
+          </div>
+          <div class="mobile-table-row">
+            <div class="mobile-table-label">Price</div>
+            <div class="mobile-table-value">${live.price ? live.price.toFixed(4) : '--'}</div>
+          </div>
+          <div class="mobile-table-row">
+            <div class="mobile-table-label">24h Change</div>
+            <div class="mobile-table-value"><span class="${changeClass}">${live.change ? (live.change >= 0 ? '+' : '') + live.change.toFixed(2) + '%' : '--'}</span></div>
+          </div>
+          <div class="mobile-table-row">
+            <div class="mobile-table-label">24h Volume</div>
+            <div class="mobile-table-value">${live.volume ? formatNumber(live.volume) : '--'}</div>
+          </div>
+          <div class="mobile-table-row">
+            <div class="mobile-table-label">Market Cap</div>
+            <div class="mobile-table-value">${marketInfo.marketCap ? formatNumber(marketInfo.marketCap) : '--'}</div>
+          </div>
+          <div class="mobile-table-row">
+            <div class="mobile-table-label">FDV Ratio</div>
+            <div class="mobile-table-value">${formatFDVRatio(marketInfo.fdvRatio)}</div>
+          </div>
+          <div class="mobile-table-row">
+            <div class="mobile-table-label">Action</div>
+            <div class="mobile-table-value"><button class="${buttonClass}" data-sym="${s.symbol}" ${isInWatchlist ? 'disabled' : ''}>${buttonText}</button></div>
+          </div>
+        </div>`;
       }).join('');
       
       updateSortIndicators();
@@ -1193,7 +1490,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     });
 
     // Add to Watchlist
-    document.getElementById('screener-table').addEventListener('click', e => {
+    document.addEventListener('click', e => {
       if (e.target.classList.contains('action-btn') && !e.target.classList.contains('added')) {
         const sym = e.target.dataset.sym;
         let watchlist = JSON.parse(localStorage.getItem('watchlist')) || [];
