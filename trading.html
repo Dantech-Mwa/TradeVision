@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Trading - TradeVision</title>
-  <link rel="icon" href="assets/icons/chart.svg" type="image/svg+xml">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📈</text></svg>">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -78,6 +78,7 @@
       padding: 0 1rem;
     }
     
+    /* Header Styles */
     .header {
       background: var(--bg-light);
       border-bottom: 1px solid var(--border);
@@ -86,6 +87,12 @@
       top: 0;
       z-index: 100;
       backdrop-filter: blur(10px);
+    }
+    
+    .header-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 1rem;
     }
     
     .flex-between {
@@ -104,10 +111,19 @@
       font-weight: 700;
       font-size: 1.4rem;
       color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
     
     .logo i {
       font-size: 1.5rem;
+    }
+    
+    .nav-container {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
     }
     
     .nav-links {
@@ -158,6 +174,51 @@
     .header-actions {
       display: flex;
       gap: 0.5rem;
+    }
+    
+    /* Mobile Navigation */
+    .mobile-menu-toggle {
+      display: none;
+      background: none;
+      border: none;
+      color: var(--text);
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0.5rem;
+    }
+    
+    .mobile-nav {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: var(--bg-light);
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      z-index: 99;
+      padding: 1rem;
+    }
+    
+    .mobile-nav.active {
+      display: block;
+    }
+    
+    .mobile-nav-links {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    
+    .mobile-nav-links a {
+      padding: 0.75rem 1rem;
+      border-radius: 6px;
+      transition: background 0.2s;
+      font-weight: 500;
+    }
+    
+    .mobile-nav-links a:hover {
+      background: rgba(255, 255, 255, 0.05);
     }
     
     .trading-container {
@@ -718,6 +779,7 @@
       color: var(--text-light);
     }
     
+    /* Responsive */
     @media (max-width: 1200px) {
       .trading-container {
         grid-template-columns: 1fr;
@@ -725,6 +787,22 @@
     }
     
     @media (max-width: 768px) {
+      .container {
+        padding: 0 0.75rem;
+      }
+      
+      .header-container {
+        padding: 0 0.75rem;
+      }
+      
+      .nav-links {
+        display: none;
+      }
+      
+      .mobile-menu-toggle {
+        display: block;
+      }
+      
       .form-row {
         grid-template-columns: 1fr;
       }
@@ -733,21 +811,127 @@
         grid-template-columns: 1fr;
       }
       
-      .nav-links {
-        display: none;
-      }
-      
       .performance-stats {
         grid-template-columns: 1fr;
       }
+      
+      .trading-panel, .positions-table, .wallet-card, .market-card, .api-card, .risk-card {
+        padding: 1rem;
+      }
+      
+      .tabs {
+        overflow-x: auto;
+        white-space: nowrap;
+      }
+      
+      .tab {
+        padding: 0.75rem 1rem;
+      }
+    }
+    
+    @media (max-width: 576px) {
+      .container {
+        padding: 0 0.5rem;
+      }
+      
+      .header-container {
+        padding: 0 0.5rem;
+      }
+      
+      .logo {
+        font-size: 1.2rem;
+      }
+      
+      .logo i {
+        font-size: 1.3rem;
+      }
+      
+      .mobile-nav {
+        padding: 0.75rem;
+      }
+      
+      .trading-panel h2, .positions-table h2 {
+        font-size: 1.1rem;
+      }
+      
+      th, td {
+        padding: 0.75rem 0.5rem;
+        font-size: 0.85rem;
+      }
+      
+      .btn {
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+      }
+      
+      .balance {
+        font-size: 1.3rem;
+      }
+      
+      .modal-content {
+        padding: 1.5rem;
+      }
     }
   </style>
+  <!-- Google Tag Manager -->
+  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-TSXGBB76');</script>
+  <!-- End Google Tag Manager -->
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-L7SHGV8S75"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-L7SHGV8S75');
+  </script>
 </head>
 <body data-theme="dark">
+  <!-- Google Tag Manager (noscript) -->
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TSXGBB76"
+  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  <!-- End Google Tag Manager (noscript) -->
+  
   <header class="header">
-    <div class="container flex-between">
-      <div class="logo"><a href="index.html" class="flex-center"><i class="fas fa-chart-line"></i><span>TradeVision</span></a></div>
-      <nav class="nav-links">
+    <div class="header-container flex-between">
+      <div class="logo">
+        <a href="index.html" class="flex-center">
+          <i class="fas fa-chart-line"></i>
+          <span>TradeVision</span>
+        </a>
+      </div>
+      
+      <div class="nav-container">
+        <nav class="nav-links">
+          <a href="chart.html">Chart</a>
+          <a href="watchlist.html">Watchlist</a>
+          <a href="screener.html">Screener</a>
+          <a href="ideas.html">Ideas</a>
+          <a href="alerts.html">Alerts</a>
+          <a href="trading.html" class="active">Trade</a>
+          <a href="backtest.html">Backtest</a>
+        </nav>
+        
+        <div class="header-actions">
+          <button id="theme-toggle" class="icon-btn" aria-label="Toggle theme">
+            <i class="fas fa-moon"></i>
+          </button>
+          <a href="profile.html" class="icon-btn"><i class="fas fa-user"></i></a>
+          <a href="settings.html" class="icon-btn"><i class="fas fa-cog"></i></a>
+          <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Toggle menu">
+            <i class="fas fa-bars"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Mobile Navigation Menu -->
+    <div class="mobile-nav" id="mobile-nav">
+      <div class="mobile-nav-links">
         <a href="chart.html">Chart</a>
         <a href="watchlist.html">Watchlist</a>
         <a href="screener.html">Screener</a>
@@ -755,11 +939,6 @@
         <a href="alerts.html">Alerts</a>
         <a href="trading.html" class="active">Trade</a>
         <a href="backtest.html">Backtest</a>
-      </nav>
-      <div class="header-actions">
-        <button id="theme-toggle" class="icon-btn"><i class="fas fa-moon"></i></button>
-        <a href="profile.html" class="icon-btn"><i class="fas fa-user"></i></a>
-        <a href="settings.html" class="icon-btn"><i class="fas fa-cog"></i></a>
       </div>
     </div>
   </header>
@@ -773,7 +952,7 @@
           <div class="form-row">
             <div class="form-group">
               <label>Symbol</label>
-              <input type="text" id="trade-symbol" value="BTC-USD" placeholder="e.g., BTC-USD, ETH-USD">
+              <input type="text" id="trade-symbol" value="BTCUSDT" placeholder="e.g., BTCUSDT, ETHUSDT">
             </div>
             <div class="form-group">
               <label>Quantity</label>
@@ -991,7 +1170,7 @@
           <h3><i class="fas fa-wallet"></i> Portfolio</h3>
           <div class="balance" id="wallet-balance">$100,000.00</div>
           <div class="balance-change positive" id="wallet-change">+0.00% Today</div>
-          <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+          <div style="margin-top: 1rem; display: flex; gap: 0.5rem; flex-direction: column;">
             <button class="btn btn-secondary btn-sm" id="add-funds-btn">
               <i class="fas fa-plus"></i> Add Funds
             </button>
@@ -1140,6 +1319,34 @@
     </div>
   </div>
 
+  <!-- Add Funds Modal -->
+  <div class="modal" id="add-funds-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Add Funds to Account</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="form-group">
+        <label>Amount ($)</label>
+        <input type="number" id="funds-amount" placeholder="Enter amount" min="10" step="10">
+      </div>
+      <div class="form-group">
+        <label>Payment Method</label>
+        <select id="payment-method">
+          <option value="bank">Bank Transfer</option>
+          <option value="card">Credit/Debit Card</option>
+          <option value="crypto">Cryptocurrency</option>
+        </select>
+      </div>
+      <div id="payment-details">
+        <!-- Payment details will be shown based on selection -->
+      </div>
+      <button class="btn btn-buy" style="width: 100%; margin-top: 1rem;" id="confirm-add-funds">
+        <i class="fas fa-plus"></i> Add Funds
+      </button>
+    </div>
+  </div>
+
   <div class="notification" id="notification">
     <i class="fas fa-check-circle"></i>
     <div>
@@ -1239,13 +1446,14 @@
       }
       
       connectToExchanges() {
-        // Connect to Binance
+        // Connect to Binance with real WebSocket
         this.connectToBinance();
         
-        // Connect to Coinbase (will attempt even without API keys for demo)
-        this.connectToCoinbase();
+        // Connect to other exchanges if API keys are available
+        if (this.apiKeys.coinbase) {
+          this.connectToCoinbase();
+        }
         
-        // Connect to Kraken if API keys are available
         if (this.apiKeys.kraken) {
           this.connectToKraken();
         }
@@ -1254,7 +1462,7 @@
       connectToBinance() {
         try {
           // Connect to Binance WebSocket for multiple symbols
-          const symbols = ['btcusdt', 'ethusdt', 'adausdt', 'dotusdt', 'linkusdt'];
+          const symbols = ['btcusdt', 'ethusdt', 'adausdt', 'dotusdt', 'linkusdt', 'bnbusdt', 'solusdt', 'xrpusdt'];
           
           symbols.forEach(symbol => {
             const ws = new WebSocket(`wss://stream.binance.com:9443/ws/${symbol}@ticker`);
@@ -1262,20 +1470,23 @@
             ws.onopen = () => {
               this.updateExchangeStatus('binance', true);
               this.isConnected = true;
+              this.updateConnectionStatus(true);
             };
             
             ws.onmessage = (event) => {
               const data = JSON.parse(event.data);
-              this.handleMarketData(data, 'binance');
+              this.handleBinanceData(data);
             };
             
             ws.onerror = (error) => {
               console.error('Binance WebSocket error:', error);
               this.updateExchangeStatus('binance', false);
+              this.updateConnectionStatus(false);
             };
             
             ws.onclose = () => {
               this.updateExchangeStatus('binance', false);
+              this.updateConnectionStatus(false);
               // Attempt to reconnect after 5 seconds
               setTimeout(() => this.connectToBinance(), 5000);
             };
@@ -1285,82 +1496,27 @@
         } catch (error) {
           console.error('Failed to connect to Binance:', error);
           this.updateExchangeStatus('binance', false);
+          this.updateConnectionStatus(false);
         }
       }
       
-      connectToCoinbase() {
-        try {
-          // Coinbase WebSocket connection
-          const ws = new WebSocket('wss://ws-feed.pro.coinbase.com');
-          
-          const subscribeMessage = {
-            type: 'subscribe',
-            product_ids: ['BTC-USD', 'ETH-USD', 'ADA-USD', 'DOT-USD', 'LINK-USD'],
-            channels: ['ticker']
-          };
-          
-          ws.onopen = () => {
-            ws.send(JSON.stringify(subscribeMessage));
-            this.updateExchangeStatus('coinbase', true);
-          };
-          
-          ws.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            if (data.type === 'ticker') {
-              this.handleCoinbaseData(data);
-            }
-          };
-          
-          ws.onerror = (error) => {
-            console.error('Coinbase WebSocket error:', error);
-            this.updateExchangeStatus('coinbase', false);
-          };
-          
-          ws.onclose = () => {
-            this.updateExchangeStatus('coinbase', false);
-            // Attempt to reconnect after 5 seconds
-            setTimeout(() => this.connectToCoinbase(), 5000);
-          };
-          
-          this.wsConnections['coinbase'] = ws;
-        } catch (error) {
-          console.error('Failed to connect to Coinbase:', error);
-          this.updateExchangeStatus('coinbase', false);
-        }
-      }
-      
-      connectToKraken() {
-        // Implementation for Kraken WebSocket connection
-        // This would require API keys for real connection
-        this.updateExchangeStatus('kraken', false); // Set to false for demo
-      }
-      
-      handleCoinbaseData(data) {
-        const symbol = data.product_id;
-        const price = parseFloat(data.price);
-        const change = data.price && data.open_24h ? 
-          ((price - parseFloat(data.open_24h)) / parseFloat(data.open_24h)) * 100 : 0;
+      handleBinanceData(data) {
+        const symbol = data.s;
+        const price = parseFloat(data.c);
+        const change = parseFloat(data.P);
+        const volume = parseFloat(data.v);
         
         this.currentPrices[symbol] = {
           price,
           change,
-          exchange: 'coinbase'
+          volume,
+          exchange: 'binance'
         };
         
         // Update UI if this is the selected symbol
         const currentSymbol = document.getElementById('trade-symbol').value;
         if (symbol === currentSymbol) {
-          document.getElementById('current-price').textContent = `$${price.toFixed(2)}`;
-          
-          const changeElement = document.getElementById('price-change');
-          changeElement.textContent = `${change > 0 ? '+' : ''}${change.toFixed(2)}%`;
-          changeElement.className = `price-change ${change >= 0 ? 'positive' : 'negative'}`;
-          
-          // Update price input for limit orders
-          const orderType = document.getElementById('trade-type').value;
-          if (orderType === 'limit') {
-            document.getElementById('trade-price').value = price.toFixed(2);
-          }
+          this.updateCurrentPriceDisplay(price, change);
         }
         
         // Update market overview
@@ -1371,6 +1527,30 @@
         
         // Update risk calculator
         this.updateRiskCalculator();
+      }
+      
+      updateCurrentPriceDisplay(price, change) {
+        document.getElementById('current-price').textContent = `$${price.toFixed(2)}`;
+        
+        const changeElement = document.getElementById('price-change');
+        changeElement.textContent = `${change > 0 ? '+' : ''}${change.toFixed(2)}%`;
+        changeElement.className = `price-change ${change >= 0 ? 'positive' : 'negative'}`;
+        
+        // Update price input for limit orders
+        const orderType = document.getElementById('trade-type').value;
+        if (orderType === 'limit') {
+          document.getElementById('trade-price').value = price.toFixed(2);
+        }
+      }
+      
+      connectToCoinbase() {
+        // Coinbase connection would go here with real API keys
+        this.updateExchangeStatus('coinbase', false); // Set to false for demo
+      }
+      
+      connectToKraken() {
+        // Kraken connection would go here with real API keys
+        this.updateExchangeStatus('kraken', false); // Set to false for demo
       }
       
       updateExchangeStatus(exchange, connected) {
@@ -1381,46 +1561,17 @@
         }
       }
       
-      handleMarketData(data, exchange) {
-        const symbol = data.s;
-        const price = parseFloat(data.c);
-        const change = parseFloat(data.P);
-        
-        this.currentPrices[symbol] = {
-          price,
-          change,
-          exchange
-        };
-        
-        // Update UI if this is the selected symbol
-        const currentSymbol = document.getElementById('trade-symbol').value;
-        if (symbol === currentSymbol) {
-          document.getElementById('current-price').textContent = `$${price.toFixed(2)}`;
-          
-          const changeElement = document.getElementById('price-change');
-          changeElement.textContent = `${change > 0 ? '+' : ''}${change.toFixed(2)}%`;
-          changeElement.className = `price-change ${change >= 0 ? 'positive' : 'negative'}`;
-          
-          // Update price input for limit orders
-          const orderType = document.getElementById('trade-type').value;
-          if (orderType === 'limit') {
-            document.getElementById('trade-price').value = price.toFixed(2);
-          }
+      updateConnectionStatus(connected) {
+        const statusElement = document.getElementById('connection-status');
+        if (statusElement) {
+          statusElement.className = `status ${connected ? 'connected' : 'disconnected'}`;
+          statusElement.innerHTML = `<i class="fas fa-circle"></i> <span>${connected ? 'Connected to Live Markets' : 'Connecting to Exchange...'}</span>`;
         }
-        
-        // Update market overview
-        this.updateMarketOverview();
-        
-        // Update positions with current prices
-        this.renderPositions();
-        
-        // Update risk calculator
-        this.updateRiskCalculator();
       }
       
       updateMarketOverview() {
         const marketList = document.getElementById('market-list');
-        const popularSymbols = ['BTC-USD', 'ETH-USD', 'ADA-USD', 'DOT-USD', 'LINK-USD'];
+        const popularSymbols = ['BTCUSDT', 'ETHUSDT', 'ADAUSDT', 'DOTUSDT', 'BNBUSDT'];
         
         marketList.innerHTML = '';
         
@@ -1512,8 +1663,25 @@
         });
         
         // Modal close
-        document.querySelector('.modal-close').addEventListener('click', () => {
-          document.getElementById('api-keys-modal').classList.remove('active');
+        document.querySelectorAll('.modal-close').forEach(closeBtn => {
+          closeBtn.addEventListener('click', (e) => {
+            e.target.closest('.modal').classList.remove('active');
+          });
+        });
+        
+        // Add funds button
+        document.getElementById('add-funds-btn').addEventListener('click', () => {
+          this.showAddFundsModal();
+        });
+        
+        // Confirm add funds
+        document.getElementById('confirm-add-funds').addEventListener('click', () => {
+          this.addFunds();
+        });
+        
+        // Payment method change
+        document.getElementById('payment-method').addEventListener('change', (e) => {
+          this.updatePaymentDetails(e.target.value);
         });
         
         // 2FA toggle
@@ -1528,8 +1696,29 @@
         
         // Close modal when clicking outside
         window.addEventListener('click', (e) => {
-          if (e.target === document.getElementById('api-keys-modal')) {
-            document.getElementById('api-keys-modal').classList.remove('active');
+          if (e.target.classList.contains('modal')) {
+            e.target.classList.remove('active');
+          }
+        });
+        
+        // Mobile menu toggle
+        const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+        const mobileNav = document.getElementById('mobile-nav');
+        
+        mobileMenuToggle.addEventListener('click', () => {
+          mobileNav.classList.toggle('active');
+          const icon = mobileMenuToggle.querySelector('i');
+          icon.classList.toggle('fa-bars');
+          icon.classList.toggle('fa-times');
+        });
+        
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', (e) => {
+          if (!mobileMenuToggle.contains(e.target) && !mobileNav.contains(e.target)) {
+            mobileNav.classList.remove('active');
+            const icon = mobileMenuToggle.querySelector('i');
+            icon.classList.add('fa-bars');
+            icon.classList.remove('fa-times');
           }
         });
       }
@@ -1583,15 +1772,10 @@
         const marketData = this.currentPrices[symbol];
         
         if (marketData) {
-          document.getElementById('current-price').textContent = `$${marketData.price.toFixed(2)}`;
-          
-          // Update price input for limit orders
-          const orderType = document.getElementById('trade-type').value;
-          if (orderType !== 'market') {
-            document.getElementById('trade-price').value = marketData.price.toFixed(2);
-          }
+          this.updateCurrentPriceDisplay(marketData.price, marketData.change);
         } else {
           document.getElementById('current-price').textContent = '--';
+          document.getElementById('price-change').textContent = '--';
         }
         
         // Update risk calculator
@@ -1638,7 +1822,6 @@
         }
         
         // For demonstration, we'll simulate a paper trade
-        // In a real implementation, this would connect to exchange API
         if (side === 'buy') {
           this.placeAdvancedOrder(symbol, qty, orderType, price, 'buy');
         } else {
@@ -1805,6 +1988,84 @@
         }
       }
       
+      showAddFundsModal() {
+        document.getElementById('add-funds-modal').classList.add('active');
+        this.updatePaymentDetails('bank');
+      }
+      
+      updatePaymentDetails(method) {
+        const detailsDiv = document.getElementById('payment-details');
+        let detailsHTML = '';
+        
+        switch(method) {
+          case 'bank':
+            detailsHTML = `
+              <div class="form-group">
+                <label>Bank Account Number</label>
+                <input type="text" placeholder="Enter account number">
+              </div>
+              <div class="form-group">
+                <label>Routing Number</label>
+                <input type="text" placeholder="Enter routing number">
+              </div>
+            `;
+            break;
+          case 'card':
+            detailsHTML = `
+              <div class="form-group">
+                <label>Card Number</label>
+                <input type="text" placeholder="Enter card number">
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Expiry Date</label>
+                  <input type="text" placeholder="MM/YY">
+                </div>
+                <div class="form-group">
+                  <label>CVV</label>
+                  <input type="text" placeholder="CVV">
+                </div>
+              </div>
+            `;
+            break;
+          case 'crypto':
+            detailsHTML = `
+              <div class="form-group">
+                <label>Cryptocurrency</label>
+                <select>
+                  <option value="btc">Bitcoin (BTC)</option>
+                  <option value="eth">Ethereum (ETH)</option>
+                  <option value="usdt">Tether (USDT)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Wallet Address</label>
+                <input type="text" placeholder="Enter wallet address">
+              </div>
+            `;
+            break;
+        }
+        
+        detailsDiv.innerHTML = detailsHTML;
+      }
+      
+      addFunds() {
+        const amount = parseFloat(document.getElementById('funds-amount').value);
+        
+        if (!amount || amount < 10) {
+          this.showNotification('Please enter a valid amount (minimum $10)', 'error');
+          return;
+        }
+        
+        // Simulate adding funds (in a real app, this would connect to payment processor)
+        this.balance += amount;
+        localStorage.setItem('balance', this.balance.toString());
+        
+        this.updateWalletDisplay();
+        this.showNotification(`Successfully added $${amount.toFixed(2)} to your account`, 'success');
+        document.getElementById('add-funds-modal').classList.remove('active');
+      }
+      
       toggleMarginTrading(button) {
         this.riskSettings.useMargin = !this.riskSettings.useMargin;
         localStorage.setItem('riskSettings', JSON.stringify(this.riskSettings));
@@ -1865,10 +2126,8 @@
         this.showNotification(`${exchange.charAt(0).toUpperCase() + exchange.slice(1)} API keys saved successfully`, 'success');
         
         // Reconnect to exchange if applicable
-        if (exchange === 'coinbase') {
-          this.connectToCoinbase();
-        } else if (exchange === 'kraken') {
-          this.connectToKraken();
+        if (exchange === 'binance') {
+          this.connectToBinance();
         }
       }
       
