@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Pine Editor – TradeVision</title>
-  <link rel="icon" href="assets/icons/code.svg" type="image/svg+xml">
+  <title>PineLab – Pro Pine Script™ Editor</title>
+  <link rel="icon" href="https://api.iconify.design/mdi/code-slash.svg" type="image/svg+xml">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <!-- CodeMirror Core + Addons -->
+  <!-- CodeMirror -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/lint/lint.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/dialog/dialog.min.css">
@@ -26,7 +26,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/search/searchcursor.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/search/matchesonscrollbar.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/scroll/annotatescrollbar.min.js"></script>
-
   <style>
     :root{
       --bg:#0e1117;--bg-light:#1e222d;--text:#e6edf3;--text-light:#8b949e;
@@ -50,28 +49,20 @@
     .nav-links a{margin:0 .6rem;font-weight:500;color:var(--text-light);font-size:.9rem;}
     .icon-btn{background:none;border:none;color:var(--text-light);font-size:1.1rem;cursor:pointer;padding:.4rem;border-radius:4px;transition:.2s;}
     .icon-btn:hover{background:var(--border);}
-
-    /* Layout */
-    .main-layout{display:grid;grid-template-rows:auto 1fr auto;height:100vh;}
+    .main-layout{display:grid;grid-template-rows:auto auto 1fr auto;height:100vh;}
+    .controls-bar{background:var(--bg-light);border-bottom:1px solid var(--border);padding:.4rem .8rem;display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;}
+    .input-group{display:flex;align-items:center;gap:.3rem;font-size:.8rem;}
+    .input-group label{font-weight:500;}
+    .input-group input,.input-group select{font-size:.8rem;padding:.2rem .4rem;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text);}
     .editor-chart{display:grid;grid-template-columns:1fr 1fr;gap:0;height:100%;}
     .panel{border-right:1px solid var(--border);display:flex;flex-direction:column;background:var(--bg-light);}
     .panel-header{padding:.6rem 1rem;border-bottom:1px solid var(--border);font-weight:600;font-size:.9rem;display:flex;justify-content:space-between;align-items:center;}
     .panel-body{flex:1;position:relative;overflow:hidden;}
     .status-bar{background:var(--bg);border-top:1px solid var(--border);padding:.3rem .8rem;font-size:.75rem;color:var(--text-light);display:flex;justify-content:space-between;}
-
-    /* CodeMirror Custom */
     .CodeMirror{height:100%;font-size:13px;}
     .CodeMirror-gutters{background:var(--gutter);border-right:1px solid var(--border);}
     .CodeMirror-cursor{border-left:2px solid var(--cursor);}
     .CodeMirror-selected{background:var(--selection);}
-    .CodeMirror-foldmarker{color:var(--accent);cursor:pointer;}
-    .cm-pine-keyword{color:#79c0ff;}
-    .cm-pine-function{color:#d2a8ff;}
-    .cm-pine-number{color:#79d7a1;}
-    .cm-pine-string{color:#a5d6ff;}
-    .cm-pine-comment{color:#8b949e;font-style:italic;}
-
-    /* Toolbar */
     .toolbar{background:var(--bg-light);border-bottom:1px solid var(--border);padding:.4rem .8rem;display:flex;gap:.5rem;align-items:center;}
     .btn{
       background:var(--accent);color:#fff;border:none;padding:.35rem .9rem;border-radius:4px;font-size:.85rem;font-weight:600;cursor:pointer;
@@ -81,140 +72,161 @@
     .btn:hover:not(:disabled){background:#1f6feb;}
     .btn-secondary{background:var(--border);color:var(--text);}
     .btn-secondary:hover{background:#444;}
-
-    /* Splitter */
     .splitter{width:6px;background:var(--border);cursor:col-resize;position:relative;z-index:10;}
     .splitter:hover{background:var(--accent);}
-
-    /* Console */
     .console{background:#0d1117;color:#c9d1d9;font-family:monospace;font-size:12px;padding:.5rem;overflow-y:auto;max-height:120px;border-top:1px solid var(--border);}
     .console-error{color:#f85149;}
     .console-info{color:#58a6ff;}
-
-    /* Footer */
+    .backtest-panel{background:var(--bg-light);border-top:1px solid var(--border);padding:.6rem .8rem;font-size:.8rem;}
+    .backtest-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:.5rem;}
+    .stat{font-weight:600;color:var(--accent);}
     .footer{background:var(--bg-light);border-top:1px solid var(--border);padding:.4rem 0;font-size:.75rem;text-align:center;color:var(--text-light);}
-
     @media(max-width:992px){
       .editor-chart{grid-template-columns:1fr;}
       .splitter{display:none;}
+      .controls-bar{flex-direction:column;align-items:stretch;}
     }
   </style>
 </head>
-
 <body data-theme="dark">
   <!-- Header -->
   <header class="header">
     <div class="container flex-between">
-      <div class="logo"><a href="#" class="flex"><i class="fas fa-code"></i> Pine Editor</a></div>
+      <div class="logo"><a href="#" class="flex"><i class="fas fa-code"></i> PineLab</a></div>
       <nav class="nav-links">
         <a href="#">Chart</a>
         <a href="#">Watchlist</a>
         <a href="#">Screener</a>
         <a href="#">Ideas</a>
       </nav>
-      <button id="theme-toggle" class="icon-btn"><i class="fas fa-moon"></i></button>
+      <div>
+        <button id="save-script" class="icon-btn" title="Save"><i class="fas fa-save"></i></button>
+        <button id="theme-toggle" class="icon-btn"><i class="fas fa-moon"></i></button>
+      </div>
     </div>
   </header>
 
-  <!-- Main Layout -->
-  <div class="main-layout">
-    <!-- Toolbar -->
-    <div class="toolbar">
-      <button id="run-script" class="btn"><i class="fas fa-play"></i> Add to Chart</button>
-      <button id="clear-console" class="btn btn-secondary"><i class="fas fa-trash"></i> Clear</button>
-      <div style="flex:1;"></div>
-      <span id="script-status" style="font-size:.8rem;color:var(--text-light);">Ready</span>
+  <!-- Controls Bar -->
+  <div class="controls-bar">
+    <div class="input-group">
+      <label>Symbol:</label>
+      <select id="symbol-select">
+        <option>BTCUSDT</option>
+        <option>ETHUSDT</option>
+        <option>SOLUSDT</option>
+        <option>BNBUSDT</option>
+      </select>
     </div>
+    <div class="input-group">
+      <label>Interval:</label>
+      <select id="interval-select">
+        <option value="1m">1m</option>
+        <option value="5m">5m</option>
+        <option value="15m">15m</option>
+        <option value="1h" selected>1h</option>
+        <option value="4h">4h</option>
+        <option value="1d">1d</option>
+      </select>
+    </div>
+    <div style="flex:1;"></div>
+    <span id="data-status" style="font-size:.8rem;color:var(--text-light);">Loading...</span>
+  </div>
 
-    <!-- Editor + Chart -->
-    <div class="editor-chart">
-      <!-- Editor Panel -->
-      <div class="panel">
-        <div class="panel-header">
-          <span>Pine Script™ (v5)</span>
-          <div>
-            <button class="icon-btn" title="Format"><i class="fas fa-align-left"></i></button>
-            <button class="icon-btn" title="Search"><i class="fas fa-search"></i></button>
-          </div>
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <button id="run-script" class="btn"><i class="fas fa-play"></i> Add to Chart</button>
+    <button id="clear-indicators" class="btn btn-secondary"><i class="fas fa-trash"></i> Clear</button>
+    <button id="export-tv" class="btn btn-secondary"><i class="fas fa-external-link-alt"></i> Export to TV</button>
+    <div style="flex:1;"></div>
+    <span id="script-status" style="font-size:.8rem;color:var(--text-light);">Ready</span>
+  </div>
+
+  <!-- Editor + Chart -->
+  <div class="editor-chart">
+    <!-- Editor Panel -->
+    <div class="panel">
+      <div class="panel-header">
+        <span>Pine Script™ (v5)</span>
+        <div>
+          <button class="icon-btn" title="Format"><i class="fas fa-align-left"></i></button>
+          <button class="icon-btn" title="Search"><i class="fas fa-search"></i></button>
         </div>
-        <div class="panel-body">
-          <textarea id="pine-editor">//@version=5
-indicator("My RSI + SMA", overlay=true)
+      </div>
+      <div class="panel-body">
+        <textarea id="pine-editor">//@version=5
+indicator("Pro RSI + SMA + Strategy", overlay=true)
 
-rsiLength = input.int(14, "RSI Length")
-smaLength = input.int(20, "SMA Length")
+// === INPUTS ===
+rsiLength = input.int(14, "RSI Length", minval=1)
+smaLength = input.int(20, "SMA Length", minval=1)
+rsiOverbought = input.int(70, "RSI Overbought")
+rsiOversold = input.int(30, "RSI Oversold")
 
+// === CALCULATIONS ===
 rsi = ta.rsi(close, rsiLength)
 sma = ta.sma(close, smaLength)
 
+// === PLOTS ===
 plot(rsi, color=color.purple, title="RSI")
 plot(sma, color=color.orange, title="SMA")
+hline(rsiOverbought, "Overbought", color=color.red, linestyle=hline.style_dashed)
+hline(rsiOversold, "Oversold", color=color.green, linestyle=hline.style_dashed)
+
+// === STRATEGY ===
+if ta.crossover(rsi, rsiOversold)
+    strategy.entry("Long", strategy.long)
+if ta.crossunder(rsi, rsiOverbought)
+    strategy.entry("Short", strategy.short)
+
 </textarea>
-        </div>
-        <div id="console" class="console"></div>
       </div>
-
-      <!-- Splitter -->
-      <div class="splitter" id="splitter"></div>
-
-      <!-- Chart Panel -->
-      <div class="panel" style="border-right:none;">
-        <div class="panel-header">
-          <span>Chart Preview – BTC/USDT (1h)</span>
-          <button id="fit-chart" class="icon-btn" title="Auto Scale"><i class="fas fa-expand-arrows-alt"></i></button>
-        </div>
-        <div class="panel-body">
-          <div id="chart-container" style="width:100%;height:100%;"></div>
-        </div>
-      </div>
+      <div id="console" class="console"></div>
     </div>
-
-    <!-- Status Bar -->
-    <div class="status-bar">
-      <span id="cursor-pos">Line 1, Column 1</span>
-      <span>Pine Script™ v5 • UTF-8 • Spaces: 2</span>
+    <!-- Splitter -->
+    <div class="splitter" id="splitter"></div>
+    <!-- Chart Panel -->
+    <div class="panel" style="border-right:none;">
+      <div class="panel-header">
+        <span id="chart-title">Chart Preview – BTC/USDT (1h)</span>
+        <button id="fit-chart" class="icon-btn" title="Auto Scale"><i class="fas fa-expand-arrows-alt"></i></button>
+      </div>
+      <div class="panel-body">
+        <div id="chart-container" style="width:100%;height:100%;"></div>
+      </div>
+      <div class="backtest-panel" id="backtest-panel" style="display:none;">
+        <div class="backtest-stats">
+          <div><span class="stat" id="total-trades">0</span> Trades</div>
+          <div><span class="stat" id="win-rate">0%</span> Win Rate</div>
+          <div><span class="stat" id="profit-factor">0</span> Profit Factor</div>
+          <div><span class="stat" id="net-profit">$0</span> Net Profit</div>
+        </div>
+      </div>
     </div>
   </div>
 
+  <!-- Status Bar -->
+  <div class="status-bar">
+    <span id="cursor-pos">Line 1, Column 1</span>
+    <span>Pine Script™ v5 • UTF-8 • Spaces: 2</span>
+  </div>
+
   <footer class="footer">
-    <div class="container">© 2025 TradeVision. Pine Script™ Editor (v5)</div>
+    <div class="container">© 2025 PineLab – Pro Pine Script™ Editor by @HeniaMwanza</div>
   </footer>
 
-  <!-- Pine Script Mode (Custom Highlighting) -->
+  <!-- Pine Mode + Parser -->
   <script>
     CodeMirror.defineMode("pine", function() {
-      const keywords = {
-        "indicator":true,"strategy":true,"input":true,"var":true,"if":true,"else":true,
-        "for":true,"while":true,"break":true,"continue":true,"return":true,
-        "true":true,"false":true,"na":true,"plot":true,"hline":true,"fill":true,
-        "ta":true,"math":true,"array":true,"matrix":true,"map":true
-      };
-      const functions = {
-        "rsi":true,"sma":true,"ema":true,"wma":true,"vwap":true,"highest":true,"lowest":true,
-        "crossover":true,"crossunder":true,"rising":true,"falling":true,"barssince":true,
-        "close":true,"open":true,"high":true,"low":true,"volume":true
-      };
+      const keywords = {"indicator":true,"strategy":true,"input":true,"var":true,"if":true,"else":true,"for":true,"while":true,"break":true,"continue":true,"return":true,"true":true,"false":true,"na":true,"plot":true,"hline":true,"fill":true,"ta":true,"math":true,"array":true,"matrix":true,"map":true,"strategy":true};
+      const functions = {"rsi":true,"sma":true,"ema":true,"wma":true,"vwap":true,"highest":true,"lowest":true,"crossover":true,"crossunder":true,"rising":true,"falling":true,"barssince":true,"close":true,"open":true,"high":true,"low":true,"volume":true};
       return {
         token: function(stream) {
           if (stream.eatSpace()) return null;
-          const ch = stream.peek();
-
-          // Comments
-          if (ch === '/' && stream.match('//')) { stream.skipToEnd(); return "comment"; }
-          if (ch === '/' && stream.match('/*')) { stream.skipTo('*/') || stream.skipToEnd(); return "comment"; }
-
-          // Strings
-          if (ch === '"' || ch === "'") {
-            stream.match(/^[^"']*["']/); return "string";
-          }
-
-          // Numbers
-          if (/\d/.test(ch) || (ch === '.' && /\d/.test(stream.peek(1)))) {
-            stream.match(/^[0-9]*\.?[0-9]+/); return "number";
-          }
-
-          // Keywords / Functions
-          const word = stream.match(/^[a-zA-Z_]\w*/)[0];
+          if (stream.match('//')) { stream.skipToEnd(); return "comment"; }
+          if (stream.match('/*')) { stream.skipTo('*/') || stream.skipToEnd(); return "comment"; }
+          if (stream.match(/^["'][^"']*["']/)) return "string";
+          if (stream.match(/^[0-9]*\.?[0-9]+/)) return "number";
+          const word = stream.match(/^[a-zA-Z_]\w*/)?[0]:"";
           if (keywords[word]) return "keyword";
           if (functions[word]) return "variable-2";
           if (word === "color") return "atom";
@@ -222,45 +234,28 @@ plot(sma, color=color.orange, title="SMA")
         }
       };
     });
-  </script>
 
-  <script>
-    // === Theme Toggle ===
+    // === Global State ===
+    let editor, chart, priceSeries, indicatorSeries = [], strategyOrders = [];
+    let marketData = [], inputs = {}, backtestResults = null;
+
+    // === Theme ===
     const themeToggle = document.getElementById('theme-toggle');
-    const body = document.body;
-    const themeIcon = themeToggle.querySelector('i');
     const setTheme = (theme) => {
-      body.setAttribute('data-theme', theme);
-      themeIcon.classList.toggle('fa-moon', theme === 'dark');
-      themeIcon.classList.toggle('fa-sun', theme === 'light');
+      document.body.setAttribute('data-theme', theme);
+      themeToggle.querySelector('i').className = theme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
       editor.setOption('theme', theme === 'dark' ? 'monokai' : 'default');
       localStorage.setItem('theme', theme);
     };
-    themeToggle.addEventListener('click', () => setTheme(body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'));
-    const savedTheme = localStorage.getItem('theme') || 'dark';
-    setTheme(savedTheme);
+    themeToggle.addEventListener('click', () => setTheme(document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'));
+    setTheme(localStorage.getItem('theme') || 'dark');
 
     // === Editor ===
-    const editor = CodeMirror.fromTextArea(document.getElementById('pine-editor'), {
-      lineNumbers: true,
-      mode: 'pine',
-      theme: savedTheme === 'dark' ? 'monokai' : 'default',
-      indentUnit: 2,
-      tabSize: 2,
-      lineWrapping: false,
-      matchBrackets: true,
-      autoCloseBrackets: true,
-      gutters: ['CodeMirror-linenumbers', 'CodeMirror-foldgutter'],
-      extraKeys: {
-        "Ctrl-Space": "autocomplete",
-        "Ctrl-/" : "toggleComment",
-        "Cmd-/"  : "toggleComment",
-        "F11": cm => cm.setOption("fullScreen", !cm.getOption("fullScreen")),
-        "Esc": cm => cm.getOption("fullScreen") && cm.setOption("fullScreen", false)
-      }
+    editor = CodeMirror.fromTextArea(document.getElementById('pine-editor'), {
+      lineNumbers: true, mode: 'pine', theme: 'monokai', indentUnit: 2, tabSize: 2,
+      matchBrackets: true, autoCloseBrackets: true,
+      extraKeys: { "Ctrl-Space": "autocomplete", "Ctrl-/": "toggleComment", "Cmd-/": "toggleComment" }
     });
-
-    // Cursor position
     editor.on('cursorActivity', () => {
       const pos = editor.getCursor();
       document.getElementById('cursor-pos').textContent = `Line ${pos.line + 1}, Column ${pos.ch + 1}`;
@@ -271,189 +266,240 @@ plot(sma, color=color.orange, title="SMA")
     const log = (msg, type = 'info') => {
       const line = document.createElement('div');
       line.className = `console-${type}`;
-      line.textContent = msg;
+      line.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
       consoleEl.appendChild(line);
       consoleEl.scrollTop = consoleEl.scrollHeight;
     };
-    document.getElementById('clear-console').onclick = () => consoleEl.innerHTML = '';
+    document.getElementById('clear-console')?.addEventListener('click', () => consoleEl.innerHTML = '');
 
-    // === Chart ===
-    let chart, priceSeries, indicatorSeries = [];
-    const initChart = () => {
-      const container = document.getElementById('chart-container');
-      chart = LightweightCharts.createChart(container, {
-        width: container.clientWidth,
-        height: container.clientHeight,
-        layout: { background: { color: 'transparent' }, textColor: '#d1d4dc' },
-        grid: { vertLines: { color: '#2d313e' }, horzLines: { color: '#2d313e' } },
-        crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
-        timeScale: { borderColor: '#2d313e' },
-        rightPriceScale: { borderColor: '#2d313e' }
-      });
-      priceSeries = chart.addCandlestickSeries({ upColor: '#26a69a', downColor: '#ef5350', borderVisible: false });
-      loadMarketData();
-    };
-
+    // === Data Loading ===
     const loadMarketData = async () => {
+      const symbol = document.getElementById('symbol-select').value;
+      const interval = document.getElementById('interval-select').value;
+      document.getElementById('data-status').textContent = 'Loading...';
+      document.getElementById('chart-title').textContent = `Chart Preview – ${symbol} (${interval})`;
       try {
-        const res = await fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1h&limit=200');
+        const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=500`);
         const data = await res.json();
-        const candles = data.map(d => ({
+        marketData = data.map(d => ({
           time: d[0] / 1000,
-          open: parseFloat(d[1]),
-          high: parseFloat(d[2]),
-          low: parseFloat(d[3]),
-          close: parseFloat(d[4])
+          open: parseFloat(d[1]), high: parseFloat(d[2]), low: parseFloat(d[3]), close: parseFloat(d[4])
         }));
-        priceSeries.setData(candles);
-        window.marketData = candles;
-        log('Market data loaded: BTC/USDT 1h', 'info');
+        priceSeries.setData(marketData);
+        document.getElementById('data-status').textContent = `Loaded ${marketData.length} bars`;
+        log(`Data loaded: ${symbol} ${interval}`, 'info');
       } catch (e) {
-        log('Failed to load market data. Using mock.', 'error');
-        window.marketData = generateMockData();
-        priceSeries.setData(window.marketData);
+        log('Data load failed. Using mock.', 'error');
+        marketData = generateMockData();
+        priceSeries.setData(marketData);
       }
+      chart.timeScale().fitContent();
     };
-
     const generateMockData = () => {
       const now = Math.floor(Date.now() / 1000);
       const data = [];
       let price = 30000;
-      for (let i = 0; i < 200; i++) {
+      for (let i = 0; i < 500; i++) {
         const change = (Math.random() - 0.5) * 200;
         price = Math.max(20000, price + change);
         const open = price + (Math.random() - 0.5) * 100;
         const close = price + (Math.random() - 0.5) * 100;
         const high = Math.max(open, close) + Math.random() * 50;
         const low = Math.min(open, close) - Math.random() * 50;
-        data.push({ time: now - (200 - i) * 3600, open, high, low, close });
+        data.push({ time: now - (500 - i) * 3600, open, high, low, close });
       }
       return data;
     };
 
-    // === Run Script ===
-    const runBtn = document.getElementById('run-script');
-    const statusEl = document.getElementById('script-status');
+    // === Chart Init ===
+    const initChart = () => {
+      const container = document.getElementById('chart-container');
+      chart = LightweightCharts.createChart(container, {
+        width: container.clientWidth, height: container.clientHeight,
+        layout: { background: { color: 'transparent' }, textColor: '#d1d4dc' },
+        grid: { vertLines: { color: '#2d313e' }, horzLines: { color: '#2d313e' } },
+        crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
+        timeScale: { borderColor: '#2d313e' }, rightPriceScale: { borderColor: '#2d313e' }
+      });
+      priceSeries = chart.addCandlestickSeries({ upColor: '#26a69a', downColor: '#ef5350', borderVisible: false });
+      loadMarketData();
+    };
 
-    runBtn.addEventListener('click', () => {
-      runBtn.disabled = true;
-      statusEl.textContent = 'Running...';
-      consoleEl.innerHTML = '';
-      clearIndicators();
-
+    // === Safe Pine Parser & Executor ===
+    const parseAndExecute = () => {
       const code = editor.getValue();
+      clearIndicators();
+      consoleEl.innerHTML = '';
+      strategyOrders = [];
+      backtestResults = { trades: [], equity: [] };
+
       try {
-        const func = new Function('close', 'ta', 'plot', 'color', code + '; return {plots, inputs};');
-        const inputs = {};
+        // Extract inputs
+        inputs = {};
+        const inputMatches = code.matchAll(/input\.(\w+)\s*\(\s*([^,]+),\s*["']([^"']+)["']/g);
+        for (const m of inputMatches) {
+          const type = m[1], def = m[2].trim(), title = m[3];
+          inputs[title] = parseFloat(def) || def;
+          addInputControl(title, type, inputs[title]);
+        }
+
+        // Extract plots
         const plots = [];
+        const plotMatches = code.matchAll(/plot\s*\(\s*([^,]+),\s*color\s*=\s*color\.(\w+)(?:,\s*title\s*=\s*["']([^"']+)["'])?/g);
+        for (const m of plotMatches) {
+          plots.push({ expr: m[1].trim(), color: m[2], title: m[3] || 'Plot' });
+        }
 
-        // Mock ta.rsi and ta.sma
-        const ta = {
-          rsi: (src, len) => {
-            const values = [];
-            for (let i = len; i < src.length; i++) {
-              let gain = 0, loss = 0;
-              for (let j = 1; j <= len; j++) {
-                const diff = src[i - j + 1] - src[i - j];
-                if (diff > 0) gain += diff; else loss -= diff;
-              }
-              const avgGain = gain / len, avgLoss = loss / len;
-              const rs = avgLoss === 0 ? 100 : avgGain / avgLoss;
-              values.push(100 - (100 / (1 + rs)));
-            }
-            return values;
-          },
-          sma: (src, len) => {
-            const res = [];
-            for (let i = len - 1; i < src.length; i++) {
-              let sum = 0;
-              for (let j = 0; j < len; j++) sum += src[i - j];
-              res.push(sum / len);
-            }
-            return res;
-          }
-        };
+        // Extract strategy
+        const isStrategy = code.includes('strategy(');
+        if (isStrategy) {
+          document.getElementById('backtest-panel').style.display = 'block';
+        }
 
+        // Run calculations
+        const close = marketData.map(d => d.close);
+        const ta = { rsi: wilderRSI, sma: sma };
         const color = { purple: '#9c27b0', orange: '#fb8c00', red: '#f44336', green: '#4caf50', blue: '#2196f3' };
-        const plot = (value, options = {}) => {
-          plots.push({ value: value.toString(), color: options.color || '#2962ff', title: options.title || 'Plot' });
-        };
+        const hline = (level, title, col, style) => plots.push({ expr: level.toString(), color: col, title, isHline: true });
+        const strategy = { entry: (id, dir) => strategyOrders.push({ id, dir, bar: marketData.length - close.length + marketData.findIndex((_, i) => i >= 0) }) };
 
-        // Extract close prices
-        const close = window.marketData.map(d => d.close);
-        func(close, ta, plot, color);
-
-        if (plots.length === 0) throw new Error("No plot() calls detected.");
-
-        // Compute values
+        // Evaluate plots safely
         plots.forEach(p => {
-          let seriesData = [];
-          try {
-            const expr = p.value.replace(/close/g, 'close[i]').replace(/rsi/g, 'ta.rsi(close,14)[i]').replace(/sma/g, 'ta.sma(close,20)[i]');
-            for (let i = 0; i < close.length; i++) {
-              const val = eval(expr);
-              if (!isNaN(val)) seriesData.push({ time: window.marketData[i].time, value: val });
-            }
-          } catch (e) {
-            throw new Error(`Failed to evaluate "${p.value}": ${e.message}`);
+          const seriesData = [];
+          for (let i = 0; i < close.length; i++) {
+            const val = safeEval(p.expr, close, ta, i, inputs);
+            if (!isNaN(val)) seriesData.push({ time: marketData[i].time, value: val });
           }
-          const series = chart.addLineSeries({ color: p.color, title: p.title, lineWidth: 2 });
+          const series = chart.addLineSeries({ color: color[p.color] || p.color, title: p.title, lineWidth: 2 });
           series.setData(seriesData);
           indicatorSeries.push(series);
         });
 
-        log(`Applied ${plots.length} indicator(s)`, 'info');
-        statusEl.textContent = 'Success';
-        chart.timeScale().fitContent();
+        if (isStrategy) runBacktest();
+        log(`Success: ${plots.length} plots, ${strategyOrders.length} orders`, 'info');
+        document.getElementById('script-status').textContent = 'Success';
       } catch (err) {
         log(`Error: ${err.message}`, 'error');
-        statusEl.textContent = 'Failed';
-      } finally {
-        runBtn.disabled = false;
+        document.getElementById('script-status').textContent = 'Failed';
       }
-    });
-
-    const clearIndicators = () => {
-      indicatorSeries.forEach(s => chart.removeSeries(s));
-      indicatorSeries = [];
     };
 
-    // === Resizable Splitter ===
+    const wilderRSI = (src, len) => {
+      const rsi = new Array(src.length).fill(NaN);
+      let avgGain = 0, avgLoss = 0;
+      for (let i = 1; i <= len; i++) {
+        const diff = src[i] - src[i-1];
+        if (diff > 0) avgGain += diff; else avgLoss -= diff;
+      }
+      avgGain /= len; avgLoss /= len;
+      if (avgLoss === 0) rsi[len] = 100;
+      else rsi[len] = 100 - (100 / (1 + avgGain / avgLoss));
+      for (let i = len + 1; i < src.length; i++) {
+        const diff = src[i] - src[i-1];
+        const gain = diff > 0 ? diff : 0;
+        const loss = diff < 0 ? -diff : 0;
+        avgGain = (avgGain * (len - 1) + gain) / len;
+        avgLoss = (avgLoss * (len - 1) + loss) / len;
+        rsi[i] = avgLoss === 0 ? 100 : 100 - (100 / (1 + avgGain / avgLoss));
+      }
+      return rsi;
+    };
+
+    const sma = (src, len) => {
+      const res = new Array(src.length).fill(NaN);
+      for (let i = len - 1; i < src.length; i++) {
+        let sum = 0;
+        for (let j = 0; j < len; j++) sum += src[i - j];
+        res[i] = sum / len;
+      }
+      return res;
+    };
+
+    const safeEval = (expr, close, ta, i, inputs) => {
+      const ctx = {
+        close: close[i],
+        open: marketData[i].open,
+        high: marketData[i].high,
+        low: marketData[i].low,
+        rsi: (len) => ta.rsi(close, len)[i] || NaN,
+        sma: (len) => ta.sma(close, len)[i] || NaN,
+        crossover: (a, b) => a[i-1] <= b[i-1] && a[i] > b[i],
+        crossunder: (a, b) => a[i-1] >= b[i-1] && a[i] < b[i],
+      };
+      Object.assign(ctx, inputs);
+      try {
+        return Function('ctx', `with(ctx){return ${expr}}`)(ctx);
+      } catch (e) { return NaN; }
+    };
+
+    const addInputControl = (title, type, value) => {
+      let el = document.querySelector(`#input-${title}`);
+      if (el) { el.value = value; return; }
+      const group = document.createElement('div');
+      group.className = 'input-group';
+      group.innerHTML = `<label>${title}:</label><input id="input-${title}" type="number" value="${value}" style="width:60px;">`;
+      document.querySelector('.controls-bar').insertBefore(group, document.getElementById('data-status'));
+      group.querySelector('input').addEventListener('change', (e) => {
+        inputs[title] = parseFloat(e.target.value);
+        parseAndExecute();
+      });
+    };
+
+    const runBacktest = () => {
+      // Simplified backtest
+      let position = 0, entryPrice = 0;
+      const trades = [];
+      strategyOrders.forEach(order => {
+        if (order.dir === 'strategy.long' && position <= 0) {
+          position = 1; entryPrice = marketData[order.bar].close;
+        } else if (order.dir === 'strategy.short' && position >= 0) {
+          position = -1; entryPrice = marketData[order.bar].close;
+        } else if (position !== 0) {
+          const exitPrice = marketData[order.bar].close;
+          const pnl = position > 0 ? (exitPrice - entryPrice) / entryPrice : (entryPrice - exitPrice) / entryPrice;
+          trades.push({ pnl });
+          position = 0;
+        }
+      });
+      const wins = trades.filter(t => t.pnl > 0).length;
+      const winRate = trades.length ? (wins / trades.length * 100).toFixed(1) : 0;
+      const netProfit = trades.reduce((s, t) => s + t.pnl, 0) * 10000; // $10k per trade
+      document.getElementById('total-trades').textContent = trades.length;
+      document.getElementById('win-rate').textContent = winRate + '%';
+      document.getElementById('profit-factor').textContent = (trades.length ? (trades.filter(t=>t.pnl>0).reduce((s,t)=>s+t.pnl,0) / Math.abs(trades.filter(t=>t.pnl<0).reduce((s,t)=>s+t.pnl,0))) || 0).toFixed(2) : '0';
+      document.getElementById('net-profit').textContent = '$' + netProfit.toFixed(2);
+    };
+
+    // === Buttons ===
+    document.getElementById('run-script').addEventListener('click', parseAndExecute);
+    document.getElementById('clear-indicators').addEventListener('click', () => { indicatorSeries.forEach(s => chart.removeSeries(s)); indicatorSeries = []; });
+    document.getElementById('symbol-select').addEventListener('change', loadMarketData);
+    document.getElementById('interval-select').addEventListener('change', loadMarketData);
+    document.getElementById('fit-chart').addEventListener('click', () => chart.timeScale().fitContent());
+    document.getElementById('export-tv').addEventListener('click', () => {
+      const code = editor.getValue();
+      navigator.clipboard.writeText(code);
+      log('Copied to clipboard for TradingView', 'info');
+    });
+
+    // === Splitter ===
     const splitter = document.getElementById('splitter');
     let isResizing = false;
-    splitter.addEventListener('mousedown', e => {
-      isResizing = true;
-      document.body.style.cursor = 'col-resize';
-    });
+    splitter.addEventListener('mousedown', () => isResizing = true);
     document.addEventListener('mousemove', e => {
       if (!isResizing) return;
-      const container = document.querySelector('.editor-chart');
-      const rect = container.getBoundingClientRect();
+      const rect = document.querySelector('.editor-chart').getBoundingClientRect();
       const percent = ((e.clientX - rect.left) / rect.width) * 100;
       if (percent > 20 && percent < 80) {
         document.querySelector('.panel').style.flex = `0 0 ${percent}%`;
         document.querySelector('.panel + .panel').style.flex = `0 0 ${100 - percent}%`;
       }
     });
-    document.addEventListener('mouseup', () => {
-      if (isResizing) {
-        isResizing = false;
-        document.body.style.cursor = '';
-        setTimeout(() => chart?.resize(), 50);
-      }
-    });
-
-    // === Fit Chart ===
-    document.getElementById('fit-chart').onclick = () => chart?.timeScale().fitContent();
-
-    // === Resize Handler ===
-    window.addEventListener('resize', () => chart?.resize());
+    document.addEventListener('mouseup', () => { if (isResizing) { isResizing = false; chart.resize(); } });
 
     // === Init ===
-    window.addEventListener('load', () => {
-      initChart();
-      editor.focus();
-    });
+    window.addEventListener('load', () => { initChart(); editor.focus(); });
+    window.addEventListener('resize', () => chart?.resize());
   </script>
 </body>
 </html>
