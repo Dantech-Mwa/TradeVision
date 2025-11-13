@@ -79,12 +79,14 @@
       overflow: hidden;
       position: relative;
       height: 30px;
+      /* Removed background to match header */
     }
     .ticker {
       display: flex;
       white-space: nowrap;
       position: absolute;
-      animation: scrollTicker 60s linear infinite;
+      /* Slower speed - 120 seconds for full cycle */
+      animation: scrollTicker 120s linear infinite;
     }
     .ticker-item {
       display: flex;
@@ -92,19 +94,25 @@
       margin-right: 2rem;
       cursor: pointer;
       transition: all 0.2s;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
     }
     .ticker-item:hover {
+      background: rgba(255, 255, 255, 0.1);
       transform: scale(1.05);
     }
     .ticker-symbol {
       font-weight: bold;
       margin-right: 0.3rem;
+      font-size: 0.9rem;
     }
     .ticker-price {
       margin-right: 0.3rem;
+      font-size: 0.9rem;
     }
     .ticker-change {
-      font-size: 0.85rem;
+      font-size: 0.8rem;
+      font-weight: bold;
     }
     @keyframes scrollTicker {
       0% { transform: translateX(100%); }
@@ -223,6 +231,10 @@
       height: 160px;
       object-fit: cover;
       background: #111;
+      transition: opacity 0.3s;
+    }
+    .news-card img.loading {
+      opacity: 0.5;
     }
     .news-content { padding: 0.9rem; }
     .news-title {
@@ -251,17 +263,20 @@
       justify-content: space-between;
       align-items: center;
     }
-    .news-source {
-      background: var(--source-bg);
-      color: var(--source-text);
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-weight: bold;
+
+    .loading-spinner {
+      text-align: center;
+      padding: 2rem;
+      color: var(--accent);
+    }
+    .loading-spinner i {
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
 
-    .status { text-align: center; font-size: 0.85rem; color: #00ff88; margin: 0.5rem 0; }
-    .loading { color: var(--accent); }
-    .error { color: var(--alert); }
     .alert-banner {
       position: fixed;
       top: 10px;
@@ -398,7 +413,9 @@
     @media (max-width: 592px) {
       .header h1 { font-size: 1.4rem; }
       .ticker-container { height: 25px; }
-      .ticker-item { margin-right: 1.5rem; }
+      .ticker-item { margin-right: 1.5rem; padding: 0.1rem 0.3rem; }
+      .ticker-symbol, .ticker-price { font-size: 0.8rem; }
+      .ticker-change { font-size: 0.75rem; }
       .nav-links { font-size: 0.8rem; gap: 0.6rem; }
       .controls { flex-direction: column; align-items: stretch; }
       .search-box { min-width: 100%; }
@@ -448,9 +465,11 @@
   </div>
 
   <div class="container">
-    <div id="status" class="status">Loading real crypto news...</div>
     <div id="news-container" class="news-grid">
       <!-- News cards will be populated by JavaScript -->
+    </div>
+    <div id="loading-spinner" class="loading-spinner" style="display: none;">
+      <i class="fas fa-spinner"></i> Loading more news...
     </div>
   </div>
 
@@ -482,49 +501,160 @@
 
   <script>
     // === CONFIG ===
-    const FALLBACK_LOGOS = {
-      'cointelegraph.com': 'https://cryptologos.cc/logos/cointelegraph-ct-logo.png',
-      'coindesk.com': 'https://cryptologos.cc/logos/coindesk-cdk-logo.png',
-      'cryptopanic.com': 'https://cryptologos.cc/logos/cryptopanic-cpn-logo.png',
-      'finance.yahoo.com': 'https://cryptologos.cc/logos/yahoo-finance-yahoo-logo.png',
-      'default': 'https://cryptologos.cc/logos/bitcoin-btc-logo.png'
-    };
-
-    // Available assets for tracking
+    const PLACEHOLDER_IMAGE = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjgwIiBoZWlnaHQ9IjE2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMTYyMTNlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iI2UwZTBmZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkxvYWRpbmcuLi48L3RleHQ+PC9zdmc+';
+    
+    // Top 100+ crypto assets by market cap
     const AVAILABLE_ASSETS = [
       { id: 'bitcoin', symbol: 'BTC', name: 'Bitcoin' },
       { id: 'ethereum', symbol: 'ETH', name: 'Ethereum' },
+      { id: 'tether', symbol: 'USDT', name: 'Tether' },
+      { id: 'binancecoin', symbol: 'BNB', name: 'BNB' },
       { id: 'solana', symbol: 'SOL', name: 'Solana' },
+      { id: 'usd-coin', symbol: 'USDC', name: 'USD Coin' },
+      { id: 'xrp', symbol: 'XRP', name: 'XRP' },
       { id: 'cardano', symbol: 'ADA', name: 'Cardano' },
-      { id: 'ripple', symbol: 'XRP', name: 'Ripple' },
       { id: 'dogecoin', symbol: 'DOGE', name: 'Dogecoin' },
+      { id: 'shiba-inu', symbol: 'SHIB', name: 'Shiba Inu' },
+      { id: 'avalanche-2', symbol: 'AVAX', name: 'Avalanche' },
       { id: 'polkadot', symbol: 'DOT', name: 'Polkadot' },
       { id: 'chainlink', symbol: 'LINK', name: 'Chainlink' },
-      { id: 'litecoin', symbol: 'LTC', name: 'Litecoin' },
-      { id: 'binancecoin', symbol: 'BNB', name: 'Binance Coin' },
       { id: 'tron', symbol: 'TRX', name: 'TRON' },
-      { id: 'avalanche-2', symbol: 'AVAX', name: 'Avalanche' },
-      { id: 'matic-network', symbol: 'MATIC', name: 'Polygon' },
+      { id: 'polygon-pos', symbol: 'MATIC', name: 'Polygon' },
+      { id: 'toncoin', symbol: 'TON', name: 'Toncoin' },
+      { id: 'bitcoin-cash', symbol: 'BCH', name: 'Bitcoin Cash' },
+      { id: 'litecoin', symbol: 'LTC', name: 'Litecoin' },
+      { id: 'uniswap', symbol: 'UNI', name: 'Uniswap' },
+      { id: 'dai', symbol: 'DAI', name: 'Dai' },
+      { id: 'internet-computer', symbol: 'ICP', name: 'Internet Computer' },
+      { id: 'ethereum-classic', symbol: 'ETC', name: 'Ethereum Classic' },
       { id: 'stellar', symbol: 'XLM', name: 'Stellar' },
-      { id: 'monero', symbol: 'XMR', name: 'Monero' }
+      { id: 'cosmos', symbol: 'ATOM', name: 'Cosmos' },
+      { id: 'monero', symbol: 'XMR', name: 'Monero' },
+      { id: 'okb', symbol: 'OKB', name: 'OKB' },
+      { id: 'filecoin', symbol: 'FIL', name: 'Filecoin' },
+      { id: 'aptos', symbol: 'APT', name: 'Aptos' },
+      { id: 'hedera-hashgraph', symbol: 'HBAR', name: 'Hedera' },
+      { id: 'crypto-com-chain', symbol: 'CRO', name: 'Cronos' },
+      { id: 'lido-dao', symbol: 'LDO', name: 'Lido DAO' },
+      { id: 'arbitrum', symbol: 'ARB', name: 'Arbitrum' },
+      { id: 'vechain', symbol: 'VET', name: 'VeChain' },
+      { id: 'near', symbol: 'NEAR', name: 'NEAR Protocol' },
+      { id: 'the-graph', symbol: 'GRT', name: 'The Graph' },
+      { id: 'aave', symbol: 'AAVE', name: 'Aave' },
+      { id: 'maker', symbol: 'MKR', name: 'Maker' },
+      { id: 'quant-network', symbol: 'QNT', name: 'Quant' },
+      { id: 'algorand', symbol: 'ALGO', name: 'Algorand' },
+      { id: 'optimism', symbol: 'OP', name: 'Optimism' },
+      { id: 'the-sandbox', symbol: 'SAND', name: 'The Sandbox' },
+      { id: 'eos', symbol: 'EOS', name: 'EOS' },
+      { id: 'elrond-erd-2', symbol: 'EGLD', name: 'MultiversX' },
+      { id: 'tezos', symbol: 'XTZ', name: 'Tezos' },
+      { id: 'theta-token', symbol: 'THETA', name: 'Theta Network' },
+      { id: 'rocket-pool', symbol: 'RPL', name: 'Rocket Pool' },
+      { id: 'immutable-x', symbol: 'IMX', name: 'Immutable X' },
+      { id: 'decentraland', symbol: 'MANA', name: 'Decentraland' },
+      { id: 'axie-infinity', symbol: 'AXS', name: 'Axie Infinity' },
+      { id: 'flow', symbol: 'FLOW', name: 'Flow' },
+      { id: 'kava', symbol: 'KAVA', name: 'Kava' },
+      { id: 'gala', symbol: 'GALA', name: 'Gala' },
+      { id: 'chiliz', symbol: 'CHZ', name: 'Chiliz' },
+      { id: 'curve-dao-token', symbol: 'CRV', name: 'Curve DAO' },
+      { id: 'mina-protocol', symbol: 'MINA', name: 'Mina' },
+      { id: 'kusama', symbol: 'KSM', name: 'Kusama' },
+      { id: 'compound-governance-token', symbol: 'COMP', name: 'Compound' },
+      { id: 'theta-fuel', symbol: 'TFUEL', name: 'Theta Fuel' },
+      { id: 'zcash', symbol: 'ZEC', name: 'Zcash' },
+      { id: 'dash', symbol: 'DASH', name: 'Dash' },
+      { id: 'enjincoin', symbol: 'ENJ', name: 'Enjin' },
+      { id: 'nexo', symbol: 'NEXO', name: 'Nexo' },
+      { id: 'basic-attention-token', symbol: 'BAT', name: 'Basic Attention' },
+      { id: 'oec-token', symbol: 'OKT', name: 'OKC Token' },
+      { id: 'holotoken', symbol: 'HOT', name: 'Holo' },
+      { id: 'harmony', symbol: 'ONE', name: 'Harmony' },
+      { id: 'celo', symbol: 'CELO', name: 'Celo' },
+      { id: 'iotex', symbol: 'IOTX', name: 'IoTeX' },
+      { id: 'omisego', symbol: 'OMG', name: 'OMG Network' },
+      { id: '0x', symbol: 'ZRX', name: '0x' },
+      { id: 'reserve-rights-token', symbol: 'RSR', name: 'Reserve Rights' },
+      { id: 'ankr', symbol: 'ANKR', name: 'Ankr' },
+      { id: 'icon', symbol: 'ICX', name: 'ICON' },
+      { id: 'wax', symbol: 'WAXP', name: 'WAX' },
+      { id: 'synthetix-network-token', symbol: 'SNX', name: 'Synthetix' },
+      { id: 'skale', symbol: 'SKL', name: 'SKALE' },
+      { id: 'serum', symbol: 'SRM', name: 'Serum' },
+      { id: 'ultra', symbol: 'UOS', name: 'Ultra' },
+      { id: 'digibyte', symbol: 'DGB', name: 'DigiByte' },
+      { id: 'numeraire', symbol: 'NMR', name: 'Numeraire' },
+      { id: 'keep-network', symbol: 'KEEP', name: 'Keep Network' },
+      { id: 'origin-protocol', symbol: 'OGN', name: 'Origin Protocol' },
+      { id: 'band-protocol', symbol: 'BAND', name: 'Band Protocol' },
+      { id: 'augur', symbol: 'REP', name: 'Augur' },
+      { id: 'uma', symbol: 'UMA', name: 'UMA' },
+      { id: 'kyber-network', symbol: 'KNC', name: 'Kyber Network' },
+      { id: 'balancer', symbol: 'BAL', name: 'Balancer' },
+      { id: 'sushi', symbol: 'SUSHI', name: 'SushiSwap' },
+      { id: 'yearn-finance', symbol: 'YFI', name: 'yearn.finance' },
+      { id: 'bancor', symbol: 'BNT', name: 'Bancor' },
+      { id: 'loopring', symbol: 'LRC', name: 'Loopring' },
+      { id: 'arweave', symbol: 'AR', name: 'Arweave' },
+      { id: 'injective-protocol', symbol: 'INJ', name: 'Injective' },
+      { id: 'kadena', symbol: 'KDA', name: 'Kadena' },
+      { id: 'raydium', symbol: 'RAY', name: 'Raydium' },
+      { id: 'orchid-protocol', symbol: 'OXT', name: 'Orchid' },
+      { id: 'livepeer', symbol: 'LPT', name: 'Livepeer' },
+      { id: 'nervos-network', symbol: 'CKB', name: 'Nervos Network' },
+      { id: 'hive', symbol: 'HIVE', name: 'Hive' },
+      { id: 'dent', symbol: 'DENT', name: 'Dent' },
+      { id: 'stormx', symbol: 'STMX', name: 'StormX' },
+      { id: 'funfair', symbol: 'FUN', name: 'FunFair' },
+      { id: 'district0x', symbol: 'DNT', name: 'district0x' }
     ];
 
-    // User selected assets (default to first 10)
-    let userAssets = JSON.parse(localStorage.getItem('userAssets')) || AVAILABLE_ASSETS.slice(0, 10).map(a => a.id);
+    // User selected assets (default to first 20 for better performance)
+    let userAssets = JSON.parse(localStorage.getItem('userAssets')) || AVAILABLE_ASSETS.slice(0, 20).map(a => a.id);
 
     let allArticles = JSON.parse(localStorage.getItem('cachedArticles')) || [];
     let currentCategory = 'all';
     let alertsEnabled = false;
     let lastAlertTime = 0;
+    let currentPage = 0;
+    let isLoading = false;
+    let hasMoreNews = true;
+
+    // === IMMEDIATE TICKER DISPLAY ===
+    function initializeTicker() {
+      const ticker = document.getElementById('ticker');
+      let tickerHTML = '';
+      
+      // Show placeholder data immediately
+      userAssets.forEach(assetId => {
+        const asset = AVAILABLE_ASSETS.find(a => a.id === assetId);
+        if (asset) {
+          tickerHTML += `
+            <div class="ticker-item">
+              <span class="ticker-symbol">${asset.symbol}</span>
+              <span class="ticker-price">$--</span>
+              <span class="ticker-change">--%</span>
+            </div>
+          `;
+        }
+      });
+      
+      // Duplicate content for seamless scrolling
+      ticker.innerHTML = tickerHTML + tickerHTML;
+      
+      // Then update with real data
+      updateTicker();
+    }
 
     // === MODAL FUNCTIONALITY ===
     const assetModal = document.getElementById('asset-modal');
     const modalClose = document.getElementById('modal-close');
     const assetList = document.getElementById('asset-list');
-    const ticker = document.getElementById('ticker');
+    const tickerContainer = document.querySelector('.ticker-container');
 
     // Open modal when clicking on ticker
-    ticker.addEventListener('click', () => {
+    tickerContainer.addEventListener('click', () => {
       assetModal.classList.add('active');
       renderAssetList();
     });
@@ -566,7 +696,7 @@
           // Save user selection
           localStorage.setItem('userAssets', JSON.stringify(userAssets));
           // Update ticker
-          updateTicker();
+          initializeTicker();
         });
       });
     }
@@ -602,18 +732,9 @@
         });
         
         // Duplicate content for seamless scrolling
-        ticker.innerHTML = tickerHTML + tickerHTML;
+        document.getElementById('ticker').innerHTML = tickerHTML + tickerHTML;
       } catch (e) {
         console.warn('Ticker update failed:', e);
-        // Fallback ticker with static data
-        const fallbackHTML = AVAILABLE_ASSETS.slice(0, 10).map(asset => `
-          <div class="ticker-item">
-            <span class="ticker-symbol">${asset.symbol}</span>
-            <span class="ticker-price">$--</span>
-            <span class="ticker-change">--%</span>
-          </div>
-        `).join('');
-        ticker.innerHTML = fallbackHTML + fallbackHTML;
       }
     }
 
@@ -621,24 +742,41 @@
     function getDomain(url) {
       try { return new URL(url).hostname; } catch { return 'unknown'; }
     }
-    function getFallbackLogo(url) {
-      const domain = getDomain(url);
-      for (const [key, logo] of Object.entries(FALLBACK_LOGOS)) {
-        if (domain.includes(key)) return logo;
-      }
-      return FALLBACK_LOGOS.default;
+
+    // === FAST IMAGE LOADING ===
+    function loadImage(imgElement, src) {
+      return new Promise((resolve) => {
+        // Show placeholder immediately
+        imgElement.src = PLACEHOLDER_IMAGE;
+        imgElement.classList.add('loading');
+        
+        const img = new Image();
+        img.onload = () => {
+          imgElement.src = src;
+          imgElement.classList.remove('loading');
+          resolve();
+        };
+        img.onerror = () => {
+          imgElement.classList.remove('loading');
+          resolve();
+        };
+        img.src = src;
+      });
     }
 
-    // === NEWS FETCHING ===
-    async function fetchNews() {
+    // === INFINITE SCROLL NEWS ===
+    async function fetchNews(page = 0) {
+      if (isLoading) return [];
+      
       try {
-        document.getElementById('status').textContent = 'Loading news...';
+        isLoading = true;
+        document.getElementById('loading-spinner').style.display = 'block';
         
-        // Use multiple news sources
+        // Simulate pagination with different sources
         const sources = [
-          'https://cryptopanic.com/api/v1/posts/?public=true&currencies=BTC,ETH,SOL,ADA,XRP&kind=news&filter=hot',
-          'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fcointelegraph.com%2Frss',
-          'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.coindesk.com%2Farc%2Foutboundfeeds%2Frss%2F'
+          `https://cryptopanic.com/api/v1/posts/?public=true&currencies=BTC,ETH,SOL,ADA,XRP&kind=news&filter=hot&page=${page + 1}`,
+          `https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fcointelegraph.com%2Frss&page=${page + 1}`,
+          `https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.coindesk.com%2Farc%2Foutboundfeeds%2Frss%2F&page=${page + 1}`
         ];
         
         const responses = await Promise.allSettled(
@@ -656,10 +794,9 @@
             title: item.title,
             description: (item.description || '').substring(0, 150) + '...',
             url: item.url,
-            image: item.image?.url || FALLBACK_LOGOS.default,
-            source: item.source?.title || 'CryptoPanic',
+            image: item.image?.url || PLACEHOLDER_IMAGE,
             publishedAt: item.published_at,
-            id: item.id,
+            id: item.id + page,
             category: 'crypto'
           })));
         }
@@ -672,10 +809,9 @@
               title: item.title,
               description: (item.description || '').replace(/<[^>]*>/g, '').substring(0, 150) + '...',
               url: item.link,
-              image: item.thumbnail || FALLBACK_LOGOS.default,
-              source: i === 1 ? 'CoinTelegraph' : 'CoinDesk',
+              image: item.thumbnail || PLACEHOLDER_IMAGE,
               publishedAt: item.pubDate,
-              id: item.link,
+              id: item.link + page,
               category: 'crypto'
             })));
           }
@@ -683,19 +819,47 @@
         
         // Deduplicate articles
         articles = articles.filter((a, index, self) => 
-          index === self.findIndex(t => t.id === a.id || t.url === a.url)
+          index === self.findIndex(t => t.id === a.id)
         );
         
         // Sort by date
         articles.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
         
-        // Limit to 30 articles
-        articles = articles.slice(0, 30);
+        // Check if we have more articles
+        hasMoreNews = articles.length > 0;
         
         return articles;
       } catch (error) {
         console.error('Error fetching news:', error);
         return [];
+      } finally {
+        isLoading = false;
+        document.getElementById('loading-spinner').style.display = 'none';
+      }
+    }
+
+    // === INFINITE SCROLL HANDLER ===
+    function setupInfiniteScroll() {
+      window.addEventListener('scroll', () => {
+        if (isLoading || !hasMoreNews) return;
+        
+        const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
+        
+        // Load more when 80% from bottom
+        if (scrollTop + clientHeight >= scrollHeight - 500) {
+          loadMoreNews();
+        }
+      });
+    }
+
+    async function loadMoreNews() {
+      currentPage++;
+      const newArticles = await fetchNews(currentPage);
+      
+      if (newArticles.length > 0) {
+        allArticles = [...allArticles, ...newArticles];
+        localStorage.setItem('cachedArticles', JSON.stringify(allArticles));
+        renderNews(allArticles);
       }
     }
 
@@ -746,24 +910,32 @@
     // === RENDER NEWS ===
     function renderNews(articles) {
       const container = document.getElementById('news-container');
-      if (!articles.length) {
+      
+      if (articles.length === 0) {
         container.innerHTML = '<div class="error">No matching news found.</div>';
         return;
       }
+      
       container.innerHTML = articles.map(a => `
         <a href="${a.url}" target="_blank" class="news-card">
-          <img src="${a.image}" alt="${a.title}" loading="lazy" 
-               onerror="this.src='${getFallbackLogo(a.url)}'">
+          <img src="${PLACEHOLDER_IMAGE}" alt="${a.title}" loading="lazy" data-src="${a.image}">
           <div class="news-content">
             <div class="news-title">${a.title}</div>
             <div class="news-desc">${a.description}</div>
             <div class="news-meta">
-              <span class="news-source">${a.source}</span>
               <span>${new Date(a.publishedAt).toLocaleDateString()}</span>
             </div>
           </div>
         </a>
       `).join('');
+      
+      // Load images after rendering
+      setTimeout(() => {
+        document.querySelectorAll('.news-card img').forEach(img => {
+          const src = img.getAttribute('data-src');
+          if (src) loadImage(img, src);
+        });
+      }, 100);
     }
 
     // === ALERTS ===
@@ -812,62 +984,46 @@
 
     // === INITIAL LOAD ===
     window.addEventListener('load', async () => {
-      // Initialize ticker
-      updateTicker();
+      // Initialize ticker immediately
+      initializeTicker();
+      
+      // Setup infinite scroll
+      setupInfiniteScroll();
       
       // Load cached articles if available
       if (allArticles.length > 0) {
         renderNews(allArticles);
-        document.getElementById('status').textContent = `Using cache (${allArticles.length} articles)`;
       }
       
-      // Fetch fresh news
-      try {
-        const freshArticles = await fetchNews();
-        if (freshArticles.length > 0) {
-          allArticles = freshArticles;
-          localStorage.setItem('cachedArticles', JSON.stringify(allArticles));
-          applyFilters();
-          document.getElementById('status').textContent = `Loaded ${allArticles.length} fresh articles`;
-          
-          // Check for breaking news alerts
-          freshArticles.forEach(a => {
-            const lower = (a.title + a.description).toLowerCase();
-            if (lower.includes('breaking') || lower.includes('urgent') || lower.includes('crash') || lower.includes('surge') || lower.includes('all-time high')) {
-              showAlert(a.title);
-            }
-          });
-        } else if (allArticles.length === 0) {
-          // Show fallback content if no articles loaded
-          renderNews([{
-            title: 'Welcome to TradeVision News',
-            description: 'Latest crypto updates loading soon...',
-            image: FALLBACK_LOGOS.default,
-            source: 'TradeVision',
-            publishedAt: new Date().toISOString(),
-            url: '#',
-            id: 'fallback'
-          }]);
-        }
-      } catch (e) {
-        console.error('Initial load failed:', e);
-        document.getElementById('status').textContent = 'Failed to load news. Using cached data if available.';
+      // Fetch initial news
+      const freshArticles = await fetchNews(0);
+      if (freshArticles.length > 0) {
+        allArticles = freshArticles;
+        localStorage.setItem('cachedArticles', JSON.stringify(allArticles));
+        applyFilters();
+        
+        // Check for breaking news alerts
+        freshArticles.forEach(a => {
+          const lower = (a.title + a.description).toLowerCase();
+          if (lower.includes('breaking') || lower.includes('urgent') || lower.includes('crash') || lower.includes('surge') || lower.includes('all-time high')) {
+            showAlert(a.title);
+          }
+        });
+      } else if (allArticles.length === 0) {
+        // Show fallback content if no articles loaded
+        renderNews([{
+          title: 'Welcome to TradeVision News',
+          description: 'Latest crypto updates loading soon...',
+          image: PLACEHOLDER_IMAGE,
+          publishedAt: new Date().toISOString(),
+          url: '#',
+          id: 'fallback'
+        }]);
       }
     });
 
     // Auto-refresh ticker every 30 seconds
     setInterval(updateTicker, 30000);
-    
-    // Auto-refresh news every 5 minutes
-    setInterval(async () => {
-      const freshArticles = await fetchNews();
-      if (freshArticles.length > 0) {
-        allArticles = freshArticles;
-        localStorage.setItem('cachedArticles', JSON.stringify(allArticles));
-        applyFilters();
-        document.getElementById('status').textContent = `Updated: ${new Date().toLocaleTimeString()} (${allArticles.length} articles)`;
-      }
-    }, 5 * 60 * 1000);
   </script>
 </body>
 </html>
