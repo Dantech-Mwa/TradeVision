@@ -14,6 +14,7 @@
   <meta property="og:type" content="website" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
   <style>
+    /* All existing CSS styles remain the same */
     :root {
       --bg: #0f0f1a;
       --card-bg: #16213e;
@@ -79,13 +80,11 @@
       overflow: hidden;
       position: relative;
       height: 30px;
-      /* Removed background to match header */
     }
     .ticker {
       display: flex;
       white-space: nowrap;
       position: absolute;
-      /* Slower speed - 120 seconds for full cycle */
       animation: scrollTicker 120s linear infinite;
     }
     .ticker-item {
@@ -440,6 +439,8 @@
       <a href="index.html"><i class="fas fa-home"></i> Home</a>
       <a href="chart.html"><i class="fas fa-chart-line"></i> Chart</a>
       <a href="news.html"><i class="fas fa-newspaper"></i> News</a>
+      <a href="ideas.html"><i class="fas fa-lightbulb"></i> Ideas</a>
+      <a href="trading.html"><i class="fas fa-chart-area"></i> Trade</a>
     </div>
   </div>
 
@@ -743,7 +744,7 @@
       try { return new URL(url).hostname; } catch { return 'unknown'; }
     }
 
-    // === FAST IMAGE LOADING ===
+    // === IMPROVED IMAGE LOADING ===
     function loadImage(imgElement, src) {
       return new Promise((resolve) => {
         // Show placeholder immediately
@@ -757,14 +758,47 @@
           resolve();
         };
         img.onerror = () => {
-          imgElement.classList.remove('loading');
-          resolve();
+          // Try to extract image from article URL if direct image fails
+          extractImageFromArticle(imgElement, src).then(resolve);
         };
         img.src = src;
       });
     }
 
-    // === INFINITE SCROLL NEWS ===
+    // Fallback method to extract images from article content
+    async function extractImageFromArticle(imgElement, articleUrl) {
+      try {
+        // Use a proxy service to avoid CORS issues
+        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(articleUrl)}`;
+        const response = await fetch(proxyUrl);
+        const html = await response.text();
+        
+        // Create a temporary DOM parser to extract images
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        
+        // Try to find the first image in the article
+        const images = doc.querySelectorAll('img');
+        for (let img of images) {
+          const src = img.src;
+          // Check if it's a valid image URL
+          if (src && (src.includes('.jpg') || src.includes('.jpeg') || src.includes('.png') || src.includes('.webp'))) {
+            // Use the found image
+            imgElement.src = src;
+            imgElement.classList.remove('loading');
+            return;
+          }
+        }
+        
+        // If no image found, keep placeholder
+        imgElement.classList.remove('loading');
+      } catch (error) {
+        console.warn('Could not extract image from article:', error);
+        imgElement.classList.remove('loading');
+      }
+    }
+
+    // === IMPROVED NEWS FETCHING WITH BETTER IMAGE EXTRACTION ===
     async function fetchNews(page = 0) {
       if (isLoading) return [];
       
@@ -772,11 +806,13 @@
         isLoading = true;
         document.getElementById('loading-spinner').style.display = 'block';
         
-        // Simulate pagination with different sources
+        // Use more reliable news sources with better image support
         const sources = [
           `https://cryptopanic.com/api/v1/posts/?public=true&currencies=BTC,ETH,SOL,ADA,XRP&kind=news&filter=hot&page=${page + 1}`,
           `https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fcointelegraph.com%2Frss&page=${page + 1}`,
-          `https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.coindesk.com%2Farc%2Foutboundfeeds%2Frss%2F&page=${page + 1}`
+          `https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.coindesk.com%2Farc%2Foutboundfeeds%2Frss%2F&page=${page + 1}`,
+          `https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fdecrypt.co%2Ffeed&page=${page + 1}`,
+          `https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fnews.bitcoin.com%2Ffeed%2F&page=${page + 1}`
         ];
         
         const responses = await Promise.allSettled(
@@ -801,19 +837,37 @@
           })));
         }
         
-        // Process RSS feeds
+        // Process RSS feeds with better image extraction
         for (let i = 1; i < responses.length; i++) {
           const rss = responses[i];
           if (rss.status === 'fulfilled' && rss.value.items) {
-            articles = articles.concat(rss.value.items.map(item => ({
-              title: item.title,
-              description: (item.description || '').replace(/<[^>]*>/g, '').substring(0, 150) + '...',
-              url: item.link,
-              image: item.thumbnail || PLACEHOLDER_IMAGE,
-              publishedAt: item.pubDate,
-              id: item.link + page,
-              category: 'crypto'
-            })));
+            articles = articles.concat(rss.value.items.map(item => {
+              // Extract image from RSS feed item
+              let imageUrl = PLACEHOLDER_IMAGE;
+              
+              // Try different methods to extract image
+              if (item.thumbnail) {
+                imageUrl = item.thumbnail;
+              } else if (item.enclosure && item.enclosure.type && item.enclosure.type.startsWith('image/')) {
+                imageUrl = item.enclosure.link;
+              } else if (item.content) {
+                // Try to extract image from HTML content
+                const imgMatch = item.content.match(/<img[^>]+src="([^">]+)"/);
+                if (imgMatch && imgMatch[1]) {
+                  imageUrl = imgMatch[1];
+                }
+              }
+              
+              return {
+                title: item.title,
+                description: (item.description || '').replace(/<[^>]*>/g, '').substring(0, 150) + '...',
+                url: item.link,
+                image: imageUrl,
+                publishedAt: item.pubDate,
+                id: item.link + page,
+                category: 'crypto'
+              };
+            }));
           }
         }
         
@@ -907,7 +961,7 @@
       renderNews(filtered);
     }
 
-    // === RENDER NEWS ===
+    // === IMPROVED NEWS RENDERING WITH BETTER IMAGE HANDLING ===
     function renderNews(articles) {
       const container = document.getElementById('news-container');
       
@@ -929,13 +983,13 @@
         </a>
       `).join('');
       
-      // Load images after rendering
-      setTimeout(() => {
-        document.querySelectorAll('.news-card img').forEach(img => {
-          const src = img.getAttribute('data-src');
-          if (src) loadImage(img, src);
-        });
-      }, 100);
+      // Load images immediately after rendering
+      document.querySelectorAll('.news-card img').forEach(img => {
+        const src = img.getAttribute('data-src');
+        if (src && src !== PLACEHOLDER_IMAGE) {
+          loadImage(img, src);
+        }
+      });
     }
 
     // === ALERTS ===
