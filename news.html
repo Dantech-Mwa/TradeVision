@@ -4,162 +4,453 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>TradeVision Pro - Crypto & Trading News</title>
-
-  <!-- Open Graph for Social Previews -->
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icon-192.png" type="image/png">
+  <meta name="theme-color" content="#00d4ff">
   <meta property="og:title" content="TradeVision Pro - Real-Time Crypto News" />
   <meta property="og:description" content="Latest crypto, Bitcoin, and trading news from global sources." />
   <meta property="og:image" content="https://tradevision.jaydancosmeticshop.store/thumbnail.jpg" />
   <meta property="og:url" content="https://tradevision.jaydancosmeticshop.store/news.html" />
   <meta property="og:type" content="website" />
-
-  <!-- Twitter Cards -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="TradeVision Pro - Crypto News">
-  <meta name="twitter:description" content="Stay ahead with real-time crypto and trading news.">
-  <meta name="twitter:image" content="https://tradevision.jaydancosmeticshop.store/thumbnail.jpg">
-
-  <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
-
   <style>
+    :root {
+      --bg: #0f0f1a;
+      --card-bg: #16213e;
+      --text: #e0e0ff;
+      --title: #00d4ff;
+      --desc: #b0c4de;
+      --border: #1e2a44;
+      --accent: #00d4ff;
+      --source-bg: #00d4ff;
+      --source-text: #000;
+      --alert: #ff6b6b;
+      --price-up: #00ff88;
+      --price-down: #ff6b6b;
+    }
+    [data-theme="light"] {
+      --bg: #f8f9fa;
+      --card-bg: #ffffff;
+      --text: #212529;
+      --title: #0066cc;
+      --desc: #495057;
+      --border: #dee2e6;
+      --accent: #0066cc;
+      --source-bg: #0066cc;
+      --source-text: #fff;
+      --alert: #dc3545;
+      --price-up: #28a745;
+      --price-down: #dc3545;
+    }
+
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #0f0f1a;
-      color: #e0e0ff;
+      background: var(--bg);
+      color: var(--text);
       line-height: 1.6;
+      transition: background 0.3s, color 0.3s;
+      min-height: 100vh;
     }
+
     .header {
       background: linear-gradient(135deg, #1a1a2e, #16213e);
-      padding: 1.5rem 1rem;
+      padding: 1rem;
       text-align: center;
-      border-bottom: 3px solid #00d4ff;
+      border-bottom: 3px solid var(--accent);
       position: sticky;
       top: 0;
       z-index: 100;
     }
+    [data-theme="light"] .header {
+      background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+    }
     .header h1 {
-      font-size: 2rem;
-      color: #00d4ff;
+      font-size: 1.6rem;
+      color: var(--accent);
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 10px;
+      gap: 8px;
     }
-    .header a {
+    
+    .ticker-container {
+      margin-top: 0.5rem;
+      overflow: hidden;
+      position: relative;
+      height: 30px;
+    }
+    .ticker {
+      display: flex;
+      white-space: nowrap;
+      position: absolute;
+      animation: scrollTicker 60s linear infinite;
+    }
+    .ticker-item {
+      display: flex;
+      align-items: center;
+      margin-right: 2rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .ticker-item:hover {
+      transform: scale(1.05);
+    }
+    .ticker-symbol {
+      font-weight: bold;
+      margin-right: 0.3rem;
+    }
+    .ticker-price {
+      margin-right: 0.3rem;
+    }
+    .ticker-change {
+      font-size: 0.85rem;
+    }
+    @keyframes scrollTicker {
+      0% { transform: translateX(100%); }
+      100% { transform: translateX(-100%); }
+    }
+    
+    .nav-links {
+      margin-top: 0.6rem;
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      font-size: 0.9rem;
+    }
+    .nav-links a {
       color: #fff;
       text-decoration: none;
-      font-size: 0.9rem;
-      margin-top: 0.5rem;
-      display: inline-block;
+      padding: 0.3rem 0.6rem;
+      border-radius: 6px;
     }
-    .container {
+    [data-theme="light"] .nav-links a { color: #0066cc; }
+    .nav-links a:hover { background: rgba(255,255,255,0.2); }
+
+    .controls {
       max-width: 1200px;
-      margin: 2rem auto;
+      margin: 1rem auto;
       padding: 0 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+      align-items: center;
+      justify-content: space-between;
     }
+    .search-box { flex: 1; min-width: 200px; }
+    .search-box input {
+      width: 100%;
+      padding: 0.6rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--card-bg);
+      color: var(--text);
+      font-size: 0.95rem;
+    }
+
+    .theme-toggle, .alert-toggle {
+      background: var(--accent);
+      color: var(--source-text);
+      border: none;
+      padding: 0.5rem 0.9rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .theme-toggle:hover, .alert-toggle:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    .category-filter {
+      max-width: 1200px;
+      margin: 0.5rem auto 1rem;
+      padding: 0 1rem;
+      overflow-x: auto;
+      white-space: nowrap;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .category-filter::-webkit-scrollbar { display: none; }
+    .category-filter .cat-btn {
+      display: inline-block;
+      background: var(--card-bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 0.4rem 0.8rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      margin-right: 0.5rem;
+      cursor: pointer;
+      transition: 0.2s;
+      white-space: nowrap;
+    }
+    .category-filter .cat-btn:hover {
+      background: var(--accent);
+      color: var(--source-text);
+    }
+    .category-filter .cat-btn.active {
+      background: var(--accent);
+      color: var(--source-text);
+      font-weight: bold;
+    }
+
+    .container { max-width: 1200px; margin: 0 auto 2rem; padding: 0 1rem; }
     .news-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 1.5rem;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
     }
     .news-card {
-      background: #16213e;
-      border-radius: 12px;
+      background: var(--card-bg);
+      border-radius: 10px;
       overflow: hidden;
-      transition: transform 0.3s, box-shadow 0.3s;
-      border: 1px solid #1e2a44;
+      border: 1px solid var(--border);
+      text-decoration: none;
+      color: inherit;
+      display: block;
+      transition: transform 0.2s;
     }
-    .news-card:hover {
-      transform: translateY(-8px);
-      box-shadow: 0 10px 20px rgba(0, 212, 255, 0.2);
-    }
+    .news-card:hover { transform: translateY(-5px); }
     .news-card img {
       width: 100%;
-      height: 180px;
+      height: 160px;
       object-fit: cover;
+      background: #111;
     }
-    .news-content {
-      padding: 1rem;
-    }
+    .news-content { padding: 0.9rem; }
     .news-title {
-      font-size: 1.1rem;
+      font-size: 1rem;
       font-weight: 600;
-      margin-bottom: 0.5rem;
-      color: #00d4ff;
+      color: var(--title);
+      margin-bottom: 0.4rem;
       display: -webkit-box;
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
     }
     .news-desc {
-      font-size: 0.9rem;
-      color: #b0c4de;
-      margin-bottom: 0.8rem;
+      font-size: 0.85rem;
+      color: var(--desc);
+      margin-bottom: 0.6rem;
       display: -webkit-box;
-      -webkit-line-clamp: 3;
+      -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
     }
     .news-meta {
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       color: #888;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
     .news-source {
-      background: #00d4ff;
-      color: #000;
-      padding: 2px 8px;
+      background: var(--source-bg);
+      color: var(--source-text);
+      padding: 2px 6px;
       border-radius: 4px;
       font-weight: bold;
     }
-    .loading, .error {
+
+    .status { text-align: center; font-size: 0.85rem; color: #00ff88; margin: 0.5rem 0; }
+    .loading { color: var(--accent); }
+    .error { color: var(--alert); }
+    .alert-banner {
+      position: fixed;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--alert);
+      color: white;
+      padding: 0.8rem 1.2rem;
+      border-radius: 8px;
+      font-weight: bold;
+      z-index: 1000;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      animation: fadeIn 0.5s;
+      max-width: 90%;
       text-align: center;
-      padding: 3rem;
-      font-size: 1.1rem;
     }
-    .loading { color: #00d4ff; }
-    .error { color: #ff6b6b; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
     .back-btn {
       position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: #00d4ff;
-      color: #000;
-      width: 50px;
-      height: 50px;
+      bottom: 15px;
+      right: 15px;
+      background: var(--accent);
+      color: var(--source-text);
+      width: 45px;
+      height: 45px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.5rem;
+      font-size: 1.3rem;
       box-shadow: 0 4px 10px rgba(0, 212, 255, 0.4);
-      cursor: pointer;
       z-index: 1000;
-      transition: 0.3s;
+      text-decoration: none;
+      transition: all 0.2s;
     }
     .back-btn:hover {
-      background: #00b0d4;
       transform: scale(1.1);
     }
-    @media (max-width: 768px) {
-      .header h1 { font-size: 1.5rem; }
+
+    /* Modal Styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s;
+    }
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+    .modal {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 1.5rem;
+      max-width: 500px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      transform: translateY(20px);
+      transition: transform 0.3s;
+    }
+    .modal-overlay.active .modal {
+      transform: translateY(0);
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .modal-title {
+      font-size: 1.3rem;
+      color: var(--title);
+      font-weight: bold;
+    }
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--text);
+      font-size: 1.5rem;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    .modal-close:hover {
+      color: var(--alert);
+    }
+    .modal-content {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 0.8rem;
+    }
+    .asset-btn {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.8rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .asset-btn:hover {
+      background: var(--accent);
+      color: var(--source-text);
+      transform: translateY(-2px);
+    }
+    .asset-btn.active {
+      background: var(--accent);
+      color: var(--source-text);
+      font-weight: bold;
+    }
+    .asset-symbol {
+      font-weight: bold;
+      font-size: 1.1rem;
+      margin-bottom: 0.3rem;
+    }
+    .asset-name {
+      font-size: 0.8rem;
+      opacity: 0.8;
+    }
+
+    @media (max-width: 592px) {
+      .header h1 { font-size: 1.4rem; }
+      .ticker-container { height: 25px; }
+      .ticker-item { margin-right: 1.5rem; }
+      .nav-links { font-size: 0.8rem; gap: 0.6rem; }
+      .controls { flex-direction: column; align-items: stretch; }
+      .search-box { min-width: 100%; }
+      .theme-toggle, .alert-toggle { font-size: 0.8rem; padding: 0.5rem; }
       .news-grid { grid-template-columns: 1fr; }
+      .news-card img { height: 140px; }
+      .back-btn { width: 40px; height: 40px; font-size: 1.1rem; }
+      .modal-content { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); }
     }
   </style>
 </head>
-<body>
+<body data-theme="dark">
 
   <div class="header">
     <h1><i class="fas fa-newspaper"></i> TradeVision News</h1>
-    <a href="chart.html">← Back to Chart</a>
+    <div class="ticker-container">
+      <div class="ticker" id="ticker">
+        <!-- Ticker items will be populated by JavaScript -->
+      </div>
+    </div>
+    <div class="nav-links">
+      <a href="index.html"><i class="fas fa-home"></i> Home</a>
+      <a href="chart.html"><i class="fas fa-chart-line"></i> Chart</a>
+      <a href="news.html"><i class="fas fa-newspaper"></i> News</a>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="search-box">
+      <input type="text" id="search" placeholder="Search news..." autocomplete="off">
+    </div>
+    <button class="theme-toggle" id="theme-toggle"><i class="fas fa-moon"></i> Dark</button>
+    <button class="alert-toggle" id="alert-toggle"><i class="fas fa-bell"></i> Alerts: Off</button>
+  </div>
+
+  <div class="category-filter">
+    <button class="cat-btn active" data-cat="all">All</button>
+    <button class="cat-btn" data-cat="BTC">BTC</button>
+    <button class="cat-btn" data-cat="ETH">ETH</button>
+    <button class="cat-btn" data-cat="SOL">SOL</button>
+    <button class="cat-btn" data-cat="ADA">ADA</button>
+    <button class="cat-btn" data-cat="XRP">XRP</button>
+    <button class="cat-btn" data-cat="DeFi">DeFi</button>
+    <button class="cat-btn" data-cat="NFT">NFT</button>
+    <button class="cat-btn" data-cat="Trading">Trading</button>
+    <button class="cat-btn" data-cat="Stocks">Stocks</button>
   </div>
 
   <div class="container">
+    <div id="status" class="status">Loading real crypto news...</div>
     <div id="news-container" class="news-grid">
-      <div class="loading">Loading latest crypto & trading news...</div>
+      <!-- News cards will be populated by JavaScript -->
     </div>
   </div>
 
@@ -167,88 +458,416 @@
     <i class="fas fa-chart-line"></i>
   </a>
 
+  <!-- Asset Selection Modal -->
+  <div class="modal-overlay" id="asset-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title">Select Assets to Track</h2>
+        <button class="modal-close" id="modal-close">&times;</button>
+      </div>
+      <div class="modal-content" id="asset-list">
+        <!-- Asset buttons will be populated by JavaScript -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Service Worker -->
   <script>
-    const API_SOURCES = [
-      // 1. CryptoPanic (Free, No Key Needed for Basic)
-      { url: 'https://cryptopanic.com/api/v1/posts/?public=true&currencies=BTC,ETH,SOL,ADA,XRP&kind=news&filter=hot', parser: parseCryptoPanic },
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js');
+      });
+    }
+  </script>
 
-      // 2. CoinGecko News (via RSS-to-JSON)
-      { url: 'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fcointelegraph.com%2Frss', parser: parseRSS },
+  <script>
+    // === CONFIG ===
+    const FALLBACK_LOGOS = {
+      'cointelegraph.com': 'https://cryptologos.cc/logos/cointelegraph-ct-logo.png',
+      'coindesk.com': 'https://cryptologos.cc/logos/coindesk-cdk-logo.png',
+      'cryptopanic.com': 'https://cryptologos.cc/logos/cryptopanic-cpn-logo.png',
+      'finance.yahoo.com': 'https://cryptologos.cc/logos/yahoo-finance-yahoo-logo.png',
+      'default': 'https://cryptologos.cc/logos/bitcoin-btc-logo.png'
+    };
 
-      // 3. NewsAPI.org (Free Tier - Need Key)
-      // Uncomment & add your key below
-      // { url: 'https://newsapi.org/v2/everything?q=bitcoin+OR+cryptocurrency+OR+trading&language=en&sortBy=publishedAt&apiKey=YOUR_NEWSAPI_KEY', parser: parseNewsAPI },
+    // Available assets for tracking
+    const AVAILABLE_ASSETS = [
+      { id: 'bitcoin', symbol: 'BTC', name: 'Bitcoin' },
+      { id: 'ethereum', symbol: 'ETH', name: 'Ethereum' },
+      { id: 'solana', symbol: 'SOL', name: 'Solana' },
+      { id: 'cardano', symbol: 'ADA', name: 'Cardano' },
+      { id: 'ripple', symbol: 'XRP', name: 'Ripple' },
+      { id: 'dogecoin', symbol: 'DOGE', name: 'Dogecoin' },
+      { id: 'polkadot', symbol: 'DOT', name: 'Polkadot' },
+      { id: 'chainlink', symbol: 'LINK', name: 'Chainlink' },
+      { id: 'litecoin', symbol: 'LTC', name: 'Litecoin' },
+      { id: 'binancecoin', symbol: 'BNB', name: 'Binance Coin' },
+      { id: 'tron', symbol: 'TRX', name: 'TRON' },
+      { id: 'avalanche-2', symbol: 'AVAX', name: 'Avalanche' },
+      { id: 'matic-network', symbol: 'MATIC', name: 'Polygon' },
+      { id: 'stellar', symbol: 'XLM', name: 'Stellar' },
+      { id: 'monero', symbol: 'XMR', name: 'Monero' }
     ];
 
-    async function fetchAllNews() {
-      const allArticles = [];
-      for (const source of API_SOURCES) {
-        try {
-          const res = await fetch(source.url);
-          const data = await res.json();
-          const articles = source.parser(data);
-          allArticles.push(...articles);
-        } catch (err) {
-          console.warn(`Failed to load from ${source.url}`, err);
-        }
+    // User selected assets (default to first 10)
+    let userAssets = JSON.parse(localStorage.getItem('userAssets')) || AVAILABLE_ASSETS.slice(0, 10).map(a => a.id);
+
+    let allArticles = JSON.parse(localStorage.getItem('cachedArticles')) || [];
+    let currentCategory = 'all';
+    let alertsEnabled = false;
+    let lastAlertTime = 0;
+
+    // === MODAL FUNCTIONALITY ===
+    const assetModal = document.getElementById('asset-modal');
+    const modalClose = document.getElementById('modal-close');
+    const assetList = document.getElementById('asset-list');
+    const ticker = document.getElementById('ticker');
+
+    // Open modal when clicking on ticker
+    ticker.addEventListener('click', () => {
+      assetModal.classList.add('active');
+      renderAssetList();
+    });
+
+    // Close modal
+    modalClose.addEventListener('click', () => {
+      assetModal.classList.remove('active');
+    });
+
+    // Close modal when clicking outside
+    assetModal.addEventListener('click', (e) => {
+      if (e.target === assetModal) {
+        assetModal.classList.remove('active');
       }
-      return allArticles
-        .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt))
-        .slice(0, 30); // Top 30 latest
+    });
+
+    // Render asset selection list
+    function renderAssetList() {
+      assetList.innerHTML = AVAILABLE_ASSETS.map(asset => `
+        <div class="asset-btn ${userAssets.includes(asset.id) ? 'active' : ''}" data-id="${asset.id}">
+          <div class="asset-symbol">${asset.symbol}</div>
+          <div class="asset-name">${asset.name}</div>
+        </div>
+      `).join('');
+      
+      // Add event listeners to asset buttons
+      document.querySelectorAll('.asset-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const assetId = btn.dataset.id;
+          if (userAssets.includes(assetId)) {
+            // Remove asset if already selected
+            userAssets = userAssets.filter(id => id !== assetId);
+            btn.classList.remove('active');
+          } else {
+            // Add asset if not selected
+            userAssets.push(assetId);
+            btn.classList.add('active');
+          }
+          // Save user selection
+          localStorage.setItem('userAssets', JSON.stringify(userAssets));
+          // Update ticker
+          updateTicker();
+        });
+      });
     }
 
-    function parseCryptoPanic(data) {
-      return (data.results || []).map(post => ({
-        title: post.title,
-        description: post.description || "No description available.",
-        url: post.url,
-        image: post.image || 'https://via.placeholder.com/400x200?text=No+Image',
-        source: post.source?.title || 'CryptoPanic',
-        publishedAt: post.published_at
-      }));
+    // === MULTI-ASSET TICKER ===
+    async function updateTicker() {
+      try {
+        // Get user selected assets
+        const selectedAssets = AVAILABLE_ASSETS.filter(a => userAssets.includes(a.id));
+        const ids = selectedAssets.map(a => a.id).join(',');
+        
+        const res = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`);
+        if (!res.ok) throw new Error('Failed to fetch ticker data');
+        const data = await res.json();
+        
+        let tickerHTML = '';
+        
+        selectedAssets.forEach(asset => {
+          if (data[asset.id]) {
+            const price = data[asset.id].usd;
+            const change = data[asset.id].usd_24h_change;
+            const changeColor = change >= 0 ? 'var(--price-up)' : 'var(--price-down)';
+            const changeSymbol = change >= 0 ? '+' : '';
+            
+            tickerHTML += `
+              <div class="ticker-item">
+                <span class="ticker-symbol">${asset.symbol}</span>
+                <span class="ticker-price">$${price.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                <span class="ticker-change" style="color: ${changeColor}">${changeSymbol}${change.toFixed(2)}%</span>
+              </div>
+            `;
+          }
+        });
+        
+        // Duplicate content for seamless scrolling
+        ticker.innerHTML = tickerHTML + tickerHTML;
+      } catch (e) {
+        console.warn('Ticker update failed:', e);
+        // Fallback ticker with static data
+        const fallbackHTML = AVAILABLE_ASSETS.slice(0, 10).map(asset => `
+          <div class="ticker-item">
+            <span class="ticker-symbol">${asset.symbol}</span>
+            <span class="ticker-price">$--</span>
+            <span class="ticker-change">--%</span>
+          </div>
+        `).join('');
+        ticker.innerHTML = fallbackHTML + fallbackHTML;
+      }
     }
 
-    function parseRSS(data) {
-      return (data.items || []).map(item => ({
-        title: item.title,
-        description: item.description.replace(/<[^>]*>/g, '').substring(0, 150) + '...',
-        url: item.link,
-        image: item.enclosure?.url || 'https://via.placeholder.com/400x200?text=News',
-        source: 'CoinTelegraph',
-        publishedAt: item.pubDate
-      }));
+    // === UTILS ===
+    function getDomain(url) {
+      try { return new URL(url).hostname; } catch { return 'unknown'; }
+    }
+    function getFallbackLogo(url) {
+      const domain = getDomain(url);
+      for (const [key, logo] of Object.entries(FALLBACK_LOGOS)) {
+        if (domain.includes(key)) return logo;
+      }
+      return FALLBACK_LOGOS.default;
     }
 
-    // Optional: Add NewsAPI.org (requires free API key from https://newsapi.org)
-    // function parseNewsAPI(data) { ... }
+    // === NEWS FETCHING ===
+    async function fetchNews() {
+      try {
+        document.getElementById('status').textContent = 'Loading news...';
+        
+        // Use multiple news sources
+        const sources = [
+          'https://cryptopanic.com/api/v1/posts/?public=true&currencies=BTC,ETH,SOL,ADA,XRP&kind=news&filter=hot',
+          'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fcointelegraph.com%2Frss',
+          'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.coindesk.com%2Farc%2Foutboundfeeds%2Frss%2F'
+        ];
+        
+        const responses = await Promise.allSettled(
+          sources.map(url => 
+            fetch(url).then(res => res.ok ? res.json() : Promise.reject('API error'))
+          )
+        );
+        
+        let articles = [];
+        
+        // Process CryptoPanic response
+        const cryptoPanic = responses[0];
+        if (cryptoPanic.status === 'fulfilled' && cryptoPanic.value.results) {
+          articles = articles.concat(cryptoPanic.value.results.map(item => ({
+            title: item.title,
+            description: (item.description || '').substring(0, 150) + '...',
+            url: item.url,
+            image: item.image?.url || FALLBACK_LOGOS.default,
+            source: item.source?.title || 'CryptoPanic',
+            publishedAt: item.published_at,
+            id: item.id,
+            category: 'crypto'
+          })));
+        }
+        
+        // Process RSS feeds
+        for (let i = 1; i < responses.length; i++) {
+          const rss = responses[i];
+          if (rss.status === 'fulfilled' && rss.value.items) {
+            articles = articles.concat(rss.value.items.map(item => ({
+              title: item.title,
+              description: (item.description || '').replace(/<[^>]*>/g, '').substring(0, 150) + '...',
+              url: item.link,
+              image: item.thumbnail || FALLBACK_LOGOS.default,
+              source: i === 1 ? 'CoinTelegraph' : 'CoinDesk',
+              publishedAt: item.pubDate,
+              id: item.link,
+              category: 'crypto'
+            })));
+          }
+        }
+        
+        // Deduplicate articles
+        articles = articles.filter((a, index, self) => 
+          index === self.findIndex(t => t.id === a.id || t.url === a.url)
+        );
+        
+        // Sort by date
+        articles.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
+        
+        // Limit to 30 articles
+        articles = articles.slice(0, 30);
+        
+        return articles;
+      } catch (error) {
+        console.error('Error fetching news:', error);
+        return [];
+      }
+    }
 
+    // === FILTERING ===
+    document.querySelectorAll('.cat-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentCategory = btn.dataset.cat;
+        applyFilters();
+      });
+    });
+
+    document.getElementById('search').addEventListener('input', applyFilters);
+
+    function applyFilters() {
+      let filtered = allArticles;
+      const query = document.getElementById('search').value.toLowerCase();
+
+      if (query) {
+        filtered = filtered.filter(a =>
+          a.title.toLowerCase().includes(query) ||
+          a.description.toLowerCase().includes(query)
+        );
+      }
+
+      if (currentCategory !== 'all') {
+        const keywords = {
+          BTC: ['bitcoin', 'btc'],
+          ETH: ['ethereum', 'eth'],
+          SOL: ['solana', 'sol'],
+          ADA: ['cardano', 'ada'],
+          XRP: ['xrp', 'ripple'],
+          DeFi: ['defi', 'lending', 'yield', 'uniswap', 'aave'],
+          NFT: ['nft', 'opensea', 'collectible', 'mint'],
+          Trading: ['trading', 'strategy', 'chart', 'analysis', 'market'],
+          Stocks: ['stock', 'nasdaq', 's&p', 'dow jones', 'tsla', 'aapl', 'msft', 'amzn', 'googl']
+        };
+        const terms = keywords[currentCategory] || [];
+        filtered = filtered.filter(a =>
+          terms.some(t => a.title.toLowerCase().includes(t) || a.description.toLowerCase().includes(t))
+        );
+      }
+
+      renderNews(filtered);
+    }
+
+    // === RENDER NEWS ===
     function renderNews(articles) {
       const container = document.getElementById('news-container');
-      if (articles.length === 0) {
-        container.innerHTML = '<div class="error">No news available at the moment.</div>';
+      if (!articles.length) {
+        container.innerHTML = '<div class="error">No matching news found.</div>';
         return;
       }
-
-      container.innerHTML = articles.map(article => `
-        <a href="${article.url}" target="_blank" class="news-card">
-          <img src="${article.image}" alt="${article.title}" loading="lazy" onerror="this.src='https://via.placeholder.com/400x200?text=No+Image'">
+      container.innerHTML = articles.map(a => `
+        <a href="${a.url}" target="_blank" class="news-card">
+          <img src="${a.image}" alt="${a.title}" loading="lazy" 
+               onerror="this.src='${getFallbackLogo(a.url)}'">
           <div class="news-content">
-            <div class="news-title">${article.title}</div>
-            <div class="news-desc">${article.description}</div>
+            <div class="news-title">${a.title}</div>
+            <div class="news-desc">${a.description}</div>
             <div class="news-meta">
-              <span class="news-source">${article.source}</span>
-              <span>${new Date(article.publishedAt).toLocaleDateString()}</span>
+              <span class="news-source">${a.source}</span>
+              <span>${new Date(a.publishedAt).toLocaleDateString()}</span>
             </div>
           </div>
         </a>
       `).join('');
     }
 
-    // Load News
-    fetchAllNews().then(renderNews).catch(() => {
-      document.getElementById('news-container').innerHTML = '<div class="error">Failed to load news. Check console.</div>';
+    // === ALERTS ===
+    document.getElementById('alert-toggle').addEventListener('click', async () => {
+      if (!alertsEnabled) {
+        if ('Notification' in window && Notification.permission === 'default') {
+          const perm = await Notification.requestPermission();
+          if (perm !== 'granted') return alert('Enable notifications in browser');
+        }
+        alertsEnabled = true;
+        document.getElementById('alert-toggle').innerHTML = '<i class="fas fa-bell"></i> Alerts: On';
+      } else {
+        alertsEnabled = false;
+        document.getElementById('alert-toggle').innerHTML = '<i class="fas fa-bell-slash"></i> Alerts: Off';
+      }
     });
-  </script>
 
+    function showAlert(title) {
+      const now = Date.now();
+      if (now - lastAlertTime < 30000) return;
+      lastAlertTime = now;
+      if (alertsEnabled && 'Notification' in window && Notification.permission === 'granted') {
+        new Notification(title, { icon: 'icon-192.png' });
+      }
+      const banner = Object.assign(document.createElement('div'), {
+        className: 'alert-banner',
+        innerHTML: `<i class="fas fa-exclamation-triangle"></i> ${title}`
+      });
+      document.body.appendChild(banner);
+      setTimeout(() => banner.remove(), 5000);
+    }
+
+    // === THEME TOGGLE ===
+    const body = document.body;
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    body.setAttribute('data-theme', savedTheme);
+    const themeBtn = document.getElementById('theme-toggle');
+    themeBtn.innerHTML = savedTheme === 'dark' ? '<i class="fas fa-moon"></i> Dark' : '<i class="fas fa-sun"></i> Light';
+
+    themeBtn.addEventListener('click', () => {
+      const newTheme = body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      body.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+      themeBtn.innerHTML = newTheme === 'dark' ? '<i class="fas fa-moon"></i> Dark' : '<i class="fas fa-sun"></i> Light';
+    });
+
+    // === INITIAL LOAD ===
+    window.addEventListener('load', async () => {
+      // Initialize ticker
+      updateTicker();
+      
+      // Load cached articles if available
+      if (allArticles.length > 0) {
+        renderNews(allArticles);
+        document.getElementById('status').textContent = `Using cache (${allArticles.length} articles)`;
+      }
+      
+      // Fetch fresh news
+      try {
+        const freshArticles = await fetchNews();
+        if (freshArticles.length > 0) {
+          allArticles = freshArticles;
+          localStorage.setItem('cachedArticles', JSON.stringify(allArticles));
+          applyFilters();
+          document.getElementById('status').textContent = `Loaded ${allArticles.length} fresh articles`;
+          
+          // Check for breaking news alerts
+          freshArticles.forEach(a => {
+            const lower = (a.title + a.description).toLowerCase();
+            if (lower.includes('breaking') || lower.includes('urgent') || lower.includes('crash') || lower.includes('surge') || lower.includes('all-time high')) {
+              showAlert(a.title);
+            }
+          });
+        } else if (allArticles.length === 0) {
+          // Show fallback content if no articles loaded
+          renderNews([{
+            title: 'Welcome to TradeVision News',
+            description: 'Latest crypto updates loading soon...',
+            image: FALLBACK_LOGOS.default,
+            source: 'TradeVision',
+            publishedAt: new Date().toISOString(),
+            url: '#',
+            id: 'fallback'
+          }]);
+        }
+      } catch (e) {
+        console.error('Initial load failed:', e);
+        document.getElementById('status').textContent = 'Failed to load news. Using cached data if available.';
+      }
+    });
+
+    // Auto-refresh ticker every 30 seconds
+    setInterval(updateTicker, 30000);
+    
+    // Auto-refresh news every 5 minutes
+    setInterval(async () => {
+      const freshArticles = await fetchNews();
+      if (freshArticles.length > 0) {
+        allArticles = freshArticles;
+        localStorage.setItem('cachedArticles', JSON.stringify(allArticles));
+        applyFilters();
+        document.getElementById('status').textContent = `Updated: ${new Date().toLocaleTimeString()} (${allArticles.length} articles)`;
+      }
+    }, 5 * 60 * 1000);
+  </script>
 </body>
 </html>
