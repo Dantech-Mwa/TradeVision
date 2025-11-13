@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TradeVision Pro - Crypto & Trading News</title>
+
+  <!-- Open Graph for Social Previews -->
+  <meta property="og:title" content="TradeVision Pro - Real-Time Crypto News" />
+  <meta property="og:description" content="Latest crypto, Bitcoin, and trading news from global sources." />
+  <meta property="og:image" content="https://tradevision.jaydancosmeticshop.store/thumbnail.jpg" />
+  <meta property="og:url" content="https://tradevision.jaydancosmeticshop.store/news.html" />
+  <meta property="og:type" content="website" />
+
+  <!-- Twitter Cards -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="TradeVision Pro - Crypto News">
+  <meta name="twitter:description" content="Stay ahead with real-time crypto and trading news.">
+  <meta name="twitter:image" content="https://tradevision.jaydancosmeticshop.store/thumbnail.jpg">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #0f0f1a;
+      color: #e0e0ff;
+      line-height: 1.6;
+    }
+    .header {
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      padding: 1.5rem 1rem;
+      text-align: center;
+      border-bottom: 3px solid #00d4ff;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header h1 {
+      font-size: 2rem;
+      color: #00d4ff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    .header a {
+      color: #fff;
+      text-decoration: none;
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+      display: inline-block;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+    .news-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+    .news-card {
+      background: #16213e;
+      border-radius: 12px;
+      overflow: hidden;
+      transition: transform 0.3s, box-shadow 0.3s;
+      border: 1px solid #1e2a44;
+    }
+    .news-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 10px 20px rgba(0, 212, 255, 0.2);
+    }
+    .news-card img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+    }
+    .news-content {
+      padding: 1rem;
+    }
+    .news-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: #00d4ff;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .news-desc {
+      font-size: 0.9rem;
+      color: #b0c4de;
+      margin-bottom: 0.8rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .news-meta {
+      font-size: 0.8rem;
+      color: #888;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .news-source {
+      background: #00d4ff;
+      color: #000;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+    .loading, .error {
+      text-align: center;
+      padding: 3rem;
+      font-size: 1.1rem;
+    }
+    .loading { color: #00d4ff; }
+    .error { color: #ff6b6b; }
+    .back-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #00d4ff;
+      color: #000;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      box-shadow: 0 4px 10px rgba(0, 212, 255, 0.4);
+      cursor: pointer;
+      z-index: 1000;
+      transition: 0.3s;
+    }
+    .back-btn:hover {
+      background: #00b0d4;
+      transform: scale(1.1);
+    }
+    @media (max-width: 768px) {
+      .header h1 { font-size: 1.5rem; }
+      .news-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1><i class="fas fa-newspaper"></i> TradeVision News</h1>
+    <a href="chart.html">← Back to Chart</a>
+  </div>
+
+  <div class="container">
+    <div id="news-container" class="news-grid">
+      <div class="loading">Loading latest crypto & trading news...</div>
+    </div>
+  </div>
+
+  <a href="chart.html" class="back-btn">
+    <i class="fas fa-chart-line"></i>
+  </a>
+
+  <script>
+    const API_SOURCES = [
+      // 1. CryptoPanic (Free, No Key Needed for Basic)
+      { url: 'https://cryptopanic.com/api/v1/posts/?public=true&currencies=BTC,ETH,SOL,ADA,XRP&kind=news&filter=hot', parser: parseCryptoPanic },
+
+      // 2. CoinGecko News (via RSS-to-JSON)
+      { url: 'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fcointelegraph.com%2Frss', parser: parseRSS },
+
+      // 3. NewsAPI.org (Free Tier - Need Key)
+      // Uncomment & add your key below
+      // { url: 'https://newsapi.org/v2/everything?q=bitcoin+OR+cryptocurrency+OR+trading&language=en&sortBy=publishedAt&apiKey=YOUR_NEWSAPI_KEY', parser: parseNewsAPI },
+    ];
+
+    async function fetchAllNews() {
+      const allArticles = [];
+      for (const source of API_SOURCES) {
+        try {
+          const res = await fetch(source.url);
+          const data = await res.json();
+          const articles = source.parser(data);
+          allArticles.push(...articles);
+        } catch (err) {
+          console.warn(`Failed to load from ${source.url}`, err);
+        }
+      }
+      return allArticles
+        .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt))
+        .slice(0, 30); // Top 30 latest
+    }
+
+    function parseCryptoPanic(data) {
+      return (data.results || []).map(post => ({
+        title: post.title,
+        description: post.description || "No description available.",
+        url: post.url,
+        image: post.image || 'https://via.placeholder.com/400x200?text=No+Image',
+        source: post.source?.title || 'CryptoPanic',
+        publishedAt: post.published_at
+      }));
+    }
+
+    function parseRSS(data) {
+      return (data.items || []).map(item => ({
+        title: item.title,
+        description: item.description.replace(/<[^>]*>/g, '').substring(0, 150) + '...',
+        url: item.link,
+        image: item.enclosure?.url || 'https://via.placeholder.com/400x200?text=News',
+        source: 'CoinTelegraph',
+        publishedAt: item.pubDate
+      }));
+    }
+
+    // Optional: Add NewsAPI.org (requires free API key from https://newsapi.org)
+    // function parseNewsAPI(data) { ... }
+
+    function renderNews(articles) {
+      const container = document.getElementById('news-container');
+      if (articles.length === 0) {
+        container.innerHTML = '<div class="error">No news available at the moment.</div>';
+        return;
+      }
+
+      container.innerHTML = articles.map(article => `
+        <a href="${article.url}" target="_blank" class="news-card">
+          <img src="${article.image}" alt="${article.title}" loading="lazy" onerror="this.src='https://via.placeholder.com/400x200?text=No+Image'">
+          <div class="news-content">
+            <div class="news-title">${article.title}</div>
+            <div class="news-desc">${article.description}</div>
+            <div class="news-meta">
+              <span class="news-source">${article.source}</span>
+              <span>${new Date(article.publishedAt).toLocaleDateString()}</span>
+            </div>
+          </div>
+        </a>
+      `).join('');
+    }
+
+    // Load News
+    fetchAllNews().then(renderNews).catch(() => {
+      document.getElementById('news-container').innerHTML = '<div class="error">Failed to load news. Check console.</div>';
+    });
+  </script>
+
+</body>
+</html>
