@@ -12,6 +12,7 @@
   <meta property="og:image" content="https://tradevision.jaydancosmeticshop.store/thumbnail.jpg" />
   <meta property="og:url" content="https://tradevision.jaydancosmeticshop.store/news.html" />
   <meta property="og:type" content="website" />
+  <meta name="description" content="Latest crypto, Bitcoin, Ethereum, trading news, market analysis, price updates, and investment insights from global sources.">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
   <style>
     /* All existing CSS styles remain the same */
@@ -424,6 +425,17 @@
       .back-btn { width: 40px; height: 40px; font-size: 1.1rem; }
       .modal-content { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); }
     }
+    /* SEO Keywords - Hidden from users but accessible to search engines */
+.seo-keywords {
+  position: absolute;
+  left: -9999px;
+  top: -9999px;
+  color: transparent;
+  font-size: 0;
+  height: 0;
+  width: 0;
+  overflow: hidden;
+}
   </style>
   <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-L7SHGV8S75"></script>
@@ -443,7 +455,15 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <!-- End Google Tag Manager -->
 </head>
 <body data-theme="dark">
-
+  
+<!-- SEO Keywords - Hidden from users but accessible to search engines -->
+<div class="seo-keywords">
+  cryptocurrency, bitcoin, ethereum, blockchain, trading, investment, crypto news, market analysis, 
+  price updates, altcoins, defi, nft, web3, bitcoin price, ethereum price, crypto market, 
+  trading strategies, technical analysis, financial news, stock market, forex, commodities, 
+  investment tips, portfolio management, risk management, day trading, swing trading, long term investment
+</div>
+  
   <div class="header">
     <h1><i class="fas fa-newspaper"></i> TradeVision News</h1>
     <div class="ticker-container">
@@ -642,7 +662,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     function initializeTicker() {
       const ticker = document.getElementById('ticker');
       let tickerHTML = '';
-      
+      // Start animation immediately
+ticker.style.animation = 'scrollTicker 120s linear infinite';
       // Show placeholder data immediately
       userAssets.forEach(assetId => {
         const asset = AVAILABLE_ASSETS.find(a => a.id === assetId);
