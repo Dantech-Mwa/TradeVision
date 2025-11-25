@@ -4,18 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Profile - TradeVision Pro</title>
-  <meta name="description" content="Your professional trading profile with stats, portfolio, and performance.">
-  <meta name="robots" content="index, follow">
+  <meta name="description" content="Your professional trading profile with stats and performance.">
   <link rel="icon" href="assets/icons/chart.svg" type="image/svg+xml">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <link id="theme-style" rel="stylesheet" href="assets/css/main.css">
-  <link rel="stylesheet" href="assets/css/dark-theme.css">
 
   <!-- Firebase SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
     import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
 
     const firebaseConfig = {
@@ -37,6 +34,7 @@
     window.ref = ref;
     window.onValue = onValue;
     window.onAuthStateChanged = onAuthStateChanged;
+    window.signOut = signOut;
   </script>
 
   <style>
@@ -47,56 +45,70 @@
     .container{max-width:900px;margin:0 auto;padding:2rem 1rem;}
     .header{background:var(--bg-light);border-bottom:1px solid var(--border);padding:0.75rem 0;position:sticky;top:0;z-index:100;}
     .flex-between{display:flex;justify-content:space-between;align-items:center;}
-    .logo{font-weight:700;font-size:1.4rem;color:var(--accent);}
-    .logo i{font-size:1.5rem;}
-    .nav-links a{margin:0 0.75rem;font-weight:500;}
-    .icon-btn{background:none;border:none;color:var(--text-light);font-size:1.2rem;cursor:pointer;padding:0.5rem;}
-    .profile-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:2.5rem;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,0.3);}
-    .avatar{width:130px;height:130px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;font-size:3rem;color:white;font-weight:bold;}
+    .logo{font-weight:700;font-size:1.5rem;color:var(--accent);}
+    .logo i{font-size:1.6rem;margin-right:8px;}
+    .nav-links a{margin:0 0.8rem;font-weight:500;color:var(--text-light);}
+    .nav-links a:hover{color:var(--text);}
+    .icon-btn{background:none;border:none;color:var(--text-light);font-size:1.3rem;cursor:pointer;padding:0.5rem;}
+    .icon-btn:hover{color:var(--text);}
+    .auth-btn{background:var(--accent);color:white;padding:0.6rem 1.4rem;border-radius:8px;font-weight:600;font-size:0.95rem;cursor:pointer;}
+    .auth-btn:hover{background:#1d4ed8;}
+    .logout-btn{background:#ef5350 !important;}
+    .logout-btn:hover{background:#c62828 !important;}
+    .user-menu{display:flex;align-items:center;gap:16px;}
+    .user-name{font-weight:600;color:var(--text);font-size:1rem;}
+    .profile-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:2.5rem;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,0.4);}
+    .avatar{width:140px;height:140px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;font-size:3.5rem;color:white;font-weight:bold;}
     .profile-info{margin:2rem 0;}
-    .info-row{display:flex;justify-content:space-between;padding:0.8rem 0;border-bottom:1px solid var(--border);font-size:1rem;}
+    .info-row{display:flex;justify-content:space-between;padding:0.9rem 0;border-bottom:1px solid var(--border);font-size:1.05rem;}
     .info-row:last-child{border-bottom:none;}
-    .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem;margin-top:2rem;}
-    .stat-card{background:var(--bg-light);padding:1.2rem;border-radius:10px;text-align:center;}
-    .stat-label{font-size:0.9rem;color:var(--text-light);margin-bottom:0.5rem;}
-    .stat-value{font-size:1.6rem;font-weight:700;}
-    .not-logged-in{text-align:center;padding:4rem 2rem;}
-    .not-logged-in h2{font-size:2rem;margin-bottom:1rem;}
-    .not-logged-in p{color:var(--text-light);margin-bottom:2rem;}
-    .btn-primary{background:var(--accent);color:white;padding:0.9rem 2rem;border-radius:8px;font-weight:600;font-size:1.1rem;display:inline-block;}
+    .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.4rem;margin-top:2.5rem;}
+    .stat-card{background:var(--bg-light);padding:1.4rem;border-radius:12px;text-align:center;}
+    .stat-label{font-size:0.95rem;color:var(--text-light);margin-bottom:0.6rem;}
+    .stat-value{font-size:1.8rem;font-weight:700;}
+    .not-logged-in{text-align:center;padding:5rem 2rem;}
+    .not-logged-in h2{font-size:2.2rem;margin-bottom:1rem;color:var(--text);}
+    .not-logged-in p{color:var(--text-light);margin-bottom:2.5rem;font-size:1.1rem;}
+    .btn-primary{background:var(--accent);color:white;padding:1rem 2.5rem;border-radius:10px;font-weight:600;font-size:1.2rem;display:inline-block;}
     .btn-primary:hover{background:#1d4ed8;}
-    .footer{background:var(--bg-light);border-top:1px solid var(--border);padding:1.5rem 0;margin-top:4rem;font-size:0.9rem;text-align:center;color:var(--text-light);}
+    .footer{background:var(--bg-light);border-top:1px solid var(--border);padding:2rem 0;margin-top:5rem;font-size:0.95rem;text-align:center;color:var(--text-light);}
   </style>
 </head>
 <body data-theme="dark">
 
   <header class="header">
     <div class="container flex-between">
-      <div class="logo"><a href="index.html"><i class="fas fa-chart-line"></i> TradeVision Pro</a></div>
+      <div class="logo">
+        <a href="index.html">TradeVision Pro</a>
+      </div>
       <nav class="nav-links">
         <a href="chart.html">Chart</a>
         <a href="watchlist.html">Watchlist</a>
         <a href="profile.html">Profile</a>
       </nav>
-      <div class="header-actions">
-        <button id="theme-toggle" class="icon-btn"><i class="fas fa-moon"></i></button>
-        <a href="profile.html" class="icon-btn"><i class="fas fa-user"></i></a>
+      <div class="user-menu">
+        <button id="theme-toggle" class="icon-btn">Moon Icon</button>
+
+        <!-- Dynamic Auth Area -->
+        <div id="authSection">
+          <a href="login.html" class="auth-btn">Login</a>
+        </div>
       </div>
     </div>
   </header>
 
   <div class="container">
 
-    <!-- Not Logged In State -->
-    <div id="notLoggedIn" class="not-logged-in" style="display:none;">
+    <!-- Not Logged In -->
+    <div id="notLoggedIn" class="not-logged-in">
       <h2>Welcome to TradeVision Pro</h2>
-      <p>Please log in or create an account to view your profile and trading stats.</p>
-      <a href="login.html" class="btn-primary">Login or Register</a>
+      <p>Join thousands of traders using professional tools, real-time data, and AI-powered insights.</p>
+      <a href="login.html" class="btn-primary">Login or Create Account</a>
     </div>
 
     <!-- Logged In Profile -->
     <div id="profileSection" class="profile-card" style="display:none;">
-      <div class="avatar" id="userInitial">U</div>
+      <div class="avatar" id="userInitial">T</div>
       <h1 id="userName">Loading...</h1>
       <p id="memberSince">Pro Member</p>
 
@@ -104,7 +116,7 @@
         <div class="info-row"><span>Email</span><span id="userEmail">-</span></div>
         <div class="info-row"><span>Location</span><span id="userLocation">-</span></div>
         <div class="info-row"><span>Member Since</span><span id="joinDate">-</span></div>
-        <div class="info-row"><span>Account Status</span><span style="color:var(--green);" id="userStatus">Active</span></div>
+        <div class="info-row"><span>Status</span><span style="color:var(--green);" id="userStatus">Active</span></div>
       </div>
 
       <div class="stats-grid">
@@ -126,52 +138,74 @@
   </div>
 
   <footer class="footer">
-    <div class="container">© 2025 TradeVision Pro • Professional Trading Intelligence</div>
+    <div class="container">© 2025 TradeVision Pro • Built for Traders</div>
   </footer>
 
   <script type="module">
-    // Theme Toggle
     const themeToggle = document.getElementById('theme-toggle');
-    const body = document.body;
-    const themeIcon = themeToggle.querySelector('i');
+    const themeIcon = themeToggle.querySelector('i') || themeToggle;
+    const authSection = document.getElementById('authSection');
+
+    // Theme Toggle
     const savedTheme = localStorage.getItem('theme') || 'dark';
-    body.setAttribute('data-theme', savedTheme);
-    if (savedTheme === 'light') themeIcon.classList.replace('fa-moon', 'fa-sun');
+    document.body.dataset.theme = savedTheme;
+    themeIcon.className = savedTheme === 'light' ? 'fas fa-sun' : 'fas fa-moon';
 
     themeToggle.addEventListener('click', () => {
-      const isDark = body.getAttribute('data-theme') === 'dark';
-      body.setAttribute('data-theme', isDark ? 'light' : 'dark');
-      themeIcon.classList.toggle('fa-moon');
-      themeIcon.classList.toggle('fa-sun');
+      const isDark = document.body.dataset.theme === 'dark';
+      document.body.dataset.theme = isDark ? 'light' : 'dark';
+      themeIcon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
       localStorage.setItem('theme', isDark ? 'light' : 'dark');
     });
 
     // Firebase Auth State Listener
     onAuthStateChanged(auth, (user) => {
       if (user) {
-        // User is logged in → Show profile
+        // USER IS LOGGED IN
         document.getElementById('notLoggedIn').style.display = 'none';
         document.getElementById('profileSection').style.display = 'block';
 
+        // Show user greeting + LOGOUT button (fully working)
+        const userDisplay = user.displayName || user.email.split('@')[0] || 'Trader';
+        authSection.innerHTML = `
+          <span class="user-name">Hi, ${userDisplay}</span>
+          <button id="logoutBtn" class="auth-btn logout-btn">Logout</button>
+        `;
+
+        // Attach logout event
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+          signOut(auth).then(() => {
+            alert('Logged out successfully!');
+            // Page will auto-refresh and show login screen
+            location.reload();
+          }).catch((error) => {
+            alert('Logout failed: ' + error.message);
+          });
+        });
+
+        // Load user data from Realtime Database
         const userRef = ref(db, 'users/' + user.uid);
-        onValue(userRef, (snapshot) => {
-          const data = snapshot.val();
+        onValue(userRef, (snap) => {
+          const data = snap.val();
           if (data) {
             document.getElementById('userName').textContent = data.name || 'Trader';
-            document.getElementById('userEmail').textContent = data.email || 'N/A';
+            document.getElementById('userEmail').textContent = data.email;
             document.getElementById('userLocation').textContent = 
-              `${data.city || ''}${data.city && data.country ? ', ' : ''}${data.country?.name || ''}` || 'Not set';
-            document.getElementById('userInitial').textContent = (data.name?.[0] || 'U').toUpperCase();
+              `${data.city || ''}${data.city && data.country ? ', ' : ''}${data.country?.name || ''}` || 'Global';
+            document.getElementById('userInitial').textContent = (data.name?.[0] || 'T').toUpperCase();
 
-            const joinDate = data.createdAt ? new Date(data.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long' }) : 'Recently';
-            document.getElementById('joinDate').textContent = joinDate;
-            document.getElementById('memberSince').textContent = `Pro Member since ${joinDate.split(' ')[1]} ${joinDate.split(' ')[2]}`;
+            const date = data.createdAt ? new Date(data.createdAt) : new Date();
+            const joinStr = date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+            document.getElementById('joinDate').textContent = joinStr;
+            document.getElementById('memberSince').textContent = `Pro Member since ${joinStr}`;
           }
         });
+
       } else {
-        // Not logged in → Show login prompt
+        // NOT LOGGED IN
         document.getElementById('notLoggedIn').style.display = 'block';
         document.getElementById('profileSection').style.display = 'none';
+        authSection.innerHTML = `<a href="login.html" class="auth-btn">Login</a>`;
       }
     });
   </script>
