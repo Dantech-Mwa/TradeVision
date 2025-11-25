@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Profile - TradeVision Pro</title>
-  <meta name="description" content="Your professional trading profile with stats and performance.">
   <link rel="icon" href="assets/icons/chart.svg" type="image/svg+xml">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -49,9 +48,9 @@
     .logo i{font-size:1.6rem;margin-right:8px;}
     .nav-links a{margin:0 0.8rem;font-weight:500;color:var(--text-light);}
     .nav-links a:hover{color:var(--text);}
-    .icon-btn{background:none;border:none;color:var(--text-light);font-size:1.3rem;cursor:pointer;padding:0.5rem;}
+    .icon-btn{background:none;border:none;color:var(--text-light);font-size:1.3rem;cursor:pointer;padding:0.5rem;transition:0.2s;}
     .icon-btn:hover{color:var(--text);}
-    .auth-btn{background:var(--accent);color:white;padding:0.6rem 1.4rem;border-radius:8px;font-weight:600;font-size:0.95rem;cursor:pointer;}
+    .auth-btn{background:var(--accent);color:white;padding:0.65rem 1.4rem;border-radius:8px;font-weight:600;font-size:0.95rem;cursor:pointer;transition:0.2s;}
     .auth-btn:hover{background:#1d4ed8;}
     .logout-btn{background:#ef5350 !important;}
     .logout-btn:hover{background:#c62828 !important;}
@@ -67,9 +66,9 @@
     .stat-label{font-size:0.95rem;color:var(--text-light);margin-bottom:0.6rem;}
     .stat-value{font-size:1.8rem;font-weight:700;}
     .not-logged-in{text-align:center;padding:5rem 2rem;}
-    .not-logged-in h2{font-size:2.2rem;margin-bottom:1rem;color:var(--text);}
+    .not-logged-in h2{font-size:2.2rem;margin-bottom:1rem;}
     .not-logged-in p{color:var(--text-light);margin-bottom:2.5rem;font-size:1.1rem;}
-    .btn-primary{background:var(--accent);color:white;padding:1rem 2.5rem;border-radius:10px;font-weight:600;font-size:1.2rem;display:inline-block;}
+    .btn-primary{background:var(--accent);color:white;padding:1rem 2.5rem;border-radius:10px;font-weight:600;font-size:1.2rem;display:inline-block;transition:0.2s;}
     .btn-primary:hover{background:#1d4ed8;}
     .footer{background:var(--bg-light);border-top:1px solid var(--border);padding:2rem 0;margin-top:5rem;font-size:0.95rem;text-align:center;color:var(--text-light);}
   </style>
@@ -79,7 +78,7 @@
   <header class="header">
     <div class="container flex-between">
       <div class="logo">
-        <a href="index.html">TradeVision Pro</a>
+        <a href="index.html"><i class="fas fa-chart-line"></i> TradeVision Pro</a>
       </div>
       <nav class="nav-links">
         <a href="chart.html">Chart</a>
@@ -87,7 +86,10 @@
         <a href="profile.html">Profile</a>
       </nav>
       <div class="user-menu">
-        <button id="theme-toggle" class="icon-btn">Moon Icon</button>
+        <!-- Beautiful Theme Toggle -->
+        <button id="theme-toggle" class="icon-btn" aria-label="Toggle theme">
+          <i class="fas fa-moon"></i>
+        </button>
 
         <!-- Dynamic Auth Area -->
         <div id="authSection">
@@ -98,7 +100,6 @@
   </header>
 
   <div class="container">
-
     <!-- Not Logged In -->
     <div id="notLoggedIn" class="not-logged-in">
       <h2>Welcome to TradeVision Pro</h2>
@@ -116,7 +117,7 @@
         <div class="info-row"><span>Email</span><span id="userEmail">-</span></div>
         <div class="info-row"><span>Location</span><span id="userLocation">-</span></div>
         <div class="info-row"><span>Member Since</span><span id="joinDate">-</span></div>
-        <div class="info-row"><span>Status</span><span style="color:var(--green);" id="userStatus">Active</span></div>
+        <div class="info-row"><span>Status</span><span style="color:var(--green);">Active</span></div>
       </div>
 
       <div class="stats-grid">
@@ -134,7 +135,6 @@
         </div>
       </div>
     </div>
-
   </div>
 
   <footer class="footer">
@@ -143,10 +143,10 @@
 
   <script type="module">
     const themeToggle = document.getElementById('theme-toggle');
-    const themeIcon = themeToggle.querySelector('i') || themeToggle;
+    const themeIcon = themeToggle.querySelector('i');
     const authSection = document.getElementById('authSection');
 
-    // Theme Toggle
+    // Theme Toggle - Clean & Beautiful
     const savedTheme = localStorage.getItem('theme') || 'dark';
     document.body.dataset.theme = savedTheme;
     themeIcon.className = savedTheme === 'light' ? 'fas fa-sun' : 'fas fa-moon';
@@ -158,32 +158,26 @@
       localStorage.setItem('theme', isDark ? 'light' : 'dark');
     });
 
-    // Firebase Auth State Listener
+    // Firebase Auth
     onAuthStateChanged(auth, (user) => {
       if (user) {
-        // USER IS LOGGED IN
         document.getElementById('notLoggedIn').style.display = 'none';
         document.getElementById('profileSection').style.display = 'block';
 
-        // Show user greeting + LOGOUT button (fully working)
-        const userDisplay = user.displayName || user.email.split('@')[0] || 'Trader';
+        const displayName = user.displayName || user.email.split('@')[0] || 'Trader';
         authSection.innerHTML = `
-          <span class="user-name">Hi, ${userDisplay}</span>
+          <span class="user-name">Hi, ${displayName}</span>
           <button id="logoutBtn" class="auth-btn logout-btn">Logout</button>
         `;
 
-        // Attach logout event
         document.getElementById('logoutBtn').addEventListener('click', () => {
           signOut(auth).then(() => {
             alert('Logged out successfully!');
-            // Page will auto-refresh and show login screen
             location.reload();
-          }).catch((error) => {
-            alert('Logout failed: ' + error.message);
-          });
+          }).catch(err => alert('Error: ' + err.message));
         });
 
-        // Load user data from Realtime Database
+        // Load user data
         const userRef = ref(db, 'users/' + user.uid);
         onValue(userRef, (snap) => {
           const data = snap.val();
@@ -202,7 +196,6 @@
         });
 
       } else {
-        // NOT LOGGED IN
         document.getElementById('notLoggedIn').style.display = 'block';
         document.getElementById('profileSection').style.display = 'none';
         authSection.innerHTML = `<a href="login.html" class="auth-btn">Login</a>`;
