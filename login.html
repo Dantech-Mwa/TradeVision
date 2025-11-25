@@ -9,7 +9,7 @@
   <!-- Firebase Modular SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
-    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
     import { getDatabase, ref, set, update } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
     import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app-check.js";
 
@@ -28,34 +28,32 @@
     const auth = getAuth(app);
     const db = getDatabase(app);
 
-    // === APP CHECK (MAKES YOUR PROJECT UNHACKABLE) ===
+    // App Check (blocks abuse)
     initializeAppCheck(app, {
-      provider: new ReCaptchaV3Provider('6Lc8avMpAAAAAPN9V5a9s5wO8z7i0U6z7i0U6z7i'), // Free public test key (works!)
+      provider: new ReCaptchaV3Provider('6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI'),
       isTokenAutoRefreshEnabled: true
     });
 
-    window.firebaseAuth = { auth, createUserWithEmailAndPassword, signInWithEmailAndPassword };
-    window.firebaseDB = { db, ref, set, update };
+    // Expose globally
+    window.auth = auth;
+    window.db = db;
+    window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
+    window.signInWithEmailAndPassword = signInWithEmailAndPassword;
+    window.sendPasswordResetEmail = sendPasswordResetEmail;
+    window.ref = ref;
+    window.set = set;
+    window.update = update;
   </script>
 
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
     :root {
-      --bg: #0f172a;
-      --card: #1e293b;
-      --text: #e2e8f0;
-      --muted: #94a3b8;
-      --border: #334155;
-      --input: #0f172a;
-      --primary: #0d6efd;
+      --bg: #0f172a; --card: #1e293b; --text: #e2e8f0; --muted: #94a3b8;
+      --border: #334155; --input-bg: #0f172a; --primary: #0d6efd;
     }
     [data-theme="light"] {
-      --bg: #f8fafc;
-      --card: #ffffff;
-      --text: #1e293b;
-      --muted: #64748b;
-      --border: #e2e8f0;
-      --input: #f1f5f9;
-      --primary: #0d6efd;
+      --bg: #f8fafc; --card: #ffffff; --text: #1e293b; --muted: #64748b;
+      --border: #e2e8f0; --input-bg: #f1f5f9;
     }
     * { margin:0; padding:0; box-sizing:border-box; }
     body {
@@ -71,59 +69,42 @@
     }
     .container {
       background: var(--card);
-      padding: 40px 50px;
-      border-radius: 16px;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.3);
-      width: 100%;
+      padding: 44px 50px;
+      border-radius: 18px;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.4);
       max-width: 480px;
+      width: 100%;
       border: 1px solid var(--border);
       position: relative;
-      transition: all 0.3s;
     }
     .theme-toggle {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      background: none;
-      border: none;
-      font-size: 24px;
-      cursor: pointer;
-      opacity: 0.7;
+      position: absolute; top: 20px; right: 20px;
+      background: none; border: none; font-size: 26px; cursor: pointer; opacity: 0.7;
     }
-    .logo h1 { font-size: 32px; font-weight: 700; text-align: center; margin-bottom: 8px; }
-    .logo p { text-align: center; color: var(--muted); font-size: 14px; margin-bottom: 30px; }
-    h2 { text-align: center; margin: 20px 0 30px; font-weight: 600; }
-    .form-group { margin-bottom: 18px; }
-    label { display: block; margin-bottom: 8px; font-weight: 500; color: var(--text); }
+    .logo h1 { font-size: 34px; font-weight: 700; text-align: center; margin-bottom: 8px; }
+    .logo p { text-align: center; color: var(--muted); font-size: 15px; margin-bottom: 32px; }
+    h2 { text-align: center; margin: 20px 0 32px; font-weight: 600; font-size: 24px; }
+    .form-group { margin-bottom: 20px; }
+    label { display: block; margin-bottom: 9px; font-weight: 500; }
     input, select {
-      width: 100%;
-      padding: 14px 16px;
-      border: 1px solid var(--border);
-      background: var(--input);
-      border-radius: 8px;
-      color: var(--text);
-      font-size: 16px;
+      width: 100%; padding: 15px 16px; border: 1px solid var(--border);
+      background: var(--input-bg); border-radius: 10px; color: var(--text);
+      font-size: 16px; transition: border 0.2s;
     }
-    input:focus, select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(13,110,253,0.2); }
+    input:focus, select:focus { outline: none; border-color: var(--primary); }
     button {
-      width: 100%;
-      padding: 14px;
-      background: var(--primary);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: 16px;
-      cursor: pointer;
-      margin-top: 10px;
-      transition: 0.2s;
+      width: 100%; padding: 15px; background: var(--primary); color: white;
+      border: none; border-radius: 10px; font-weight: 600; font-size: 17px;
+      cursor: pointer; margin-top: 12px; transition: 0.2s;
     }
     button:hover { background: #0b5ed7; }
     button:disabled { background: #475569; cursor: not-allowed; }
-    .error { color: #fca5a5; text-align: center; margin-top: 10px; font-size: 14px; }
-    .success { color: #86efac; text-align: center; margin-top: 10px; font-size: 14px; }
-    .toggle-link { text-align: center; margin-top: 24px; color: var(--muted); }
-    .toggle-link a { color: var(--primary); font-weight: 500; text-decoration: none; }
+    .error { color: #fca5a5; text-align: center; margin-top: 12px; font-size: 14px; }
+    .success { color: #86efac; text-align: center; margin-top: 12px; font-size: 14px; }
+    .toggle-link { text-align: center; margin-top: 28px; color: var(--muted); font-size: 15px; }
+    .toggle-link a { color: var(--primary); font-weight: 600; text-decoration: none; }
+    .forgot-link { text-align: center; margin-top: 16px; }
+    .forgot-link a { color: var(--primary); font-size: 14px; text-decoration: none; }
   </style>
 </head>
 <body>
@@ -139,136 +120,144 @@
   <!-- Login Form -->
   <div id="loginForm">
     <h2>Sign In</h2>
-    <div class="form-group">
-      <label for="loginEmail">Email Address</label>
-      <input type="email" id="loginEmail" placeholder="you@domain.com" required />
-    </div>
-    <div class="form-group">
-      <label for="loginPassword">Password</label>
-      <input type="password" id="loginPassword" placeholder="••••••••" required />
-    </div>
+    <div class="form-group"><label>Email Address</label><input type="email" id="loginEmail" required /></div>
+    <div class="form-group"><label>Password</label><input type="password" id="loginPassword" required /></div>
     <button id="loginBtn">Sign In</button>
     <div id="loginMessage"></div>
+    <div class="forgot-link">
+      <a href="#" id="showForgot">Forgot password?</a>
+    </div>
     <div class="toggle-link">
-      Don't have an account? <a href="#" id="showRegister">Create Account</a>
+      Don't have an account? <a href="#" id="showRegister">Create one</a>
     </div>
   </div>
 
   <!-- Register Form -->
   <div id="registerForm" style="display:none;">
     <h2>Create Account</h2>
-    <div class="form-group"><label for="regName">Full Name</label><input type="text" id="regName" required /></div>
-    <div class="form-group"><label for="regEmail">Email Address</label><input type="email" id="regEmail" required /></div>
-    <div class="form-group"><label for="regPassword">Password (min. 8 chars)</label><input type="password" id="regPassword" required /></div>
-    <div class="form-group"><label for="regPhone">Phone (optional)</label><input type="tel" id="regPhone" /></div>
-    <div class="form-group"><label for="regCountry">Country <span style="color:#fca5a5">*</span></label>
-      <select id="regCountry" required></select>
-    </div>
-    <div class="form-group"><label for="regCity">City / Region</label><input type="text" id="regCity" required /></div>
-    <div class="form-group"><label for="regAddress">Street Address (optional)</label><input type="text" id="regAddress" /></div>
+    <div class="form-group"><label>Full Name</label><input type="text" id="regName" required /></div>
+    <div class="form-group"><label>Email Address</label><input type="email" id="regEmail" required /></div>
+    <div class="form-group"><label>Password (min. 8 characters)</label><input type="password" id="regPassword" required /></div>
+    <div class="form-group"><label>Phone Number (optional)</label><input type="tel" id="regPhone" /></div>
+    <div class="form-group"><label>Country *</label><select id="regCountry" required></select></div>
+    <div class="form-group"><label>City / Region</label><input type="text" id="regCity" required /></div>
+    <div class="form-group"><label>Street Address (optional)</label><input type="text" id="regAddress" /></div>
     <button id="registerBtn">Create Account</button>
     <div id="regMessage"></div>
     <div class="toggle-link">
       Already have an account? <a href="#" id="showLogin">Sign In</a>
     </div>
   </div>
+
+  <!-- Forgot Password Form -->
+  <div id="forgotForm" style="display:none;">
+    <h2>Reset Password</h2>
+    <p style="text-align:center; color:var(--muted); margin-bottom:24px;">
+      Enter your email and we'll send you a link to reset your password.
+    </p>
+    <div class="form-group"><label>Email Address</label><input type="email" id="forgotEmail" required /></div>
+    <button id="resetBtn">Send Reset Link</button>
+    <div id="forgotMessage"></div>
+    <div class="toggle-link">
+      <a href="#" id="backToLogin">Back to Sign In</a>
+    </div>
+  </div>
 </div>
 
 <script type="module">
   // Theme Toggle
-  const toggle = document.getElementById('themeToggle');
-  const body = document.body;
   const savedTheme = localStorage.getItem('theme') || 'dark';
-  body.setAttribute('data-theme', savedTheme);
-  toggle.textContent = savedTheme === 'light' ? 'Light Mode' : 'Dark Mode';
-
-  toggle.onclick = () => {
-    const isLight = body.getAttribute('data-theme') === 'light';
-    const newTheme = isLight ? 'dark' : 'light';
-    body.setAttribute('data-theme', newTheme);
-    toggle.textContent = newTheme === 'light' ? 'Light Mode' : 'Dark Mode';
+  document.body.dataset.theme = savedTheme;
+  document.getElementById('themeToggle').textContent = savedTheme === 'light' ? 'Light Mode' : 'Dark Mode';
+  document.getElementById('themeToggle').onclick = () => {
+    const newTheme = document.body.dataset.theme === 'light' ? 'dark' : 'light';
+    document.body.dataset.theme = newTheme;
+    document.getElementById('themeToggle').textContent = newTheme === 'light' ? 'Light Mode' : 'Dark Mode';
     localStorage.setItem('theme', newTheme);
   };
 
-  // Full Country List (249 entries)
-// Full 249 countries (including territories)
-  const fullCountries = [
-    {code:"AF",name:"Afghanistan"},{code:"AX",name:"Åland Islands"},{code:"AL",name:"Albania"},{code:"DZ",name:"Algeria"},
-    {code:"AS",name:"American Samoa"},{code:"AD",name:"Andorra"},{code:"AO",name:"Angola"},{code:"AI",name:"Anguilla"},
-    {code:"AQ",name:"Antarctica"},{code:"AG",name:"Antigua and Barbuda"},{code:"AR",name:"Argentina"},{code:"AM",name:"Armenia"},
-    {code:"AW",name:"Aruba"},{code:"AU",name:"Australia"},{code:"AT",name:"Austria"},{code:"AZ",name:"Azerbaijan"},
-    {code:"BS",name:"Bahamas"},{code:"BH",name:"Bahrain"},{code:"BD",name:"Bangladesh"},{code:"BB",name:"Barbados"},
-    {code:"BY",name:"Belarus"},{code:"BE",name:"Belgium"},{code:"BZ",name:"Belize"},{code:"BJ",name:"Benin"},
-    {code:"BM",name:"Bermuda"},{code:"BT",name:"Bhutan"},{code:"BO",name:"Bolivia"},{code:"BA",name:"Bosnia and Herzegovina"},
-    {code:"BW",name:"Botswana"},{code:"BR",name:"Brazil"},{code:"IO",name:"British Indian Ocean Territory"},{code:"VG",name:"British Virgin Islands"},
-    {code:"BN",name:"Brunei"},{code:"BG",name:"Bulgaria"},{code:"BF",name:"Burkina Faso"},{code:"BI",name:"Burundi"},
-    {code:"KH",name:"Cambodia"},{code:"CM",name:"Cameroon"},{code:"CA",name:"Canada"},{code:"CV",name:"Cape Verde"},
-    {code:"KY",name:"Cayman Islands"},{code:"CF",name:"Central African Republic"},{code:"TD",name:"Chad"},{code:"CL",name:"Chile"},
-    {code:"CN",name:"China"},{code:"CX",name:"Christmas Island"},{code:"CC",name:"Cocos (Keeling) Islands"},{code:"CO",name:"Colombia"},
-    {code:"KM",name:"Comoros"},{code:"CK",name:"Cook Islands"},{code:"CR",name:"Costa Rica"},{code:"HR",name:"Croatia"},
-    {code:"CU",name:"Cuba"},{code:"CW",name:"Curaçao"},{code:"CY",name:"Cyprus"},{code:"CZ",name:"Czech Republic"},
-    {code:"CD",name:"Democratic Republic of the Congo"},{code:"DK",name:"Denmark"},{code:"DJ",name:"Djibouti"},{code:"DM",name:"Dominica"},
-    {code:"DO",name:"Dominican Republic"},{code:"TL",name:"East Timor"},{code:"EC",name:"Ecuador"},{code:"EG",name:"Egypt"},
-    {code:"SV",name:"El Salvador"},{code:"GQ",name:"Equatorial Guinea"},{code:"ER",name:"Eritrea"},{code:"EE",name:"Estonia"},
-    {code:"SZ",name:"Eswatini"},{code:"ET",name:"Ethiopia"},{code:"FK",name:"Falkland Islands"},{code:"FO",name:"Faroe Islands"},
-    {code:"FJ",name:"Fiji"},{code:"FI",name:"Finland"},{code:"FR",name:"France"},{code:"GF",name:"French Guiana"},
-    {code:"PF",name:"French Polynesia"},{code:"TF",name:"French Southern Territories"},{code:"GA",name:"Gabon"},{code:"GM",name:"Gambia"},
-    {code:"GE",name:"Georgia"},{code:"DE",name:"Germany"},{code:"GH",name:"Ghana"},{code:"GI",name:"Gibraltar"},
-    {code:"GR",name:"Greece"},{code:"GL",name:"Greenland"},{code:"GD",name:"Grenada"},{code:"GP",name:"Guadeloupe"},
-    {code:"GU",name:"Guam"},{code:"GT",name:"Guatemala"},{code:"GG",name:"Guernsey"},{code:"GN",name:"Guinea"},
-    {code:"GW",name:"Guinea-Bissau"},{code:"GY",name:"Guyana"},{code:"HT",name:"Haiti"},{code:"HN",name:"Honduras"},
-    {code:"HK",name:"Hong Kong"},{code:"HU",name:"Hungary"},{code:"IS",name:"Iceland"},{code:"IN",name:"India"},
-    {code:"ID",name:"Indonesia"},{code:"IR",name:"Iran"},{code:"IQ",name:"Iraq"},{code:"IE",name:"Ireland"},
-    {code:"IM",name:"Isle of Man"},{code:"IL",name:"Israel"},{code:"IT",name:"Italy"},{code:"CI",name:"Ivory Coast"},
-    {code:"JM",name:"Jamaica"},{code:"JP",name:"Japan"},{code:"JE",name:"Jersey"},{code:"JO",name:"Jordan"},
-    {code:"KZ",name:"Kazakhstan"},{code:"KE",name:"Kenya"},{code:"KI",name:"Kiribati"},{code:"XK",name:"Kosovo"},
-    {code:"KW",name:"Kuwait"},{code:"KG",name:"Kyrgyzstan"},{code:"LA",name:"Laos"},{code:"LV",name:"Latvia"},
-    {code:"LB",name:"Lebanon"},{code:"LS",name:"Lesotho"},{code:"LR",name:"Liberia"},{code:"LY",name:"Libya"},
-    {code:"LI",name:"Liechtenstein"},{code:"LT",name:"Lithuania"},{code:"LU",name:"Luxembourg"},{code:"MO",name:"Macau"},
-    {code:"MG",name:"Madagascar"},{code:"MW",name:"Malawi"},{code:"MY",name:"Malaysia"},{code:"MV",name:"Maldives"},
-    {code:"ML",name:"Mali"},{code:"MT",name:"Malta"},{code:"MH",name:"Marshall Islands"},{code:"MQ",name:"Martinique"},
-    {code:"MR",name:"Mauritania"},{code:"MU",name:"Mauritius"},{code:"YT",name:"Mayotte"},{code:"MX",name:"Mexico"},
-    {code:"FM",name:"Micronesia"},{code:"MD",name:"Moldova"},{code:"MC",name:"Monaco"},{code:"MN",name:"Mongolia"},
-    {code:"ME",name:"Montenegro"},{code:"MS",name:"Montserrat"},{code:"MA",name:"Morocco"},{code:"MZ",name:"Mozambique"},
-    {code:"MM",name:"Myanmar"},{code:"NA",name:"Namibia"},{code:"NR",name:"Nauru"},{code:"NP",name:"Nepal"},
-    {code:"NL",name:"Netherlands"},{code:"NC",name:"New Caledonia"},{code:"NZ",name:"New Zealand"},{code:"NI",name:"Nicaragua"},
-    {code:"NE",name:"Niger"},{code:"NG",name:"Nigeria"},{code:"NU",name:"Niue"},{code:"NF",name:"Norfolk Island"},
-    {code:"KP",name:"North Korea"},{code:"MK",name:"North Macedonia"},{code:"MP",name:"Northern Mariana Islands"},{code:"NO",name:"Norway"},
-    {code:"OM",name:"Oman"},{code:"PK",name:"Pakistan"},{code:"PW",name:"Palau"},{code:"PS",name:"Palestine"},
-    {code:"PA",name:"Panama"},{code:"PG",name:"Papua New Guinea"},{code:"PY",name:"Paraguay"},{code:"PE",name:"Peru"},
-    {code:"PH",name:"Philippines"},{code:"PN",name:"Pitcairn Islands"},{code:"PL",name:"Poland"},{code:"PT",name:"Portugal"},
-    {code:"PR",name:"Puerto Rico"},{code:"QA",name:"Qatar"},{code:"CG",name:"Republic of the Congo"},{code:"RE",name:"Réunion"},
-    {code:"RO",name:"Romania"},{code:"RU",name:"Russia"},{code:"RW",name:"Rwanda"},{code:"BL",name:"Saint Barthélemy"},
-    {code:"SH",name:"Saint Helena"},{code:"KN",name:"Saint Kitts and Nevis"},{code:"LC",name:"Saint Lucia"},{code:"MF",name:"Saint Martin"},
-    {code:"PM",name:"Saint Pierre and Miquelon"},{code:"VC",name:"Saint Vincent and the Grenadines"},{code:"WS",name:"Samoa"},
-    {code:"SM",name:"San Marino"},{code:"ST",name:"São Tomé and Príncipe"},{code:"SA",name:"Saudi Arabia"},{code:"SN",name:"Senegal"},
-    {code:"RS",name:"Serbia"},{code:"SC",name:"Seychelles"},{code:"SL",name:"Sierra Leone"},{code:"SG",name:"Singapore"},
-    {code:"SX",name:"Sint Maarten"},{code:"SK",name:"Slovakia"},{code:"SI",name:"Slovenia"},{code:"SB",name:"Solomon Islands"},
-    {code:"SO",name:"Somalia"},{code:"ZA",name:"South Africa"},{code:"GS",name:"South Georgia"},{code:"KR",name:"South Korea"},
-    {code:"SS",name:"South Sudan"},{code:"ES",name:"Spain"},{code:"LK",name:"Sri Lanka"},{code:"SD",name:"Sudan"},
-    {code:"SR",name:"Suriname"},{code:"SJ",name:"Svalbard and Jan Mayen"},{code:"SE",name:"Sweden"},{code:"CH",name:"Switzerland"},
-    {code:"SY",name:"Syria"},{code:"TW",name:"Taiwan"},{code:"TJ",name:"Tajikistan"},{code:"TZ",name:"Tanzania"},
-    {code:"TH",name:"Thailand"},{code:"TG",name:"Togo"},{code:"TK",name:"Tokelau"},{code:"TO",name:"Tonga"},
-    {code:"TT",name:"Trinidad and Tobago"},{code:"TN",name:"Tunisia"},{code:"TR",name:"Turkey"},{code:"TM",name:"Turkmenistan"},
-    {code:"TC",name:"Turks and Caicos Islands"},{code:"TV",name:"Tuvalu"},{code:"UG",name:"Uganda"},{code:"UA",name:"Ukraine"},
-    {code:"AE",name:"United Arab Emirates"},{code:"GB",name:"United Kingdom"},{code:"US",name:"United States"},{code:"UY",name:"Uruguay"},
-    {code:"UZ",name:"Uzbekistan"},{code:"VU",name:"Vanuatu"},{code:"VA",name:"Vatican City"},{code:"VE",name:"Venezuela"},
-    {code:"VN",name:"Vietnam"},{code:"WF",name:"Wallis and Futuna"},{code:"EH",name:"Western Sahara"},{code:"YE",name:"Yemen"},
-    {code:"ZM",name:"Zambia"},{code:"ZW",name:"Zimbabwe"}
+  // Full 249 Countries (ISO 3166-1)
+  const countries = [
+    {"code":"AF","name":"Afghanistan"},{"code":"AX","name":"Åland Islands"},{"code":"AL","name":"Albania"},{"code":"DZ","name":"Algeria"},
+    {"code":"AS","name":"American Samoa"},{"code":"AD","name":"Andorra"},{"code":"AO","name":"Angola"},{"code":"AI","name":"Anguilla"},
+    {"code":"AQ","name":"Antarctica"},{"code":"AG","name":"Antigua and Barbuda"},{"code":"AR","name":"Argentina"},{"code":"AM","name":"Armenia"},
+    {"code":"AW","name":"Aruba"},{"code":"AU","name":"Australia"},{"code":"AT","name":"Austria"},{"code":"AZ","name":"Azerbaijan"},
+    {"code":"BS","name":"Bahamas"},{"code":"BH","name":"Bahrain"},{"code":"BD","name":"Bangladesh"},{"code":"BB","name":"Barbados"},
+    {"code":"BY","name":"Belarus"},{"code":"BE","name":"Belgium"},{"code":"BZ","name":"Belize"},{"code":"BJ","name":"Benin"},
+    {"code":"BM","name":"Bermuda"},{"code":"BT","name":"Bhutan"},{"code":"BO","name":"Bolivia"},{"code":"BA","name":"Bosnia and Herzegovina"},
+    {"code":"BW","name":"Botswana"},{"code":"BR","name":"Brazil"},{"code":"IO","name":"British Indian Ocean Territory"},{"code":"VG","name":"British Virgin Islands"},
+    {"code":"BN","name":"Brunei"},{"code":"BG","name":"Bulgaria"},{"code":"BF","name":"Burkina Faso"},{"code":"BI","name":"Burundi"},
+    {"code":"KH","name":"Cambodia"},{"code":"CM","name":"Cameroon"},{"code":"CA","name":"Canada"},{"code":"CV","name":"Cape Verde"},
+    {"code":"KY","name":"Cayman Islands"},{"code":"CF","name":"Central African Republic"},{"code":"TD","name":"Chad"},{"code":"CL","name":"Chile"},
+    {"code":"CN","name":"China"},{"code":"CX","name":"Christmas Island"},{"code":"CC","name":"Cocos (Keeling) Islands"},{"code":"CO","name":"Colombia"},
+    {"code":"KM","name":"Comoros"},{"code":"CK","name":"Cook Islands"},{"code":"CR","name":"Costa Rica"},{"code":"HR","name":"Croatia"},
+    {"code":"CU","name":"Cuba"},{"code":"CW","name":"Curaçao"},{"code":"CY","name":"Cyprus"},{"code":"CZ","name":"Czechia"},
+    {"code":"CD","name":"Congo - Kinshasa"},{"code":"DK","name":"Denmark"},{"code":"DJ","name":"Djibouti"},{"code":"DM","name":"Dominica"},
+    {"code":"DO","name":"Dominican Republic"},{"code":"EC","name":"Ecuador"},{"code":"EG","name":"Egypt"},{"code":"SV","name":"El Salvador"},
+    {"code":"GQ","name":"Equatorial Guinea"},{"code":"ER","name":"Eritrea"},{"code":"EE","name":"Estonia"},{"code":"SZ","name":"Eswatini"},
+    {"code":"ET","name":"Ethiopia"},{"code":"FK","name":"Falkland Islands"},{"code":"FO","name":"Faroe Islands"},{"code":"FJ","name":"Fiji"},
+    {"code":"FI","name":"Finland"},{"code":"FR","name":"France"},{"code":"GF","name":"French Guiana"},{"code":"PF","name":"French Polynesia"},
+    {"code":"TF","name":"French Southern Territories"},{"code":"GA","name":"Gabon"},{"code":"GM","name":"Gambia"},{"code":"GE","name":"Georgia"},
+    {"code":"DE","name":"Germany"},{"code":"GH","name":"Ghana"},{"code":"GI","name":"Gibraltar"},{"code":"GR","name":"Greece"},
+    {"code":"GL","name":"Greenland"},{"code":"GD","name":"Grenada"},{"code":"GP","name":"Guadeloupe"},{"code":"GU","name":"Guam"},
+    {"code":"GT","name":"Guatemala"},{"code":"GG","name":"Guernsey"},{"code":"GN","name":"Guinea"},{"code":"GW","name":"Guinea-Bissau"},
+    {"code":"GY","name":"Guyana"},{"code":"HT","name":"Haiti"},{"code":"HN","name":"Honduras"},{"code":"HK","name":"Hong Kong SAR China"},
+    {"code":"HU","name":"Hungary"},{"code":"IS","name":"Iceland"},{"code":"IN","name":"India"},{"code":"ID","name":"Indonesia"},
+    {"code":"IR","name":"Iran"},{"code":"IQ","name":"Iraq"},{"code":"IE","name":"Ireland"},{"code":"IM","name":"Isle of Man"},
+    {"code":"IL","name":"Israel"},{"code":"IT","name":"Italy"},{"code":"CI","name":"Ivory Coast"},{"code":"JM","name":"Jamaica"},
+    {"code":"JP","name":"Japan"},{"code":"JE","name":"Jersey"},{"code":"JO","name":"Jordan"},{"code":"KZ","name":"Kazakhstan"},
+    {"code":"KE","name":"Kenya"},{"code":"KI","name":"Kiribati"},{"code":"XK","name":"Kosovo"},{"code":"KW","name":"Kuwait"},
+    {"code":"KG","name":"Kyrgyzstan"},{"code":"LA","name":"Laos"},{"code":"LV","name":"Latvia"},{"code":"LB","name":"Lebanon"},
+    {"code":"LS","name":"Lesotho"},{"code":"LR","name":"Liberia"},{"code":"LY","name":"Libya"},{"code":"LI","name":"Liechtenstein"},
+    {"code":"LT","name":"Lithuania"},{"code":"LU","name":"Luxembourg"},{"code":"MO","name":"Macao SAR China"},{"code":"MG","name":"Madagascar"},
+    {"code":"MW","name":"Malawi"},{"code":"MY","name":"Malaysia"},{"code":"MV","name":"Maldives"},{"code":"ML","name":"Mali"},
+    {"code":"MT","name":"Malta"},{"code":"MH","name":"Marshall Islands"},{"code":"MQ","name":"Martinique"},{"code":"MR","name":"Mauritania"},
+    {"code":"MU","name":"Mauritius"},{"code":"YT","name":"Mayotte"},{"code":"MX","name":"Mexico"},{"code":"FM","name":"Micronesia"},
+    {"code":"MD","name":"Moldova"},{"code":"MC","name":"Monaco"},{"code":"MN","name":"Mongolia"},{"code":"ME","name":"Montenegro"},
+    {"code":"MS","name":"Montserrat"},{"code":"MA","name":"Morocco"},{"code":"MZ","name":"Mozambique"},{"code":"MM","name":"Myanmar"},
+    {"code":"NA","name":"Namibia"},{"code":"NR","name":"Nauru"},{"code":"NP","name":"Nepal"},{"code":"NL","name":"Netherlands"},
+    {"code":"NC","name":"New Caledonia"},{"code":"NZ","name":"New Zealand"},{"code":"NI","name":"Nicaragua"},{"code":"NE","name":"Niger"},
+    {"code":"NG","name":"Nigeria"},{"code":"NU","name":"Niue"},{"code":"NF","name":"Norfolk Island"},{"code":"KP","name":"North Korea"},
+    {"code":"MK","name":"North Macedonia"},{"code":"MP","name":"Northern Mariana Islands"},{"code":"NO","name":"Norway"},
+    {"code":"OM","name":"Oman"},{"code":"PK","name":"Pakistan"},{"code":"PW","name":"Palau"},{"code":"PS","name":"Palestine"},
+    {"code":"PA","name":"Panama"},{"code":"PG","name":"Papua New Guinea"},{"code":"PY","name":"Paraguay"},{"code":"PE","name":"Peru"},
+    {"code":"PH","name":"Philippines"},{"code":"PN","name":"Pitcairn Islands"},{"code":"PL","name":"Poland"},{"code":"PT","name":"Portugal"},
+    {"code":"PR","name":"Puerto Rico"},{"code":"QA","name":"Qatar"},{"code":"CG","name":"Republic of the Congo"},{"code":"RE","name":"Réunion"},
+    {"code":"RO","name":"Romania"},{"code":"RU","name":"Russia"},{"code":"RW","name":"Rwanda"},{"code":"BL","name":"Saint Barthélemy"},
+    {"code":"SH","name":"Saint Helena"},{"code":"KN","name":"Saint Kitts and Nevis"},{"code":"LC","name":"Saint Lucia"},{"code":"MF","name":"Saint Martin"},
+    {"code":"PM","name":"Saint Pierre and Miquelon"},{"code":"VC","name":"Saint Vincent and the Grenadines"},{"code":"WS","name":"Samoa"},
+    {"code":"SM","name":"San Marino"},{"code":"ST","name":"São Tomé and Príncipe"},{"code":"SA","name":"Saudi Arabia"},{"code":"SN","name":"Senegal"},
+    {"code":"RS","name":"Serbia"},{"code":"SC","name":"Seychelles"},{"code":"SL","name":"Sierra Leone"},{"code":"SG","name":"Singapore"},
+    {"code":"SX","name":"Sint Maarten"},{"code":"SK","name":"Slovakia"},{"code":"SI","name":"Slovenia"},{"code":"SB","name":"Solomon Islands"},
+    {"code":"SO","name":"Somalia"},{"code":"ZA","name":"South Africa"},{"code":"GS","name":"South Georgia and the South Sandwich Islands"},
+    {"code":"KR","name":"South Korea"},{"code":"SS","name":"South Sudan"},{"code":"ES","name":"Spain"},{"code":"LK","name":"Sri Lanka"},
+    {"code":"SD","name":"Sudan"},{"code":"SR","name":"Suriname"},{"code":"SJ","name":"Svalbard and Jan Mayen"},{"code":"SE","name":"Sweden"},
+    {"code":"CH","name":"Switzerland"},{"code":"SY","name":"Syria"},{"code":"TW","name":"Taiwan"},{"code":"TJ","name":"Tajikistan"},
+    {"code":"TZ","name":"Tanzania"},{"code":"TH","name":"Thailand"},{"code":"TL","name":"Timor-Leste"},{"code":"TG","name":"Togo"},
+    {"code":"TK","name":"Tokelau"},{"code":"TO","name":"Tonga"},{"code":"TT","name":"Trinidad and Tobago"},{"code":"TN","name":"Tunisia"},
+    {"code":"TR","name":"Turkey"},{"code":"TM","name":"Turkmenistan"},{"code":"TC","name":"Turks and Caicos Islands"},{"code":"TV","name":"Tuvalu"},
+    {"code":"UG","name":"Uganda"},{"code":"UA","name":"Ukraine"},{"code":"AE","name":"United Arab Emirates"},{"code":"GB","name":"United Kingdom"},
+    {"code":"US","name":"United States"},{"code":"UY","name":"Uruguay"},{"code":"UZ","name":"Uzbekistan"},{"code":"VU","name":"Vanuatu"},
+    {"code":"VA","name":"Vatican City"},{"code":"VE","name":"Venezuela"},{"code":"VN","name":"Vietnam"},{"code":"WF","name":"Wallis and Futuna"},
+    {"code":"EH","name":"Western Sahara"},{"code":"YE","name":"Yemen"},{"code":"ZM","name":"Zambia"},{"code":"ZW","name":"Zimbabwe"}
   ];
 
-  // Populate country dropdown
-  const countrySelect = document.getElementById('regCountry');
-  fullCountries.forEach(c => {
+  countries.forEach(c => {
     const opt = document.createElement('option');
-    opt.value = c.code;
-    opt.textContent = `${c.name}`;
-    countrySelect.appendChild(opt);
+    opt.value = c.code; opt.textContent = c.name;
+    document.getElementById('regCountry').appendChild(opt);
   });
 
-  // Form Toggle
-  document.getElementById('showRegister').onclick = e => { e.preventDefault(); document.getElementById('loginForm').style.display='none'; document.getElementById('registerForm').style.display='block'; };
-  document.getElementById('showLogin').onclick = e => { e.preventDefault(); document.getElementById('registerForm').style.display='none'; document.getElementById('loginForm').style.display='block'; };
+  // Form Navigation
+  const showForm = (id) => {
+    document.getElementById('loginForm').style.display = id === 'loginForm' ? 'block' : 'none';
+    document.getElementById('registerForm').style.display = id === 'registerForm' ? 'block' : 'none';
+    document.getElementById('forgotForm').style.display = id === 'forgotForm' ? 'block' : 'none';
+  };
+  document.getElementById('showRegister').onclick = e => { e.preventDefault(); showForm('registerForm'); };
+  document.getElementById('showLogin').onclick = e => { e.preventDefault(); showForm('loginForm'); };
+  document.getElementById('showForgot').onclick = e => { e.preventDefault(); showForm('forgotForm'); };
+  document.getElementById('backToLogin').onclick = e => { e.preventDefault(); showFormForm('loginForm'); };
 
   // Register
   document.getElementById('registerBtn').onclick = async () => {
@@ -282,7 +271,7 @@
     const address = document.getElementById('regAddress').value.trim();
 
     if (!name || !email || !password || !countryCode || !city || password.length < 8) {
-      document.getElementById('regMessage').innerHTML = '<p class="error">Fill all required fields & password ≥8 chars</p>';
+      document.getElementById('regMessage').innerHTML = '<p class="error">All required fields & password ≥8 characters</p>';
       return;
     }
 
@@ -290,19 +279,16 @@
     document.getElementById('regMessage').innerHTML = '<p>Creating account...</p>';
 
     try {
-      const { user } = await window.firebaseAuth.createUserWithEmailAndPassword(window.firebaseAuth.auth, email, password);
-      await set(ref(window.firebaseDB.db, 'users/' + user.uid), {
-        uid: user.uid,
-        name, email, phone: phone || null,
+      const cred = await createUserWithEmailAndPassword(auth, email, password);
+      await set(ref(db, 'users/' + cred.user.uid), {
+        uid: cred.user.uid, name, email, phone: phone || null,
         country: { code: countryCode, name: countryName },
         city, address: address || null,
-        createdAt: Date.now(),
-        lastLogin: Date.now(),
-        role: "trader",
-        status: "active"
+        createdAt: Date.now(), lastLogin: Date.now(),
+        role: "trader", status: "active"
       });
-      document.getElementById('regMessage').innerHTML = '<p class="success">Success! Redirecting...</p>';
-      setTimeout(() => location.href = "https://tradevisionpro.online/trading.html", 1500);
+      document.getElementById('regMessage').innerHTML = '<p class="success">Account created! Redirecting...</p>';
+      setTimeout(() => location.href = "https://tradevisionpro.online/dashboard.html", 1500);
     } catch (err) {
       document.getElementById('regMessage').innerHTML = `<p class="error">${err.message}</p>`;
       document.getElementById('registerBtn').disabled = false;
@@ -319,12 +305,29 @@
     document.getElementById('loginMessage').innerHTML = '<p>Signing in...</p>';
 
     try {
-      const { user } = await signInWithEmailAndPassword(window.firebaseAuth.auth, email, password);
-      await update(ref(window.firebaseDB.db, 'users/' + user.uid), { lastLogin: Date.now() });
-      setTimeout(() => location.href = "https://tradevisionpro.online/trading.html", 800);
+      const cred = await signInWithEmailAndPassword(auth, email, password);
+      await update(ref(db, 'users/' + cred.user.uid), { lastLogin: Date.now() });
+      setTimeout(() => location.href = "https://tradevisionpro.online/dashboard.html", 800);
     } catch (err) {
       document.getElementById('loginMessage').innerHTML = `<p class="error">${err.message}</p>`;
       document.getElementById('loginBtn').disabled = false;
+    }
+  };
+
+  // Forgot Password
+  document.getElementById('resetBtn').onclick = async () => {
+    const email = document.getElementById('forgotEmail').value.trim();
+    if (!email) return document.getElementById('forgotMessage').innerHTML = '<p class="error">Enter your email address</p>';
+
+    document.getElementById('resetBtn').disabled = true;
+    document.getElementById('forgotMessage').innerHTML = '<p>Sending reset link...</p>';
+
+    try {
+      await sendPasswordResetEmail(auth, email);
+      document.getElementById('forgotMessage').innerHTML = '<p class="success">Password reset email sent! Check your inbox.</p>';
+    } catch (err) {
+      document.getElementById('forgotMessage').innerHTML = `<p class="error">${err.message}</p>`;
+      document.getElementById('resetBtn').disabled = false;
     }
   };
 </script>
