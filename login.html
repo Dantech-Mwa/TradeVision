@@ -288,7 +288,7 @@
         role: "trader", status: "active"
       });
       document.getElementById('regMessage').innerHTML = '<p class="success">Account created! Redirecting...</p>';
-      setTimeout(() => location.href = "https://tradevisionpro.online/dashboard.html", 1500);
+      setTimeout(() => location.href = "https://tradevisionpro.online/trading.html", 1500);
     } catch (err) {
       document.getElementById('regMessage').innerHTML = `<p class="error">${err.message}</p>`;
       document.getElementById('registerBtn').disabled = false;
@@ -307,7 +307,7 @@
     try {
       const cred = await signInWithEmailAndPassword(auth, email, password);
       await update(ref(db, 'users/' + cred.user.uid), { lastLogin: Date.now() });
-      setTimeout(() => location.href = "https://tradevisionpro.online/dashboard.html", 800);
+      setTimeout(() => location.href = "https://tradevisionpro.online/trading.html", 800);
     } catch (err) {
       document.getElementById('loginMessage').innerHTML = `<p class="error">${err.message}</p>`;
       document.getElementById('loginBtn').disabled = false;
