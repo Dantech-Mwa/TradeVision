@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TradeVision Pro — Professional Trading Tools</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial"></script>
@@ -12,19 +12,24 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.3.0"></script>
     <style>
         :root {
-            --primary: #6366f1;
-            --primary-dark: #4f46e5;
-            --secondary: #8b5cf6;
-            --success: #10b981;
+            /* Black & White Theme */
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #111111;
+            --bg-card: #1a1a1a;
+            --bg-card-hover: #222222;
+            --border: #2a2a2a;
+            --border-light: #333333;
+            --text-primary: #ffffff;
+            --text-secondary: #aaaaaa;
+            --text-muted: #666666;
+            --accent: #ffffff;
+            --accent-hover: #f0f0f0;
+            --success: #22c55e;
             --danger: #ef4444;
             --warning: #f59e0b;
-            --dark: #0f172a;
-            --darker: #020617;
-            --card: rgba(30, 41, 59, 0.95);
-            --glass: rgba(255, 255, 255, 0.1);
-            --text-primary: #f1f5f9;
-            --text-secondary: #94a3b8;
-            --border: rgba(99, 102, 241, 0.3);
+            --info: #3b82f6;
+            --shadow: rgba(0, 0, 0, 0.5);
+            --glass: rgba(255, 255, 255, 0.05);
         }
 
         * {
@@ -34,8 +39,8 @@
         }
 
         body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-primary);
             color: var(--text-primary);
             min-height: 100vh;
             overflow-x: hidden;
@@ -51,13 +56,20 @@
             background-image: 
                 linear-gradient(var(--glass) 1px, transparent 1px),
                 linear-gradient(90deg, var(--glass) 1px, transparent 1px);
-            background-size: 40px 40px;
-            opacity: 0.1;
+            background-size: 60px 60px;
+            opacity: 0.05;
             z-index: 1;
             pointer-events: none;
         }
 
-        /* Header */
+        /* Glass Morphism */
+        .glass {
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+        }
+
+        /* Container */
         .container {
             position: relative;
             z-index: 10;
@@ -66,50 +78,53 @@
             padding: 30px 20px;
         }
 
-        header {
+        /* Header */
+        .header {
             text-align: center;
             margin-bottom: 60px;
-            position: relative;
+            padding: 40px 20px;
+            border-radius: 24px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            margin-top: 20px;
         }
 
         .logo {
             display: inline-flex;
             align-items: center;
-            gap: 12px;
-            margin-bottom: 20px;
-            background: rgba(99, 102, 241, 0.1);
-            padding: 12px 24px;
+            gap: 16px;
+            margin-bottom: 24px;
+            padding: 16px 32px;
+            background: var(--bg-secondary);
             border-radius: 20px;
             border: 1px solid var(--border);
-            backdrop-filter: blur(10px);
         }
 
         .logo-icon {
-            width: 36px;
-            height: 36px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            border-radius: 10px;
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #ffffff, #cccccc);
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
+            font-size: 24px;
+            color: var(--bg-primary);
         }
 
-        h1 {
-            font-size: 3.5rem;
+        .logo-text {
+            font-size: 2rem;
             font-weight: 800;
-            background: linear-gradient(135deg, #c7d2fe 0%, #e0e7ff 100%);
+            background: linear-gradient(135deg, #ffffff, #aaaaaa);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 15px;
-            line-height: 1.1;
         }
 
         .tagline {
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             color: var(--text-secondary);
             max-width: 800px;
-            margin: 0 auto 30px;
+            margin: 0 auto 40px;
             line-height: 1.6;
         }
 
@@ -123,41 +138,47 @@
         }
 
         .stat-item {
-            background: var(--card);
+            background: var(--bg-secondary);
             border: 1px solid var(--border);
             border-radius: 16px;
-            padding: 20px 30px;
-            backdrop-filter: blur(10px);
+            padding: 24px 32px;
             min-width: 160px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-item:hover {
+            transform: translateY(-2px);
+            border-color: var(--border-light);
         }
 
         .stat-value {
-            font-size: 2rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 5px;
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 8px;
         }
 
         .stat-label {
             font-size: 0.9rem;
             color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         /* Tools Grid */
         .tools-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
-            gap: 25px;
+            gap: 30px;
             margin-top: 40px;
         }
 
         .tool-card {
-            background: var(--card);
+            background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: 20px;
-            padding: 30px;
+            padding: 32px;
             transition: all 0.3s ease;
             cursor: pointer;
             position: relative;
@@ -166,64 +187,82 @@
 
         .tool-card:hover {
             transform: translateY(-5px);
-            border-color: var(--primary);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            background: var(--bg-card-hover);
+            border-color: var(--border-light);
+            box-shadow: 0 20px 40px var(--shadow);
+        }
+
+        .tool-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .tool-card:hover::before {
+            opacity: 1;
         }
 
         .tool-header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
 
         .tool-title {
-            font-size: 1.6rem;
+            font-size: 1.8rem;
             font-weight: 700;
             color: var(--text-primary);
-            margin-bottom: 8px;
+            margin-bottom: 12px;
         }
 
         .tool-icon {
-            width: 48px;
-            height: 48px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            border-radius: 12px;
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #ffffff, #dddddd);
+            border-radius: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
-            color: white;
+            font-size: 24px;
+            color: var(--bg-primary);
         }
 
         .tool-desc {
             color: var(--text-secondary);
             line-height: 1.6;
-            margin-bottom: 25px;
-            font-size: 1rem;
+            margin-bottom: 28px;
+            font-size: 1.05rem;
         }
 
         .features {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 20px;
+            gap: 10px;
+            margin-bottom: 24px;
         }
 
         .feature {
-            background: rgba(99, 102, 241, 0.1);
-            color: var(--primary);
-            padding: 6px 12px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            padding: 8px 16px;
             border-radius: 20px;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             font-weight: 500;
+            border: 1px solid var(--border);
         }
 
         .open-btn {
             width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
+            padding: 16px;
+            background: linear-gradient(135deg, #ffffff, #dddddd);
+            color: var(--bg-primary);
             border: none;
             border-radius: 12px;
             font-weight: 600;
@@ -233,12 +272,96 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 12px;
         }
 
         .open-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.3);
+            background: linear-gradient(135deg, #ffffff, #ffffff);
+            box-shadow: 0 10px 25px rgba(255, 255, 255, 0.1);
+        }
+
+        /* Status Indicator */
+        .status-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 12px 20px;
+            backdrop-filter: blur(10px);
+            z-index: 100;
+            transition: all 0.3s;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--success);
+            position: relative;
+        }
+
+        .status-dot::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            border-radius: 50%;
+            border: 1px solid var(--success);
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.inactive {
+            background: var(--danger);
+        }
+
+        .status-dot.inactive::after {
+            border-color: var(--danger);
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .status-text {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            z-index: 1000;
+        }
+
+        .theme-btn {
+            width: 50px;
+            height: 50px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .theme-btn:hover {
+            background: var(--bg-card-hover);
+            transform: rotate(30deg);
         }
 
         /* Modal */
@@ -249,7 +372,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(2, 6, 23, 0.95);
+            background: rgba(0, 0, 0, 0.95);
             backdrop-filter: blur(5px);
             z-index: 1000;
             align-items: center;
@@ -264,7 +387,7 @@
         }
 
         .modal-content {
-            background: linear-gradient(135deg, var(--card) 0%, rgba(30, 41, 59, 0.95) 100%);
+            background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: 20px;
             width: 100%;
@@ -290,9 +413,9 @@
             position: absolute;
             top: 20px;
             right: 20px;
-            width: 40px;
-            height: 40px;
-            background: rgba(255, 255, 255, 0.1);
+            width: 44px;
+            height: 44px;
+            background: var(--bg-secondary);
             border: 1px solid var(--border);
             border-radius: 50%;
             display: flex;
@@ -305,7 +428,7 @@
         }
 
         .close-modal:hover {
-            background: rgba(255, 255, 255, 0.2);
+            background: var(--bg-card-hover);
             transform: rotate(90deg);
         }
 
@@ -315,15 +438,15 @@
         }
 
         .modal-title {
-            font-size: 2rem;
+            font-size: 2.2rem;
             font-weight: 700;
             color: var(--text-primary);
-            margin-bottom: 10px;
+            margin-bottom: 12px;
         }
 
         .modal-subtitle {
             color: var(--text-secondary);
-            font-size: 1rem;
+            font-size: 1.1rem;
         }
 
         .modal-body {
@@ -346,34 +469,28 @@
         .form-control {
             width: 100%;
             padding: 14px;
-            background: rgba(255, 255, 255, 0.05);
+            background: var(--bg-secondary);
             border: 1px solid var(--border);
             border-radius: 12px;
             color: var(--text-primary);
             font-size: 1rem;
-            font-family: 'Poppins', sans-serif;
+            font-family: 'Inter', sans-serif;
             transition: all 0.3s;
         }
 
         .form-control:focus {
             outline: none;
-            border-color: var(--primary);
-            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--accent);
+            background: var(--bg-card);
         }
 
         select.form-control {
             appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2394a3b8' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23aaaaaa' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
             background-repeat: no-repeat;
             background-position: right 14px center;
             background-size: 16px;
             padding-right: 40px;
-        }
-
-        select.form-control option {
-            background: var(--dark);
-            color: var(--text-primary);
-            padding: 10px;
         }
 
         .form-row {
@@ -385,8 +502,8 @@
         /* Buttons */
         .btn {
             padding: 14px 28px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
+            background: linear-gradient(135deg, #ffffff, #dddddd);
+            color: var(--bg-primary);
             border: none;
             border-radius: 12px;
             font-weight: 600;
@@ -401,30 +518,34 @@
 
         .btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.3);
+            box-shadow: 0 10px 25px rgba(255, 255, 255, 0.1);
         }
 
         .btn-secondary {
-            background: rgba(255, 255, 255, 0.1);
+            background: var(--bg-secondary);
             border: 1px solid var(--border);
+            color: var(--text-primary);
         }
 
         .btn-success {
-            background: linear-gradient(135deg, var(--success), #059669);
+            background: linear-gradient(135deg, var(--success), #16a34a);
+            color: white;
         }
 
         .btn-danger {
             background: linear-gradient(135deg, var(--danger), #dc2626);
+            color: white;
         }
 
         .btn-warning {
             background: linear-gradient(135deg, var(--warning), #d97706);
+            color: white;
         }
 
         /* Results */
         .results {
             margin-top: 30px;
-            background: rgba(255, 255, 255, 0.05);
+            background: var(--bg-secondary);
             border: 1px solid var(--border);
             border-radius: 16px;
             padding: 25px;
@@ -447,7 +568,7 @@
         }
 
         .result-item {
-            background: rgba(255, 255, 255, 0.03);
+            background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: 12px;
             padding: 20px;
@@ -476,7 +597,7 @@
         /* Charts Container */
         .chart-container {
             height: 400px;
-            background: rgba(255, 255, 255, 0.03);
+            background: var(--bg-secondary);
             border: 1px solid var(--border);
             border-radius: 16px;
             padding: 20px;
@@ -499,7 +620,7 @@
 
         .chart-btn {
             padding: 8px 16px;
-            background: rgba(255, 255, 255, 0.05);
+            background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: 8px;
             color: var(--text-secondary);
@@ -509,13 +630,13 @@
         }
 
         .chart-btn.active {
-            background: rgba(99, 102, 241, 0.2);
-            border-color: var(--primary);
-            color: var(--primary);
+            background: var(--bg-card-hover);
+            border-color: var(--accent);
+            color: var(--text-primary);
         }
 
         .chart-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
+            background: var(--bg-card-hover);
         }
 
         /* Tabs */
@@ -539,8 +660,8 @@
         }
 
         .tab.active {
-            background: rgba(99, 102, 241, 0.2);
-            color: var(--primary);
+            background: var(--bg-card-hover);
+            color: var(--text-primary);
         }
 
         .tab-content {
@@ -556,9 +677,9 @@
             display: inline-block;
             width: 20px;
             height: 20px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
+            border: 3px solid var(--border);
             border-radius: 50%;
-            border-top-color: var(--primary);
+            border-top-color: var(--accent);
             animation: spin 1s ease-in-out infinite;
         }
 
@@ -566,50 +687,9 @@
             to { transform: rotate(360deg); }
         }
 
-        /* Connection Status */
-        .connection-status {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 12px 20px;
-            backdrop-filter: blur(10px);
-            z-index: 100;
-        }
-
-        .connection-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: var(--success);
-            animation: pulse 2s infinite;
-        }
-
-        .connection-dot.disconnected {
-            background: var(--danger);
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
         /* Responsive */
         @media (max-width: 768px) {
-            h1 {
-                font-size: 2.5rem;
-            }
-            
             .tools-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .form-row {
                 grid-template-columns: 1fr;
             }
             
@@ -626,12 +706,16 @@
             }
             
             .stat-item {
-                padding: 15px 20px;
+                padding: 20px 24px;
                 min-width: 140px;
             }
             
             .chart-container {
                 height: 300px;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -640,23 +724,30 @@
     <!-- Grid Background -->
     <div class="grid-bg"></div>
 
-    <!-- Connection Status -->
-    <div class="connection-status">
-        <div class="connection-dot" id="connectionStatus"></div>
-        <span id="connectionText">Connecting...</span>
+    <!-- Status Indicator -->
+    <div class="status-indicator">
+        <div class="status-dot" id="statusDot"></div>
+        <span class="status-text" id="statusText">Live</span>
+    </div>
+
+    <!-- Theme Toggle -->
+    <div class="theme-toggle">
+        <button class="theme-btn" id="themeToggle">
+            <i class="fas fa-moon"></i>
+        </button>
     </div>
 
     <!-- Main Container -->
     <div class="container">
-        <header>
+        <header class="header">
             <div class="logo">
                 <div class="logo-icon">
                     <i class="fas fa-chart-line"></i>
                 </div>
-                <span>TradeVision Pro</span>
+                <span class="logo-text">TradeVision Pro</span>
             </div>
             
-            <h1>Professional Trading Tools</h1>
+            <h1 style="font-size: 3.5rem; font-weight: 800; margin-bottom: 20px; color: var(--text-primary);">Professional Trading Tools</h1>
             <p class="tagline">Institutional-grade analytics powered by market data. 2300+ assets supported with direct exchange connectivity.</p>
             
             <div class="stats">
@@ -780,7 +871,7 @@
                         </div>
                     </div>
                     <div class="tool-icon">
-                        <i class="fas fa-wind"></i>
+                        <i class="fas fa-chart-line"></i>
                     </div>
                 </div>
                 <p class="tool-desc">Measure market volatility using ATR, Bollinger Bands width, and regime detection algorithms.</p>
@@ -859,7 +950,6 @@
     </div>
 
     <!-- Modals -->
-
     <!-- Position Size Calculator Modal -->
     <div id="positionModal" class="modal">
         <div class="modal-content">
@@ -1095,10 +1185,10 @@
                 
                 <div class="form-group">
                     <button class="btn btn-secondary" onclick="startSentimentWS()" id="sentimentWSBtn">
-                        <i class="fas fa-plug"></i> Connect
+                        <i class="fas fa-plug"></i> Start Feed
                     </button>
                     <button class="btn btn-danger" onclick="stopSentimentWS()" id="sentimentStopBtn" style="display: none;">
-                        <i class="fas fa-stop"></i> Disconnect
+                        <i class="fas fa-stop"></i> Stop Feed
                     </button>
                 </div>
                 
@@ -1107,7 +1197,7 @@
                         <button class="chart-btn active" onclick="changeChartType('sentiment', 'candlestick')">Candlestick</button>
                         <button class="chart-btn" onclick="changeChartType('sentiment', 'line')">Line</button>
                         <button class="chart-btn" onclick="changeChartType('sentiment', 'area')">Area</button>
-                        <button class="chart-btn" onclick="changeChartType('sentiment', 'bar')">Volume Bars</button>
+                        <button class="chart-btn" onclick="changeChartType('sentiment', 'bar')">Volume</button>
                     </div>
                     <div class="chart-wrapper">
                         <canvas id="sentimentChart"></canvas>
@@ -1125,16 +1215,16 @@
                             <div class="result-value" id="priceChange24h">-</div>
                         </div>
                         <div class="result-item">
-                            <div class="result-label">Order Book Imbalance</div>
-                            <div class="result-value" id="orderBookImbalance">-</div>
-                        </div>
-                        <div class="result-item">
-                            <div class="result-label">Funding Rate</div>
-                            <div class="result-value" id="fundingRate">-</div>
-                        </div>
-                        <div class="result-item">
                             <div class="result-label">Volume (24h)</div>
                             <div class="result-value" id="volume24h">-</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">Current Price</div>
+                            <div class="result-value" id="currentPriceLive">-</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">High/Low (24h)</div>
+                            <div class="result-value" id="highLow24h">-</div>
                         </div>
                     </div>
                 </div>
@@ -1276,7 +1366,7 @@
                 
                 <div class="results">
                     <div class="result-header">
-                        <i class="fas fa-wind"></i>
+                        <i class="fas fa-chart-line"></i>
                         Volatility Metrics
                     </div>
                     <div class="result-grid">
@@ -1594,7 +1684,6 @@
         let tradingPairs = [];
         let wsConnections = {};
         let updateCounter = 0;
-        let connectionStatus = false;
         let chartInstances = {};
         let chartTypes = {
             position: 'candlestick',
@@ -1612,7 +1701,7 @@
         document.addEventListener('DOMContentLoaded', async function() {
             await loadTradingPairs();
             setupDefaultDates();
-            updateConnectionStatus();
+            updateStatus();
             
             // Update counter every second
             setInterval(() => {
@@ -1626,7 +1715,67 @@
                     event.target.style.display = 'none';
                 }
             };
+            
+            // Theme toggle
+            const themeToggle = document.getElementById('themeToggle');
+            themeToggle.addEventListener('click', toggleTheme);
         });
+
+        // Theme toggle function
+        function toggleTheme() {
+            const body = document.body;
+            const themeIcon = document.querySelector('#themeToggle i');
+            
+            if (body.classList.contains('light-theme')) {
+                // Switch to dark theme
+                body.classList.remove('light-theme');
+                themeIcon.className = 'fas fa-moon';
+                
+                // Update CSS variables for dark theme
+                document.documentElement.style.setProperty('--bg-primary', '#0a0a0a');
+                document.documentElement.style.setProperty('--bg-secondary', '#111111');
+                document.documentElement.style.setProperty('--bg-card', '#1a1a1a');
+                document.documentElement.style.setProperty('--bg-card-hover', '#222222');
+                document.documentElement.style.setProperty('--border', '#2a2a2a');
+                document.documentElement.style.setProperty('--border-light', '#333333');
+                document.documentElement.style.setProperty('--text-primary', '#ffffff');
+                document.documentElement.style.setProperty('--text-secondary', '#aaaaaa');
+                document.documentElement.style.setProperty('--text-muted', '#666666');
+                document.documentElement.style.setProperty('--accent', '#ffffff');
+                document.documentElement.style.setProperty('--accent-hover', '#f0f0f0');
+                document.documentElement.style.setProperty('--glass', 'rgba(255, 255, 255, 0.05)');
+                
+                localStorage.setItem('theme', 'dark');
+            } else {
+                // Switch to light theme
+                body.classList.add('light-theme');
+                themeIcon.className = 'fas fa-sun';
+                
+                // Update CSS variables for light theme
+                document.documentElement.style.setProperty('--bg-primary', '#ffffff');
+                document.documentElement.style.setProperty('--bg-secondary', '#f8f9fa');
+                document.documentElement.style.setProperty('--bg-card', '#ffffff');
+                document.documentElement.style.setProperty('--bg-card-hover', '#f0f0f0');
+                document.documentElement.style.setProperty('--border', '#e0e0e0');
+                document.documentElement.style.setProperty('--border-light', '#d0d0d0');
+                document.documentElement.style.setProperty('--text-primary', '#1a1a1a');
+                document.documentElement.style.setProperty('--text-secondary', '#666666');
+                document.documentElement.style.setProperty('--text-muted', '#999999');
+                document.documentElement.style.setProperty('--accent', '#1a1a1a');
+                document.documentElement.style.setProperty('--accent-hover', '#000000');
+                document.documentElement.style.setProperty('--glass', 'rgba(0, 0, 0, 0.05)');
+                
+                localStorage.setItem('theme', 'light');
+            }
+            
+            // Redraw all charts with new theme
+            Object.keys(chartInstances).forEach(chartId => {
+                if (chartInstances[chartId]) {
+                    chartInstances[chartId].destroy();
+                }
+            });
+            chartInstances = {};
+        }
 
         // Load trading pairs from Binance
         async function loadTradingPairs() {
@@ -1655,7 +1804,7 @@
                     // Group pairs by quote asset for better organization
                     const groupedPairs = {};
                     tradingPairs.forEach(pair => {
-                        const quoteAsset = pair.slice(-4); // Assumes USDT, BTC, etc.
+                        const quoteAsset = pair.slice(-4);
                         if (!groupedPairs[quoteAsset]) {
                             groupedPairs[quoteAsset] = [];
                         }
@@ -1705,6 +1854,22 @@
             
             document.getElementById('backtestStartDate').valueAsDate = startDate;
             document.getElementById('backtestEndDate').valueAsDate = endDate;
+        }
+
+        // Update status indicator
+        function updateStatus() {
+            const statusDot = document.getElementById('statusDot');
+            const statusText = document.getElementById('statusText');
+            
+            const activeConnections = Object.keys(wsConnections).length;
+            
+            if (activeConnections > 0) {
+                statusDot.className = 'status-dot';
+                statusText.textContent = `${activeConnections} active`;
+            } else {
+                statusDot.className = 'status-dot inactive';
+                statusText.textContent = 'Live';
+            }
         }
 
         // Modal Functions
@@ -1757,7 +1922,7 @@
             if (wsConnections[modalId]) {
                 wsConnections[modalId].close();
                 delete wsConnections[modalId];
-                updateConnectionStatus();
+                updateStatus();
             }
             
             // Destroy chart instance
@@ -1799,24 +1964,6 @@
 
         function capitalizeFirst(string) {
             return string.charAt(0).toUpperCase() + string.slice(1);
-        }
-
-        // Update connection status
-        function updateConnectionStatus() {
-            const statusDot = document.getElementById('connectionStatus');
-            const statusText = document.getElementById('connectionText');
-            
-            const activeConnections = Object.keys(wsConnections).length;
-            
-            if (activeConnections > 0) {
-                statusDot.className = 'connection-dot';
-                statusText.textContent = `${activeConnections} connection${activeConnections > 1 ? 's' : ''} active`;
-                connectionStatus = true;
-            } else {
-                statusDot.className = 'connection-dot disconnected';
-                statusText.textContent = 'Disconnected';
-                connectionStatus = false;
-            }
         }
 
         // Chart Functions
@@ -1881,11 +2028,11 @@
                 const chartType = chartTypes.position;
                 
                 if (chartType === 'candlestick') {
-                    createCandlestickChart(ctx, klines, pair);
+                    createCandlestickChart(ctx, klines, pair, chartId);
                 } else if (chartType === 'line') {
-                    createLineChart(ctx, klines, pair);
+                    createLineChart(ctx, klines, pair, chartId);
                 } else if (chartType === 'area') {
-                    createAreaChart(ctx, klines, pair);
+                    createAreaChart(ctx, klines, pair, chartId);
                 }
                 
                 // Get current price
@@ -1916,11 +2063,11 @@
                 const chartType = chartTypes.riskReward;
                 
                 if (chartType === 'candlestick') {
-                    createCandlestickChart(ctx, klines, pair);
+                    createCandlestickChart(ctx, klines, pair, chartId);
                 } else if (chartType === 'line') {
-                    createLineChart(ctx, klines, pair);
+                    createLineChart(ctx, klines, pair, chartId);
                 } else if (chartType === 'area') {
-                    createAreaChart(ctx, klines, pair);
+                    createAreaChart(ctx, klines, pair, chartId);
                 }
                 
                 // Get current price
@@ -1951,13 +2098,13 @@
                 const chartType = chartTypes.sentiment;
                 
                 if (chartType === 'candlestick') {
-                    createCandlestickChart(ctx, klines, pair);
+                    createCandlestickChart(ctx, klines, pair, chartId);
                 } else if (chartType === 'line') {
-                    createLineChart(ctx, klines, pair);
+                    createLineChart(ctx, klines, pair, chartId);
                 } else if (chartType === 'area') {
-                    createAreaChart(ctx, klines, pair);
+                    createAreaChart(ctx, klines, pair, chartId);
                 } else if (chartType === 'bar') {
-                    createVolumeBarChart(ctx, klines, pair);
+                    createVolumeBarChart(ctx, klines, pair, chartId);
                 }
                 
             } catch (error) {
@@ -1989,11 +2136,11 @@
                 const chartType = chartTypes.correlation;
                 
                 if (chartType === 'line') {
-                    createCorrelationLineChart(ctx, data1, data2, asset1, asset2);
+                    createCorrelationLineChart(ctx, data1, data2, asset1, asset2, chartId);
                 } else if (chartType === 'scatter') {
-                    createScatterPlot(ctx, data1, data2, asset1, asset2);
+                    createScatterPlot(ctx, data1, data2, asset1, asset2, chartId);
                 } else if (chartType === 'area') {
-                    createCorrelationAreaChart(ctx, data1, data2, asset1, asset2);
+                    createCorrelationAreaChart(ctx, data1, data2, asset1, asset2, chartId);
                 }
                 
             } catch (error) {
@@ -2022,11 +2169,11 @@
                 const chartType = chartTypes.volatility;
                 
                 if (chartType === 'candlestick') {
-                    createVolatilityCandlestickChart(ctx, klines, pair);
+                    createVolatilityCandlestickChart(ctx, klines, pair, chartId);
                 } else if (chartType === 'line') {
-                    createVolatilityLineChart(ctx, klines, pair);
+                    createVolatilityLineChart(ctx, klines, pair, chartId);
                 } else if (chartType === 'bar') {
-                    createATRBarChart(ctx, klines, pair);
+                    createATRBarChart(ctx, klines, pair, chartId);
                 }
                 
             } catch (error) {
@@ -2048,11 +2195,11 @@
             const chartType = chartTypes.portfolio;
             
             if (chartType === 'line') {
-                createPortfolioLineChart(ctx, portfolioValue);
+                createPortfolioLineChart(ctx, portfolioValue, chartId);
             } else if (chartType === 'area') {
-                createPortfolioAreaChart(ctx, portfolioValue);
+                createPortfolioAreaChart(ctx, portfolioValue, chartId);
             } else if (chartType === 'bar') {
-                createPortfolioBarChart(ctx, portfolioValue);
+                createPortfolioBarChart(ctx, portfolioValue, chartId);
             }
         }
 
@@ -2068,11 +2215,11 @@
             const chartType = chartTypes.portfolioAnalysis;
             
             if (chartType === 'pie') {
-                createPortfolioPieChart(ctx);
+                createPortfolioPieChart(ctx, chartId);
             } else if (chartType === 'bar') {
-                createPortfolioRiskBarChart(ctx);
+                createPortfolioRiskBarChart(ctx, chartId);
             } else if (chartType === 'radar') {
-                createPortfolioRadarChart(ctx);
+                createPortfolioRadarChart(ctx, chartId);
             }
         }
 
@@ -2098,11 +2245,11 @@
                 const chartType = chartTypes.profile;
                 
                 if (chartType === 'candlestick') {
-                    createProfileCandlestickChart(ctx, klines, pair);
+                    createProfileCandlestickChart(ctx, klines, pair, chartId);
                 } else if (chartType === 'bar') {
-                    createProfileVolumeChart(ctx, klines, pair);
+                    createProfileVolumeChart(ctx, klines, pair, chartId);
                 } else if (chartType === 'area') {
-                    createProfileAreaChart(ctx, klines, pair);
+                    createProfileAreaChart(ctx, klines, pair, chartId);
                 }
                 
             } catch (error) {
@@ -2137,11 +2284,11 @@
                 const chartType = chartTypes.backtest;
                 
                 if (chartType === 'line') {
-                    createBacktestLineChart(ctx, klines, pair);
+                    createBacktestLineChart(ctx, klines, pair, chartId);
                 } else if (chartType === 'area') {
-                    createBacktestAreaChart(ctx, klines, pair);
+                    createBacktestAreaChart(ctx, klines, pair, chartId);
                 } else if (chartType === 'bar') {
-                    createBacktestBarChart(ctx, klines, pair);
+                    createBacktestBarChart(ctx, klines, pair, chartId);
                 }
                 
             } catch (error) {
@@ -2150,7 +2297,7 @@
         }
 
         // Chart Creation Functions
-        function createCandlestickChart(ctx, klines, pair) {
+        function createCandlestickChart(ctx, klines, pair, chartId) {
             const dates = klines.map(k => new Date(k[0]));
             const data = klines.map(k => ({
                 x: new Date(k[0]),
@@ -2160,16 +2307,16 @@
                 c: parseFloat(k[4])
             }));
             
-            chartInstances['candlestick'] = new Chart(ctx, {
+            chartInstances[chartId] = new Chart(ctx, {
                 type: 'candlestick',
                 data: {
                     datasets: [{
                         label: pair,
                         data: data,
                         color: {
-                            up: '#10b981',
-                            down: '#ef4444',
-                            unchanged: '#94a3b8'
+                            up: 'var(--success)',
+                            down: 'var(--danger)',
+                            unchanged: 'var(--text-secondary)'
                         }
                     }]
                 },
@@ -2179,16 +2326,16 @@
                     plugins: {
                         legend: {
                             labels: {
-                                color: '#f1f5f9'
+                                color: 'var(--text-primary)'
                             }
                         },
                         tooltip: {
                             mode: 'index',
                             intersect: false,
-                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                            titleColor: '#f1f5f9',
-                            bodyColor: '#f1f5f9',
-                            borderColor: '#6366f1',
+                            backgroundColor: 'var(--bg-card)',
+                            titleColor: 'var(--text-primary)',
+                            bodyColor: 'var(--text-primary)',
+                            borderColor: 'var(--border)',
                             borderWidth: 1
                         }
                     },
@@ -2199,19 +2346,19 @@
                                 unit: 'day'
                             },
                             grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
+                                color: 'var(--border)'
                             },
                             ticks: {
-                                color: '#94a3b8'
+                                color: 'var(--text-secondary)'
                             }
                         },
                         y: {
                             position: 'right',
                             grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
+                                color: 'var(--border)'
                             },
                             ticks: {
-                                color: '#94a3b8',
+                                color: 'var(--text-secondary)',
                                 callback: function(value) {
                                     return '$' + value.toLocaleString();
                                 }
@@ -2222,19 +2369,19 @@
             });
         }
 
-        function createLineChart(ctx, klines, pair) {
+        function createLineChart(ctx, klines, pair, chartId) {
             const dates = klines.map(k => new Date(k[0]));
             const closes = klines.map(k => parseFloat(k[4]));
             
-            chartInstances['line'] = new Chart(ctx, {
+            chartInstances[chartId] = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: dates,
                     datasets: [{
                         label: pair,
                         data: closes,
-                        borderColor: '#6366f1',
-                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        borderColor: 'var(--accent)',
+                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
                         fill: true,
                         tension: 0.4,
                         pointRadius: 0
@@ -2246,16 +2393,16 @@
                     plugins: {
                         legend: {
                             labels: {
-                                color: '#f1f5f9'
+                                color: 'var(--text-primary)'
                             }
                         },
                         tooltip: {
                             mode: 'index',
                             intersect: false,
-                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                            titleColor: '#f1f5f9',
-                            bodyColor: '#f1f5f9',
-                            borderColor: '#6366f1',
+                            backgroundColor: 'var(--bg-card)',
+                            titleColor: 'var(--text-primary)',
+                            bodyColor: 'var(--text-primary)',
+                            borderColor: 'var(--border)',
                             borderWidth: 1
                         }
                     },
@@ -2266,19 +2413,19 @@
                                 unit: 'day'
                             },
                             grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
+                                color: 'var(--border)'
                             },
                             ticks: {
-                                color: '#94a3b8'
+                                color: 'var(--text-secondary)'
                             }
                         },
                         y: {
                             position: 'right',
                             grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
+                                color: 'var(--border)'
                             },
                             ticks: {
-                                color: '#94a3b8',
+                                color: 'var(--text-secondary)',
                                 callback: function(value) {
                                     return '$' + value.toLocaleString();
                                 }
@@ -2289,19 +2436,19 @@
             });
         }
 
-        function createAreaChart(ctx, klines, pair) {
+        function createAreaChart(ctx, klines, pair, chartId) {
             const dates = klines.map(k => new Date(k[0]));
             const closes = klines.map(k => parseFloat(k[4]));
             
-            chartInstances['area'] = new Chart(ctx, {
+            chartInstances[chartId] = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: dates,
                     datasets: [{
                         label: pair,
                         data: closes,
-                        borderColor: '#6366f1',
-                        backgroundColor: 'rgba(99, 102, 241, 0.3)',
+                        borderColor: 'var(--accent)',
+                        backgroundColor: 'rgba(255, 255, 255, 0.3)',
                         fill: true,
                         tension: 0.4,
                         pointRadius: 0
@@ -2313,16 +2460,16 @@
                     plugins: {
                         legend: {
                             labels: {
-                                color: '#f1f5f9'
+                                color: 'var(--text-primary)'
                             }
                         },
                         tooltip: {
                             mode: 'index',
                             intersect: false,
-                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                            titleColor: '#f1f5f9',
-                            bodyColor: '#f1f5f9',
-                            borderColor: '#6366f1',
+                            backgroundColor: 'var(--bg-card)',
+                            titleColor: 'var(--text-primary)',
+                            bodyColor: 'var(--text-primary)',
+                            borderColor: 'var(--border)',
                             borderWidth: 1
                         }
                     },
@@ -2333,19 +2480,19 @@
                                 unit: 'day'
                             },
                             grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
+                                color: 'var(--border)'
                             },
                             ticks: {
-                                color: '#94a3b8'
+                                color: 'var(--text-secondary)'
                             }
                         },
                         y: {
                             position: 'right',
                             grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
+                                color: 'var(--border)'
                             },
                             ticks: {
-                                color: '#94a3b8',
+                                color: 'var(--text-secondary)',
                                 callback: function(value) {
                                     return '$' + value.toLocaleString();
                                 }
@@ -2356,11 +2503,11 @@
             });
         }
 
-        function createVolumeBarChart(ctx, klines, pair) {
+        function createVolumeBarChart(ctx, klines, pair, chartId) {
             const dates = klines.map(k => new Date(k[0]));
             const volumes = klines.map(k => parseFloat(k[5]));
             
-            chartInstances['volume'] = new Chart(ctx, {
+            chartInstances[chartId] = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: dates,
@@ -2368,10 +2515,10 @@
                         label: 'Volume',
                         data: volumes,
                         backgroundColor: klines.map(k => 
-                            parseFloat(k[4]) >= parseFloat(k[1]) ? 'rgba(16, 185, 129, 0.7)' : 'rgba(239, 68, 68, 0.7)'
-                        ),
+                            parseFloat(k[4]) >= parseFloat(k[1]) ? 'var(--success)' : 'var(--danger)'
+                        ).map(color => color + '70'),
                         borderColor: klines.map(k => 
-                            parseFloat(k[4]) >= parseFloat(k[1]) ? '#10b981' : '#ef4444'
+                            parseFloat(k[4]) >= parseFloat(k[1]) ? 'var(--success)' : 'var(--danger)'
                         ),
                         borderWidth: 1
                     }]
@@ -2382,16 +2529,16 @@
                     plugins: {
                         legend: {
                             labels: {
-                                color: '#f1f5f9'
+                                color: 'var(--text-primary)'
                             }
                         },
                         tooltip: {
                             mode: 'index',
                             intersect: false,
-                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                            titleColor: '#f1f5f9',
-                            bodyColor: '#f1f5f9',
-                            borderColor: '#6366f1',
+                            backgroundColor: 'var(--bg-card)',
+                            titleColor: 'var(--text-primary)',
+                            bodyColor: 'var(--text-primary)',
+                            borderColor: 'var(--border)',
                             borderWidth: 1
                         }
                     },
@@ -2402,19 +2549,19 @@
                                 unit: 'hour'
                             },
                             grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
+                                color: 'var(--border)'
                             },
                             ticks: {
-                                color: '#94a3b8'
+                                color: 'var(--text-secondary)'
                             }
                         },
                         y: {
                             position: 'right',
                             grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
+                                color: 'var(--border)'
                             },
                             ticks: {
-                                color: '#94a3b8',
+                                color: 'var(--text-secondary)',
                                 callback: function(value) {
                                     if (value >= 1000000) return (value/1000000).toFixed(2) + 'M';
                                     if (value >= 1000) return (value/1000).toFixed(2) + 'K';
@@ -2427,7 +2574,7 @@
             });
         }
 
-        function createCorrelationLineChart(ctx, data1, data2, asset1, asset2) {
+        function createCorrelationLineChart(ctx, data1, data2, asset1, asset2, chartId) {
             const dates = data1.map(k => new Date(k[0]));
             const prices1 = data1.map(k => parseFloat(k[4]));
             const prices2 = data2.map(k => parseFloat(k[4]));
@@ -2438,7 +2585,7 @@
             const normalized1 = prices1.map(p => (p / max1) * 100);
             const normalized2 = prices2.map(p => (p / max2) * 100);
             
-            chartInstances['correlationLine'] = new Chart(ctx, {
+            chartInstances[chartId] = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: dates,
@@ -2446,8 +2593,8 @@
                         {
                             label: asset1,
                             data: normalized1,
-                            borderColor: '#6366f1',
-                            backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                            borderColor: 'var(--accent)',
+                            backgroundColor: 'rgba(255, 255, 255, 0.1)',
                             fill: false,
                             tension: 0.4,
                             pointRadius: 0
@@ -2455,8 +2602,8 @@
                         {
                             label: asset2,
                             data: normalized2,
-                            borderColor: '#10b981',
-                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            borderColor: 'var(--success)',
+                            backgroundColor: 'rgba(22, 197, 94, 0.1)',
                             fill: false,
                             tension: 0.4,
                             pointRadius: 0
@@ -2469,16 +2616,16 @@
                     plugins: {
                         legend: {
                             labels: {
-                                color: '#f1f5f9'
+                                color: 'var(--text-primary)'
                             }
                         },
                         tooltip: {
                             mode: 'index',
                             intersect: false,
-                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                            titleColor: '#f1f5f9',
-                            bodyColor: '#f1f5f9',
-                            borderColor: '#6366f1',
+                            backgroundColor: 'var(--bg-card)',
+                            titleColor: 'var(--text-primary)',
+                            bodyColor: 'var(--text-primary)',
+                            borderColor: 'var(--border)',
                             borderWidth: 1
                         }
                     },
@@ -2489,19 +2636,19 @@
                                 unit: 'day'
                             },
                             grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
+                                color: 'var(--border)'
                             },
                             ticks: {
-                                color: '#94a3b8'
+                                color: 'var(--text-secondary)'
                             }
                         },
                         y: {
                             position: 'right',
                             grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
+                                color: 'var(--border)'
                             },
                             ticks: {
-                                color: '#94a3b8',
+                                color: 'var(--text-secondary)',
                                 callback: function(value) {
                                     return value.toFixed(0) + '%';
                                 }
@@ -2512,7 +2659,7 @@
             });
         }
 
-        function createScatterPlot(ctx, data1, data2, asset1, asset2) {
+        function createScatterPlot(ctx, data1, data2, asset1, asset2, chartId) {
             const prices1 = data1.map(k => parseFloat(k[4]));
             const prices2 = data2.map(k => parseFloat(k[4]));
             
@@ -2529,14 +2676,14 @@
                 y: returns2[i]
             }));
             
-            chartInstances['scatter'] = new Chart(ctx, {
+            chartInstances[chartId] = new Chart(ctx, {
                 type: 'scatter',
                 data: {
                     datasets: [{
                         label: `${asset1} vs ${asset2}`,
                         data: scatterData,
-                        backgroundColor: 'rgba(99, 102, 241, 0.5)',
-                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(255, 255, 255, 0.5)',
+                        borderColor: 'var(--accent)',
                         borderWidth: 1,
                         pointRadius: 4
                     }]
@@ -2547,7 +2694,7 @@
                     plugins: {
                         legend: {
                             labels: {
-                                color: '#f1f5f9'
+                                color: 'var(--text-primary)'
                             }
                         },
                         tooltip: {
@@ -2556,10 +2703,10 @@
                                     return `${asset1}: ${context.parsed.x.toFixed(2)}%, ${asset2}: ${context.parsed.y.toFixed(2)}%`;
                                 }
                             },
-                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                            titleColor: '#f1f5f9',
-                            bodyColor: '#f1f5f9',
-                            borderColor: '#6366f1',
+                            backgroundColor: 'var(--bg-card)',
+                            titleColor: 'var(--text-primary)',
+                            bodyColor: 'var(--text-primary)',
+                            borderColor: 'var(--border)',
                             borderWidth: 1
                         }
                     },
@@ -2568,26 +2715,26 @@
                             title: {
                                 display: true,
                                 text: `${asset1} Return (%)`,
-                                color: '#f1f5f9'
+                                color: 'var(--text-primary)'
                             },
                             grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
+                                color: 'var(--border)'
                             },
                             ticks: {
-                                color: '#94a3b8'
+                                color: 'var(--text-secondary)'
                             }
                         },
                         y: {
                             title: {
                                 display: true,
                                 text: `${asset2} Return (%)`,
-                                color: '#f1f5f9'
+                                color: 'var(--text-primary)'
                             },
                             grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
+                                color: 'var(--border)'
                             },
                             ticks: {
-                                color: '#94a3b8'
+                                color: 'var(--text-secondary)'
                             }
                         }
                     }
@@ -2595,7 +2742,7 @@
             });
         }
 
-        function createCorrelationAreaChart(ctx, data1, data2, asset1, asset2) {
+        function createCorrelationAreaChart(ctx, data1, data2, asset1, asset2, chartId) {
             const dates = data1.map(k => new Date(k[0]));
             const prices1 = data1.map(k => parseFloat(k[4]));
             const prices2 = data2.map(k => parseFloat(k[4]));
@@ -2612,14 +2759,14 @@
             
             const correlationDates = dates.slice(rollingWindow);
             
-            chartInstances['correlationArea'] = new Chart(ctx, {
+            chartInstances[chartId] = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: correlationDates,
                     datasets: [{
                         label: 'Rolling Correlation',
                         data: correlations,
-                        borderColor: '#f59e0b',
+                        borderColor: 'var(--warning)',
                         backgroundColor: 'rgba(245, 158, 11, 0.3)',
                         fill: true,
                         tension: 0.4,
@@ -2632,16 +2779,16 @@
                     plugins: {
                         legend: {
                             labels: {
-                                color: '#f1f5f9'
+                                color: 'var(--text-primary)'
                             }
                         },
                         tooltip: {
                             mode: 'index',
                             intersect: false,
-                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                            titleColor: '#f1f5f9',
-                            bodyColor: '#f1f5f9',
-                            borderColor: '#6366f1',
+                            backgroundColor: 'var(--bg-card)',
+                            titleColor: 'var(--text-primary)',
+                            bodyColor: 'var(--text-primary)',
+                            borderColor: 'var(--border)',
                             borderWidth: 1
                         }
                     },
@@ -2652,10 +2799,10 @@
                                 unit: 'day'
                             },
                             grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
+                                color: 'var(--border)'
                             },
                             ticks: {
-                                color: '#94a3b8'
+                                color: 'var(--text-secondary)'
                             }
                         },
                         y: {
@@ -2663,10 +2810,10 @@
                             min: -1,
                             max: 1,
                             grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
+                                color: 'var(--border)'
                             },
                             ticks: {
-                                color: '#94a3b8',
+                                color: 'var(--text-secondary)',
                                 callback: function(value) {
                                     return value.toFixed(2);
                                 }
@@ -2677,7 +2824,7 @@
             });
         }
 
-        function createVolatilityCandlestickChart(ctx, klines, pair) {
+        function createVolatilityCandlestickChart(ctx, klines, pair, chartId) {
             const dates = klines.map(k => new Date(k[0]));
             const data = klines.map(k => ({
                 x: new Date(k[0]),
@@ -2709,7 +2856,7 @@
                 });
             }
             
-            chartInstances['volatilityCandlestick'] = new Chart(ctx, {
+            chartInstances[chartId] = new Chart(ctx, {
                 type: 'candlestick',
                 data: {
                     datasets: [
@@ -2717,16 +2864,16 @@
                             label: pair,
                             data: data,
                             color: {
-                                up: '#10b981',
-                                down: '#ef4444',
-                                unchanged: '#94a3b8'
+                                up: 'var(--success)',
+                                down: 'var(--danger)',
+                                unchanged: 'var(--text-secondary)'
                             }
                         },
                         {
                             label: 'ATR (14)',
                             data: atrValues,
                             type: 'line',
-                            borderColor: '#f59e0b',
+                            borderColor: 'var(--warning)',
                             backgroundColor: 'rgba(245, 158, 11, 0.1)',
                             fill: false,
                             pointRadius: 0,
@@ -2740,16 +2887,16 @@
                     plugins: {
                         legend: {
                             labels: {
-                                color: '#f1f5f9'
+                                color: 'var(--text-primary)'
                             }
                         },
                         tooltip: {
                             mode: 'index',
                             intersect: false,
-                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                            titleColor: '#f1f5f9',
-                            bodyColor: '#f1f5f9',
-                            borderColor: '#6366f1',
+                            backgroundColor: 'var(--bg-card)',
+                            titleColor: 'var(--text-primary)',
+                            bodyColor: 'var(--text-primary)',
+                            borderColor: 'var(--border)',
                             borderWidth: 1
                         }
                     },
@@ -2760,19 +2907,19 @@
                                 unit: 'day'
                             },
                             grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
+                                color: 'var(--border)'
                             },
                             ticks: {
-                                color: '#94a3b8'
+                                color: 'var(--text-secondary)'
                             }
                         },
                         y: {
                             position: 'right',
                             grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
+                                color: 'var(--border)'
                             },
                             ticks: {
-                                color: '#94a3b8',
+                                color: 'var(--text-secondary)',
                                 callback: function(value) {
                                     return '$' + value.toLocaleString();
                                 }
@@ -2784,7 +2931,7 @@
                                 drawOnChartArea: false
                             },
                             ticks: {
-                                color: '#f59e0b'
+                                color: 'var(--warning)'
                             }
                         }
                     }
@@ -2792,7 +2939,7 @@
             });
         }
 
-        function createVolatilityLineChart(ctx, klines, pair) {
+        function createVolatilityLineChart(ctx, klines, pair, chartId) {
             const dates = klines.map(k => new Date(k[0]));
             const closes = klines.map(k => parseFloat(k[4]));
             
@@ -2816,7 +2963,7 @@
             
             const bandDates = dates.slice(period - 1);
             
-            chartInstances['volatilityLine'] = new Chart(ctx, {
+            chartInstances[chartId] = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: bandDates,
@@ -2824,8 +2971,8 @@
                         {
                             label: 'Price',
                             data: closes.slice(period - 1),
-                            borderColor: '#6366f1',
-                            backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                            borderColor: 'var(--accent)',
+                            backgroundColor: 'rgba(255, 255, 255, 0.1)',
                             fill: false,
                             tension: 0.4,
                             pointRadius: 0
@@ -2833,8 +2980,8 @@
                         {
                             label: 'SMA (20)',
                             data: smaValues,
-                            borderColor: '#10b981',
-                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            borderColor: 'var(--success)',
+                            backgroundColor: 'rgba(22, 197, 94, 0.1)',
                             fill: false,
                             tension: 0.4,
                             pointRadius: 0
@@ -2842,7 +2989,7 @@
                         {
                             label: 'Upper Band',
                             data: upperBand,
-                            borderColor: '#f59e0b',
+                            borderColor: 'var(--warning)',
                             backgroundColor: 'rgba(245, 158, 11, 0.1)',
                             fill: false,
                             tension: 0.4,
@@ -2852,7 +2999,7 @@
                         {
                             label: 'Lower Band',
                             data: lowerBand,
-                            borderColor: '#f59e0b',
+                            borderColor: 'var(--warning)',
                             backgroundColor: 'rgba(245, 158, 11, 0.1)',
                             fill: false,
                             tension: 0.4,
@@ -2867,16 +3014,16 @@
                     plugins: {
                         legend: {
                             labels: {
-                                color: '#f1f5f9'
+                                color: 'var(--text-primary)'
                             }
                         },
                         tooltip: {
                             mode: 'index',
                             intersect: false,
-                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                            titleColor: '#f1f5f9',
-                            bodyColor: '#f1f5f9',
-                            borderColor: '#6366f1',
+                            backgroundColor: 'var(--bg-card)',
+                            titleColor: 'var(--text-primary)',
+                            bodyColor: 'var(--text-primary)',
+                            borderColor: 'var(--border)',
                             borderWidth: 1
                         }
                     },
@@ -2887,19 +3034,19 @@
                                 unit: 'day'
                             },
                             grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
+                                color: 'var(--border)'
                             },
                             ticks: {
-                                color: '#94a3b8'
+                                color: 'var(--text-secondary)'
                             }
                         },
                         y: {
                             position: 'right',
                             grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
+                                color: 'var(--border)'
                             },
                             ticks: {
-                                color: '#94a3b8',
+                                color: 'var(--text-secondary)',
                                 callback: function(value) {
                                     return '$' + value.toLocaleString();
                                 }
@@ -2910,7 +3057,7 @@
             });
         }
 
-        function createATRBarChart(ctx, klines, pair) {
+        function createATRBarChart(ctx, klines, pair, chartId) {
             const dates = klines.map(k => new Date(k[0]));
             
             // Calculate True Ranges
@@ -2932,7 +3079,7 @@
             
             const trDates = dates.slice(1);
             
-            chartInstances['atrBar'] = new Chart(ctx, {
+            chartInstances[chartId] = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: trDates,
@@ -2940,10 +3087,10 @@
                         label: 'True Range',
                         data: trueRanges,
                         backgroundColor: klines.slice(1).map((k, i) => 
-                            parseFloat(k[4]) >= parseFloat(k[1]) ? 'rgba(16, 185, 129, 0.7)' : 'rgba(239, 68, 68, 0.7)'
-                        ),
+                            parseFloat(k[4]) >= parseFloat(k[1]) ? 'var(--success)' : 'var(--danger)'
+                        ).map(color => color + '70'),
                         borderColor: klines.slice(1).map((k, i) => 
-                            parseFloat(k[4]) >= parseFloat(k[1]) ? '#10b981' : '#ef4444'
+                            parseFloat(k[4]) >= parseFloat(k[1]) ? 'var(--success)' : 'var(--danger)'
                         ),
                         borderWidth: 1
                     }]
@@ -2954,16 +3101,16 @@
                     plugins: {
                         legend: {
                             labels: {
-                                color: '#f1f5f9'
+                                color: 'var(--text-primary)'
                             }
                         },
                         tooltip: {
                             mode: 'index',
                             intersect: false,
-                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                            titleColor: '#f1f5f9',
-                            bodyColor: '#f1f5f9',
-                            borderColor: '#6366f1',
+                            backgroundColor: 'var(--bg-card)',
+                            titleColor: 'var(--text-primary)',
+                            bodyColor: 'var(--text-primary)',
+                            borderColor: 'var(--border)',
                             borderWidth: 1
                         }
                     },
@@ -2974,19 +3121,19 @@
                                 unit: 'day'
                             },
                             grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
+                                color: 'var(--border)'
                             },
                             ticks: {
-                                color: '#94a3b8'
+                                color: 'var(--text-secondary)'
                             }
                         },
                         y: {
                             position: 'right',
                             grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
+                                color: 'var(--border)'
                             },
                             ticks: {
-                                color: '#94a3b8',
+                                color: 'var(--text-secondary)',
                                 callback: function(value) {
                                     return value.toFixed(2);
                                 }
@@ -2997,7 +3144,7 @@
             });
         }
 
-        function createPortfolioLineChart(ctx, portfolioValue) {
+        function createPortfolioLineChart(ctx, portfolioValue, chartId) {
             // Generate simulated equity curve
             const days = 30;
             const dates = [];
@@ -3015,15 +3162,15 @@
                 equity.push(currentEquity);
             }
             
-            chartInstances['portfolioLine'] = new Chart(ctx, {
+            chartInstances[chartId] = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: dates,
                     datasets: [{
                         label: 'Portfolio Equity',
                         data: equity,
-                        borderColor: '#6366f1',
-                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        borderColor: 'var(--accent)',
+                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
                         fill: true,
                         tension: 0.4,
                         pointRadius: 0
@@ -3035,7 +3182,7 @@
                     plugins: {
                         legend: {
                             labels: {
-                                color: '#f1f5f9'
+                                color: 'var(--text-primary)'
                             }
                         },
                         tooltip: {
@@ -3048,10 +3195,10 @@
                                     return `$${value.toFixed(2)} (${change >= 0 ? '+' : ''}${change.toFixed(2)}%)`;
                                 }
                             },
-                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                            titleColor: '#f1f5f9',
-                            bodyColor: '#f1f5f9',
-                            borderColor: '#6366f1',
+                            backgroundColor: 'var(--bg-card)',
+                            titleColor: 'var(--text-primary)',
+                            bodyColor: 'var(--text-primary)',
+                            borderColor: 'var(--border)',
                             borderWidth: 1
                         }
                     },
@@ -3062,19 +3209,19 @@
                                 unit: 'day'
                             },
                             grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
+                                color: 'var(--border)'
                             },
                             ticks: {
-                                color: '#94a3b8'
+                                color: 'var(--text-secondary)'
                             }
                         },
                         y: {
                             position: 'right',
                             grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
+                                color: 'var(--border)'
                             },
                             ticks: {
-                                color: '#94a3b8',
+                                color: 'var(--text-secondary)',
                                 callback: function(value) {
                                     return '$' + value.toLocaleString();
                                 }
@@ -3085,7 +3232,7 @@
             });
         }
 
-        function createPortfolioAreaChart(ctx, portfolioValue) {
+        function createPortfolioAreaChart(ctx, portfolioValue, chartId) {
             // Generate simulated cumulative returns
             const days = 30;
             const dates = [];
@@ -3103,15 +3250,15 @@
                 returns.push(cumulativeReturn);
             }
             
-            chartInstances['portfolioArea'] = new Chart(ctx, {
+            chartInstances[chartId] = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: dates,
                     datasets: [{
                         label: 'Cumulative Return',
                         data: returns,
-                        borderColor: '#10b981',
-                        backgroundColor: 'rgba(16, 185, 129, 0.3)',
+                        borderColor: 'var(--success)',
+                        backgroundColor: 'rgba(22, 197, 94, 0.3)',
                         fill: true,
                         tension: 0.4,
                         pointRadius: 0
@@ -3123,7 +3270,7 @@
                     plugins: {
                         legend: {
                             labels: {
-                                color: '#f1f5f9'
+                                color: 'var(--text-primary)'
                             }
                         },
                         tooltip: {
@@ -3134,10 +3281,10 @@
                                     return `${context.parsed.y.toFixed(2)}%`;
                                 }
                             },
-                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                            titleColor: '#f1f5f9',
-                            bodyColor: '#f1f5f9',
-                            borderColor: '#6366f1',
+                            backgroundColor: 'var(--bg-card)',
+                            titleColor: 'var(--text-primary)',
+                            bodyColor: 'var(--text-primary)',
+                            borderColor: 'var(--border)',
                             borderWidth: 1
                         }
                     },
@@ -3148,19 +3295,19 @@
                                 unit: 'day'
                             },
                             grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
+                                color: 'var(--border)'
                             },
                             ticks: {
-                                color: '#94a3b8'
+                                color: 'var(--text-secondary)'
                             }
                         },
                         y: {
                             position: 'right',
                             grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
+                                color: 'var(--border)'
                             },
                             ticks: {
-                                color: '#94a3b8',
+                                color: 'var(--text-secondary)',
                                 callback: function(value) {
                                     return value.toFixed(1) + '%';
                                 }
@@ -3171,7 +3318,7 @@
             });
         }
 
-        function createPortfolioBarChart(ctx, portfolioValue) {
+        function createPortfolioBarChart(ctx, portfolioValue, chartId) {
             // Generate simulated daily returns
             const days = 30;
             const dates = [];
@@ -3187,15 +3334,15 @@
                 dailyReturns.push(dailyReturn);
             }
             
-            chartInstances['portfolioBar'] = new Chart(ctx, {
+            chartInstances[chartId] = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: dates,
                     datasets: [{
                         label: 'Daily Return',
                         data: dailyReturns,
-                        backgroundColor: dailyReturns.map(r => r >= 0 ? 'rgba(16, 185, 129, 0.7)' : 'rgba(239, 68, 68, 0.7)'),
-                        borderColor: dailyReturns.map(r => r >= 0 ? '#10b981' : '#ef4444'),
+                        backgroundColor: dailyReturns.map(r => r >= 0 ? 'var(--success)' : 'var(--danger)').map(color => color + '70'),
+                        borderColor: dailyReturns.map(r => r >= 0 ? 'var(--success)' : 'var(--danger)'),
                         borderWidth: 1
                     }]
                 },
@@ -3205,7 +3352,7 @@
                     plugins: {
                         legend: {
                             labels: {
-                                color: '#f1f5f9'
+                                color: 'var(--text-primary)'
                             }
                         },
                         tooltip: {
@@ -3216,10 +3363,10 @@
                                     return `${context.parsed.y.toFixed(2)}%`;
                                 }
                             },
-                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                            titleColor: '#f1f5f9',
-                            bodyColor: '#f1f5f9',
-                            borderColor: '#6366f1',
+                            backgroundColor: 'var(--bg-card)',
+                            titleColor: 'var(--text-primary)',
+                            bodyColor: 'var(--text-primary)',
+                            borderColor: 'var(--border)',
                             borderWidth: 1
                         }
                     },
@@ -3230,19 +3377,19 @@
                                 unit: 'day'
                             },
                             grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
+                                color: 'var(--border)'
                             },
                             ticks: {
-                                color: '#94a3b8'
+                                color: 'var(--text-secondary)'
                             }
                         },
                         y: {
                             position: 'right',
                             grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
+                                color: 'var(--border)'
                             },
                             ticks: {
-                                color: '#94a3b8',
+                                color: 'var(--text-secondary)',
                                 callback: function(value) {
                                     return value.toFixed(1) + '%';
                                 }
@@ -3253,22 +3400,22 @@
             });
         }
 
-        function createPortfolioPieChart(ctx) {
-            chartInstances['portfolioPie'] = new Chart(ctx, {
+        function createPortfolioPieChart(ctx, chartId) {
+            chartInstances[chartId] = new Chart(ctx, {
                 type: 'pie',
                 data: {
                     labels: ['BTC', 'ETH', 'SOL', 'ADA', 'DOT', 'Other'],
                     datasets: [{
                         data: [35, 25, 15, 10, 8, 7],
                         backgroundColor: [
-                            '#6366f1',
-                            '#10b981',
-                            '#f59e0b',
-                            '#8b5cf6',
+                            'var(--accent)',
+                            'var(--success)',
+                            'var(--warning)',
+                            'var(--info)',
                             '#ec4899',
-                            '#94a3b8'
+                            'var(--text-secondary)'
                         ],
-                        borderColor: 'rgba(255, 255, 255, 0.1)',
+                        borderColor: 'var(--border)',
                         borderWidth: 1
                     }]
                 },
@@ -3279,15 +3426,15 @@
                         legend: {
                             position: 'right',
                             labels: {
-                                color: '#f1f5f9',
+                                color: 'var(--text-primary)',
                                 padding: 20
                             }
                         },
                         tooltip: {
-                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                            titleColor: '#f1f5f9',
-                            bodyColor: '#f1f5f9',
-                            borderColor: '#6366f1',
+                            backgroundColor: 'var(--bg-card)',
+                            titleColor: 'var(--text-primary)',
+                            bodyColor: 'var(--text-primary)',
+                            borderColor: 'var(--border)',
                             borderWidth: 1,
                             callbacks: {
                                 label: function(context) {
@@ -3300,7 +3447,7 @@
             });
         }
 
-        function createPortfolioRiskBarChart(ctx) {
+        function createPortfolioRiskBarChart(ctx, chartId) {
             const assets = ['BTC', 'ETH', 'SOL', 'ADA', 'DOT'];
             const riskMetrics = [
                 { volatility: 65, beta: 85, correlation: 45 },
@@ -3310,7 +3457,7 @@
                 { volatility: 75, beta: 80, correlation: 40 }
             ];
             
-            chartInstances['portfolioRiskBar'] = new Chart(ctx, {
+            chartInstances[chartId] = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: assets,
@@ -3318,7 +3465,7 @@
                         {
                             label: 'Volatility',
                             data: riskMetrics.map(m => m.volatility),
-                            backgroundColor: 'rgba(99, 102, 241, 0.7)'
+                            backgroundColor: 'rgba(255, 255, 255, 0.7)'
                         },
                         {
                             label: 'Beta',
@@ -3328,7 +3475,7 @@
                         {
                             label: 'Correlation',
                             data: riskMetrics.map(m => m.correlation),
-                            backgroundColor: 'rgba(16, 185, 129, 0.7)'
+                            backgroundColor: 'rgba(22, 197, 94, 0.7)'
                         }
                     ]
                 },
@@ -3338,34 +3485,34 @@
                     plugins: {
                         legend: {
                             labels: {
-                                color: '#f1f5f9'
+                                color: 'var(--text-primary)'
                             }
                         },
                         tooltip: {
-                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                            titleColor: '#f1f5f9',
-                            bodyColor: '#f1f5f9',
-                            borderColor: '#6366f1',
+                            backgroundColor: 'var(--bg-card)',
+                            titleColor: 'var(--text-primary)',
+                            bodyColor: 'var(--text-primary)',
+                            borderColor: 'var(--border)',
                             borderWidth: 1
                         }
                     },
                     scales: {
                         x: {
                             grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
+                                color: 'var(--border)'
                             },
                             ticks: {
-                                color: '#94a3b8'
+                                color: 'var(--text-secondary)'
                             }
                         },
                         y: {
                             beginAtZero: true,
                             max: 100,
                             grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
+                                color: 'var(--border)'
                             },
                             ticks: {
-                                color: '#94a3b8',
+                                color: 'var(--text-secondary)',
                                 callback: function(value) {
                                     return value + '%';
                                 }
@@ -3376,20 +3523,20 @@
             });
         }
 
-        function createPortfolioRadarChart(ctx) {
-            chartInstances['portfolioRadar'] = new Chart(ctx, {
+        function createPortfolioRadarChart(ctx, chartId) {
+            chartInstances[chartId] = new Chart(ctx, {
                 type: 'radar',
                 data: {
                     labels: ['Return', 'Risk', 'Diversification', 'Liquidity', 'Correlation', 'Volatility'],
                     datasets: [{
                         label: 'Portfolio Metrics',
                         data: [85, 65, 75, 90, 60, 70],
-                        backgroundColor: 'rgba(99, 102, 241, 0.2)',
-                        borderColor: '#6366f1',
-                        pointBackgroundColor: '#6366f1',
+                        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                        borderColor: 'var(--accent)',
+                        pointBackgroundColor: 'var(--accent)',
                         pointBorderColor: '#fff',
                         pointHoverBackgroundColor: '#fff',
-                        pointHoverBorderColor: '#6366f1'
+                        pointHoverBorderColor: 'var(--accent)'
                     }]
                 },
                 options: {
@@ -3398,30 +3545,30 @@
                     plugins: {
                         legend: {
                             labels: {
-                                color: '#f1f5f9'
+                                color: 'var(--text-primary)'
                             }
                         },
                         tooltip: {
-                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                            titleColor: '#f1f5f9',
-                            bodyColor: '#f1f5f9',
-                            borderColor: '#6366f1',
+                            backgroundColor: 'var(--bg-card)',
+                            titleColor: 'var(--text-primary)',
+                            bodyColor: 'var(--text-primary)',
+                            borderColor: 'var(--border)',
                             borderWidth: 1
                         }
                     },
                     scales: {
                         r: {
                             angleLines: {
-                                color: 'rgba(255, 255, 255, 0.1)'
+                                color: 'var(--border)'
                             },
                             grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
+                                color: 'var(--border)'
                             },
                             pointLabels: {
-                                color: '#f1f5f9'
+                                color: 'var(--text-primary)'
                             },
                             ticks: {
-                                color: '#94a3b8',
+                                color: 'var(--text-secondary)',
                                 backdropColor: 'transparent'
                             }
                         }
@@ -3430,7 +3577,7 @@
             });
         }
 
-        function createProfileCandlestickChart(ctx, klines, pair) {
+        function createProfileCandlestickChart(ctx, klines, pair, chartId) {
             const dates = klines.map(k => new Date(k[0]));
             const data = klines.map(k => ({
                 x: new Date(k[0]),
@@ -3461,7 +3608,7 @@
                 });
             }
             
-            chartInstances['profileCandlestick'] = new Chart(ctx, {
+            chartInstances[chartId] = new Chart(ctx, {
                 type: 'candlestick',
                 data: {
                     datasets: [
@@ -3469,16 +3616,16 @@
                             label: pair,
                             data: data,
                             color: {
-                                up: '#10b981',
-                                down: '#ef4444',
-                                unchanged: '#94a3b8'
+                                up: 'var(--success)',
+                                down: 'var(--danger)',
+                                unchanged: 'var(--text-secondary)'
                             }
                         },
                         {
                             label: 'VWAP',
                             data: vwapValues,
                             type: 'line',
-                            borderColor: '#f59e0b',
+                            borderColor: 'var(--warning)',
                             backgroundColor: 'rgba(245, 158, 11, 0.1)',
                             fill: false,
                             pointRadius: 0,
@@ -3492,16 +3639,16 @@
                     plugins: {
                         legend: {
                             labels: {
-                                color: '#f1f5f9'
+                                color: 'var(--text-primary)'
                             }
                         },
                         tooltip: {
                             mode: 'index',
                             intersect: false,
-                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                            titleColor: '#f1f5f9',
-                            bodyColor: '#f1f5f9',
-                            borderColor: '#6366f1',
+                            backgroundColor: 'var(--bg-card)',
+                            titleColor: 'var(--text-primary)',
+                            bodyColor: 'var(--text-primary)',
+                            borderColor: 'var(--border)',
                             borderWidth: 1
                         }
                     },
@@ -3512,19 +3659,19 @@
                                 unit: 'day'
                             },
                             grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
+                                color: 'var(--border)'
                             },
                             ticks: {
-                                color: '#94a3b8'
+                                color: 'var(--text-secondary)'
                             }
                         },
                         y: {
                             position: 'right',
                             grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
+                                color: 'var(--border)'
                             },
                             ticks: {
-                                color: '#94a3b8',
+                                color: 'var(--text-secondary)',
                                 callback: function(value) {
                                     return '$' + value.toLocaleString();
                                 }
@@ -3535,11 +3682,11 @@
             });
         }
 
-        function createProfileVolumeChart(ctx, klines, pair) {
+        function createProfileVolumeChart(ctx, klines, pair, chartId) {
             const dates = klines.map(k => new Date(k[0]));
             const volumes = klines.map(k => parseFloat(k[5]));
             
-            chartInstances['profileVolume'] = new Chart(ctx, {
+            chartInstances[chartId] = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: dates,
@@ -3547,10 +3694,10 @@
                         label: 'Volume',
                         data: volumes,
                         backgroundColor: klines.map(k => 
-                            parseFloat(k[4]) >= parseFloat(k[1]) ? 'rgba(16, 185, 129, 0.7)' : 'rgba(239, 68, 68, 0.7)'
-                        ),
+                            parseFloat(k[4]) >= parseFloat(k[1]) ? 'var(--success)' : 'var(--danger)'
+                        ).map(color => color + '70'),
                         borderColor: klines.map(k => 
-                            parseFloat(k[4]) >= parseFloat(k[1]) ? '#10b981' : '#ef4444'
+                            parseFloat(k[4]) >= parseFloat(k[1]) ? 'var(--success)' : 'var(--danger)'
                         ),
                         borderWidth: 1
                     }]
@@ -3561,16 +3708,16 @@
                     plugins: {
                         legend: {
                             labels: {
-                                color: '#f1f5f9'
+                                color: 'var(--text-primary)'
                             }
                         },
                         tooltip: {
                             mode: 'index',
                             intersect: false,
-                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                            titleColor: '#f1f5f9',
-                            bodyColor: '#f1f5f9',
-                            borderColor: '#6366f1',
+                            backgroundColor: 'var(--bg-card)',
+                            titleColor: 'var(--text-primary)',
+                            bodyColor: 'var(--text-primary)',
+                            borderColor: 'var(--border)',
                             borderWidth: 1
                         }
                     },
@@ -3581,19 +3728,19 @@
                                 unit: 'day'
                             },
                             grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
+                                color: 'var(--border)'
                             },
                             ticks: {
-                                color: '#94a3b8'
+                                color: 'var(--text-secondary)'
                             }
                         },
                         y: {
                             position: 'right',
                             grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
+                                color: 'var(--border)'
                             },
                             ticks: {
-                                color: '#94a3b8',
+                                color: 'var(--text-secondary)',
                                 callback: function(value) {
                                     if (value >= 1000000) return (value/1000000).toFixed(2) + 'M';
                                     if (value >= 1000) return (value/1000).toFixed(2) + 'K';
@@ -3606,7 +3753,7 @@
             });
         }
 
-        function createProfileAreaChart(ctx, klines, pair) {
+        function createProfileAreaChart(ctx, klines, pair, chartId) {
             const dates = klines.map(k => new Date(k[0]));
             const highs = klines.map(k => parseFloat(k[2]));
             const lows = klines.map(k => parseFloat(k[3]));
@@ -3614,7 +3761,7 @@
             // Calculate value area (simplified)
             const midPoints = highs.map((high, i) => (high + lows[i]) / 2);
             
-            chartInstances['profileArea'] = new Chart(ctx, {
+            chartInstances[chartId] = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: dates,
@@ -3622,8 +3769,8 @@
                         {
                             label: 'High',
                             data: highs,
-                            borderColor: '#10b981',
-                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            borderColor: 'var(--success)',
+                            backgroundColor: 'rgba(22, 197, 94, 0.1)',
                             fill: false,
                             tension: 0.4,
                             pointRadius: 0
@@ -3631,7 +3778,7 @@
                         {
                             label: 'Low',
                             data: lows,
-                            borderColor: '#ef4444',
+                            borderColor: 'var(--danger)',
                             backgroundColor: 'rgba(239, 68, 68, 0.1)',
                             fill: false,
                             tension: 0.4,
@@ -3640,8 +3787,8 @@
                         {
                             label: 'Mid Point',
                             data: midPoints,
-                            borderColor: '#6366f1',
-                            backgroundColor: 'rgba(99, 102, 241, 0.3)',
+                            borderColor: 'var(--accent)',
+                            backgroundColor: 'rgba(255, 255, 255, 0.3)',
                             fill: true,
                             tension: 0.4,
                             pointRadius: 0
@@ -3654,16 +3801,16 @@
                     plugins: {
                         legend: {
                             labels: {
-                                color: '#f1f5f9'
+                                color: 'var(--text-primary)'
                             }
                         },
                         tooltip: {
                             mode: 'index',
                             intersect: false,
-                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                            titleColor: '#f1f5f9',
-                            bodyColor: '#f1f5f9',
-                            borderColor: '#6366f1',
+                            backgroundColor: 'var(--bg-card)',
+                            titleColor: 'var(--text-primary)',
+                            bodyColor: 'var(--text-primary)',
+                            borderColor: 'var(--border)',
                             borderWidth: 1
                         }
                     },
@@ -3674,19 +3821,19 @@
                                 unit: 'day'
                             },
                             grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
+                                color: 'var(--border)'
                             },
                             ticks: {
-                                color: '#94a3b8'
+                                color: 'var(--text-secondary)'
                             }
                         },
                         y: {
                             position: 'right',
                             grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
+                                color: 'var(--border)'
                             },
                             ticks: {
-                                color: '#94a3b8',
+                                color: 'var(--text-secondary)',
                                 callback: function(value) {
                                     return '$' + value.toLocaleString();
                                 }
@@ -3697,7 +3844,7 @@
             });
         }
 
-        function createBacktestLineChart(ctx, klines, pair) {
+        function createBacktestLineChart(ctx, klines, pair, chartId) {
             const dates = klines.map(k => new Date(k[0]));
             const closes = klines.map(k => parseFloat(k[4]));
             
@@ -3717,7 +3864,7 @@
                 equity.push(currentEquity);
             }
             
-            chartInstances['backtestLine'] = new Chart(ctx, {
+            chartInstances[chartId] = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: dates,
@@ -3725,8 +3872,8 @@
                         {
                             label: 'Equity Curve',
                             data: equity,
-                            borderColor: '#6366f1',
-                            backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                            borderColor: 'var(--accent)',
+                            backgroundColor: 'rgba(255, 255, 255, 0.1)',
                             fill: true,
                             tension: 0.4,
                             pointRadius: 0
@@ -3734,8 +3881,8 @@
                         {
                             label: 'Buy & Hold',
                             data: closes.map((close, i) => initialCapital * (close / closes[0])),
-                            borderColor: '#10b981',
-                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            borderColor: 'var(--success)',
+                            backgroundColor: 'rgba(22, 197, 94, 0.1)',
                             fill: false,
                             tension: 0.4,
                             pointRadius: 0,
@@ -3749,7 +3896,7 @@
                     plugins: {
                         legend: {
                             labels: {
-                                color: '#f1f5f9'
+                                color: 'var(--text-primary)'
                             }
                         },
                         tooltip: {
@@ -3760,10 +3907,10 @@
                                     return `$${context.parsed.y.toFixed(2)}`;
                                 }
                             },
-                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                            titleColor: '#f1f5f9',
-                            bodyColor: '#f1f5f9',
-                            borderColor: '#6366f1',
+                            backgroundColor: 'var(--bg-card)',
+                            titleColor: 'var(--text-primary)',
+                            bodyColor: 'var(--text-primary)',
+                            borderColor: 'var(--border)',
                             borderWidth: 1
                         }
                     },
@@ -3774,19 +3921,19 @@
                                 unit: 'day'
                             },
                             grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
+                                color: 'var(--border)'
                             },
                             ticks: {
-                                color: '#94a3b8'
+                                color: 'var(--text-secondary)'
                             }
                         },
                         y: {
                             position: 'right',
                             grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
+                                color: 'var(--border)'
                             },
                             ticks: {
-                                color: '#94a3b8',
+                                color: 'var(--text-secondary)',
                                 callback: function(value) {
                                     return '$' + value.toLocaleString();
                                 }
@@ -3797,7 +3944,7 @@
             });
         }
 
-        function createBacktestAreaChart(ctx, klines, pair) {
+        function createBacktestAreaChart(ctx, klines, pair, chartId) {
             const dates = klines.map(k => new Date(k[0]));
             
             // Simulate cumulative returns
@@ -3809,15 +3956,15 @@
                 returns.push(returns[returns.length - 1] + dailyReturn);
             }
             
-            chartInstances['backtestArea'] = new Chart(ctx, {
+            chartInstances[chartId] = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: dates,
                     datasets: [{
                         label: 'Cumulative Return',
                         data: returns,
-                        borderColor: '#10b981',
-                        backgroundColor: 'rgba(16, 185, 129, 0.3)',
+                        borderColor: 'var(--success)',
+                        backgroundColor: 'rgba(22, 197, 94, 0.3)',
                         fill: true,
                         tension: 0.4,
                         pointRadius: 0
@@ -3829,7 +3976,7 @@
                     plugins: {
                         legend: {
                             labels: {
-                                color: '#f1f5f9'
+                                color: 'var(--text-primary)'
                             }
                         },
                         tooltip: {
@@ -3840,10 +3987,10 @@
                                     return `${context.parsed.y.toFixed(2)}%`;
                                 }
                             },
-                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                            titleColor: '#f1f5f9',
-                            bodyColor: '#f1f5f9',
-                            borderColor: '#6366f1',
+                            backgroundColor: 'var(--bg-card)',
+                            titleColor: 'var(--text-primary)',
+                            bodyColor: 'var(--text-primary)',
+                            borderColor: 'var(--border)',
                             borderWidth: 1
                         }
                     },
@@ -3854,19 +4001,19 @@
                                 unit: 'day'
                             },
                             grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
+                                color: 'var(--border)'
                             },
                             ticks: {
-                                color: '#94a3b8'
+                                color: 'var(--text-secondary)'
                             }
                         },
                         y: {
                             position: 'right',
                             grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
+                                color: 'var(--border)'
                             },
                             ticks: {
-                                color: '#94a3b8',
+                                color: 'var(--text-secondary)',
                                 callback: function(value) {
                                     return value.toFixed(1) + '%';
                                 }
@@ -3877,7 +4024,7 @@
             });
         }
 
-        function createBacktestBarChart(ctx, klines, pair) {
+        function createBacktestBarChart(ctx, klines, pair, chartId) {
             const dates = klines.map(k => new Date(k[0]));
             
             // Simulate trade results
@@ -3890,15 +4037,15 @@
             
             const tradeDates = dates.slice(1);
             
-            chartInstances['backtestBar'] = new Chart(ctx, {
+            chartInstances[chartId] = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: tradeDates,
                     datasets: [{
                         label: 'Trade Result',
                         data: tradeResults,
-                        backgroundColor: tradeResults.map(r => r >= 0 ? 'rgba(16, 185, 129, 0.7)' : 'rgba(239, 68, 68, 0.7)'),
-                        borderColor: tradeResults.map(r => r >= 0 ? '#10b981' : '#ef4444'),
+                        backgroundColor: tradeResults.map(r => r >= 0 ? 'var(--success)' : 'var(--danger)').map(color => color + '70'),
+                        borderColor: tradeResults.map(r => r >= 0 ? 'var(--success)' : 'var(--danger)'),
                         borderWidth: 1
                     }]
                 },
@@ -3908,7 +4055,7 @@
                     plugins: {
                         legend: {
                             labels: {
-                                color: '#f1f5f9'
+                                color: 'var(--text-primary)'
                             }
                         },
                         tooltip: {
@@ -3919,10 +4066,10 @@
                                     return `${context.parsed.y.toFixed(2)}%`;
                                 }
                             },
-                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                            titleColor: '#f1f5f9',
-                            bodyColor: '#f1f5f9',
-                            borderColor: '#6366f1',
+                            backgroundColor: 'var(--bg-card)',
+                            titleColor: 'var(--text-primary)',
+                            bodyColor: 'var(--text-primary)',
+                            borderColor: 'var(--border)',
                             borderWidth: 1
                         }
                     },
@@ -3933,19 +4080,19 @@
                                 unit: 'day'
                             },
                             grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
+                                color: 'var(--border)'
                             },
                             ticks: {
-                                color: '#94a3b8'
+                                color: 'var(--text-secondary)'
                             }
                         },
                         y: {
                             position: 'right',
                             grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
+                                color: 'var(--border)'
                             },
                             ticks: {
-                                color: '#94a3b8',
+                                color: 'var(--text-secondary)',
                                 callback: function(value) {
                                     return value.toFixed(1) + '%';
                                 }
@@ -4097,8 +4244,8 @@
             document.getElementById('sentimentStopBtn').style.display = 'inline-block';
             
             ws.onopen = () => {
-                console.log('Sentiment WebSocket connected');
-                updateConnectionStatus();
+                console.log('Sentiment WebSocket opened');
+                updateStatus();
             };
             
             ws.onmessage = (event) => {
@@ -4107,11 +4254,15 @@
                 
                 const priceChange = ((parseFloat(data.c) - parseFloat(data.o)) / parseFloat(data.o) * 100).toFixed(2);
                 const volume = (parseFloat(data.v) * parseFloat(data.c)).toLocaleString();
+                const high = parseFloat(data.h).toLocaleString();
+                const low = parseFloat(data.l).toLocaleString();
                 
                 document.getElementById('priceChange24h').textContent = `${priceChange}%`;
                 document.getElementById('priceChange24h').className = `result-value ${parseFloat(priceChange) >= 0 ? 'positive' : 'negative'}`;
                 
                 document.getElementById('volume24h').textContent = `$${volume}`;
+                document.getElementById('currentPriceLive').textContent = `$${parseFloat(data.c).toLocaleString()}`;
+                document.getElementById('highLow24h').textContent = `$${high}/$${low}`;
             };
             
             ws.onerror = (error) => {
@@ -4119,11 +4270,11 @@
             };
             
             ws.onclose = () => {
-                console.log('Sentiment WebSocket disconnected');
+                console.log('Sentiment WebSocket closed');
                 delete wsConnections.sentimentModal;
                 document.getElementById('sentimentWSBtn').style.display = 'inline-block';
                 document.getElementById('sentimentStopBtn').style.display = 'none';
-                updateConnectionStatus();
+                updateStatus();
             };
         }
 
@@ -4302,7 +4453,7 @@
             positionDiv.className = 'form-row';
             positionDiv.style.marginBottom = '10px';
             positionDiv.style.padding = '15px';
-            positionDiv.style.background = 'rgba(255, 255, 255, 0.03)';
+            positionDiv.style.background = 'var(--bg-secondary)';
             positionDiv.style.borderRadius = '8px';
             
             positionDiv.innerHTML = `
@@ -4536,6 +4687,11 @@
 
         // Initialize portfolio metrics on page load
         setTimeout(updatePortfolioMetrics, 1000);
+        
+        // Simulate live updates
+        setInterval(() => {
+            updateCounter += Math.floor(Math.random() * 10) + 5;
+        }, 100);
     </script>
 </body>
 </html>
