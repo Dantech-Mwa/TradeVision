@@ -4748,5 +4748,142 @@
             updateCounter += Math.floor(Math.random() * 10) + 5;
         }, 100);
     </script>
+    <script>
+    // Donation Support Floating Widget
+    // Non-intrusive, small, fixed on bottom-right, easy to close, appears on every page
+
+    (function() {
+      // Prevent duplicate injection if script is loaded multiple times
+      if (document.getElementById('tvp-donation-widget')) return;
+
+      // Create the widget container
+      const widget = document.createElement('div');
+      widget.id = 'tvp-donation-widget';
+      widget.innerHTML = `
+        <div style="
+          position: fixed;
+          bottom: 20px;
+          right: 20px;
+          width: 300px;
+          max-width: 90vw;
+          background: var(--bg-light, #1e222d);
+          border: 1px solid var(--border, #2d313e);
+          border-radius: 12px;
+          box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+          padding: 16px;
+          font-family: 'Inter', Arial, sans-serif;
+          color: var(--text, #d1d4dc);
+          z-index: 9999;
+          animation: slideIn 0.6s ease-out;
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        ">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="margin: 0; font-size: 1.1rem; color: var(--accent, #2962ff);">
+              ❤️ Support TradeVision Pro
+            </h3>
+            <button id="tvp-donate-close" style="
+              background: none;
+              border: none;
+              color: var(--text-light, #9ea1b5);
+              font-size: 1.4rem;
+              cursor: pointer;
+              padding: 4px;
+              border-radius: 50%;
+              width: 32px;
+              height: 32px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            " onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='none'">
+              ×
+            </button>
+          </div>
+          <p style="margin: 0; font-size: 0.95rem; color: var(--text-light, #9ea1b5); line-height: 1.5;">
+            TradeVision Pro is completely free and open-source. If you find it useful, consider sending any amount as a token of appreciation — it helps keep the project alive and growing!
+          </p>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=wambuamwanza6@gmail.com&item_name=Support+TradeVision+Pro&currency_code=USD&amount=5.00" target="_blank" style="
+              flex: 1;
+              min-width: 80px;
+              background: #0070ba;
+              color: white;
+              text-align: center;
+              padding: 10px;
+              border-radius: 8px;
+              font-weight: 600;
+              font-size: 0.9rem;
+              text-decoration: none;
+            " onmouseover="this.style.background='#005ea6'" onmouseout="this.style.background='#0070ba'">
+              $5
+            </a>
+            <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=wambuamwanza6@gmail.com&item_name=Support+TradeVision+Pro&currency_code=USD&amount=10.00" target="_blank" style="
+              flex: 1;
+              min-width: 80px;
+              background: #009cde;
+              color: white;
+              text-align: center;
+              padding: 10px;
+              border-radius: 8px;
+              font-weight: 600;
+              font-size: 0.9rem;
+              text-decoration: none;
+            " onmouseover="this.style.background='#0088c4'" onmouseout="this.style.background='#009cde'">
+              $10
+            </a>
+            <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=wambuamwanza6@gmail.com&item_name=Support+TradeVision+Pro&currency_code=USD" target="_blank" style="
+              flex: 1;
+              min-width: 100px;
+              background: var(--accent, #2962ff);
+              color: white;
+              text-align: center;
+              padding: 10px;
+              border-radius: 8px;
+              font-weight: 600;
+              font-size: 0.9rem;
+              text-decoration: none;
+            " onmouseover="this.style.background='#1e4ed8'" onmouseout="this.style.background=var(--accent, #2962ff)">
+              Custom Amount
+            </a>
+          </div>
+          <p style="margin: 8px 0 0 0; font-size: 0.8rem; color: var(--text-light, #9ea1b5); text-align: center;">
+            Thank you for your support! 💙
+          </p>
+        </div>
+
+        <style>
+          @keyframes slideIn {
+            from { transform: translateX(120%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+          }
+        </style>
+      `;
+
+      document.body.appendChild(widget);
+
+      // Close button functionality
+      document.getElementById('tvp-donate-close').addEventListener('click', () => {
+        // Save dismissal timestamp (show again after 7 days)
+        localStorage.setItem('tvp_donate_dismissed', Date.now());
+        widget.style.animation = 'slideIn 0.4s reverse';
+        setTimeout(() => widget.remove(), 400);
+      });
+
+      // Show logic: delay 15 seconds on first visit, then every 7 days
+      const dismissed = localStorage.getItem('tvp_donate_dismissed');
+      const sevenDays = 7 * 24 * 60 * 60 * 1000;
+      const shouldShow = !dismissed || (Date.now() - parseInt(dismissed) > sevenDays);
+
+      if (!shouldShow) {
+        widget.remove(); // Don't show if recently dismissed
+      } else {
+        // Optional: add a small delay before showing
+        setTimeout(() => {
+          widget.style.opacity = '1';
+        }, 30000); // Shows after 15 seconds
+      }
+    })();
+    </script>
 </body>
 </html>
