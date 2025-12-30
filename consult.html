@@ -1,0 +1,2587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Danis Consulting | Data Science, Research & Analytics for Development</title>
+<meta name="description" content="Professional data science consulting, research analytics, monitoring & evaluation, and donor reporting services for NGOs, governments, and institutions across Africa.">
+<meta name="keywords" content="Data Science Consulting Africa, Research Analytics, NGO Data, Donor Reporting, Monitoring Evaluation, Impact Assessment Kenya, Development Analytics">
+<meta name="author" content="Danis Consulting">
+
+<!-- Chart.js & Map Libraries -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root {
+--primary: #0b5ed7;
+--primary-dark: #094db8;
+--secondary: #00b4d8;
+--secondary-light: #90e0ef;
+--dark: #0b2239;
+--darker: #06121f;
+--light: #f8fafc;
+--light-gray: #e9ecef;
+--accent: #2a9d8f;
+--success: #2ecc71;
+--warning: #f39c12;
+--danger: #e74c3c;
+--shadow: 0 10px 30px rgba(11, 34, 57, 0.08);
+--shadow-hover: 0 20px 40px rgba(11, 34, 57, 0.12);
+--border-radius: 12px;
+--transition: all 0.3s ease;
+}
+
+* {
+margin: 0;
+padding: 0;
+box-sizing: border-box;
+}
+
+html {
+scroll-behavior: smooth;
+scroll-padding-top: 80px;
+}
+
+body {
+font-family: 'Inter', sans-serif;
+background: var(--light);
+color: #2c3e50;
+line-height: 1.7;
+overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5 {
+font-family: 'Playfair Display', serif;
+font-weight: 700;
+line-height: 1.3;
+margin-bottom: 1.5rem;
+}
+
+h1 {
+font-size: 3.5rem;
+}
+
+h2 {
+font-size: 2.8rem;
+color: var(--dark);
+position: relative;
+padding-bottom: 15px;
+}
+
+h2:after {
+content: '';
+position: absolute;
+bottom: 0;
+left: 0;
+width: 80px;
+height: 4px;
+background: linear-gradient(to right, var(--primary), var(--secondary));
+border-radius: 2px;
+}
+
+h3 {
+font-size: 1.8rem;
+margin-bottom: 1rem;
+}
+
+p {
+margin-bottom: 1.5rem;
+font-size: 1.1rem;
+}
+
+a {
+text-decoration: none;
+color: inherit;
+transition: var(--transition);
+}
+
+.container {
+max-width: 1200px;
+margin: 0 auto;
+padding: 0 20px;
+}
+
+.btn {
+display: inline-block;
+background: linear-gradient(to right, var(--primary), var(--secondary));
+color: white;
+padding: 14px 30px;
+border-radius: 50px;
+font-weight: 600;
+border: none;
+cursor: pointer;
+transition: var(--transition);
+text-align: center;
+box-shadow: 0 5px 15px rgba(11, 94, 215, 0.2);
+font-family: 'Inter', sans-serif;
+}
+
+.btn:hover {
+transform: translateY(-3px);
+box-shadow: 0 10px 25px rgba(11, 94, 215, 0.3);
+color: white;
+}
+
+.btn-outline {
+background: transparent;
+border: 2px solid var(--primary);
+color: var(--primary);
+box-shadow: none;
+}
+
+.btn-outline:hover {
+background: var(--primary);
+color: white;
+}
+
+.section {
+padding: 100px 0;
+}
+
+.section-header {
+text-align: center;
+margin-bottom: 60px;
+}
+
+.section-header h2:after {
+left: 50%;
+transform: translateX(-50%);
+}
+
+.text-center {
+text-align: center;
+}
+
+/* ===== HEADER & NAVIGATION ===== */
+header {
+background: linear-gradient(135deg, rgba(11, 34, 57, 0.95), rgba(11, 34, 57, 0.98)), url('https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
+background-size: cover;
+background-position: center;
+color: white;
+padding: 160px 20px 100px;
+text-align: center;
+position: relative;
+overflow: hidden;
+}
+
+header:before {
+content: '';
+position: absolute;
+bottom: 0;
+left: 0;
+width: 100%;
+height: 100px;
+background: linear-gradient(to top, var(--light), transparent);
+z-index: 1;
+}
+
+.header-content {
+position: relative;
+z-index: 2;
+max-width: 900px;
+margin: 0 auto;
+}
+
+.logo-container {
+display: flex;
+align-items: center;
+justify-content: center;
+margin-bottom: 40px;
+}
+
+.logo {
+width: 120px;
+height: 120px;
+border-radius: 50%;
+background: linear-gradient(135deg, var(--primary), var(--secondary));
+display: flex;
+align-items: center;
+justify-content: center;
+margin-right: 25px;
+box-shadow: var(--shadow);
+overflow: hidden;
+border: 5px solid rgba(255, 255, 255, 0.2);
+}
+
+.logo img {
+width: 70%;
+height: auto;
+}
+
+.logo-text {
+text-align: left;
+}
+
+.logo-text h1 {
+font-size: 3rem;
+margin-bottom: 5px;
+background: linear-gradient(to right, white, var(--secondary-light));
+-webkit-background-clip: text;
+background-clip: text;
+color: transparent;
+}
+
+.logo-text span {
+font-family: 'Inter', sans-serif;
+font-size: 1.2rem;
+font-weight: 300;
+opacity: 0.9;
+}
+
+header p {
+font-size: 1.3rem;
+max-width: 800px;
+margin: 30px auto 40px;
+opacity: 0.9;
+}
+
+.header-btns {
+display: flex;
+gap: 20px;
+justify-content: center;
+flex-wrap: wrap;
+margin-bottom: 60px;
+}
+
+.stats {
+display: grid;
+grid-template-columns: repeat(4, 1fr);
+gap: 30px;
+margin-top: 60px;
+max-width: 1000px;
+margin-left: auto;
+margin-right: auto;
+}
+
+.stat-item {
+text-align: center;
+background: rgba(255, 255, 255, 0.1);
+padding: 30px 20px;
+border-radius: var(--border-radius);
+backdrop-filter: blur(10px);
+border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.stat-number {
+font-size: 2.8rem;
+font-weight: 700;
+color: var(--secondary);
+display: block;
+line-height: 1;
+margin-bottom: 10px;
+}
+
+.stat-label {
+font-size: 1rem;
+opacity: 0.9;
+font-weight: 500;
+}
+
+nav {
+background: white;
+box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+position: fixed;
+top: 0;
+width: 100%;
+z-index: 1000;
+padding: 15px 0;
+transition: var(--transition);
+}
+
+nav.scrolled {
+padding: 10px 0;
+box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+}
+
+.nav-container {
+display: flex;
+justify-content: space-between;
+align-items: center;
+}
+
+.nav-logo {
+display: flex;
+align-items: center;
+}
+
+.nav-logo-img {
+width: 50px;
+height: 50px;
+border-radius: 50%;
+background: linear-gradient(135deg, var(--primary), var(--secondary));
+display: flex;
+align-items: center;
+justify-content: center;
+margin-right: 12px;
+overflow: hidden;
+}
+
+.nav-logo-img img {
+width: 60%;
+height: auto;
+}
+
+.nav-logo span {
+font-weight: 700;
+color: var(--dark);
+font-size: 1.3rem;
+font-family: 'Playfair Display', serif;
+}
+
+.nav-links {
+display: flex;
+gap: 30px;
+}
+
+.nav-links a {
+color: var(--dark);
+font-weight: 600;
+position: relative;
+padding: 5px 0;
+font-size: 0.95rem;
+}
+
+.nav-links a:after {
+content: '';
+position: absolute;
+bottom: 0;
+left: 0;
+width: 0;
+height: 2px;
+background: var(--primary);
+transition: width 0.3s ease;
+}
+
+.nav-links a:hover:after,
+.nav-links a.active:after {
+width: 100%;
+}
+
+.mobile-toggle {
+display: none;
+font-size: 1.5rem;
+cursor: pointer;
+color: var(--dark);
+}
+
+/* ===== ABOUT SECTION ===== */
+.about-content {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 60px;
+align-items: center;
+}
+
+.about-image {
+border-radius: var(--border-radius);
+overflow: hidden;
+box-shadow: var(--shadow);
+position: relative;
+}
+
+.about-image img {
+width: 100%;
+height: auto;
+display: block;
+transition: transform 0.5s ease;
+}
+
+.about-image:hover img {
+transform: scale(1.05);
+}
+
+/* ===== SERVICES SECTION ===== */
+.services-grid {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+gap: 30px;
+}
+
+.service-card {
+background: white;
+padding: 40px 30px;
+border-radius: var(--border-radius);
+box-shadow: var(--shadow);
+transition: var(--transition);
+border-top: 5px solid transparent;
+height: 100%;
+}
+
+.service-card:hover {
+transform: translateY(-10px);
+box-shadow: var(--shadow-hover);
+border-top: 5px solid var(--primary);
+}
+
+.service-icon {
+font-size: 2.5rem;
+color: var(--primary);
+margin-bottom: 20px;
+}
+
+/* ===== DATA & INSIGHTS SECTION ===== */
+.data-section {
+background: var(--darker);
+color: white;
+}
+
+.data-section h2 {
+color: white;
+}
+
+.data-section h2:after {
+background: linear-gradient(to right, var(--secondary), white);
+}
+
+.chart-container {
+background: rgba(255, 255, 255, 0.05);
+border-radius: var(--border-radius);
+padding: 30px;
+margin-bottom: 40px;
+box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.chart-grid {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+gap: 30px;
+margin-top: 40px;
+}
+
+#map {
+height: 400px;
+border-radius: var(--border-radius);
+margin-top: 20px;
+box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+z-index: 1;
+}
+
+/* ===== DOCUMENTS SECTION ===== */
+.documents-grid {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+gap: 25px;
+}
+
+.document-card {
+background: white;
+border-radius: var(--border-radius);
+padding: 30px;
+box-shadow: var(--shadow);
+transition: var(--transition);
+display: flex;
+flex-direction: column;
+border-left: 5px solid var(--primary);
+}
+
+.document-card:hover {
+transform: translateY(-5px);
+box-shadow: var(--shadow-hover);
+}
+
+.doc-icon {
+font-size: 2.5rem;
+color: var(--primary);
+margin-bottom: 20px;
+}
+
+.doc-meta {
+margin-top: auto;
+padding-top: 20px;
+border-top: 1px solid var(--light-gray);
+display: flex;
+justify-content: space-between;
+align-items: center;
+color: #666;
+font-size: 0.9rem;
+}
+
+/* ===== CASE STUDIES SECTION ===== */
+.case-studies {
+background: var(--light-gray);
+}
+
+.case-tabs {
+display: flex;
+justify-content: center;
+gap: 10px;
+margin-bottom: 40px;
+flex-wrap: wrap;
+}
+
+.tab-btn {
+padding: 12px 25px;
+background: white;
+border: none;
+border-radius: 50px;
+font-weight: 600;
+cursor: pointer;
+transition: var(--transition);
+box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+font-family: 'Inter', sans-serif;
+}
+
+.tab-btn.active,
+.tab-btn:hover {
+background: var(--primary);
+color: white;
+}
+
+.case-content {
+background: white;
+border-radius: var(--border-radius);
+padding: 50px;
+box-shadow: var(--shadow);
+}
+
+.case-item {
+display: none;
+}
+
+.case-item.active {
+display: block;
+animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+from { opacity: 0; transform: translateY(20px); }
+to { opacity: 1; transform: translateY(0); }
+}
+
+.case-metrics {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+gap: 20px;
+margin: 30px 0;
+}
+
+.metric {
+text-align: center;
+padding: 20px;
+background: var(--light);
+border-radius: var(--border-radius);
+}
+
+.metric-value {
+font-size: 2rem;
+font-weight: 700;
+color: var(--primary);
+display: block;
+}
+
+.metric-label {
+font-size: 0.9rem;
+color: #666;
+}
+
+/* ===== TESTIMONIALS SECTION ===== */
+.testimonials-slider {
+position: relative;
+max-width: 800px;
+margin: 0 auto;
+}
+
+.testimonial {
+background: white;
+padding: 40px;
+border-radius: var(--border-radius);
+box-shadow: var(--shadow);
+text-align: center;
+margin: 0 15px;
+}
+
+.testimonial-text {
+font-size: 1.2rem;
+font-style: italic;
+margin-bottom: 30px;
+position: relative;
+}
+
+.testimonial-text:before,
+.testimonial-text:after {
+content: '"';
+font-size: 3rem;
+color: var(--secondary-light);
+position: absolute;
+opacity: 0.3;
+}
+
+.testimonial-text:before {
+top: -15px;
+left: -10px;
+}
+
+.testimonial-text:after {
+bottom: -40px;
+right: -10px;
+}
+
+.client-info {
+display: flex;
+align-items: center;
+justify-content: center;
+gap: 15px;
+}
+
+.client-avatar {
+width: 60px;
+height: 60px;
+border-radius: 50%;
+background: var(--light-gray);
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 1.5rem;
+color: var(--primary);
+}
+
+.client-details h4 {
+margin-bottom: 5px;
+}
+
+.client-details p {
+margin-bottom: 0;
+color: #666;
+font-size: 0.9rem;
+}
+
+.slider-nav {
+display: flex;
+justify-content: center;
+gap: 15px;
+margin-top: 30px;
+}
+
+.slider-dot {
+width: 12px;
+height: 12px;
+border-radius: 50%;
+background: var(--light-gray);
+cursor: pointer;
+transition: var(--transition);
+}
+
+.slider-dot.active {
+background: var(--primary);
+transform: scale(1.2);
+}
+
+/* ===== CONTACT SECTION ===== */
+.contact-grid {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+gap: 50px;
+}
+
+.contact-info {
+display: flex;
+flex-direction: column;
+gap: 30px;
+}
+
+.contact-item {
+display: flex;
+align-items: flex-start;
+gap: 20px;
+}
+
+.contact-icon {
+width: 60px;
+height: 60px;
+background: linear-gradient(to right, var(--primary), var(--secondary));
+border-radius: 50%;
+display: flex;
+align-items: center;
+justify-content: center;
+color: white;
+font-size: 1.5rem;
+flex-shrink: 0;
+}
+
+.contact-form {
+background: white;
+padding: 40px;
+border-radius: var(--border-radius);
+box-shadow: var(--shadow);
+}
+
+.form-group {
+margin-bottom: 25px;
+}
+
+.form-control {
+width: 100%;
+padding: 15px;
+border: 1px solid var(--light-gray);
+border-radius: 8px;
+font-family: 'Inter', sans-serif;
+font-size: 1rem;
+transition: var(--transition);
+}
+
+.form-control:focus {
+outline: none;
+border-color: var(--primary);
+box-shadow: 0 0 0 3px rgba(11, 94, 215, 0.1);
+}
+
+textarea.form-control {
+min-height: 150px;
+resize: vertical;
+}
+
+/* ===== FOOTER ===== */
+footer {
+background: var(--darker);
+color: white;
+padding: 80px 0 30px;
+}
+
+.footer-content {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+gap: 50px;
+margin-bottom: 50px;
+}
+
+.footer-logo {
+display: flex;
+align-items: center;
+margin-bottom: 20px;
+}
+
+.footer-logo-img {
+width: 60px;
+height: 60px;
+border-radius: 50%;
+background: linear-gradient(135deg, var(--primary), var(--secondary));
+display: flex;
+align-items: center;
+justify-content: center;
+margin-right: 15px;
+overflow: hidden;
+}
+
+.footer-logo-img img {
+width: 60%;
+height: auto;
+}
+
+.footer-logo span {
+font-weight: 700;
+font-size: 1.5rem;
+font-family: 'Playfair Display', serif;
+}
+
+.footer-links h4 {
+color: white;
+margin-bottom: 25px;
+font-size: 1.3rem;
+}
+
+.footer-links ul {
+list-style: none;
+}
+
+.footer-links li {
+margin-bottom: 12px;
+}
+
+.footer-links a {
+color: #aaa;
+transition: var(--transition);
+}
+
+.footer-links a:hover {
+color: var(--secondary);
+padding-left: 5px;
+}
+
+.social-links {
+display: flex;
+gap: 15px;
+margin-top: 20px;
+}
+
+.social-link {
+width: 40px;
+height: 40px;
+border-radius: 50%;
+background: rgba(255, 255, 255, 0.1);
+display: flex;
+align-items: center;
+justify-content: center;
+transition: var(--transition);
+}
+
+.social-link:hover {
+background: var(--primary);
+transform: translateY(-3px);
+}
+
+.copyright {
+text-align: center;
+padding-top: 30px;
+border-top: 1px solid rgba(255, 255, 255, 0.1);
+color: #aaa;
+font-size: 0.9rem;
+}
+
+/* ===== DOCUMENT MODAL STYLES ===== */
+.document-modal {
+display: none;
+position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+background: rgba(0, 0, 0, 0.95);
+z-index: 3000;
+overflow-y: auto;
+padding: 40px 20px;
+}
+
+.document-modal.active {
+display: block;
+}
+
+.document-content {
+background: white;
+border-radius: var(--border-radius);
+width: 100%;
+max-width: 1000px;
+margin: 0 auto;
+position: relative;
+box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+animation: modalFadeIn 0.3s ease;
+}
+
+@keyframes modalFadeIn {
+from { opacity: 0; transform: translateY(-30px); }
+to { opacity: 1; transform: translateY(0); }
+}
+
+.doc-header {
+background: linear-gradient(135deg, var(--primary), var(--secondary));
+color: white;
+padding: 40px;
+border-radius: var(--border-radius) var(--border-radius) 0 0;
+}
+
+.doc-header h2 {
+color: white;
+margin-bottom: 10px;
+}
+
+.doc-header h2:after {
+background: white;
+}
+
+.doc-body {
+padding: 50px;
+max-height: 70vh;
+overflow-y: auto;
+}
+
+.close-doc {
+position: absolute;
+top: 20px;
+right: 20px;
+font-size: 1.5rem;
+cursor: pointer;
+color: white;
+background: rgba(0, 0, 0, 0.3);
+width: 40px;
+height: 40px;
+border-radius: 50%;
+display: flex;
+align-items: center;
+justify-content: center;
+transition: var(--transition);
+z-index: 10;
+}
+
+.close-doc:hover {
+background: rgba(0, 0, 0, 0.5);
+}
+
+.doc-section {
+margin-bottom: 40px;
+}
+
+.doc-section h3 {
+color: var(--primary);
+border-bottom: 2px solid var(--light-gray);
+padding-bottom: 10px;
+margin-bottom: 20px;
+}
+
+.doc-table {
+width: 100%;
+border-collapse: collapse;
+margin: 20px 0;
+font-size: 0.95rem;
+}
+
+.doc-table th, .doc-table td {
+padding: 12px 15px;
+text-align: left;
+border: 1px solid var(--light-gray);
+}
+
+.doc-table th {
+background: var(--light);
+font-weight: 600;
+color: var(--dark);
+}
+
+.doc-table tr:nth-child(even) {
+background: var(--light);
+}
+
+.highlight-box {
+background: linear-gradient(to right, var(--light), var(--secondary-light));
+border-left: 5px solid var(--primary);
+padding: 25px;
+border-radius: 0 var(--border-radius) var(--border-radius) 0;
+margin: 30px 0;
+}
+
+.logo-watermark {
+position: absolute;
+bottom: 20px;
+right: 20px;
+opacity: 0.05;
+font-size: 8rem;
+color: var(--dark);
+font-family: 'Playfair Display', serif;
+pointer-events: none;
+}
+
+/* ===== RESPONSIVE STYLES ===== */
+@media (max-width: 1200px) {
+h1 { font-size: 3rem; }
+h2 { font-size: 2.4rem; }
+}
+
+@media (max-width: 992px) {
+h1 { font-size: 2.5rem; }
+h2 { font-size: 2rem; }
+
+.about-content {
+grid-template-columns: 1fr;
+gap: 40px;
+}
+
+.nav-links {
+position: fixed;
+top: 80px;
+left: 0;
+width: 100%;
+background: white;
+flex-direction: column;
+padding: 20px;
+box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+transform: translateY(-100%);
+opacity: 0;
+transition: var(--transition);
+z-index: 999;
+}
+
+.nav-links.active {
+transform: translateY(0);
+opacity: 1;
+}
+
+.mobile-toggle {
+display: block;
+}
+
+.header-btns {
+flex-direction: column;
+align-items: center;
+}
+
+.btn {
+width: 100%;
+max-width: 300px;
+}
+
+.stats {
+grid-template-columns: repeat(2, 1fr);
+}
+}
+
+@media (max-width: 768px) {
+.section {
+padding: 70px 0;
+}
+
+h1 { font-size: 2.2rem; }
+h2 { font-size: 1.8rem; }
+
+.logo-container {
+flex-direction: column;
+text-align: center;
+}
+
+.logo {
+margin-right: 0;
+margin-bottom: 20px;
+}
+
+.logo-text {
+text-align: center;
+}
+
+.stats {
+grid-template-columns: 1fr;
+gap: 20px;
+}
+
+.stat-number {
+font-size: 2.2rem;
+}
+
+.doc-body {
+padding: 30px 20px;
+}
+
+.case-content {
+padding: 30px 20px;
+}
+}
+
+@media (max-width: 480px) {
+h1 { font-size: 1.8rem; }
+h2 { font-size: 1.6rem; }
+
+.logo-text h1 {
+font-size: 2.2rem;
+}
+
+.doc-header {
+padding: 30px 20px;
+}
+
+.contact-form {
+padding: 30px 20px;
+}
+}
+</style>
+</head>
+<body>
+<!-- Navigation -->
+<nav id="mainNav">
+<div class="container nav-container">
+<div class="nav-logo">
+<div class="nav-logo-img">
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+<circle cx="50" cy="50" r="45" fill="white"/>
+<path d="M35,30 L65,30 L75,50 L65,70 L35,70 L25,50 Z" fill="#0b5ed7"/>
+<circle cx="50" cy="50" r="15" fill="#00b4d8"/>
+<text x="50" y="52" text-anchor="middle" fill="white" font-size="10" font-weight="bold">DC</text>
+</svg>
+</div>
+<span>Danis Consulting</span>
+</div>
+
+<div class="mobile-toggle" id="mobileToggle">
+<i class="fas fa-bars"></i>
+</div>
+
+<div class="nav-links" id="navLinks">
+<a href="#home" class="active">Home</a>
+<a href="#about">About</a>
+<a href="#services">Services</a>
+<a href="#data">Data Insights</a>
+<a href="#documents">Resources</a>
+<a href="#cases">Case Studies</a>
+<a href="#testimonials">Testimonials</a>
+<a href="#contact">Contact</a>
+<a href="mailto:mwanza.wambua81@gmail.com" class="btn-outline" style="padding: 8px 20px; font-size: 0.9rem;">Get Quote</a>
+</div>
+</div>
+</nav>
+
+<!-- Header -->
+<header id="home">
+<div class="container header-content">
+<div class="logo-container">
+<div class="logo">
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+<circle cx="50" cy="50" r="45" fill="white"/>
+<path d="M35,30 L65,30 L75,50 L65,70 L35,70 L25,50 Z" fill="#0b5ed7"/>
+<circle cx="50" cy="50" r="15" fill="#00b4d8"/>
+<text x="50" y="52" text-anchor="middle" fill="white" font-size="10" font-weight="bold">DC</text>
+</svg>
+</div>
+<div class="logo-text">
+<h1>Danis Consulting</h1>
+<span>Data Science • Research Analytics • Impact Measurement</span>
+</div>
+</div>
+
+<p>
+We transform complex development data into actionable insights for NGOs, government agencies, and international donors. Serving Africa with evidence-based solutions since 2018.
+</p>
+
+<div class="header-btns">
+<a href="#contact" class="btn">Start a Project</a>
+<a href="#documents" class="btn btn-outline">View Our Work</a>
+</div>
+
+<div class="stats">
+<div class="stat-item">
+<span class="stat-number" id="clientsCount">0</span>
+<span class="stat-label">Clients Served</span>
+</div>
+<div class="stat-item">
+<span class="stat-number" id="projectsCount">0</span>
+<span class="stat-label">Projects Completed</span>
+</div>
+<div class="stat-item">
+<span class="stat-number" id="countriesCount">0</span>
+<span class="stat-label">African Countries</span>
+</div>
+<div class="stat-item">
+<span class="stat-number" id="reportsCount">0</span>
+<span class="stat-label">Reports Generated</span>
+</div>
+</div>
+</div>
+</header>
+
+<!-- About Section -->
+<section id="about" class="section">
+<div class="container">
+<div class="section-header">
+<h2>Who We Are</h2>
+<p>Africa's leading data science consultancy for development organizations</p>
+</div>
+
+<div class="about-content">
+<div>
+<h3>Bridging Data & Development Impact</h3>
+<p>
+Founded in 2018 by Mwanza Wambua, Danis Consulting emerged from a recognition that development organizations across Africa were collecting vast amounts of data but struggling to extract meaningful insights.
+</p>
+<p>
+We combine advanced statistical methods with deep contextual understanding of African development challenges. Our team of data scientists, economists, and sector specialists work across health, education, agriculture, and governance sectors.
+</p>
+<p>
+<strong>Headquartered in Nairobi</strong>, we serve clients across 16 African countries, with particular expertise in East Africa. We understand both the technical requirements of data analysis and the practical realities of development implementation.
+</p>
+<div class="highlight-box">
+<h4>Our Differentiator</h4>
+<p>Unlike generic data science firms, we specialize in the development sector. We understand donor reporting requirements, M&E frameworks, and the unique data challenges faced by NGOs and government agencies in Africa.</p>
+</div>
+</div>
+
+<div class="about-image">
+<img src="https://images.unsplash.com/photo-1552664730-d307ca884978?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" alt="Data Analysis Team in Africa">
+</div>
+</div>
+</div>
+</section>
+
+<!-- Services Section -->
+<section id="services" class="section" style="background: var(--light-gray);">
+<div class="container">
+<div class="section-header">
+<h2>Our Core Services</h2>
+<p>Comprehensive data solutions for development impact</p>
+</div>
+
+<div class="services-grid">
+<div class="service-card">
+<div class="service-icon">
+<i class="fas fa-chart-line"></i>
+</div>
+<h3>Data Science & Analytics</h3>
+<p>
+<strong>Predictive modeling, machine learning, and advanced statistical analysis</strong> for development programs. We help organizations forecast outcomes, identify at-risk populations, and optimize resource allocation.
+</p>
+<p>
+<strong>Tools:</strong> Python, R, STATA, SQL, Tableau, Power BI
+</p>
+<p>
+<strong>Applications:</strong> Health forecasting, education gap analysis, agricultural yield prediction, poverty mapping
+</p>
+</div>
+
+<div class="service-card">
+<div class="service-icon">
+<i class="fas fa-search"></i>
+</div>
+<h3>Research & Impact Evaluation</h3>
+<p>
+<strong>Rigorous quantitative and qualitative research</strong> to measure program effectiveness. We design and implement baseline/endline studies, randomized controlled trials, and mixed-methods evaluations.
+</p>
+<p>
+<strong>Methods:</strong> RCTs, quasi-experimental designs, longitudinal studies, participatory approaches
+</p>
+<p>
+<strong>Standards:</strong> OECD-DAC criteria, 3ie evidence standards, UN evaluation norms
+</p>
+</div>
+
+<div class="service-card">
+<div class="service-icon">
+<i class="fas fa-clipboard-check"></i>
+</div>
+<h3>MEL Systems Development</h3>
+<p>
+<strong>Complete Monitoring, Evaluation & Learning frameworks</strong> tailored to your organization. We develop indicators, data collection tools, dashboards, and reporting systems.
+</p>
+<p>
+<strong>Platforms:</strong> DHIS2, CommCare, KoboToolbox, Salesforce, custom solutions
+</p>
+<p>
+<strong>Outputs:</strong> MEL frameworks, data collection protocols, real-time dashboards, learning briefs
+</p>
+</div>
+
+<div class="service-card">
+<div class="service-icon">
+<i class="fas fa-file-alt"></i>
+</div>
+<h3>Donor Reporting & Proposals</h3>
+<p>
+<strong>Professional proposal development and reporting</strong> for international donors. We prepare winning proposals, concept notes, logframes, and technical reports.
+</p>
+<p>
+<strong>Donors:</strong> USAID, EU, UN agencies, World Bank, African Development Bank, major foundations
+</p>
+<p>
+<strong>Success Rate:</strong> 68% of our clients secure funding with our proposal support
+</p>
+</div>
+</div>
+
+<div style="text-align: center; margin-top: 50px;">
+<a href="#contact" class="btn">Discuss Your Project</a>
+</div>
+</div>
+</section>
+
+<!-- Data & Insights Section -->
+<section id="data" class="section data-section">
+<div class="container">
+<div class="section-header">
+<h2>Data-Driven Insights</h2>
+<p>Real development data analysis using publicly available sources</p>
+</div>
+
+<div class="chart-container">
+<h3 class="text-center">African Development Indicators Analysis</h3>
+<p class="text-center">Using World Bank Open Data to demonstrate analytical capacity</p>
+<canvas id="developmentChart"></canvas>
+<p style="text-align: center; font-size: 0.9rem; margin-top: 15px; opacity: 0.8;">
+Data Source: World Bank Development Indicators | Analysis by Danis Consulting
+</p>
+</div>
+
+<div class="chart-grid">
+<div class="chart-container">
+<h4>SDG Progress in East Africa</h4>
+<canvas id="sdgChart"></canvas>
+<p style="font-size: 0.9rem; margin-top: 15px; opacity: 0.8;">
+Sustainable Development Goal indicators for Kenya, Uganda, Tanzania, Rwanda
+</p>
+</div>
+<div class="chart-container">
+<h4>Health & Education Indicators</h4>
+<canvas id="sectorChart"></canvas>
+<p style="font-size: 0.9rem; margin-top: 15px; opacity: 0.8;">
+Comparative analysis across African regions
+</p>
+</div>
+</div>
+
+<h3 style="margin-top: 50px;">Geospatial Analysis Capabilities</h3>
+<p>Interactive mapping for development program planning and monitoring</p>
+<div id="map"></div>
+<p style="text-align: center; font-size: 0.9rem; margin-top: 15px; opacity: 0.8;">
+Sample project locations across Africa | Real client work visualization
+</p>
+</div>
+</section>
+
+<!-- Documents Section -->
+<section id="documents" class="section">
+<div class="container">
+<div class="section-header">
+<h2>Professional Resources</h2>
+<p>Comprehensive documents and templates for development organizations</p>
+</div>
+
+<div class="documents-grid">
+<div class="document-card">
+<div class="doc-icon">
+<i class="fas fa-building"></i>
+</div>
+<h3>Company Profile</h3>
+<p>
+45-page comprehensive overview showcasing our expertise, team credentials, client portfolio with major donors (WHO, UNICEF, USAID), and detailed technical capabilities.
+</p>
+<div class="doc-meta">
+<span>PDF • 45 pages</span>
+<button class="btn" style="padding: 8px 20px; font-size: 0.9rem;" onclick="openDocument('companyProfileModal')">View Profile</button>
+</div>
+</div>
+
+<div class="document-card">
+<div class="doc-icon">
+<i class="fas fa-handshake"></i>
+</div>
+<h3>Donor Proposal Template</h3>
+<p>
+Complete 62-page proposal framework with logframe, detailed budget, M&E framework, and all sections required by major donors. Based on successful $500K+ proposals.
+</p>
+<div class="doc-meta">
+<span>PDF • 62 pages</span>
+<button class="btn" style="padding: 8px 20px; font-size: 0.9rem;" onclick="openDocument('proposalTemplateModal')">View Template</button>
+</div>
+</div>
+
+<div class="document-card">
+<div class="doc-icon">
+<i class="fas fa-presentation"></i>
+</div>
+<h3>Investor Pitch Deck</h3>
+<p>
+24-slide professional presentation for donors and partners. Market analysis, service offerings, track record, 3-year growth strategy, and investment opportunities.
+</p>
+<div class="doc-meta">
+<span>PDF • 24 slides</span>
+<button class="btn" style="padding: 8px 20px; font-size: 0.9rem;" onclick="openDocument('pitchDeckModal')">View Deck</button>
+</div>
+</div>
+
+<div class="document-card">
+<div class="doc-icon">
+<i class="fas fa-tasks"></i>
+</div>
+<h3>Tender Response Pack</h3>
+<p>
+Complete set for RFP responses: technical proposal template, financial proposal with formulas, compliance checklist, CV templates, and work plan templates.
+</p>
+<div class="doc-meta">
+<span>ZIP • 12 files</span>
+<button class="btn" style="padding: 8px 20px; font-size: 0.9rem;" onclick="openDocument('tenderPackModal')">View Package</button>
+</div>
+</div>
+</div>
+
+<div style="text-align: center; margin-top: 50px;">
+<p>Need customized documents for your specific requirements?</p>
+<a href="#contact" class="btn" style="margin-top: 20px;">Request Custom Documents</a>
+</div>
+</div>
+</section>
+
+<!-- Case Studies Section -->
+<section id="cases" class="section case-studies">
+<div class="container">
+<div class="section-header">
+<h2>Case Studies</h2>
+<p>Real projects delivering measurable impact across Africa</p>
+</div>
+
+<div class="case-tabs" id="caseTabs">
+<button class="tab-btn active" data-tab="health">Health Systems</button>
+<button class="tab-btn" data-tab="education">Education Reform</button>
+<button class="tab-btn" data-tab="agriculture">Agriculture</button>
+<button class="tab-btn" data-tab="governance">Governance</button>
+</div>
+
+<div class="case-content">
+<div class="case-item active" id="health-case">
+<h3>Health Systems Strengthening - WHO East Africa (2022-2023)</h3>
+<p>
+<strong>Client:</strong> World Health Organization (WHO) Regional Office for Africa<br>
+<strong>Challenge:</strong> Improve data utilization for health decision-making across 8 East African countries
+</p>
+<p>
+We developed an integrated health data analytics platform connecting DHIS2 systems across Kenya, Uganda, Tanzania, Rwanda, Ethiopia, South Sudan, Somalia, and Djibouti. The platform enabled real-time monitoring of 42 health indicators and predictive analytics for disease outbreaks.
+</p>
+
+<div class="case-metrics">
+<div class="metric">
+<span class="metric-value">68%</span>
+<span class="metric-label">Faster data reporting</span>
+</div>
+<div class="metric">
+<span class="metric-value">42</span>
+<span class="metric-label">Health indicators monitored</span>
+</div>
+<div class="metric">
+<span class="metric-value">8</span>
+<span class="metric-label">Countries integrated</span>
+</div>
+<div class="metric">
+<span class="metric-value">$320K</span>
+<span class="metric-label">Project value</span>
+</div>
+</div>
+
+<p>
+<strong>Impact:</strong> Reduced disease outbreak detection time from 14 days to 3 days. Informed allocation of $15M in emergency health funds. Platform adopted as regional standard.
+</p>
+</div>
+
+<div class="case-item" id="education-case">
+<h3>Education Data Analytics - UNICEF Kenya (2023)</h3>
+<p>
+<strong>Client:</strong> UNICEF Kenya Country Office<br>
+<strong>Challenge:</strong> Address learning poverty and school dropout rates in arid and semi-arid regions
+</p>
+<p>
+Conducted analysis of national assessment data from 3,200 schools to identify predictors of dropout and learning poverty. Developed machine learning models to identify at-risk students 6 months before dropout. Created district-level dashboards for education officials.
+</p>
+
+<div class="case-metrics">
+<div class="metric">
+<span class="metric-value">22%</span>
+<span class="metric-label">Dropout reduction</span>
+</div>
+<div class="metric">
+<span class="metric-value">3,200</span>
+<span class="metric-label">Schools analyzed</span>
+</div>
+<div class="metric">
+<span class="metric-value">15</span>
+<span class="metric-label">Counties covered</span>
+</div>
+<div class="metric">
+<span class="metric-value">$285K</span>
+<span class="metric-label">Project value</span>
+</div>
+</div>
+
+<p>
+<strong>Impact:</strong> Informs $8M education programming. Model adopted by Ministry of Education for national rollout. Contributed to 15% improvement in learning outcomes in target regions.
+</p>
+</div>
+
+<div class="case-item" id="agriculture-case">
+<h3>Agricultural Impact Evaluation - Gates Foundation (2023)</h3>
+<p>
+<strong>Client:</strong> Bill & Melinda Gates Foundation<br>
+<strong>Challenge:</strong> Evaluate impact of climate-resilient agriculture program in West Africa
+</p>
+<p>
+Designed and implemented randomized controlled trial across Ghana, Nigeria, and Senegal to assess impact of new drought-resistant seeds and farming techniques on smallholder farmer incomes and food security.
+</p>
+
+<div class="case-metrics">
+<div class="metric">
+<span class="metric-value">42%</span>
+<span class="metric-label">Income increase</span>
+</div>
+<div class="metric">
+<span class="metric-value">15,000</span>
+<span class="metric-label">Farmers in study</span>
+</div>
+<div class="metric">
+<span class="metric-value">3</span>
+<span class="metric-label">Countries</span>
+</div>
+<div class="metric">
+<span class="metric-value">$420K</span>
+<span class="metric-label">Project value</span>
+</div>
+</div>
+
+<p>
+<strong>Impact:</strong> Evidence led to $8.7M program expansion. Findings published in peer-reviewed journal. Methodology adopted as standard for agricultural evaluations in region.
+</p>
+</div>
+
+<div class="case-item" id="governance-case">
+<h3>Governance & Accountability - USAID Kenya (2021-2024)</h3>
+<p>
+<strong>Client:</strong> USAID Kenya<br>
+<strong>Challenge:</strong> Measure effectiveness of governance strengthening program across 47 counties
+</p>
+<p>
+Developed comprehensive governance scoring system tracking 15 accountability indicators. Created real-time dashboard for civil society monitoring. Conducted mixed-methods evaluation combining quantitative surveys with qualitative interviews.
+</p>
+
+<div class="case-metrics">
+<div class="metric">
+<span class="metric-value">35%</span>
+<span class="metric-label">Transparency improvement</span>
+</div>
+<div class="metric">
+<span class="metric-value">47</span>
+<span class="metric-label">Counties assessed</span>
+</div>
+<div class="metric">
+<span class="metric-value">15</span>
+<span class="metric-label">Accountability indicators</span>
+</div>
+<div class="metric">
+<span class="metric-value">$750K</span>
+<span class="metric-label">Project value</span>
+</div>
+</div>
+
+<p>
+<strong>Impact:</strong> Informs $25M governance programming. Dashboard used by 120 civil society organizations. Contributed to policy reforms in 8 counties.
+</p>
+</div>
+</div>
+</div>
+</section>
+
+<!-- Testimonials Section -->
+<section id="testimonials" class="section">
+<div class="container">
+<div class="section-header">
+<h2>Client Testimonials</h2>
+<p>What development leaders say about working with us</p>
+</div>
+
+<div class="testimonials-slider">
+<div class="testimonial active" id="testimonial1">
+<div class="testimonial-text">
+"Danis Consulting transformed how we use health data across East Africa. Their analytics platform reduced outbreak detection time by 78% and directly informed life-saving interventions. Their deep understanding of both data science and African health systems is unparalleled."
+</div>
+<div class="client-info">
+<div class="client-avatar">
+<i class="fas fa-user-md"></i>
+</div>
+<div class="client-details">
+<h4>Dr. Sarah Johnson</h4>
+<p>Health Systems Advisor, WHO Africa Regional Office</p>
+</div>
+</div>
+</div>
+
+<div class="testimonial" id="testimonial2">
+<div class="testimonial-text">
+"The education data analytics provided by Danis Consulting was instrumental in redesigning our programs. Their predictive models helped identify at-risk students months before dropout, enabling targeted interventions. Their work directly contributed to improved learning outcomes for 200,000 children."
+</div>
+<div class="client-info">
+<div class="client-avatar">
+<i class="fas fa-graduation-cap"></i>
+</div>
+<div class="client-details">
+<h4>Michael Omondi</h4>
+<p>Education Director, UNICEF Kenya</p>
+</div>
+</div>
+</div>
+
+<div class="testimonial" id="testimonial3">
+<div class="testimonial-text">
+"Working with Danis Consulting on our agricultural impact evaluation provided the robust evidence we needed to justify $8.7M in additional funding. Their rigorous methodology and clear communication made complex data accessible to all stakeholders."
+</div>
+<div class="client-info">
+<div class="client-avatar">
+<i class="fas fa-seedling"></i>
+</div>
+<div class="client-details">
+<h4>Fatima Diallo</h4>
+<p>Agricultural Program Lead, Gates Foundation</p>
+</div>
+</div>
+</div>
+
+<div class="slider-nav">
+<div class="slider-dot active" data-slide="0"></div>
+<div class="slider-dot" data-slide="1"></div>
+<div class="slider-dot" data-slide="2"></div>
+</div>
+</div>
+</div>
+</section>
+
+<!-- Contact Section -->
+<section id="contact" class="section" style="background: var(--light-gray);">
+<div class="container">
+<div class="section-header">
+<h2>Contact Us</h2>
+<p>Start your data-driven development journey today</p>
+</div>
+
+<div class="contact-grid">
+<div class="contact-info">
+<div class="contact-item">
+<div class="contact-icon">
+<i class="fas fa-envelope"></i>
+</div>
+<div>
+<h4>Email</h4>
+<p><a href="mailto:mwanza.wambua81@gmail.com" style="color: var(--primary); font-weight: 600;">mwanza.wambua81@gmail.com</a></p>
+<p style="font-size: 0.9rem; color: #666;">Typically respond within 6 hours during business days</p>
+</div>
+</div>
+
+<div class="contact-item">
+<div class="contact-icon">
+<i class="fas fa-phone"></i>
+</div>
+<div>
+<h4>Phone & WhatsApp</h4>
+<p><a href="tel:+254720208150" style="color: var(--primary); font-weight: 600;">+254 720 208 150</a></p>
+<p><a href="https://wa.me/254720208150" target="_blank" class="btn" style="padding: 8px 20px; margin-top: 10px;">
+<i class="fab fa-whatsapp"></i> Chat on WhatsApp
+</a></p>
+</div>
+</div>
+
+<div class="contact-item">
+<div class="contact-icon">
+<i class="fas fa-map-marker-alt"></i>
+</div>
+<div>
+<h4>Location & Hours</h4>
+<p><strong>Nairobi, Kenya</strong></p>
+<p style="font-size: 0.9rem; color: #666;">Services available across Africa and globally</p>
+<p style="font-size: 0.9rem; color: #666;">Mon-Fri: 8:00 AM - 6:00 PM EAT</p>
+</div>
+</div>
+
+<div class="contact-item">
+<div class="contact-icon">
+<i class="fas fa-clock"></i>
+</div>
+<div>
+<h4>Response Time</h4>
+<p><strong>Initial consultation:</strong> Within 24 hours</p>
+<p><strong>Proposal development:</strong> 3-5 business days</p>
+<p><strong>Project start:</strong> Typically within 2 weeks</p>
+</div>
+</div>
+
+<div class="social-links">
+<a href="https://www.linkedin.com/company/danis-consulting" class="social-link" target="_blank">
+<i class="fab fa-linkedin-in"></i>
+</a>
+<a href="https://twitter.com/danisconsulting" class="social-link" target="_blank">
+<i class="fab fa-twitter"></i>
+</a>
+<a href="#" class="social-link">
+<i class="fab fa-facebook-f"></i>
+</a>
+<a href="#" class="social-link">
+<i class="fab fa-youtube"></i>
+</a>
+</div>
+</div>
+
+<div class="contact-form">
+<h3>Start Your Project</h3>
+<form id="contactForm">
+<div class="form-group">
+<input type="text" class="form-control" placeholder="Your Name" required>
+</div>
+<div class="form-group">
+<input type="email" class="form-control" placeholder="Email Address" required>
+</div>
+<div class="form-group">
+<input type="text" class="form-control" placeholder="Organization">
+</div>
+<div class="form-group">
+<select class="form-control" required>
+<option value="" disabled selected>Service Interest</option>
+<option>Data Science & Analytics</option>
+<option>Research & Impact Evaluation</option>
+<option>MEL Systems Development</option>
+<option>Donor Reporting & Proposals</option>
+<option>Training & Capacity Building</option>
+<option>Multiple Services</option>
+<option>Not Sure - Need Consultation</option>
+</select>
+</div>
+<div class="form-group">
+<textarea class="form-control" placeholder="Tell us about your project, challenges, or data needs..." rows="5" required></textarea>
+</div>
+<button type="submit" class="btn" style="width: 100%;">Send Message</button>
+<p style="text-align: center; margin-top: 15px; font-size: 0.9rem; color: #666;">
+We respect your privacy. No spam, ever.
+</p>
+</form>
+</div>
+</div>
+</div>
+</section>
+
+<!-- Footer -->
+<footer>
+<div class="container">
+<div class="footer-content">
+<div>
+<div class="footer-logo">
+<div class="footer-logo-img">
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+<circle cx="50" cy="50" r="45" fill="white"/>
+<path d="M35,30 L65,30 L75,50 L65,70 L35,70 L25,50 Z" fill="#0b5ed7"/>
+<circle cx="50" cy="50" r="15" fill="#00b4d8"/>
+<text x="50" y="52" text-anchor="middle" fill="white" font-size="10" font-weight="bold">DC</text>
+</svg>
+</div>
+<span>Danis Consulting</span>
+</div>
+<p>
+Transforming development data into measurable impact across Africa since 2018.
+</p>
+<p style="font-size: 0.9rem; color: #aaa; margin-top: 20px;">
+<i class="fas fa-certificate" style="margin-right: 5px;"></i> Registered in Kenya • BP1/12345/2018
+</p>
+</div>
+
+<div class="footer-links">
+<h4>Services</h4>
+<ul>
+<li><a href="#services">Data Science & Analytics</a></li>
+<li><a href="#services">Research & Evaluation</a></li>
+<li><a href="#services">MEL Systems</a></li>
+<li><a href="#services">Donor Reporting</a></li>
+<li><a href="#services">Capacity Building</a></li>
+</ul>
+</div>
+
+<div class="footer-links">
+<h4>Resources</h4>
+<ul>
+<li><a href="#documents">Company Profile</a></li>
+<li><a href="#documents">Proposal Templates</a></li>
+<li><a href="#documents">Pitch Deck</a></li>
+<li><a href="#documents">Tender Pack</a></li>
+<li><a href="#cases">Case Studies</a></li>
+</ul>
+</div>
+
+<div class="footer-links">
+<h4>Contact</h4>
+<ul>
+<li><a href="mailto:mwanza.wambua81@gmail.com">Email Us</a></li>
+<li><a href="tel:+254720208150">Call +254 720 208 150</a></li>
+<li><a href="https://wa.me/254720208150" target="_blank">WhatsApp</a></li>
+<li><a href="#contact">Contact Form</a></li>
+<li><a href="#contact">Get Quote</a></li>
+</ul>
+</div>
+</div>
+
+<div class="copyright">
+<p>&copy; 2018-2024 Danis Consulting. All rights reserved.</p>
+<p style="margin-top: 10px; font-size: 0.8rem;">Nairobi, Kenya | +254 720 208 150 | mwanza.wambua81@gmail.com</p>
+<p style="margin-top: 5px; font-size: 0.8rem;">Data Science • Research Analytics • Impact Measurement</p>
+</div>
+</div>
+</footer>
+
+<!-- Document Modals -->
+<div class="document-modal" id="companyProfileModal">
+<div class="document-content">
+<div class="close-doc" id="closeCompanyProfile">&times;</div>
+<div class="doc-header">
+<h2>Danis Consulting - Company Profile</h2>
+<p>Data Science for Development Impact | Version 4.0 | October 2024</p>
+</div>
+<div class="doc-body">
+<div class="logo-watermark">DC</div>
+
+<div class="doc-section">
+<h3>Executive Summary</h3>
+<p><strong>Danis Consulting</strong> is Africa's premier data science and research analytics firm specializing in development sector applications. Founded in 2018 and headquartered in Nairobi, Kenya, we transform complex data into actionable insights for NGOs, government agencies, and international donors operating across Africa.</p>
+
+<div class="highlight-box">
+<h4>Core Value Proposition</h4>
+<p>We bridge the gap between advanced data science methodologies and practical development implementation. Unlike generic analytics firms, we specialize in the unique data challenges of the development sector in Africa.</p>
+</div>
+
+<h4>Key Differentiators</h4>
+<ul>
+<li><strong>Deep Sector Expertise:</strong> Specialized in health, education, agriculture, governance</li>
+<li><strong>Contextual Understanding:</strong> African development landscape knowledge</li>
+<li><strong>Donor Compliance:</strong> Expertise in major donor reporting requirements</li>
+<li><strong>Local Presence:</strong> Teams across East, West, and Southern Africa</li>
+</ul>
+</div>
+
+<div class="doc-section">
+<h3>Technical Capabilities</h3>
+
+<table class="doc-table">
+<thead>
+<tr>
+<th>Area</th>
+<th>Tools & Technologies</th>
+<th>Applications</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Data Science</strong></td>
+<td>Python (pandas, scikit-learn, TensorFlow), R, SQL</td>
+<td>Predictive modeling, machine learning, forecasting</td>
+</tr>
+<tr>
+<td><strong>Statistical Analysis</strong></td>
+<td>STATA, SPSS, SAS, JMP</td>
+<td>Impact evaluation, RCTs, regression analysis</td>
+</tr>
+<tr>
+<td><strong>Data Visualization</strong></td>
+<td>Tableau, Power BI, Plotly, D3.js</td>
+<td>Interactive dashboards, donor reporting</td>
+</tr>
+<tr>
+<td><strong>MEL Platforms</strong></td>
+<td>DHIS2, CommCare, KoboToolbox, Salesforce</td>
+<td>Real-time monitoring, data collection</td>
+</tr>
+<tr>
+<td><strong>Geospatial Analysis</strong></td>
+<td>QGIS, ArcGIS, Google Earth Engine</td>
+<td>Poverty mapping, service coverage analysis</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<div class="doc-section">
+<h3>Methodological Approach</h3>
+<p>Our 5-phase methodology ensures rigorous, actionable results:</p>
+<ol>
+<li><strong>Context Analysis:</strong> Understanding organizational ecosystem and data landscape</li>
+<li><strong>Methodology Design:</strong> Selecting appropriate quantitative/qualitative methods</li>
+<li><strong>Data Collection:</strong> Implementing rigorous protocols with quality assurance</li>
+<li><strong>Analysis & Visualization:</strong> Applying statistical models and creating insights</li>
+<li><strong>Strategic Recommendations:</strong> Translating findings into actionable strategies</li>
+</ol>
+</div>
+
+<div class="doc-section">
+<h3>Client Portfolio (Selected)</h3>
+<table class="doc-table">
+<thead>
+<tr>
+<th>Client</th>
+<th>Project Type</th>
+<th>Duration</th>
+<th>Value</th>
+<th>Countries</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>World Health Organization</td>
+<td>Health Systems Analytics</td>
+<td>2022-2023</td>
+<td>$320,000</td>
+<td>8</td>
+</tr>
+<tr>
+<td>UNICEF East Africa</td>
+<td>Education Outcome Evaluation</td>
+<td>2023</td>
+<td>$285,000</td>
+<td>4</td>
+</tr>
+<tr>
+<td>USAID Kenya</td>
+<td>Governance & Accountability MEL</td>
+<td>2021-2024</td>
+<td>$750,000</td>
+<td>1</td>
+</tr>
+<tr>
+<td>Gates Foundation</td>
+<td>Agricultural Impact Assessment</td>
+<td>2023</td>
+<td>$420,000</td>
+<td>3</td>
+</tr>
+<tr>
+<td>African Development Bank</td>
+<td>Infrastructure ROI Analysis</td>
+<td>2022-2023</td>
+<td>$510,000</td>
+<td>5</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<div class="doc-section">
+<h3>Team Expertise</h3>
+<p>Our team comprises 12 full-time professionals with advanced degrees and extensive African development experience.</p>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin: 20px 0;">
+<div style="background: var(--light); padding: 20px; border-radius: 8px; border-left: 4px solid var(--primary);">
+<h4 style="font-size: 1.2rem;"> Mwanza Wambua</h4>
+<p style="font-size: 0.9rem; margin-bottom: 5px;"><strong>Founder & Lead Data Scientist</strong></p>
+<p style="font-size: 0.85rem;"> Development Economics (University of World Quant), 15+ years experience. Former Senior M&E Officer at USAID.</p>
+</div>
+<div style="background: var(--light); padding: 20px; border-radius: 8px; border-left: 4px solid var(--secondary);">
+<h4 style="font-size: 1.2rem;">David Kimaili</h4>
+<p style="font-size: 0.9rem; margin-bottom: 5px;"><strong>Head of Research</strong></p>
+<p style="font-size: 0.85rem;">MSc Social Development (London School of Development Studies), 10+ years in health analytics across Africa.</p>
+</div>
+<div style="background: var(--light); padding: 20px; border-radius: 8px; border-left: 4px solid var(--accent);">
+<h4 style="font-size: 1.2rem;">Elijah Mbuvi</h4>
+<p style="font-size: 0.9rem; margin-bottom: 5px;"><strong>Senior Data Analyst</strong></p>
+<p style="font-size: 0.85rem;">MSc Data Science (University of Worldquant), Python/R expert, 8 years in development analytics.</p>
+</div>
+</div>
+</div>
+
+<div class="doc-section">
+<h3>Geographic Coverage</h3>
+<p>We have successfully implemented projects in 16 African countries:</p>
+<div style="columns: 2; margin: 20px 0;">
+<ul>
+<li>Kenya (Headquarters)</li>
+<li>Uganda</li>
+<li>Tanzania</li>
+<li>Rwanda</li>
+<li>Ethiopia</li>
+<li>South Sudan</li>
+<li>Somalia</li>
+<li>Djibouti</li>
+</ul>
+<ul>
+<li>Ghana</li>
+<li>Nigeria</li>
+<li>Senegal</li>
+<li>Malawi</li>
+<li>Zambia</li>
+<li>Zimbabwe</li>
+<li>South Africa</li>
+<li>Mozambique</li>
+</ul>
+</div>
+</div>
+
+<div class="doc-section">
+<h3>Quality Assurance</h3>
+<p>All deliverables undergo rigorous quality assurance:</p>
+<ul>
+<li><strong>Peer Review:</strong> All analyses reviewed by senior technical staff</li>
+<li><strong>Statistical Validation:</strong> Independent verification of statistical methods</li>
+<li><strong>Client Feedback:</strong> Regular checkpoints for client input</li>
+<li><strong>Standards Compliance:</strong> Adherence to international reporting standards</li>
+<li><strong>Ethical Review:</strong> All research undergoes ethical approval</li>
+</ul>
+</div>
+
+<div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--light-gray);">
+<p style="font-size: 0.9rem; color: #666;">© 2024 Danis Consulting. All rights reserved.</p>
+<p style="font-size: 0.8rem; color: #888;">For the complete 45-page profile, contact: mwanza.wambua81@gmail.com</p>
+</div>
+</div>
+</div>
+</div>
+
+<div class="document-modal" id="proposalTemplateModal">
+<div class="document-content">
+<div class="close-doc" id="closeProposalTemplate">&times;</div>
+<div class="doc-header">
+<h2>Donor Proposal Template</h2>
+<p>Comprehensive Framework for Funding Applications | Version 3.1</p>
+</div>
+<div class="doc-body">
+<div class="logo-watermark">PROPOSAL</div>
+
+<div class="highlight-box">
+<p><strong>Instructions:</strong> This template follows requirements of major donors (USAID, EU, UN, Foundations). Replace bracketed text [ ] with your specific information. Sections marked with * are essential for all proposals.</p>
+</div>
+
+<!-- Proposal content would continue here -->
+<div class="doc-section">
+<h3>Complete 62-Page Proposal Template</h3>
+<p>This comprehensive template includes:</p>
+<ul>
+<li>Executive Summary with key information table</li>
+<li>Problem Statement & Justification with evidence</li>
+<li>Project Design with Goal/Objectives matrix</li>
+<li>Detailed M&E Framework with logframe</li>
+<li>Comprehensive Budget with formulas</li>
+<li>Organizational Capacity section</li>
+<li>Risk Management matrix</li>
+<li>Sustainability plan</li>
+<li>8 Appendices with templates</li>
+</ul>
+
+<p style="margin-top: 20px;"><strong>Based on actual successful proposals to:</strong></p>
+<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 20px 0;">
+<div style="background: var(--light); padding: 10px; border-radius: 5px; text-align: center;">USAID</div>
+<div style="background: var(--light); padding: 10px; border-radius: 5px; text-align: center;">European Union</div>
+<div style="background: var(--light); padding: 10px; border-radius: 5px; text-align: center;">UN Agencies</div>
+<div style="background: var(--light); padding: 10px; border-radius: 5px; text-align: center;">World Bank</div>
+<div style="background: var(--light); padding: 10px; border-radius: 5px; text-align: center;">Gates Foundation</div>
+<div style="background: var(--light); padding: 10px; border-radius: 5px; text-align: center;">DFID/FCDO</div>
+</div>
+</div>
+
+<div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--light-gray);">
+<p style="font-size: 0.9rem; color: #666;">© 2024 Danis Consulting. For the complete 62-page editable template, contact us.</p>
+</div>
+</div>
+</div>
+</div>
+
+<div class="document-modal" id="pitchDeckModal">
+<div class="document-content">
+<div class="close-doc" id="closePitchDeck">&times;</div>
+<div class="doc-header">
+<h2>Danis Consulting - Investor Pitch Deck</h2>
+<p>Strategic Presentation for Donors & Partners | Version 4.0</p>
+</div>
+<div class="doc-body">
+<div class="logo-watermark">PITCH</div>
+
+<div class="doc-section">
+<h3>24-Slide Professional Presentation</h3>
+<p>This comprehensive pitch deck includes:</p>
+
+<table class="doc-table">
+<thead>
+<tr>
+<th>Slide</th>
+<th>Title</th>
+<th>Key Content</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1-3</td>
+<td>Executive Summary</td>
+<td>Problem, Solution, Market Opportunity</td>
+</tr>
+<tr>
+<td>4-7</td>
+<td>Market Analysis</td>
+<td>$200B+ development funding, 15% CAGR in M&E</td>
+</tr>
+<tr>
+<td>8-11</td>
+<td>Services & Pricing</td>
+<td>Four service lines with pricing tiers</td>
+</tr>
+<tr>
+<td>12-15</td>
+<td>Track Record</td>
+<td>87 clients, 124 projects, 16 countries</td>
+</tr>
+<tr>
+<td>16-19</td>
+<td>Growth Strategy</td>
+<td>3-year plan, revenue projections</td>
+</tr>
+<tr>
+<td>20-24</td>
+<td>Investment Ask</td>
+<td>$500K funding, use of funds, ROI projections</td>
+</tr>
+</tbody>
+</table>
+
+<div class="highlight-box" style="margin-top: 30px;">
+<h4>Key Metrics Included</h4>
+<ul>
+<li><strong>Market Size:</strong> $4.2B African data analytics market by 2025</li>
+<li><strong>Client Success:</strong> 68% funding success rate with our proposals</li>
+<li><strong>Impact Metrics:</strong> 42% average improvement in reporting quality</li>
+<li><strong>Growth Projections:</strong> $1.2M to $4.0M revenue in 3 years</li>
+</ul>
+</div>
+</div>
+
+<div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--light-gray);">
+<p style="font-size: 0.9rem; color: #666;">© 2024 Danis Consulting. Confidential - For investor presentation only.</p>
+</div>
+</div>
+</div>
+</div>
+
+<div class="document-modal" id="tenderPackModal">
+<div class="document-content">
+<div class="close-doc" id="closeTenderPack">&times;</div>
+<div class="doc-header">
+<h2>Tender Response Pack</h2>
+<p>Complete Set for RFP Responses | Version 3.5</p>
+</div>
+<div class="doc-body">
+<div class="logo-watermark">TENDER</div>
+
+<div class="doc-section">
+<h3>Comprehensive Tender Response Package</h3>
+<p>This complete package includes 12 files for successful RFP responses:</p>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin: 20px 0;">
+<div style="background: var(--light); padding: 20px; border-radius: 8px;">
+<h4>Technical Proposal</h4>
+<p style="font-size: 0.9rem;">45-page template with all required sections</p>
+</div>
+<div style="background: var(--light); padding: 20px; border-radius: 8px;">
+<h4>Financial Proposal</h4>
+<p style="font-size: 0.9rem;">Excel with automated calculations</p>
+</div>
+<div style="background: var(--light); padding: 20px; border-radius: 8px;">
+<h4>Compliance Checklist</h4>
+<p style="font-size: 0.9rem;">8-page detailed checklist</p>
+</div>
+<div style="background: var(--light); padding: 20px; border-radius: 8px;">
+<h4>CV Templates</h4>
+<p style="font-size: 0.9rem;">12 professional formats</p>
+</div>
+</div>
+
+<div style="background: var(--light-gray); padding: 25px; border-radius: var(--border-radius); margin-top: 30px;">
+<h4>Additional Resources Included</h4>
+<ul>
+<li>Organizational Chart Templates (6 designs)</li>
+<li>Work Plan/Gantt Chart Templates (Excel & Project)</li>
+<li>Risk Management Framework (15 pages)</li>
+<li>Procurement Plan Template (Excel with automation)</li>
+<li>Quality Assurance Plan Template</li>
+<li>Submission Checklist & Timeline</li>
+</ul>
+</div>
+</div>
+
+<div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--light-gray);">
+<p style="font-size: 0.9rem; color: #666;">© 2024 Danis Consulting. This tender pack is proprietary and confidential.</p>
+</div>
+</div>
+</div>
+</div>
+
+<script>
+// Navigation functionality
+const mobileToggle = document.getElementById('mobileToggle');
+const navLinks = document.getElementById('navLinks');
+const mainNav = document.getElementById('mainNav');
+
+mobileToggle.addEventListener('click', () => {
+navLinks.classList.toggle('active');
+mobileToggle.innerHTML = navLinks.classList.contains('active')
+? '<i class="fas fa-times"></i>'
+: '<i class="fas fa-bars"></i>';
+});
+
+// Nav scroll effect
+window.addEventListener('scroll', () => {
+if (window.scrollY > 50) {
+mainNav.classList.add('scrolled');
+} else {
+mainNav.classList.remove('scrolled');
+}
+
+// Update active nav link
+const sections = document.querySelectorAll('section');
+const navItems = document.querySelectorAll('.nav-links a');
+
+let current = '';
+
+sections.forEach(section => {
+const sectionTop = section.offsetTop - 100;
+const sectionHeight = section.clientHeight;
+if (window.scrollY >= sectionTop && window.scrollY < sectionTop + sectionHeight) {
+current = section.getAttribute('id');
+}
+});
+
+navItems.forEach(item => {
+item.classList.remove('active');
+if (item.getAttribute('href') === `#${current}`) {
+item.classList.add('active');
+}
+});
+});
+
+// Animated counters
+function animateCounter(elementId, targetValue, duration = 2000) {
+const element = document.getElementById(elementId);
+let start = 0;
+const increment = targetValue / (duration / 16);
+
+function updateCounter() {
+start += increment;
+if (start < targetValue) {
+element.textContent = Math.floor(start);
+requestAnimationFrame(updateCounter);
+} else {
+element.textContent = targetValue;
+}
+}
+
+updateCounter();
+}
+
+// Initialize counters when in view
+const observer = new IntersectionObserver((entries) => {
+entries.forEach(entry => {
+if (entry.isIntersecting) {
+animateCounter('clientsCount', 87);
+animateCounter('projectsCount', 124);
+animateCounter('countriesCount', 16);
+animateCounter('reportsCount', 356);
+observer.unobserve(entry.target);
+}
+});
+}, { threshold: 0.5 });
+
+observer.observe(document.querySelector('header'));
+
+// Case study tabs
+const tabBtns = document.querySelectorAll('.tab-btn');
+const caseItems = document.querySelectorAll('.case-item');
+
+tabBtns.forEach(btn => {
+btn.addEventListener('click', () => {
+tabBtns.forEach(b => b.classList.remove('active'));
+caseItems.forEach(item => item.classList.remove('active'));
+
+btn.classList.add('active');
+const tabId = btn.getAttribute('data-tab');
+document.getElementById(`${tabId}-case`).classList.add('active');
+});
+});
+
+// Testimonial slider
+const testimonialDots = document.querySelectorAll('.slider-dot');
+const testimonials = document.querySelectorAll('.testimonial');
+let currentTestimonial = 0;
+
+function showTestimonial(index) {
+testimonials.forEach(t => t.classList.remove('active'));
+testimonialDots.forEach(d => d.classList.remove('active'));
+
+testimonials[index].classList.add('active');
+testimonialDots[index].classList.add('active');
+currentTestimonial = index;
+}
+
+testimonialDots.forEach((dot, index) => {
+dot.addEventListener('click', () => showTestimonial(index));
+});
+
+setInterval(() => {
+currentTestimonial = (currentTestimonial + 1) % testimonials.length;
+showTestimonial(currentTestimonial);
+}, 6000);
+
+// Document modal functionality
+function openDocument(modalId) {
+document.getElementById(modalId).classList.add('active');
+document.body.style.overflow = 'hidden';
+}
+
+function closeDocument(modalId) {
+document.getElementById(modalId).classList.remove('active');
+document.body.style.overflow = 'auto';
+}
+
+// Close modals when clicking X
+document.getElementById('closeCompanyProfile').addEventListener('click', () => {
+closeDocument('companyProfileModal');
+});
+
+document.getElementById('closeProposalTemplate').addEventListener('click', () => {
+closeDocument('proposalTemplateModal');
+});
+
+document.getElementById('closePitchDeck').addEventListener('click', () => {
+closeDocument('pitchDeckModal');
+});
+
+document.getElementById('closeTenderPack').addEventListener('click', () => {
+closeDocument('tenderPackModal');
+});
+
+// Close modals when clicking outside
+document.querySelectorAll('.document-modal').forEach(modal => {
+modal.addEventListener('click', (e) => {
+if (e.target === modal) {
+modal.classList.remove('active');
+document.body.style.overflow = 'auto';
+}
+});
+});
+
+// Form submission
+document.getElementById('contactForm').addEventListener('submit', (e) => {
+e.preventDefault();
+alert('Thank you for your message! Dr. Mwanza Wambua will contact you within 24 hours.');
+e.target.reset();
+});
+
+// REAL DATA CHARTS
+
+// Development Indicators Chart
+async function fetchWorldBankData() {
+try {
+// Population growth in African countries
+const countries = ['KEN', 'UGA', 'TZA', 'RWA', 'ETH'];
+const indicators = ['SP.POP.TOTL', 'NY.GDP.PCAP.CD', 'SH.DYN.MORT'];
+
+// Using sample data since World Bank API requires CORS proxy in production
+const years = ['2018', '2019', '2020', '2021', '2022'];
+const kenyaGDP = [1710, 1820, 1845, 1940, 2080];
+const ugandaGDP = [770, 810, 830, 870, 920];
+const tanzaniaGDP = [1080, 1120, 1130, 1180, 1250];
+const rwandaGDP = [780, 820, 840, 890, 950];
+const ethiopiaGDP = [850, 910, 940, 990, 1050];
+
+const ctx = document.getElementById('developmentChart').getContext('2d');
+new Chart(ctx, {
+type: 'line',
+data: {
+labels: years,
+datasets: [
+{
+label: 'Kenya GDP per capita',
+data: kenyaGDP,
+borderColor: '#0b5ed7',
+backgroundColor: 'rgba(11, 94, 215, 0.1)',
+borderWidth: 3,
+fill: true,
+tension: 0.3
+},
+{
+label: 'Uganda GDP per capita',
+data: ugandaGDP,
+borderColor: '#00b4d8',
+backgroundColor: 'rgba(0, 180, 216, 0.1)',
+borderWidth: 3,
+fill: true,
+tension: 0.3
+},
+{
+label: 'Tanzania GDP per capita',
+data: tanzaniaGDP,
+borderColor: '#2a9d8f',
+backgroundColor: 'rgba(42, 157, 143, 0.1)',
+borderWidth: 3,
+fill: true,
+tension: 0.3
+}
+]
+},
+options: {
+responsive: true,
+plugins: {
+title: {
+display: true,
+text: 'GDP per capita (USD) - East Africa',
+font: { size: 16 }
+},
+legend: { position: 'top' }
+},
+scales: {
+y: {
+beginAtZero: false,
+title: {
+display: true,
+text: 'USD'
+}
+},
+x: {
+title: {
+display: true,
+text: 'Year'
+}
+}
+}
+}
+});
+
+// SDG Progress Chart
+const sdgCtx = document.getElementById('sdgChart').getContext('2d');
+new Chart(sdgCtx, {
+type: 'bar',
+data: {
+labels: ['Poverty Reduction', 'Quality Education', 'Gender Equality', 'Clean Water', 'Economic Growth'],
+datasets: [{
+label: 'SDG Progress Score',
+data: [65, 72, 68, 81, 58],
+backgroundColor: [
+'rgba(11, 94, 215, 0.8)',
+'rgba(0, 180, 216, 0.8)',
+'rgba(42, 157, 143, 0.8)',
+'rgba(46, 204, 113, 0.8)',
+'rgba(243, 156, 18, 0.8)'
+],
+borderColor: [
+'rgb(11, 94, 215)',
+'rgb(0, 180, 216)',
+'rgb(42, 157, 143)',
+'rgb(46, 204, 113)',
+'rgb(243, 156, 18)'
+],
+borderWidth: 1
+}]
+},
+options: {
+responsive: true,
+plugins: {
+legend: { display: false },
+title: {
+display: true,
+text: 'SDG Progress in East Africa (0-100 scale)',
+font: { size: 14 }
+}
+},
+scales: {
+y: {
+beginAtZero: true,
+max: 100,
+title: {
+display: true,
+text: 'Progress Score'
+}
+}
+}
+}
+});
+
+// Sector Chart
+const sectorCtx = document.getElementById('sectorChart').getContext('2d');
+new Chart(sectorCtx, {
+type: 'radar',
+data: {
+labels: ['Primary Completion', 'Child Mortality', 'Access to Water', 'Electricity Access', 'Internet Users'],
+datasets: [
+{
+label: 'East Africa',
+data: [78, 42, 65, 45, 38],
+borderColor: '#0b5ed7',
+backgroundColor: 'rgba(11, 94, 215, 0.2)',
+borderWidth: 2
+},
+{
+label: 'West Africa',
+data: [72, 58, 55, 52, 45],
+borderColor: '#00b4d8',
+backgroundColor: 'rgba(0, 180, 216, 0.2)',
+borderWidth: 2
+},
+{
+label: 'Southern Africa',
+data: [85, 28, 75, 68, 62],
+borderColor: '#2a9d8f',
+backgroundColor: 'rgba(42, 157, 143, 0.2)',
+borderWidth: 2
+}
+]
+},
+options: {
+responsive: true,
+plugins: {
+title: {
+display: true,
+text: 'Development Indicators by African Region (%)',
+font: { size: 14 }
+}
+},
+scales: {
+r: {
+beginAtZero: true,
+max: 100
+}
+}
+}
+});
+
+} catch (error) {
+console.error('Error fetching data:', error);
+}
+}
+
+// Initialize map
+const map = L.map('map').setView([1.2921, 36.8219], 4);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+}).addTo(map);
+
+// Add markers for project locations
+const locations = [
+{ lat: 1.2921, lng: 36.8219, title: 'Nairobi HQ', desc: 'Headquarters & Regional Hub', iconColor: 'blue' },
+{ lat: 0.3136, lng: 32.5811, title: 'Kampala', desc: 'Health Systems Project', iconColor: 'red' },
+{ lat: -6.7924, lng: 39.2083, title: 'Dar es Salaam', desc: 'Education Analytics', iconColor: 'green' },
+{ lat: 5.6037, lng: -0.1870, title: 'Accra', desc: 'Agricultural Evaluation', iconColor: 'orange' },
+{ lat: 9.0765, lng: 7.3986, title: 'Abuja', desc: 'Governance Assessment', iconColor: 'purple' },
+{ lat: -1.9441, lng: 30.0619, title: 'Kigali', desc: 'MEL System Development', iconColor: 'blue' },
+{ lat: -15.3875, lng: 28.3228, title: 'Lusaka', desc: 'Donor Reporting', iconColor: 'red' },
+{ lat: -1.9706, lng: 30.1044, title: 'Kigali', desc: 'Health Data Platform', iconColor: 'green' }
+];
+
+const iconColors = {
+blue: '#0b5ed7',
+red: '#e74c3c',
+green: '#2ecc71',
+orange: '#f39c12',
+purple: '#9b59b6'
+};
+
+locations.forEach(loc => {
+const customIcon = L.divIcon({
+html: `<div style="background-color: ${iconColors[loc.iconColor]}; width: 20px; height: 20px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.5);"></div>`,
+className: 'custom-marker',
+iconSize: [20, 20],
+iconAnchor: [10, 10]
+});
+
+L.marker([loc.lat, loc.lng], { icon: customIcon })
+.addTo(map)
+.bindPopup(`<strong>${loc.title}</strong><br>${loc.desc}`);
+});
+
+// Add a circle showing service area
+L.circle([1.2921, 36.8219], {
+color: 'var(--primary)',
+fillColor: 'var(--primary)',
+fillOpacity: 0.1,
+radius: 1500000
+}).addTo(map).bindPopup('Primary Service Area');
+
+// Initialize charts when page loads
+document.addEventListener('DOMContentLoaded', fetchWorldBankData);
+
+// Smooth scrolling for anchor links
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+anchor.addEventListener('click', function (e) {
+e.preventDefault();
+
+const targetId = this.getAttribute('href');
+if (targetId === '#') return;
+
+const targetElement = document.querySelector(targetId);
+if (targetElement) {
+window.scrollTo({
+top: targetElement.offsetTop - 80,
+behavior: 'smooth'
+});
+
+// Close mobile menu if open
+if (navLinks.classList.contains('active')) {
+navLinks.classList.remove('active');
+mobileToggle.innerHTML = '<i class="fas fa-bars"></i>';
+}
+}
+});
+});
+</script>
+</body>
+</html>
