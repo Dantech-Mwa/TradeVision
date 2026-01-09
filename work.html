@@ -1054,101 +1054,118 @@
             updateProjectsCount();
         });
         
-        // ================= LOAD & DISPLAY POSTS =================
-        async function loadPosts() {
-            try {
-                const response = await fetch(POSTS_URL);
-                posts = await response.json();
-                renderPosts(posts);
-            } catch (error) {
-                console.error('Error loading posts:', error);
-                posts = [];
-                renderPosts([]);
+// ================= LOAD & DISPLAY POSTS =================
+async function loadPosts() {
+    try {
+        const response = await fetch(POSTS_URL);
+        posts = await response.json();
+        // Fix any posts with empty or null images arrays
+        posts.forEach(post => {
+            if (!post.images) post.images = [];
+            // Handle if images is a string instead of array
+            if (typeof post.images === 'string') {
+                post.images = [post.images];
             }
-        }
+        });
+        renderPosts(posts);
+    } catch (error) {
+        console.error('Error loading posts:', error);
+        posts = [];
+        renderPosts([]);
+    }
+}
+
+function renderPosts(data) {
+    const postsDiv = document.getElementById('posts');
+    const today = new Date();
+    
+    const sortedData = data.sort((a, b) => {
+        const sortBy = document.getElementById('sortFilter')?.value || 'newest';
         
-        function renderPosts(data) {
-            const postsDiv = document.getElementById('posts');
-            const today = new Date();
-            
-            const sortedData = data.sort((a, b) => {
-                const sortBy = document.getElementById('sortFilter')?.value || 'newest';
+        switch(sortBy) {
+            case 'newest':
+                return new Date(b.date) - new Date(a.date);
+            case 'oldest':
+                return new Date(a.date) - new Date(b.date);
+            case 'title':
+                return a.title.localeCompare(b.title);
+            default:
+                return new Date(b.date) - new Date(a.date);
+        }
+    });
+    
+    postsDiv.innerHTML = sortedData.map(post => {
+        const postDate = new Date(post.date);
+        const timeDiff = today - postDate;
+        const daysDiff = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+        
+        let dateDisplay;
+        if (daysDiff === 0) dateDisplay = 'Today';
+        else if (daysDiff === 1) dateDisplay = 'Yesterday';
+        else if (daysDiff < 7) dateDisplay = `${daysDiff} days ago`;
+        else dateDisplay = postDate.toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'short', 
+            day: 'numeric' 
+        });
+        
+        const sectorColors = {
+            'Government': '#0052CC',
+            'NGO': '#36B37E',
+            'Private': '#FF5630',
+            'Academic': '#6554C0',
+            'International': '#00B8D9'
+        };
+        
+        // Get first image for thumbnail (if exists)
+        const firstImage = post.images && post.images.length > 0 ? post.images[0] : null;
+        
+        return `
+            <div class="post-card">
+                ${firstImage ? `
+                <div class="post-image" style="height: 200px; overflow: hidden;">
+                    <img src="${firstImage}" alt="${post.title}" style="width: 100%; height: 100%; object-fit: cover; border-bottom: 1px solid var(--gray-light);">
+                </div>
+                ` : ''}
                 
-                switch(sortBy) {
-                    case 'newest':
-                        return new Date(b.date) - new Date(a.date);
-                    case 'oldest':
-                        return new Date(a.date) - new Date(b.date);
-                    case 'title':
-                        return a.title.localeCompare(b.title);
-                    default:
-                        return new Date(b.date) - new Date(a.date);
-                }
-            });
-            
-            postsDiv.innerHTML = sortedData.map(post => {
-                const postDate = new Date(post.date);
-                const timeDiff = today - postDate;
-                const daysDiff = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-                
-                let dateDisplay;
-                if (daysDiff === 0) dateDisplay = 'Today';
-                else if (daysDiff === 1) dateDisplay = 'Yesterday';
-                else if (daysDiff < 7) dateDisplay = `${daysDiff} days ago`;
-                else dateDisplay = postDate.toLocaleDateString('en-US', { 
-                    year: 'numeric', 
-                    month: 'short', 
-                    day: 'numeric' 
-                });
-                
-                const sectorColors = {
-                    'Government': '#0052CC',
-                    'NGO': '#36B37E',
-                    'Private': '#FF5630',
-                    'Academic': '#6554C0',
-                    'International': '#00B8D9'
-                };
-                
-                return `
-                    <div class="post-card">
-                        <div class="post-header">
-                            <span class="sector-badge" style="background: ${sectorColors[post.sector] || '#0052CC'}20; color: ${sectorColors[post.sector] || '#0052CC'}">
-                                <i class="fas fa-${post.sector === 'Government' ? 'landmark' : 
-                                                post.sector === 'NGO' ? 'hands-helping' : 
-                                                post.sector === 'Academic' ? 'graduation-cap' : 
-                                                'building'}"></i> ${post.sector}
-                            </span>
-                            <h3 class="post-title">${post.title}</h3>
-                            <div class="client-info">
-                                <i class="fas fa-user-tie"></i> ${post.client}
-                                <span style="margin: 0 10px">•</span>
-                                <i class="fas fa-calendar"></i> ${dateDisplay}
-                            </div>
-                            <div class="post-content">
-                                ${marked.parse((post.content || '').substring(0, 200).replace(/\n/g, '  ') + '...')}
-                            </div>
-                        </div>
-                        
-                        <div class="post-footer">
-                            <div class="tags">
-                                ${post.tags ? post.tags.map(tag => `<span class="tag">${tag.trim()}</span>`).join('') : ''}
-                            </div>
-                            <div class="post-actions">
-                                <button class="btn btn-secondary" onclick="viewProject('${post.id || post.title}')">
-                                    <i class="fas fa-eye"></i> View Details
-                                </button>
-                                <button class="btn btn-primary" onclick="generatePDF('${post.id || post.title}')">
-                                    <i class="fas fa-download"></i> Download Report
-                                </button>
-                            </div>
-                        </div>
+                <div class="post-header">
+                    <span class="sector-badge" style="background: ${sectorColors[post.sector] || '#0052CC'}20; color: ${sectorColors[post.sector] || '#0052CC'}">
+                        <i class="fas fa-${post.sector === 'Government' ? 'landmark' : 
+                                        post.sector === 'NGO' ? 'hands-helping' : 
+                                        post.sector === 'Academic' ? 'graduation-cap' : 
+                                        'building'}"></i> ${post.sector}
+                    </span>
+                    <h3 class="post-title">${post.title}</h3>
+                    <div class="client-info">
+                        <i class="fas fa-user-tie"></i> ${post.client}
+                        <span style="margin: 0 10px">•</span>
+                        <i class="fas fa-calendar"></i> ${dateDisplay}
                     </div>
-                `;
-            }).join('');
-            
-            updateProjectsCount();
-        }
-        
+                    <div class="post-content">
+                        ${marked.parse((post.content || '').substring(0, 200).replace(/\n/g, '  ') + '...')}
+                    </div>
+                </div>
+                
+                <div class="post-footer">
+                    <div class="tags">
+                        ${post.tags ? post.tags.map(tag => `<span class="tag">${tag.trim()}</span>`).join('') : ''}
+                        ${post.images && post.images.length > 0 ? `<span class="tag"><i class="fas fa-image"></i> ${post.images.length} image${post.images.length !== 1 ? 's' : ''}</span>` : ''}
+                    </div>
+                    <div class="post-actions">
+                        <button class="btn btn-secondary" onclick="viewProject('${post.id || post.title}')">
+                            <i class="fas fa-eye"></i> View Details
+                        </button>
+                        <button class="btn btn-primary" onclick="generatePDF('${post.id || post.title}')">
+                            <i class="fas fa-download"></i> Download Report
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    updateProjectsCount();
+}
         // ================= SEARCH & FILTER =================
         document.getElementById('search')?.addEventListener('input', filterPosts);
         document.getElementById('sectorFilter')?.addEventListener('change', filterPosts);
@@ -1172,118 +1189,171 @@
     
     renderPosts(filtered);
 }
-        
-        // ================= VIEW PROJECT DETAILS =================
-        function viewProject(projectId) {
-            const project = posts.find(p => (p.id || p.title) === projectId);
-            if (!project) return;
+// ================= VIEW PROJECT DETAILS =================
+function viewProject(projectId) {
+    const project = posts.find(p => (p.id || p.title) === projectId);
+    if (!project) return;
+    
+    const modalHtml = `
+        <div style="padding: 40px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                <h2 style="font-size: 28px;">${project.title}</h2>
+                <button onclick="closeModal()" class="close-btn" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--gray);">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
             
-            const modalHtml = `
-                <div style="padding: 40px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-                        <h2 style="font-size: 28px;">${project.title}</h2>
-                        <button onclick="closeModal()" class="close-btn" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--gray);">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                    
-                    <div style="display: flex; gap: 20px; margin-bottom: 30px; flex-wrap: wrap;">
-                        <span style="background: var(--light); padding: 8px 16px; border-radius: 20px;">
-                            <i class="fas fa-user-tie"></i> ${project.client}
-                        </span>
-                        <span style="background: var(--light); padding: 8px 16px; border-radius: 20px;">
-                            <i class="fas fa-industry"></i> ${project.sector}
-                        </span>
-                        <span style="background: var(--light); padding: 8px 16px; border-radius: 20px;">
-                            <i class="fas fa-calendar"></i> ${new Date(project.date).toLocaleDateString()}
-                        </span>
-                    </div>
-                    
-                    <div style="margin-bottom: 30px;">
-                        ${marked.parse(project.content)}
-                    </div>
-                    
-                    
-                    ${project.dashboard && project.dashboard !== 'null' ? `
-    <div style="margin: 40px 0;">
-        <h3 style="margin-bottom: 20px;"><i class="fas fa-chart-bar"></i> Interactive Dashboard</h3>
-        <iframe src="${project.dashboard}" style="width: 100%; height: 500px; border: none; border-radius: 8px;"></iframe>
-    </div>
-` : ''}
-                    
-                    ${project.tags ? `
-                        <div style="margin: 30px 0;">
-                            <h4>Tags:</h4>
-                            <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;">
-                                ${project.tags.map(tag => `<span style="background: var(--primary); color: white; padding: 6px 12px; border-radius: 4px;">${tag}</span>`).join('')}
-                            </div>
-                        </div>
-                    ` : ''}
-                    
-                    <div style="display: flex; gap: 15px; margin-top: 40px; justify-content: center;">
-                        <button onclick="generatePDF('${project.id || project.title}')" class="btn btn-primary">
-                            <i class="fas fa-download"></i> Download Full Report
-                        </button>
-                        <button onclick="closeModal()" class="btn btn-secondary">
-                            <i class="fas fa-times"></i> Close
-                        </button>
+            <div style="display: flex; gap: 20px; margin-bottom: 30px; flex-wrap: wrap;">
+                <span style="background: var(--light); padding: 8px 16px; border-radius: 20px;">
+                    <i class="fas fa-user-tie"></i> ${project.client}
+                </span>
+                <span style="background: var(--light); padding: 8px 16px; border-radius: 20px;">
+                    <i class="fas fa-industry"></i> ${project.sector}
+                </span>
+                <span style="background: var(--light); padding: 8px 16px; border-radius: 20px;">
+                    <i class="fas fa-calendar"></i> ${new Date(project.date).toLocaleDateString()}
+                </span>
+            </div>
+            
+            <div style="margin-bottom: 30px;">
+                ${marked.parse(project.content || 'No description available.')}
+            </div>
+            
+            ${project.images && project.images.length > 0 ? `
+                <div style="margin: 40px 0;">
+                    <h3 style="margin-bottom: 20px;"><i class="fas fa-images"></i> Project Images (${project.images.length})</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;">
+                        ${project.images.map((img, index) => `
+                            <a href="${img}" target="_blank" style="display: block; text-decoration: none;">
+                                <div style="border: 1px solid var(--gray-light); border-radius: 8px; overflow: hidden; transition: var(--transition);">
+                                    <img src="${img}" alt="Project Image ${index + 1}" style="width: 100%; height: 150px; object-fit: cover;">
+                                    <div style="padding: 10px; text-align: center; background: var(--light);">
+                                        <small style="color: var(--gray);">View Image ${index + 1}</small>
+                                    </div>
+                                </div>
+                            </a>
+                        `).join('')}
                     </div>
                 </div>
-            `;
+            ` : ''}
             
-            showModal(modalHtml);
-        }
-        
-        // ================= PDF GENERATION =================
-        function generatePDF(projectId) {
-            const project = posts.find(p => (p.id || p.title) === projectId);
-            if (!project) return;
+            ${project.dashboard && project.dashboard !== 'null' && project.dashboard !== 'undefined' ? `
+                <div style="margin: 40px 0; text-align: center;">
+                    <h3 style="margin-bottom: 20px;"><i class="fas fa-chart-bar"></i> Interactive Dashboard</h3>
+                    <div style="margin-bottom: 20px;">
+                        <p>Click the button below to view the interactive dashboard for this project:</p>
+                    </div>
+                    <a href="${project.dashboard}" target="_blank" class="btn btn-primary" style="text-decoration: none;">
+                        <i class="fas fa-external-link-alt"></i> Open Dashboard in New Tab
+                    </a>
+                </div>
+            ` : ''}
             
-            const element = document.createElement('div');
-            element.innerHTML = `
-                <div style="padding: 40px; font-family: Arial, sans-serif;">
-                    <div style="text-align: center; margin-bottom: 40px;">
-                        <h1 style="color: #0052CC;">Danis Consulting Company</h1>
-                        <p style="color: #666; font-size: 14px;">Data Science Excellence</p>
-                    </div>
-                    
-                    <div style="border-bottom: 2px solid #0052CC; padding-bottom: 20px; margin-bottom: 30px;">
-                        <h2 style="color: #172B4D; margin-bottom: 10px;">${project.title}</h2>
-                        <div style="display: flex; gap: 20px; color: #666; font-size: 14px;">
-                            <span><strong>Client:</strong> ${project.client}</span>
-                            <span><strong>Sector:</strong> ${project.sector}</span>
-                            <span><strong>Date:</strong> ${new Date(project.date).toLocaleDateString()}</span>
-                        </div>
-                    </div>
-                    
-                    <div style="margin-bottom: 30px;">
-                        ${marked.parse(project.content)}
-                    </div>
-                    
-                    ${project.tags ? `
-                        <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee;">
-                            <p><strong>Tags:</strong> ${project.tags.join(', ')}</p>
-                        </div>
-                    ` : ''}
-                    
-                    <div style="margin-top: 60px; padding-top: 20px; border-top: 1px solid #eee; text-align: center; color: #666; font-size: 12px;">
-                        <p>© ${new Date().getFullYear()} Danis Consulting Company. All rights reserved.</p>
-                        <p>Confidential Report - For internal use only</p>
+            ${project.tags ? `
+                <div style="margin: 30px 0;">
+                    <h4>Tags:</h4>
+                    <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;">
+                        ${project.tags.map(tag => `<span style="background: var(--primary); color: white; padding: 6px 12px; border-radius: 4px;">${tag}</span>`).join('')}
                     </div>
                 </div>
-            `;
+            ` : ''}
             
-            html2pdf()
-                .set({
-                    margin: 10,
-                    filename: `Danis_Consulting_${project.title.replace(/\s+/g, '_')}_Report.pdf`,
-                    image: { type: 'jpeg', quality: 0.98 },
-                    html2canvas: { scale: 2 },
-                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-                })
-                .from(element)
-                .save();
-        }
+            <div style="display: flex; gap: 15px; margin-top: 40px; justify-content: center;">
+                <button onclick="generatePDF('${project.id || project.title}')" class="btn btn-primary">
+                    <i class="fas fa-download"></i> Download Full Report
+                </button>
+                ${project.dashboard && project.dashboard !== 'null' && project.dashboard !== 'undefined' ? `
+                    <a href="${project.dashboard}" target="_blank" class="btn btn-secondary" style="text-decoration: none;">
+                        <i class="fas fa-chart-bar"></i> View Dashboard
+                    </a>
+                ` : ''}
+                <button onclick="closeModal()" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Close
+                </button>
+            </div>
+        </div>
+    `;
+    
+    showModal(modalHtml);
+}
+
+// ================= PDF GENERATION (Updated to include images) =================
+function generatePDF(projectId) {
+    const project = posts.find(p => (p.id || p.title) === projectId);
+    if (!project) return;
+    
+    const element = document.createElement('div');
+    
+    // Prepare images HTML for PDF
+    let imagesHtml = '';
+    if (project.images && project.images.length > 0) {
+        imagesHtml = `
+            <div style="margin-top: 30px;">
+                <h3 style="color: #172B4D; border-bottom: 1px solid #eee; padding-bottom: 10px;">Project Images</h3>
+                <p style="margin: 10px 0; color: #666;">This project contains ${project.images.length} image(s). Due to PDF limitations, images are not included in this report. Please view the project online to see all images.</p>
+            </div>
+        `;
+    }
+    
+    // Prepare dashboard link HTML for PDF
+    let dashboardHtml = '';
+    if (project.dashboard && project.dashboard !== 'null' && project.dashboard !== 'undefined') {
+        dashboardHtml = `
+            <div style="margin-top: 20px;">
+                <p><strong>Dashboard URL:</strong> ${project.dashboard}</p>
+            </div>
+        `;
+    }
+    
+    element.innerHTML = `
+        <div style="padding: 40px; font-family: Arial, sans-serif;">
+            <div style="text-align: center; margin-bottom: 40px;">
+                <h1 style="color: #0052CC;">Danis Consulting Company</h1>
+                <p style="color: #666; font-size: 14px;">Data Science Excellence</p>
+            </div>
+            
+            <div style="border-bottom: 2px solid #0052CC; padding-bottom: 20px; margin-bottom: 30px;">
+                <h2 style="color: #172B4D; margin-bottom: 10px;">${project.title}</h2>
+                <div style="display: flex; flex-wrap: wrap; gap: 15px; color: #666; font-size: 14px;">
+                    <span><strong>Client:</strong> ${project.client}</span>
+                    <span><strong>Sector:</strong> ${project.sector}</span>
+                    <span><strong>Date:</strong> ${new Date(project.date).toLocaleDateString()}</span>
+                    <span><strong>Project ID:</strong> ${project.id || 'N/A'}</span>
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 30px;">
+                ${marked.parse(project.content || 'No description available.')}
+            </div>
+            
+            ${imagesHtml}
+            ${dashboardHtml}
+            
+            ${project.tags ? `
+                <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee;">
+                    <p><strong>Tags:</strong> ${project.tags.join(', ')}</p>
+                </div>
+            ` : ''}
+            
+            <div style="margin-top: 60px; padding-top: 20px; border-top: 1px solid #eee; text-align: center; color: #666; font-size: 12px;">
+                <p>© ${new Date().getFullYear()} Danis Consulting Company. All rights reserved.</p>
+                <p>Confidential Report - For internal use only</p>
+                <p>Generated on: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}</p>
+            </div>
+        </div>
+    `;
+    
+    html2pdf()
+        .set({
+            margin: 10,
+            filename: `Danis_Consulting_${(project.id || project.title).replace(/\s+/g, '_')}_Report.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        })
+        .from(element)
+        .save();
+}
         
         // ================= PROPOSAL SUBMISSION =================
         document.getElementById('proposalForm')?.addEventListener('submit', async function(e) {
