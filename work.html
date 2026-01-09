@@ -1125,7 +1125,7 @@
                                 <i class="fas fa-calendar"></i> ${dateDisplay}
                             </div>
                             <div class="post-content">
-                                ${marked.parse(post.content.substring(0, 200) + '...')}
+                                ${marked.parse((post.content || '').substring(0, 200).replace(/\n/g, '  ') + '...')}
                             </div>
                         </div>
                         
@@ -1155,23 +1155,23 @@
         document.getElementById('sortFilter')?.addEventListener('change', filterPosts);
         
         function filterPosts() {
-            const searchTerm = document.getElementById('search').value.toLowerCase();
-            const sectorFilter = document.getElementById('sectorFilter').value;
-            
-            const filtered = posts.filter(post => {
-                const matchesSearch = !searchTerm || 
-                    post.title.toLowerCase().includes(searchTerm) ||
-                    post.client.toLowerCase().includes(searchTerm) ||
-                    (post.tags && post.tags.some(tag => tag.toLowerCase().includes(searchTerm))) ||
-                    post.content.toLowerCase().includes(searchTerm);
-                
-                const matchesSector = !sectorFilter || post.sector === sectorFilter;
-                
-                return matchesSearch && matchesSector;
-            });
-            
-            renderPosts(filtered);
-        }
+    const searchTerm = document.getElementById('search').value.toLowerCase();
+    const sectorFilter = document.getElementById('sectorFilter').value;
+    
+    const filtered = posts.filter(post => {
+        const matchesSearch = !searchTerm || 
+            (post.title || '').toLowerCase().includes(searchTerm) ||
+            (post.client || '').toLowerCase().includes(searchTerm) ||
+            (post.tags && post.tags.some(tag => tag.toLowerCase().includes(searchTerm))) ||
+            (post.content || '').toLowerCase().includes(searchTerm);
+        
+        const matchesSector = !sectorFilter || post.sector === sectorFilter;
+        
+        return matchesSearch && matchesSector;
+    });
+    
+    renderPosts(filtered);
+}
         
         // ================= VIEW PROJECT DETAILS =================
         function viewProject(projectId) {
@@ -1203,12 +1203,13 @@
                         ${marked.parse(project.content)}
                     </div>
                     
-                    ${project.dashboard ? `
-                        <div style="margin: 40px 0;">
-                            <h3 style="margin-bottom: 20px;"><i class="fas fa-chart-bar"></i> Interactive Dashboard</h3>
-                            <iframe src="${project.dashboard}" style="width: 100%; height: 500px; border: none; border-radius: 8px;"></iframe>
-                        </div>
-                    ` : ''}
+                    
+                    ${project.dashboard && project.dashboard !== 'null' ? `
+    <div style="margin: 40px 0;">
+        <h3 style="margin-bottom: 20px;"><i class="fas fa-chart-bar"></i> Interactive Dashboard</h3>
+        <iframe src="${project.dashboard}" style="width: 100%; height: 500px; border: none; border-radius: 8px;"></iframe>
+    </div>
+` : ''}
                     
                     ${project.tags ? `
                         <div style="margin: 30px 0;">
