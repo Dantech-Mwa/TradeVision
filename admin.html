@@ -386,11 +386,11 @@
         
         @keyframes slideIn {
             from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
+            to { transform: translateY(0); opacity: 1; }
         }
         
         @keyframes slideOut {
-            from { transform: translateX(0); opacity: 1; }
+            from { transform: translateY(0); opacity: 1; }
             to { transform: translateX(100%); opacity: 0; }
         }
         
@@ -772,6 +772,8 @@
             checkLogin();
             setupEventListeners();
             updateConnectionStatus();
+            // Set default date
+            document.getElementById('projectDate').value = new Date().toISOString().split('T')[0];
         });
         
         function checkLogin() {
@@ -967,9 +969,6 @@
                 if (githubToken) {
                     await saveToGitHub(GITHUB_CONFIG.DATA_FILE, allProjects, `Added project: ${project.title}`);
                     showNotification('Project saved to GitHub!', 'success');
-                    
-                    // Upload files to GitHub
-                    await uploadFilesToGitHub(project.id);
                 } else {
                     showNotification('Project saved locally. Add GitHub token to publish.', 'warning');
                 }
@@ -1018,6 +1017,19 @@
                 imageHtml = `<img src="${project.featuredImage}" alt="${project.title}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 15px;">`;
             }
             
+            // Show uploaded files in preview
+            let filesHtml = '';
+            if (uploadedFiles.length) {
+                filesHtml = `
+                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--gray-light);">
+                        <strong>Files (${uploadedFiles.length}):</strong>
+                        <ul style="font-size: 12px; margin-top: 5px;">
+                            ${uploadedFiles.map(f => `<li>${f.name} (${Math.round(f.size/1024)}KB)</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+            
             preview.innerHTML = `
                 <div class="preview-card">
                     ${imageHtml}
@@ -1038,6 +1050,7 @@
                             ${project.tags.map(tag => `<span style="background: rgba(0, 82, 204, 0.1); color: var(--primary); padding: 4px 8px; border-radius: 4px; font-size: 12px;">${tag}</span>`).join('')}
                         </div>
                     ` : ''}
+                    ${filesHtml}
                 </div>
             `;
         }
@@ -1053,6 +1066,7 @@
             const uploadProgress = document.getElementById('uploadProgress');
             uploadProgress.style.display = 'block';
             
+            // Upload each file to GitHub immediately
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
                 
@@ -1060,23 +1074,29 @@
                 progressBar.style.width = ((i + 1) / files.length * 100) + '%';
                 progressPercent.textContent = Math.round((i + 1) / files.length * 100) + '%';
                 
-                // Read file as base64
-                const base64 = await readFileAsBase64(file);
-                
-                // Create file object
-                const fileObj = {
-                    name: file.name,
-                    type: file.type,
-                    size: file.size,
-                    base64: base64.split(',')[1], // Remove data URL prefix
-                    url: `${GITHUB_CONFIG.UPLOADS_DIR}${Date.now()}_${file.name}`
-                };
-                
-                uploadedFiles.push(fileObj);
-                
-                // For images, set as featured image if not set
-                if (file.type.startsWith('image/') && !document.getElementById('featuredImage').value) {
-                    document.getElementById('featuredImage').value = `data:${file.type};base64,${fileObj.base64}`;
+                try {
+                    // Upload file to GitHub and get URL
+                    const fileUrl = await uploadFileToGitHub(file);
+                    
+                    // Store only the file info with URL (NO base64)
+                    const fileObj = {
+                        name: file.name,
+                        type: file.type,
+                        size: file.size,
+                        url: fileUrl,
+                        uploadedAt: new Date().toISOString()
+                    };
+                    
+                    uploadedFiles.push(fileObj);
+                    
+                    // For images, set as featured image if not set
+                    if (file.type.startsWith('image/') && !document.getElementById('featuredImage').value) {
+                        document.getElementById('featuredImage').value = fileUrl;
+                    }
+                    
+                } catch (error) {
+                    console.error('Failed to upload file:', error);
+                    showNotification(`Failed to upload ${file.name}: ${error.message}`, 'error');
                 }
             }
             
@@ -1094,6 +1114,44 @@
             
             // Clear file input
             e.target.value = '';
+        }
+        
+        async function uploadFileToGitHub(file) {
+            if (!githubToken) {
+                throw new Error('GitHub token not set. Please configure in Settings tab.');
+            }
+            
+            // Read file as base64 for GitHub upload
+            const base64 = await readFileAsBase64(file);
+            
+            // Create unique filename
+            const timestamp = Date.now();
+            const safeFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+            const fileName = `${timestamp}_${safeFileName}`;
+            const filePath = `${GITHUB_CONFIG.UPLOADS_DIR}${fileName}`;
+            
+            // Upload to GitHub
+            const response = await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.REPO}/contents/${filePath}`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `token ${githubToken}`,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/vnd.github.v3+json'
+                },
+                body: JSON.stringify({
+                    message: `Uploaded ${file.name}`,
+                    content: base64.split(',')[1], // Remove data URL prefix
+                    branch: GITHUB_CONFIG.BRANCH
+                })
+            });
+            
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.message || 'Upload failed');
+            }
+            
+            // Return the raw.githubusercontent.com URL
+            return `https://raw.githubusercontent.com/${GITHUB_CONFIG.REPO}/${GITHUB_CONFIG.BRANCH}/${filePath}`;
         }
         
         async function handleFileUploadToRepo(e) {
@@ -1156,10 +1214,16 @@
                 const isImage = file.type.startsWith('image/');
                 const sizeKB = Math.round(file.size / 1024);
                 
+                // Use the URL directly for images
+                const imageSrc = isImage ? file.url : 'https://via.placeholder.com/150x100?text=' + file.type.split('/')[1];
+                
                 return `
                     <div class="file-item">
-                        ${isImage ? `<img src="data:${file.type};base64,${file.base64}" alt="${file.name}">` : ''}
-                        <div style="font-size: 12px; margin-top: 5px;">${file.name}</div>
+                        ${isImage ? `<img src="${imageSrc}" alt="${file.name}" loading="lazy">` : 
+                          `<div style="height: 100px; display: flex; align-items: center; justify-content: center; background: var(--white); border-radius: 6px; margin-bottom: 10px;">
+                            <i class="fas fa-file" style="font-size: 36px; color: var(--gray);"></i>
+                          </div>`}
+                        <div style="font-size: 12px; margin-top: 5px; word-break: break-all;">${file.name}</div>
                         <div style="font-size: 11px; color: var(--gray);">${sizeKB} KB</div>
                         <button class="file-remove" onclick="removeFile(${index})">
                             <i class="fas fa-times"></i>
@@ -1172,6 +1236,7 @@
         function removeFile(index) {
             uploadedFiles.splice(index, 1);
             updateUploadedFilesDisplay();
+            updatePreview();
         }
         
         // ================= GITHUB INTEGRATION =================
@@ -1222,32 +1287,6 @@
                 return null; // File doesn't exist
             } catch (error) {
                 return null;
-            }
-        }
-        
-        async function uploadFilesToGitHub(projectId) {
-            if (!githubToken || !uploadedFiles.length) return;
-            
-            for (const file of uploadedFiles) {
-                const filePath = `${GITHUB_CONFIG.UPLOADS_DIR}${projectId}_${file.name}`;
-                
-                try {
-                    await fetch(`https://api.github.com/repos/${GITHUB_CONFIG.REPO}/contents/${filePath}`, {
-                        method: 'PUT',
-                        headers: {
-                            'Authorization': `token ${githubToken}`,
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/vnd.github.v3+json'
-                        },
-                        body: JSON.stringify({
-                            message: `Uploaded ${file.name} for project ${projectId}`,
-                            content: file.base64,
-                            branch: GITHUB_CONFIG.BRANCH
-                        })
-                    });
-                } catch (error) {
-                    console.error('Error uploading file:', error);
-                }
             }
         }
         
@@ -1577,13 +1616,6 @@
         document.addEventListener('mousemove', resetInactivityTimer);
         document.addEventListener('keypress', resetInactivityTimer);
         resetInactivityTimer();
-        
-        // Close modal when clicking outside
-        document.addEventListener('click', function(e) {
-            if (e.target.classList.contains('modal')) {
-                e.target.style.display = 'none';
-            }
-        });
     </script>
 </body>
 </html>
