@@ -57,6 +57,7 @@
             padding: 40px 60px;
             text-align: center;
             border-bottom: 8px solid var(--accent-color);
+            position: relative;
         }
 
         .book-title {
@@ -88,6 +89,170 @@
             padding: 15px 0;
             display: inline-block;
             margin-top: 20px;
+        }
+
+        /* Heart Button */
+        .heart-btn {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid var(--accent-color);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .heart-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(212, 167, 106, 0.5);
+        }
+
+        .heart-btn .fa-heart {
+            animation: heartbeat 1.5s infinite;
+        }
+
+        @keyframes heartbeat {
+            0% { transform: scale(1); }
+            5% { transform: scale(1.1); }
+            10% { transform: scale(1); }
+            15% { transform: scale(1.1); }
+            20% { transform: scale(1); }
+            100% { transform: scale(1); }
+        }
+
+        /* Donation Modal */
+        .donation-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .donation-modal.active {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            background-color: white;
+            width: 90%;
+            max-width: 600px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #1a2530 100%);
+            color: white;
+            padding: 25px;
+            text-align: center;
+            position: relative;
+        }
+
+        .modal-header h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            margin: 0;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .close-modal:hover {
+            transform: scale(1.2);
+        }
+
+        .modal-body {
+            padding: 30px;
+        }
+
+        .donation-methods {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        .donation-method {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .donation-method:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow);
+        }
+
+        .donation-method h4 {
+            font-family: 'Inter', sans-serif;
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: var(--secondary-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .donation-details {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+            border-left: 4px solid var(--accent-color);
+            font-family: 'Inter', sans-serif;
+        }
+
+        .donation-icon {
+            color: var(--secondary-color);
+            font-size: 1.5rem;
+        }
+
+        .modal-footer {
+            text-align: center;
+            padding: 20px;
+            border-top: 1px solid var(--border-color);
+            font-style: italic;
+            color: var(--text-light);
         }
 
         /* Navigation */
@@ -156,6 +321,7 @@
         .book-content {
             padding: 60px;
             min-height: 70vh;
+            position: relative;
         }
 
         .page {
@@ -192,6 +358,7 @@
         .chapter-content {
             font-size: 1.25rem;
             line-height: 1.9;
+            margin-bottom: 60px;
         }
 
         .chapter-content p {
@@ -218,6 +385,61 @@
             border-left: 4px solid var(--accent-color);
             padding-left: 25px;
             margin: 40px 0;
+        }
+
+        /* Page Navigation Buttons */
+        .page-navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .page-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 140px;
+        }
+
+        .page-btn:hover {
+            background-color: #3a506b;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .page-btn.back-btn {
+            background-color: #6c757d;
+        }
+
+        .page-btn.back-btn:hover {
+            background-color: #5a6268;
+        }
+
+        .page-btn.next-btn {
+            background-color: var(--secondary-color);
+        }
+
+        .page-btn.next-btn:hover {
+            background-color: #724c24;
+        }
+
+        .page-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
 
         .synopsis-section {
@@ -247,7 +469,7 @@
             border-left: 4px solid var(--accent-color);
         }
 
-        /* Footer & Donation */
+        /* Footer */
         .book-footer {
             background-color: var(--primary-color);
             color: white;
@@ -256,77 +478,9 @@
             border-top: 8px solid var(--accent-color);
         }
 
-        .donation-section {
-            background-color: rgba(255, 255, 255, 0.1);
-            padding: 30px;
-            border-radius: 8px;
-            max-width: 800px;
-            margin: 0 auto 40px;
-        }
-
-        .donation-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.8rem;
-            margin-bottom: 20px;
-            color: var(--accent-color);
-        }
-
-        .donation-text {
-            margin-bottom: 25px;
-            font-size: 1.1rem;
-            line-height: 1.7;
-        }
-
-        .donation-methods {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 30px;
-            margin-top: 30px;
-        }
-
-        .donation-method {
-            background-color: white;
-            color: var(--primary-color);
-            padding: 25px;
-            border-radius: 8px;
-            width: 300px;
-            box-shadow: var(--shadow);
-            transition: transform 0.3s ease;
-        }
-
-        .donation-method:hover {
-            transform: translateY(-5px);
-        }
-
-        .donation-method h4 {
-            font-family: 'Inter', sans-serif;
-            font-size: 1.3rem;
-            margin-bottom: 15px;
-            color: var(--secondary-color);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .donation-details {
-            font-size: 1.1rem;
-            margin-bottom: 15px;
-            padding: 15px;
-            background-color: #f9f9f9;
-            border-radius: 4px;
-            border-left: 4px solid var(--accent-color);
-        }
-
-        .donation-icon {
-            color: var(--secondary-color);
-            font-size: 1.8rem;
-        }
-
         .publication-details {
-            margin-top: 40px;
-            padding-top: 30px;
+            margin-top: 20px;
+            padding-top: 20px;
             border-top: 1px solid rgba(255, 255, 255, 0.2);
             font-family: 'Inter', sans-serif;
             font-size: 0.95rem;
@@ -353,6 +507,14 @@
             
             .chapter-title {
                 font-size: 2.2rem;
+            }
+            
+            .heart-btn {
+                top: 20px;
+                right: 20px;
+                width: 45px;
+                height: 45px;
+                font-size: 1.3rem;
             }
         }
 
@@ -388,14 +550,26 @@
                 min-width: 100%;
             }
             
-            .donation-methods {
+            .page-navigation {
                 flex-direction: column;
-                align-items: center;
+                gap: 15px;
+            }
+            
+            .page-btn {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .heart-btn {
+                position: relative;
+                top: 0;
+                right: 0;
+                margin: 20px auto;
+                display: block;
             }
             
             .donation-method {
-                width: 100%;
-                max-width: 400px;
+                padding: 15px;
             }
         }
 
@@ -419,6 +593,14 @@
             .chapter-content p:first-of-type:first-letter {
                 font-size: 3.5rem;
             }
+            
+            .book-content {
+                padding: 40px 25px;
+            }
+            
+            .modal-content {
+                width: 95%;
+            }
         }
 
         /* Page turn animation */
@@ -430,28 +612,53 @@
             0% { opacity: 0; transform: translateX(20px); }
             100% { opacity: 1; transform: translateX(0); }
         }
-
-        /* Heart icon */
-        .heart-icon {
-            color: #e74c3c;
-            animation: heartbeat 1.5s infinite;
-            display: inline-block;
-        }
-
-        @keyframes heartbeat {
-            0% { transform: scale(1); }
-            5% { transform: scale(1.1); }
-            10% { transform: scale(1); }
-            15% { transform: scale(1.1); }
-            20% { transform: scale(1); }
-            100% { transform: scale(1); }
-        }
     </style>
 </head>
 <body>
+    <!-- Donation Modal -->
+    <div id="donationModal" class="donation-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-heart"></i> Support the Author</h3>
+                <button class="close-modal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <p>If this book has provided you with valuable insights and you'd like to support the author's work, please consider making a donation. Your contribution helps sustain the creation of meaningful content and supports independent authors.</p>
+                
+                <div class="donation-methods">
+                    <div class="donation-method">
+                        <h4><i class="fab fa-paypal donation-icon"></i> PayPal</h4>
+                        <p class="donation-details">Send to: wambuamwanza6@gmail.com</p>
+                        <p>Use the email above to send a donation via PayPal</p>
+                    </div>
+                    
+                    <div class="donation-method">
+                        <h4><i class="fas fa-mobile-alt donation-icon"></i> MPESA</h4>
+                        <p class="donation-details">Phone: 0720208150</p>
+                        <p>Send your donation via MPESA to this number</p>
+                    </div>
+                    
+                    <div class="donation-method">
+                        <h4><i class="fas fa-envelope donation-icon"></i> Contact</h4>
+                        <p class="donation-details">Email: wambuamwanza6@gmail.com</p>
+                        <p>For questions, speaking engagements, or other inquiries</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <p>Thank you for your generosity and for being part of the community that values wisdom, preparation, and the protection of creative work.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Book Container -->
     <div class="book-container">
         <!-- Header Section -->
         <header class="book-header">
+            <button class="heart-btn" id="heartBtn">
+                <i class="fas fa-heart"></i>
+            </button>
+            
             <h1 class="book-title">The Betrayal of the Prepared Cow</h1>
             <p class="book-subtitle">Why What You Build Sometimes Works for Someone Else</p>
             <div class="book-author">Author: Mwanza Wambua</div>
@@ -507,6 +714,16 @@
                     
                     <p>The prepared cow will always be necessary. But we must learn to build the fence before we need it.</p>
                 </div>
+                
+                <!-- Page Navigation Buttons -->
+                <div class="page-navigation">
+                    <button id="introBackBtn" class="page-btn back-btn" disabled>
+                        <i class="fas fa-arrow-left"></i> Back
+                    </button>
+                    <button id="introNextBtn" class="page-btn next-btn">
+                        Next Chapter <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
             </section>
 
             <!-- Chapter 1 -->
@@ -520,6 +737,16 @@
                     <p>Preparation is ultimately an act of faith, a covenant made with an uncertain future. You pour your time, your resources, your very self into something that offers no guarantees. You believe, with a hope that borders on prayer, that one day when the rains finally come and the soil calls, the creature you have nurtured will pull steadfastly for your land and your harvest alone.</p>
                     
                     <p>But this nurturing creates a profound and often overlooked vulnerability. The stronger the cow becomes, the more splendid its form, the more efficient its pull—the more it attracts the gaze of others. Excellence draws attention like a beacon. Value, once recognized, invites interference, envy, and a sense of entitlement from those who did not share in the labor of its creation.</p>
+                </div>
+                
+                <!-- Page Navigation Buttons -->
+                <div class="page-navigation">
+                    <button id="chapter1BackBtn" class="page-btn back-btn">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </button>
+                    <button id="chapter1NextBtn" class="page-btn next-btn">
+                        Next Chapter <i class="fas fa-arrow-right"></i>
+                    </button>
                 </div>
             </section>
 
@@ -537,6 +764,16 @@
                     
                     <p>The lesson is brutal in its simplicity: preparation creates power, but power released without structure simply creates loss. It flows to the point of least resistance, and often, that is directly toward the waiting hands of the observant neighbor.</p>
                 </div>
+                
+                <!-- Page Navigation Buttons -->
+                <div class="page-navigation">
+                    <button id="chapter2BackBtn" class="page-btn back-btn">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </button>
+                    <button id="chapter2NextBtn" class="page-btn next-btn">
+                        Next Chapter <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
             </section>
 
             <!-- Chapter 3 -->
@@ -550,6 +787,16 @@
                     <p>This chapter forces an uncomfortable but necessary recognition: not every person within our orbit shares our benevolent intentions. Not all observation is admiration; sometimes it is calculation. Some individuals operate on a fundamentally different principle—they do not plant, they position. They cultivate not the asset, but the opportunity to claim it.</p>
                     
                     <p>Wisdom in this context is not paranoia, but rather a sober awareness. It is the understanding that not every smile across the fence line is an expression of support, and not every presence in our lives signifies a partnership. It is the ability to discern between those who build with you and those who are merely waiting for you to finish building.</p>
+                </div>
+                
+                <!-- Page Navigation Buttons -->
+                <div class="page-navigation">
+                    <button id="chapter3BackBtn" class="page-btn back-btn">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </button>
+                    <button id="chapter3NextBtn" class="page-btn next-btn">
+                        Next Chapter <i class="fas fa-arrow-right"></i>
+                    </button>
                 </div>
             </section>
 
@@ -567,6 +814,16 @@
                     
                     <p>This moment of revelation is the pivot upon which innocence turns into experience, where naive trust transforms into hard-won discernment.</p>
                 </div>
+                
+                <!-- Page Navigation Buttons -->
+                <div class="page-navigation">
+                    <button id="chapter4BackBtn" class="page-btn back-btn">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </button>
+                    <button id="chapter4NextBtn" class="page-btn next-btn">
+                        Next Chapter <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
             </section>
 
             <!-- Chapter 5 -->
@@ -580,6 +837,16 @@
                     <p>This chapter serves as a crucial correction to that impulse. It argues that the betrayal itself does not cancel the inherent wisdom of preparation; it does not invalidate the virtue of building. Instead, the painful experience merely refines that wisdom, adding necessary layers of complexity, strategy, and protection. The lesson is not to stop cultivating, but to cultivate with both an open heart and a guarded perimeter.</p>
                     
                     <p>The silent loss is of innocence, not of opportunity. It is the loss of the unexamined faith that the world operates on fair exchange. Grieving this loss is necessary, but enshrining it as permanent truth is a surrendering of power. The emotional investment was real and valid; the betrayal does not negate its worth, but rather demands that future investments be made with sharper eyes and clearer terms.</p>
+                </div>
+                
+                <!-- Page Navigation Buttons -->
+                <div class="page-navigation">
+                    <button id="chapter5BackBtn" class="page-btn back-btn">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </button>
+                    <button id="chapter5NextBtn" class="page-btn next-btn">
+                        Next Chapter <i class="fas fa-arrow-right"></i>
+                    </button>
                 </div>
             </section>
 
@@ -595,6 +862,16 @@
                     
                     <p>Every significant loss, particularly one born of misplaced trust, contains within it a lesson woven tightly into the fabric of the grief. The pain is the wrapping; the insight is the gift. To reject the examination is to be condemned to repeat the scenario, perhaps with different actors but the same tragic plot. To engage with it is to begin translating raw experience into durable wisdom, ensuring that future investments are not just earnest, but also architecturally sound.</p>
                 </div>
+                
+                <!-- Page Navigation Buttons -->
+                <div class="page-navigation">
+                    <button id="chapter6BackBtn" class="page-btn back-btn">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </button>
+                    <button id="chapter6NextBtn" class="page-btn next-btn">
+                        Next Chapter <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
             </section>
 
             <!-- Chapter 7 -->
@@ -608,6 +885,16 @@
                     <p>They create a container strong enough to hold deep collaboration without leakage of value or intention. They ensure that the tremendous energy of preparation flows toward its intended purpose, creating a harvest that nourishes the hands that did the sowing.</p>
                     
                     <p>The owner learns that you can build a wide, welcoming gate without tearing down the fence, that you can share the fruits of your labor without surrendering the roots.</p>
+                </div>
+                
+                <!-- Page Navigation Buttons -->
+                <div class="page-navigation">
+                    <button id="chapter7BackBtn" class="page-btn back-btn">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </button>
+                    <button id="chapter7NextBtn" class="page-btn next-btn">
+                        Next Chapter <i class="fas fa-arrow-right"></i>
+                    </button>
                 </div>
             </section>
 
@@ -623,6 +910,16 @@
                     
                     <p>The lesson extends far beyond agriculture: we must build not just competence in others, but belonging. We must foster not just capability, but a shared sense of destination. The goal is to develop assets that are not just useful, but invested.</p>
                 </div>
+                
+                <!-- Page Navigation Buttons -->
+                <div class="page-navigation">
+                    <button id="chapter8BackBtn" class="page-btn back-btn">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </button>
+                    <button id="chapter8NextBtn" class="page-btn next-btn">
+                        Next Chapter <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
             </section>
 
             <!-- Chapter 9 -->
@@ -634,6 +931,16 @@
                     <p>This is the noble path of transforming poison into medicine. The owner, now an elder in spirit if not in years, walks his land with a different gaze. He notices the young farmer struggling with a promising calf and a poorly defined boundary with his neighbor. He offers advice not as abstract philosophy, but as hard-won truth: "The strength of the fence determines who eats the harvest." He helps draft the first clear loan agreement for a shared tool. He instills in his own children and apprentices the dual disciplines of diligent creation and vigilant stewardship.</p>
                     
                     <p>The betrayal, in this light, is not erased or forgiven, but it is redeemed. It is made meaningful by becoming useful. It transitions from a event that happened to him to a lesson he offers to the community, ensuring that the price he paid purchases protection for those who come after. His legacy becomes one of fortified creation, where the memory of loss serves as the immune system for future endeavors.</p>
+                </div>
+                
+                <!-- Page Navigation Buttons -->
+                <div class="page-navigation">
+                    <button id="chapter9BackBtn" class="page-btn back-btn">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </button>
+                    <button id="chapter9NextBtn" class="page-btn next-btn">
+                        Next Chapter <i class="fas fa-arrow-right"></i>
+                    </button>
                 </div>
             </section>
 
@@ -650,6 +957,16 @@
                     <p>And so we return to the field. We select another calf with potential. We begin the patient work of feeding, healing, protecting, and training. But now we also survey the boundary lines with a surveyor's precision. We have the difficult conversations before the season of need creates pressure. We build loyalty as intentionally as we build strength. We do this not because we have forgotten the pain, but precisely because we remember it so clearly.</p>
                     
                     <p>We prepare again, not in spite of what happened, but informed by it. Because the core problem was never the act of raising the cow. The tragedy was never in the preparation itself. The fatal flaw was in preparing with all one's heart, while failing to secure the rightful harvest.</p>
+                </div>
+                
+                <!-- Page Navigation Buttons -->
+                <div class="page-navigation">
+                    <button id="chapter10BackBtn" class="page-btn back-btn">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </button>
+                    <button id="chapter10NextBtn" class="page-btn next-btn">
+                        Next Chapter <i class="fas fa-arrow-right"></i>
+                    </button>
                 </div>
             </section>
 
@@ -687,40 +1004,21 @@
                         <strong>Available in</strong> Hardcover, Paperback, eBook</p>
                     </div>
                 </div>
+                
+                <!-- Page Navigation Buttons -->
+                <div class="page-navigation">
+                    <button id="synopsisBackBtn" class="page-btn back-btn">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </button>
+                    <button id="synopsisNextBtn" class="page-btn next-btn" disabled>
+                        The End <i class="fas fa-flag-checkered"></i>
+                    </button>
+                </div>
             </section>
         </main>
 
-        <!-- Footer with Donation Section -->
+        <!-- Footer -->
         <footer class="book-footer">
-            <div class="donation-section">
-                <h3 class="donation-title"><i class="fas fa-heart heart-icon"></i> Support the Author</h3>
-                <p class="donation-text">If this book has provided you with valuable insights and you'd like to support the author's work, please consider making a donation. Your contribution helps sustain the creation of meaningful content and supports independent authors.</p>
-                
-                <div class="donation-methods">
-                    <div class="donation-method">
-                        <h4><i class="fab fa-paypal donation-icon"></i> PayPal</h4>
-                        <p class="donation-details">Send to: wambuamwanza6@gmail.com</p>
-                        <p>Use the email above to send a donation via PayPal</p>
-                    </div>
-                    
-                    <div class="donation-method">
-                        <h4><i class="fas fa-mobile-alt donation-icon"></i> MPESA</h4>
-                        <p class="donation-details">Phone: 0720208150</p>
-                        <p>Send your donation via MPESA to this number</p>
-                    </div>
-                    
-                    <div class="donation-method">
-                        <h4><i class="fas fa-envelope donation-icon"></i> Contact</h4>
-                        <p class="donation-details">Email: wambuamwanza6@gmail.com</p>
-                        <p>For questions, speaking engagements, or other inquiries</p>
-                    </div>
-                </div>
-                
-                <p class="donation-text" style="margin-top: 30px; font-style: italic;">
-                    Thank you for your generosity and for being part of the community that values wisdom, preparation, and the protection of creative work.
-                </p>
-            </div>
-            
             <div class="publication-details">
                 <p>&copy; 2026 Mwanza Wambua. All rights reserved.</p>
                 <p><em>The Betrayal of the Prepared Cow</em> is a work of social psychology and strategic analysis.</p>
@@ -738,6 +1036,9 @@
             const prevBtn = document.getElementById('prevBtn');
             const nextBtn = document.getElementById('nextBtn');
             const pdfBtn = document.getElementById('pdfBtn');
+            const heartBtn = document.getElementById('heartBtn');
+            const donationModal = document.getElementById('donationModal');
+            const closeModal = document.querySelector('.close-modal');
             
             const pageIds = ['intro', 'chapter1', 'chapter2', 'chapter3', 'chapter4', 
                            'chapter5', 'chapter6', 'chapter7', 'chapter8', 'chapter9', 
@@ -763,6 +1064,9 @@
                 
                 // Update button states
                 updateButtonStates();
+                
+                // Update page navigation buttons
+                updatePageNavigationButtons();
                 
                 // Remove animation class after animation completes
                 setTimeout(() => {
@@ -790,6 +1094,31 @@
                 }
             }
             
+            // Function to update page navigation buttons (Back/Next at bottom of page)
+            function updatePageNavigationButtons() {
+                // Enable/disable back buttons based on current page
+                const allBackButtons = document.querySelectorAll('.page-btn.back-btn');
+                const allNextButtons = document.querySelectorAll('.page-btn.next-btn');
+                
+                // Update all back buttons
+                allBackButtons.forEach(btn => {
+                    if (currentPageIndex === 0) {
+                        btn.disabled = true;
+                    } else {
+                        btn.disabled = false;
+                    }
+                });
+                
+                // Update all next buttons
+                allNextButtons.forEach(btn => {
+                    if (currentPageIndex === pageIds.length - 1) {
+                        btn.disabled = true;
+                    } else {
+                        btn.disabled = false;
+                    }
+                });
+            }
+            
             // Show initial page (Introduction)
             showPage('intro');
             
@@ -812,7 +1141,7 @@
                 if (currentPageIndex < pageIds.length - 1) {
                     showPage(pageIds[currentPageIndex + 1]);
                 } else {
-                    // If at the end, maybe show a thank you message or loop back
+                    // If at the end, show a thank you message
                     alert("You've reached the end of the book. Thank you for reading!");
                 }
             });
@@ -852,6 +1181,25 @@
                 });
             });
             
+            // Donation modal functionality
+            heartBtn.addEventListener('click', function() {
+                donationModal.classList.add('active');
+                document.body.style.overflow = 'hidden'; // Prevent scrolling
+            });
+            
+            closeModal.addEventListener('click', function() {
+                donationModal.classList.remove('active');
+                document.body.style.overflow = 'auto'; // Re-enable scrolling
+            });
+            
+            // Close modal when clicking outside
+            donationModal.addEventListener('click', function(e) {
+                if (e.target === donationModal) {
+                    donationModal.classList.remove('active');
+                    document.body.style.overflow = 'auto';
+                }
+            });
+            
             // Keyboard navigation
             document.addEventListener('keydown', function(event) {
                 // Left arrow key for previous page
@@ -862,10 +1210,110 @@
                 else if (event.key === 'ArrowRight' && currentPageIndex < pageIds.length - 1) {
                     showPage(pageIds[currentPageIndex + 1]);
                 }
+                // Escape key to close modal
+                else if (event.key === 'Escape' && donationModal.classList.contains('active')) {
+                    donationModal.classList.remove('active');
+                    document.body.style.overflow = 'auto';
+                }
             });
             
-            // Initialize button states
+            // Set up page navigation button event listeners
+            function setupPageNavigationListeners() {
+                // Intro page buttons
+                document.getElementById('introNextBtn').addEventListener('click', function() {
+                    showPage('chapter1');
+                });
+                
+                // Chapter 1 buttons
+                document.getElementById('chapter1BackBtn').addEventListener('click', function() {
+                    showPage('intro');
+                });
+                document.getElementById('chapter1NextBtn').addEventListener('click', function() {
+                    showPage('chapter2');
+                });
+                
+                // Chapter 2 buttons
+                document.getElementById('chapter2BackBtn').addEventListener('click', function() {
+                    showPage('chapter1');
+                });
+                document.getElementById('chapter2NextBtn').addEventListener('click', function() {
+                    showPage('chapter3');
+                });
+                
+                // Chapter 3 buttons
+                document.getElementById('chapter3BackBtn').addEventListener('click', function() {
+                    showPage('chapter2');
+                });
+                document.getElementById('chapter3NextBtn').addEventListener('click', function() {
+                    showPage('chapter4');
+                });
+                
+                // Chapter 4 buttons
+                document.getElementById('chapter4BackBtn').addEventListener('click', function() {
+                    showPage('chapter3');
+                });
+                document.getElementById('chapter4NextBtn').addEventListener('click', function() {
+                    showPage('chapter5');
+                });
+                
+                // Chapter 5 buttons
+                document.getElementById('chapter5BackBtn').addEventListener('click', function() {
+                    showPage('chapter4');
+                });
+                document.getElementById('chapter5NextBtn').addEventListener('click', function() {
+                    showPage('chapter6');
+                });
+                
+                // Chapter 6 buttons
+                document.getElementById('chapter6BackBtn').addEventListener('click', function() {
+                    showPage('chapter5');
+                });
+                document.getElementById('chapter6NextBtn').addEventListener('click', function() {
+                    showPage('chapter7');
+                });
+                
+                // Chapter 7 buttons
+                document.getElementById('chapter7BackBtn').addEventListener('click', function() {
+                    showPage('chapter6');
+                });
+                document.getElementById('chapter7NextBtn').addEventListener('click', function() {
+                    showPage('chapter8');
+                });
+                
+                // Chapter 8 buttons
+                document.getElementById('chapter8BackBtn').addEventListener('click', function() {
+                    showPage('chapter7');
+                });
+                document.getElementById('chapter8NextBtn').addEventListener('click', function() {
+                    showPage('chapter9');
+                });
+                
+                // Chapter 9 buttons
+                document.getElementById('chapter9BackBtn').addEventListener('click', function() {
+                    showPage('chapter8');
+                });
+                document.getElementById('chapter9NextBtn').addEventListener('click', function() {
+                    showPage('chapter10');
+                });
+                
+                // Chapter 10 buttons
+                document.getElementById('chapter10BackBtn').addEventListener('click', function() {
+                    showPage('chapter9');
+                });
+                document.getElementById('chapter10NextBtn').addEventListener('click', function() {
+                    showPage('synopsis');
+                });
+                
+                // Synopsis buttons
+                document.getElementById('synopsisBackBtn').addEventListener('click', function() {
+                    showPage('chapter10');
+                });
+            }
+            
+            // Initialize button states and listeners
             updateButtonStates();
+            updatePageNavigationButtons();
+            setupPageNavigationListeners();
         });
     </script>
 </body>
