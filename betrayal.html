@@ -1093,6 +1093,124 @@
                 `;
                 tocList.appendChild(pubItem);
             }
+             // Simple version - just adds floating arrows and hides TOC during reading
+document.addEventListener('DOMContentLoaded', function() {
+    // Create floating arrows
+    const leftArrow = document.createElement('div');
+    leftArrow.className = 'simple-arrow left-arrow';
+    leftArrow.innerHTML = '‹';
+    
+    const rightArrow = document.createElement('div');
+    rightArrow.className = 'simple-arrow right-arrow';
+    rightArrow.innerHTML = '›';
+    
+    document.body.appendChild(leftArrow);
+    document.body.appendChild(rightArrow);
+    
+    // Get existing elements
+    const tocContainer = document.querySelector('.toc-container');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    
+    // Hide TOC when not on introduction
+    function updateUI() {
+        const activeSection = document.querySelector('.chapter.active, .synopsis.active, .publication.active');
+        const isIntroduction = activeSection && activeSection.id === 'chapter0';
+        
+        // Show/hide TOC
+        tocContainer.style.display = isIntroduction ? 'block' : 'none';
+        
+        // Update arrow states
+        leftArrow.style.opacity = prevBtn.disabled ? '0.3' : '1';
+        rightArrow.style.opacity = nextBtn.disabled ? '0.3' : '1';
+        leftArrow.style.pointerEvents = prevBtn.disabled ? 'none' : 'auto';
+        rightArrow.style.pointerEvents = nextBtn.disabled ? 'none' : 'auto';
+    }
+    
+    // Arrow click handlers
+    leftArrow.addEventListener('click', () => !prevBtn.disabled && prevBtn.click());
+    rightArrow.addEventListener('click', () => !nextBtn.disabled && nextBtn.click());
+    
+    // Mobile swipe support
+    let startX;
+    document.addEventListener('touchstart', e => startX = e.touches[0].clientX);
+    document.addEventListener('touchend', e => {
+        const endX = e.changedTouches[0].clientX;
+        const diff = startX - endX;
+        
+        if (Math.abs(diff) > 50) { // Swipe threshold
+            if (diff > 0 && !nextBtn.disabled) nextBtn.click(); // Swipe left
+            else if (diff < 0 && !prevBtn.disabled) prevBtn.click(); // Swipe right
+        }
+    });
+    
+    // Monitor for section changes
+    const observer = new MutationObserver(updateUI);
+    document.querySelectorAll('.chapter, .synopsis, .publication').forEach(el => {
+        observer.observe(el, { attributes: true, attributeFilter: ['class'] });
+    });
+    
+    // Add CSS
+    const style = document.createElement('style');
+    style.textContent = `
+        .simple-arrow {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 44px;
+            height: 44px;
+            background: rgba(44, 62, 80, 0.85);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 999;
+            user-select: none;
+            transition: all 0.2s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        
+        .simple-arrow:active {
+            transform: translateY(-50%) scale(0.95);
+        }
+        
+        .left-arrow { left: 15px; }
+        .right-arrow { right: 15px; }
+        
+        @media (max-width: 768px) {
+            .simple-arrow {
+                width: 40px;
+                height: 40px;
+                font-size: 20px;
+            }
+            .left-arrow { left: 10px; }
+            .right-arrow { right: 10px; }
+        }
+        
+        @media (max-width: 480px) {
+            .simple-arrow {
+                width: 36px;
+                height: 36px;
+                font-size: 18px;
+                background: rgba(44, 62, 80, 0.9);
+            }
+            .left-arrow { left: 8px; }
+            .right-arrow { right: 8px; }
+        }
+        
+        /* Hide on cover */
+        .book-cover:not([style*="display: none"]) ~ .simple-arrow {
+            display: none !important;
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Initial update
+    updateUI();
+});
             
             // Create chapter elements
             function createChapters() {
