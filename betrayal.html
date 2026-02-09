@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Betrayal of the Prepared Cow - Mwanza Wambua</title>
+    <title>The Betrayal of the Prepared Cow | Mwanza Wambua</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&family=Playfair+Display:wght@400;700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&family=Playfair+Display:wght@700;800;900&family=Source+Sans+Pro:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Open Graph Tags -->
     <meta property="og:title" content="The Betrayal" />
@@ -26,320 +26,356 @@
 
         :root {
             --primary-color: #2c3e50;
-            --secondary-color: #8B4513;
-            --accent-color: #D4A76A;
-            --light-color: #f9f7f2;
+            --secondary-color: #7d8a9c;
+            --accent-color: #a67c52;
+            --gold-color: #d4af37;
+            --light-color: #f9f7f3;
             --dark-color: #1a1a1a;
-            --text-color: #333;
-            --text-light: #666;
-            --border-color: #e0d6c9;
-            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --highlight-color: #e8d4b9;
+            --spacing-xs: 0.5rem;
+            --spacing-sm: 1rem;
+            --spacing-md: 1.5rem;
+            --spacing-lg: 2rem;
+            --spacing-xl: 3rem;
+            --font-heading: 'Crimson Text', serif;
+            --font-cover: 'Playfair Display', serif;
+            --font-body: 'Source Sans Pro', sans-serif;
+            --line-height-body: 1.6;
+            --line-height-heading: 1.3;
+            --border-radius: 4px;
+            --shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s ease;
         }
 
         body {
-            font-family: 'Crimson Text', serif;
-            line-height: 1.8;
-            color: var(--text-color);
-            background-color: var(--light-color);
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-            position: relative;
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23f9f7f2"/><path d="M0,50 L100,50 M50,0 L50,100" stroke="%23e0d6c9" stroke-width="0.5"/></svg>');
+            font-family: var(--font-body);
+            font-size: 17px;
+            line-height: var(--line-height-body);
+            color: var(--dark-color);
+            background-color: #f0ede8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: var(--spacing-lg) var(--spacing-sm);
         }
 
-        /* Book Container */
+        /* Book Container - 6x9 inch equivalent */
         .book-container {
+            width: 100%;
+            max-width: 600px; /* Approximately 6 inches */
+            height: 750px; /* Approximately 9 inches */
+            margin: 0 auto;
             background-color: white;
-            box-shadow: var(--shadow), 0 0 40px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.15), 0 10px 40px rgba(0, 0, 0, 0.1);
             border-radius: 4px;
             overflow: hidden;
             position: relative;
-            min-height: 95vh;
-            border: 1px solid var(--border-color);
-        }
-
-        /* Header */
-        .book-header {
-            background: linear-gradient(135deg, var(--primary-color) 0%, #1a2530 100%);
-            color: white;
-            padding: 40px 60px;
-            text-align: center;
-            border-bottom: 8px solid var(--accent-color);
-            position: relative;
-        }
-
-        .book-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 3.2rem;
-            font-weight: 800;
-            line-height: 1.2;
-            margin-bottom: 10px;
-            letter-spacing: -0.5px;
-            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
-        }
-
-        .book-subtitle {
-            font-size: 1.5rem;
-            font-weight: 400;
-            font-style: italic;
-            margin-bottom: 25px;
-            color: var(--accent-color);
-        }
-
-        .book-author {
-            font-family: 'Inter', sans-serif;
-            font-size: 1.3rem;
-            font-weight: 500;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            border-top: 1px solid rgba(255, 255, 255, 0.3);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-            padding: 15px 0;
-            display: inline-block;
-            margin-top: 20px;
-        }
-
-        /* Heart Button */
-        .heart-btn {
-            position: absolute;
-            top: 30px;
-            right: 30px;
-            background: rgba(255, 255, 255, 0.2);
-            border: 2px solid var(--accent-color);
-            color: white;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            transition: all 0.3s ease;
+            transition: transform 0.5s ease;
+        }
+
+        .book-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.2), 0 15px 50px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Book Cover - Custom Designed */
+        .book-cover {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
             z-index: 10;
+            background: linear-gradient(135deg, #1a2a3a 0%, #2c3e50 50%, #4a6572 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: var(--spacing-xl);
+            text-align: center;
+            overflow: hidden;
         }
 
-        .heart-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: scale(1.1);
-            box-shadow: 0 0 20px rgba(212, 167, 106, 0.5);
-        }
-
-        .heart-btn .fa-heart {
-            animation: heartbeat 1.5s infinite;
-        }
-
-        @keyframes heartbeat {
-            0% { transform: scale(1); }
-            5% { transform: scale(1.1); }
-            10% { transform: scale(1); }
-            15% { transform: scale(1.1); }
-            20% { transform: scale(1); }
-            100% { transform: scale(1); }
-        }
-
-        /* Donation Modal */
-        .donation-modal {
-            display: none;
-            position: fixed;
+        .cover-background {
+            position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
+            opacity: 0.1;
+            background-image: 
+                radial-gradient(circle at 20% 30%, var(--gold-color) 2px, transparent 2px),
+                radial-gradient(circle at 80% 70%, var(--accent-color) 1px, transparent 1px),
+                radial-gradient(circle at 40% 80%, var(--highlight-color) 3px, transparent 3px);
+            background-size: 60px 60px, 40px 40px, 80px 80px;
         }
 
-        .donation-modal.active {
-            display: flex;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .modal-content {
-            background-color: white;
-            width: 90%;
-            max-width: 600px;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-            animation: slideUp 0.4s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        @keyframes slideUp {
-            from { transform: translateY(30px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        .modal-header {
-            background: linear-gradient(135deg, var(--primary-color) 0%, #1a2530 100%);
-            color: white;
-            padding: 25px;
-            text-align: center;
-            position: relative;
-        }
-
-        .modal-header h3 {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.8rem;
-            margin: 0;
-        }
-
-        .close-modal {
+        .cover-border {
             position: absolute;
-            top: 20px;
-            right: 20px;
-            background: none;
-            border: none;
+            top: 30px;
+            left: 30px;
+            right: 30px;
+            bottom: 30px;
+            border: 2px solid rgba(212, 175, 55, 0.3);
+            pointer-events: none;
+        }
+
+        .cover-content {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            max-width: 500px;
             color: white;
-            font-size: 1.5rem;
-            cursor: pointer;
-            transition: transform 0.3s ease;
         }
 
-        .close-modal:hover {
-            transform: scale(1.2);
+        .book-genre {
+            font-family: var(--font-heading);
+            font-size: 0.9rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--gold-color);
+            margin-bottom: var(--spacing-lg);
+            font-weight: 600;
         }
 
-        .modal-body {
-            padding: 30px;
+        .cover-main-title {
+            font-family: var(--font-cover);
+            font-size: 3.2rem;
+            line-height: 1;
+            font-weight: 900;
+            margin-bottom: var(--spacing-md);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            letter-spacing: -0.5px;
         }
 
-        .donation-methods {
-            display: flex;
-            flex-direction: column;
-            gap: 25px;
-            margin-top: 20px;
+        .cover-main-title span {
+            display: block;
+            font-size: 2.8rem;
+            font-weight: 700;
+            color: var(--highlight-color);
         }
 
-        .donation-method {
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 20px;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .donation-method:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow);
-        }
-
-        .donation-method h4 {
-            font-family: 'Inter', sans-serif;
-            font-size: 1.3rem;
-            margin-bottom: 15px;
-            color: var(--secondary-color);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .donation-details {
-            font-size: 1.1rem;
-            margin-bottom: 10px;
-            padding: 15px;
-            background-color: #f9f9f9;
-            border-radius: 4px;
-            border-left: 4px solid var(--accent-color);
-            font-family: 'Inter', sans-serif;
-        }
-
-        .donation-icon {
-            color: var(--secondary-color);
-            font-size: 1.5rem;
-        }
-
-        .modal-footer {
-            text-align: center;
-            padding: 20px;
-            border-top: 1px solid var(--border-color);
+        .cover-subtitle {
+            font-family: var(--font-heading);
+            font-size: 1.4rem;
             font-style: italic;
-            color: var(--text-light);
+            color: #e0e0e0;
+            margin-bottom: var(--spacing-xl);
+            padding-bottom: var(--spacing-md);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+        }
+
+        .cover-author {
+            font-family: var(--font-heading);
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--gold-color);
+            margin-bottom: var(--spacing-xl);
+            letter-spacing: 2px;
+        }
+
+        .cover-symbol {
+            margin: var(--spacing-lg) 0;
+            font-size: 2.5rem;
+            color: var(--gold-color);
+        }
+
+        .cover-quote {
+            font-family: var(--font-heading);
+            font-size: 1.1rem;
+            font-style: italic;
+            color: #cccccc;
+            margin-top: var(--spacing-xl);
+            padding: var(--spacing-md);
+            border-left: 3px solid var(--accent-color);
+            background-color: rgba(0, 0, 0, 0.2);
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .start-reading {
+            position: absolute;
+            bottom: 40px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-family: var(--font-heading);
+            font-size: 1rem;
+            color: var(--gold-color);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+
+        /* Book Content */
+        .book-content {
+            padding: var(--spacing-xl);
+            position: relative;
+            z-index: 1;
+            display: none;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        /* Book Title */
+        .book-title {
+            font-family: var(--font-heading);
+            font-weight: 700;
+            font-size: 2.5rem;
+            line-height: var(--line-height-heading);
+            text-align: center;
+            margin: var(--spacing-lg) 0 var(--spacing-md);
+            color: var(--primary-color);
+            position: relative;
+            padding-bottom: var(--spacing-sm);
+        }
+
+        .book-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 2px;
+            background-color: var(--accent-color);
+        }
+
+        .book-subtitle {
+            font-family: var(--font-heading);
+            font-size: 1.3rem;
+            text-align: center;
+            color: var(--secondary-color);
+            margin-bottom: var(--spacing-lg);
+            font-weight: 400;
+            font-style: italic;
+        }
+
+        .book-author {
+            text-align: center;
+            font-size: 1.3rem;
+            color: var(--accent-color);
+            margin-bottom: var(--spacing-xl);
+            font-weight: 600;
+            letter-spacing: 1px;
         }
 
         /* Navigation */
         .book-nav {
-            background-color: var(--primary-color);
-            padding: 15px 60px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .nav-title {
-            color: white;
-            font-family: 'Playfair Display', serif;
-            font-size: 1.4rem;
-            font-weight: 700;
-        }
-
-        .nav-controls {
-            display: flex;
-            gap: 15px;
+            padding: var(--spacing-sm) 0;
+            margin: var(--spacing-lg) 0;
+            border-top: 1px solid #ddd;
+            border-bottom: 1px solid #ddd;
         }
 
         .nav-btn {
-            background-color: rgba(255, 255, 255, 0.1);
+            background-color: var(--primary-color);
             color: white;
             border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
+            padding: 0.6rem 1rem;
+            border-radius: var(--border-radius);
             cursor: pointer;
-            font-family: 'Inter', sans-serif;
+            font-family: var(--font-body);
             font-size: 0.9rem;
-            transition: all 0.3s ease;
+            transition: var(--transition);
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 5px;
         }
 
         .nav-btn:hover {
-            background-color: rgba(255, 255, 255, 0.2);
+            background-color: var(--accent-color);
         }
 
-        .chapter-nav {
-            display: flex;
-            gap: 10px;
+        .nav-btn:disabled {
+            background-color: var(--secondary-color);
+            cursor: not-allowed;
+            opacity: 0.6;
         }
 
-        .chapter-select {
-            padding: 10px 15px;
-            border-radius: 4px;
-            border: none;
-            background-color: white;
+        .chapter-indicator {
+            font-weight: 600;
             color: var(--primary-color);
-            font-family: 'Inter', sans-serif;
-            font-weight: 500;
-            cursor: pointer;
-            min-width: 200px;
+            font-size: 0.95rem;
         }
 
-        /* Content */
-        .book-content {
-            padding: 60px;
-            min-height: 70vh;
-            position: relative;
+        /* Table of Contents */
+        .toc-container {
+            background-color: #faf9f7;
+            padding: var(--spacing-lg);
+            border-radius: var(--border-radius);
+            margin: var(--spacing-lg) 0;
+            border: 1px solid #eae6df;
         }
 
-        .page {
+        .toc-title {
+            font-family: var(--font-heading);
+            font-size: 1.6rem;
+            color: var(--primary-color);
+            margin-bottom: var(--spacing-md);
+            padding-bottom: var(--spacing-xs);
+            border-bottom: 1px solid var(--highlight-color);
+        }
+
+        .toc-list {
+            list-style-type: none;
+        }
+
+        .toc-item {
+            margin-bottom: 0.8rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 1px dashed #e0dcd4;
+        }
+
+        .toc-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .toc-link {
+            color: var(--dark-color);
+            text-decoration: none;
+            display: flex;
+            align-items: flex-start;
+            padding: 0.3rem 0;
+            transition: var(--transition);
+        }
+
+        .toc-link:hover {
+            color: var(--accent-color);
+        }
+
+        .toc-link.active {
+            color: var(--accent-color);
+            font-weight: 600;
+        }
+
+        .toc-chapter {
+            font-weight: 600;
+            min-width: 90px;
+            color: var(--primary-color);
+            font-size: 0.95rem;
+        }
+
+        .toc-chapter-title {
+            flex: 1;
+        }
+
+        /* Chapter Content */
+        .chapter {
             display: none;
-        }
-
-        .page.active {
-            display: block;
-            animation: fadeIn 0.8s ease;
+            animation: fadeIn 0.5s ease;
         }
 
         @keyframes fadeIn {
@@ -347,238 +383,215 @@
             to { opacity: 1; }
         }
 
+        .chapter.active {
+            display: block;
+        }
+
         .chapter-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 2.5rem;
-            font-weight: 700;
+            font-family: var(--font-heading);
+            font-size: 1.8rem;
             color: var(--primary-color);
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid var(--accent-color);
+            margin-bottom: var(--spacing-md);
+            line-height: var(--line-height-heading);
+            padding-bottom: var(--spacing-sm);
+            border-bottom: 1px solid var(--highlight-color);
         }
 
         .chapter-subtitle {
+            font-family: var(--font-heading);
             font-size: 1.2rem;
+            color: var(--accent-color);
+            margin-bottom: var(--spacing-lg);
             font-style: italic;
-            color: var(--secondary-color);
-            margin-bottom: 40px;
+            font-weight: 400;
         }
 
         .chapter-content {
-            font-size: 1.25rem;
-            line-height: 1.9;
-            margin-bottom: 60px;
+            font-size: 1.05rem;
         }
 
         .chapter-content p {
-            margin-bottom: 25px;
+            margin-bottom: var(--spacing-md);
             text-align: justify;
+            hyphens: auto;
         }
 
         .chapter-content p:first-of-type:first-letter {
-            font-size: 4.5rem;
+            initial-letter: 2;
+            font-weight: bold;
+            margin-right: 8px;
+            color: var(--accent-color);
+            font-family: var(--font-heading);
+            font-size: 3rem;
+            line-height: 1;
             float: left;
-            line-height: 0.8;
-            padding-right: 10px;
-            padding-top: 10px;
-            color: var(--secondary-color);
-            font-family: 'Playfair Display', serif;
-            font-weight: 700;
+            padding-top: 0.2rem;
         }
 
-        .intro-quote {
-            font-size: 1.4rem;
-            line-height: 1.7;
-            color: var(--secondary-color);
+        .chapter-content p.highlight {
+            background-color: var(--highlight-color);
+            padding: var(--spacing-md);
+            border-radius: var(--border-radius);
+            border-left: 3px solid var(--accent-color);
             font-style: italic;
-            border-left: 4px solid var(--accent-color);
-            padding-left: 25px;
-            margin: 40px 0;
+            margin: var(--spacing-lg) 0;
         }
 
-        /* Page Navigation Buttons */
-        .page-navigation {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 40px;
-            padding-top: 30px;
-            border-top: 1px solid var(--border-color);
+        /* Synopsis & Publication */
+        .synopsis, .publication {
+            margin: var(--spacing-lg) 0;
+            display: none;
         }
 
-        .page-btn {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-family: 'Inter', sans-serif;
-            font-size: 1rem;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            min-width: 140px;
+        .synopsis.active, .publication.active {
+            display: block;
         }
 
-        .page-btn:hover {
-            background-color: #3a506b;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .page-btn.back-btn {
-            background-color: #6c757d;
-        }
-
-        .page-btn.back-btn:hover {
-            background-color: #5a6268;
-        }
-
-        .page-btn.next-btn {
-            background-color: var(--secondary-color);
-        }
-
-        .page-btn.next-btn:hover {
-            background-color: #724c24;
-        }
-
-        .page-btn:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-
-        .synopsis-section {
-            margin-bottom: 40px;
-        }
-
-        .synopsis-section h3 {
-            font-family: 'Playfair Display', serif;
+        .section-title {
+            font-family: var(--font-heading);
             font-size: 1.8rem;
             color: var(--primary-color);
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .synopsis-section p {
-            margin-bottom: 20px;
+            margin-bottom: var(--spacing-md);
+            padding-bottom: var(--spacing-xs);
+            border-bottom: 1px solid var(--highlight-color);
         }
 
         .part-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.5rem;
-            color: var(--secondary-color);
-            margin-top: 40px;
-            margin-bottom: 20px;
-            padding-left: 20px;
-            border-left: 4px solid var(--accent-color);
+            font-family: var(--font-heading);
+            font-size: 1.4rem;
+            color: var(--accent-color);
+            margin: var(--spacing-lg) 0 var(--spacing-md);
+        }
+
+        /* Controls */
+        .book-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: var(--spacing-sm);
+            margin: var(--spacing-lg) 0;
+            padding: var(--spacing-md);
+            background-color: #faf9f7;
+            border-radius: var(--border-radius);
+            border: 1px solid #eae6df;
+        }
+
+        .control-group {
+            display: flex;
+            gap: var(--spacing-sm);
+            flex-wrap: wrap;
+        }
+
+        .control-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.6rem 1rem;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-family: var(--font-body);
+            font-size: 0.9rem;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .control-btn:hover {
+            background-color: var(--accent-color);
+        }
+
+        .show-cover-btn {
+            background-color: var(--accent-color);
+        }
+
+        .font-controls {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        .font-btn {
+            background-color: transparent;
+            color: var(--primary-color);
+            border: 1px solid var(--secondary-color);
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 600;
+        }
+
+        .font-btn:hover {
+            background-color: var(--highlight-color);
+        }
+
+        .font-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
         }
 
         /* Footer */
         .book-footer {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 40px 60px;
             text-align: center;
-            border-top: 8px solid var(--accent-color);
+            padding: var(--spacing-lg) 0;
+            margin-top: var(--spacing-xl);
+            color: var(--secondary-color);
+            font-size: 0.85rem;
+            border-top: 1px solid #ddd;
         }
 
-        .publication-details {
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
-            font-family: 'Inter', sans-serif;
-            font-size: 0.95rem;
-        }
-
-        .publication-details p {
-            margin-bottom: 8px;
-        }
-
-        /* Responsive Design */
-        @media (max-width: 992px) {
-            .book-title {
-                font-size: 2.5rem;
-            }
-            
-            .book-subtitle {
-                font-size: 1.3rem;
-            }
-            
-            .book-header, .book-nav, .book-content, .book-footer {
-                padding-left: 40px;
-                padding-right: 40px;
-            }
-            
-            .chapter-title {
-                font-size: 2.2rem;
-            }
-            
-            .heart-btn {
-                top: 20px;
-                right: 20px;
-                width: 45px;
-                height: 45px;
-                font-size: 1.3rem;
-            }
-        }
-
+        /* Responsive */
         @media (max-width: 768px) {
+            .book-container {
+                max-width: 100%;
+                height: auto;
+                min-height: 100vh;
+                box-shadow: none;
+                border-radius: 0;
+            }
+            
             body {
-                padding: 10px;
+                padding: 0;
+                background-color: white;
+            }
+            
+            .book-content {
+                padding: var(--spacing-lg);
             }
             
             .book-title {
                 font-size: 2rem;
             }
             
-            .book-header, .book-nav, .book-content, .book-footer {
-                padding-left: 25px;
-                padding-right: 25px;
-            }
-            
-            .chapter-title {
-                font-size: 1.8rem;
-            }
-            
-            .chapter-content {
+            .book-subtitle {
                 font-size: 1.1rem;
             }
             
-            .nav-controls {
-                flex-direction: column;
-                width: 100%;
-                margin-top: 15px;
+            .chapter-title {
+                font-size: 1.6rem;
             }
             
-            .chapter-select {
-                min-width: 100%;
+            .cover-main-title {
+                font-size: 2.5rem;
             }
             
-            .page-navigation {
-                flex-direction: column;
-                gap: 15px;
+            .cover-main-title span {
+                font-size: 2.2rem;
             }
             
-            .page-btn {
-                width: 100%;
-                justify-content: center;
+            .cover-subtitle {
+                font-size: 1.2rem;
             }
             
-            .heart-btn {
-                position: relative;
-                top: 0;
-                right: 0;
-                margin: 20px auto;
-                display: block;
-            }
-            
-            .donation-method {
-                padding: 15px;
+            .cover-author {
+                font-size: 1.5rem;
             }
         }
 
@@ -587,380 +600,102 @@
                 font-size: 1.8rem;
             }
             
-            .book-subtitle {
-                font-size: 1.1rem;
+            .chapter-title {
+                font-size: 1.4rem;
             }
             
-            .book-author {
+            .control-group {
+                justify-content: center;
+                width: 100%;
+            }
+            
+            .book-controls {
+                flex-direction: column;
+                gap: var(--spacing-md);
+            }
+            
+            .font-controls {
+                justify-content: center;
+                width: 100%;
+            }
+            
+            .cover-main-title {
+                font-size: 2rem;
+            }
+            
+            .cover-main-title span {
+                font-size: 1.8rem;
+            }
+            
+            .cover-subtitle {
                 font-size: 1rem;
             }
             
-            .chapter-title {
-                font-size: 1.6rem;
+            .cover-author {
+                font-size: 1.3rem;
             }
-            
-            .chapter-content p:first-of-type:first-letter {
-                font-size: 3.5rem;
-            }
-            
-            .book-content {
-                padding: 40px 25px;
-            }
-            
-            .modal-content {
-                width: 95%;
-            }
-        }
-
-        /* Page turn animation */
-        .page-turn {
-            animation: pageTurn 0.6s ease;
-        }
-
-        @keyframes pageTurn {
-            0% { opacity: 0; transform: translateX(20px); }
-            100% { opacity: 1; transform: translateX(0); }
-        }
-
-        /* Styles for PDF generation */
-        .pdf-only {
-            display: none;
-        }
-
-        /* Hidden container for PDF generation */
-        .pdf-container {
-            display: none;
         }
     </style>
 </head>
 <body>
-    <!-- Donation Modal -->
-    <div id="donationModal" class="donation-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3><i class="fas fa-heart"></i> Support the Author</h3>
-                <button class="close-modal"><i class="fas fa-times"></i></button>
-            </div>
-            <div class="modal-body">
-                <p>If this book has provided you with valuable insights and you'd like to support the author's work, please consider making a donation. Your contribution helps sustain the creation of meaningful content and supports independent authors.</p>
-                
-                <div class="donation-methods">
-                    <div class="donation-method">
-                        <h4><i class="fab fa-paypal donation-icon"></i> PayPal</h4>
-                        <p class="donation-details">Send to: wambuamwanza6@gmail.com</p>
-                        <p>Use the email above to send a donation via PayPal</p>
-                    </div>
-                    
-                    <div class="donation-method">
-                        <h4><i class="fas fa-mobile-alt donation-icon"></i> MPESA</h4>
-                        <p class="donation-details">Phone: 0720208150</p>
-                        <p>Send your donation via MPESA to this number</p>
-                    </div>
-                    
-                    <div class="donation-method">
-                        <h4><i class="fas fa-envelope donation-icon"></i> Contact</h4>
-                        <p class="donation-details">Email: wambuamwanza6@gmail.com</p>
-                        <p>For questions, speaking engagements, or other inquiries</p>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <p>Thank you for your generosity and for being part of the community that values wisdom, preparation, and the protection of creative work.</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Hidden container for PDF generation with all content -->
-    <div id="pdfAllContent" class="pdf-container">
-        <!-- PDF Header -->
-        <div class="pdf-header" style="background: linear-gradient(135deg, #2c3e50 0%, #1a2530 100%); color: white; padding: 40px; text-align: center; border-bottom: 8px solid #D4A76A;">
-            <h1 style="font-family: 'Playfair Display', serif; font-size: 3rem; font-weight: 800; line-height: 1.2; margin-bottom: 10px;">The Betrayal of the Prepared Cow</h1>
-            <p style="font-size: 1.5rem; font-style: italic; margin-bottom: 25px; color: #D4A76A;">Why What You Build Sometimes Works for Someone Else</p>
-            <div style="font-family: 'Inter', sans-serif; font-size: 1.3rem; font-weight: 500; letter-spacing: 2px; text-transform: uppercase; border-top: 1px solid rgba(255, 255, 255, 0.3); border-bottom: 1px solid rgba(255, 255, 255, 0.3); padding: 15px 0; display: inline-block; margin-top: 20px;">Author: Mwanza Wambua</div>
-        </div>
-
-        <!-- PDF Content - All pages in one -->
-        <div class="pdf-content" style="padding: 40px; font-family: 'Crimson Text', serif; line-height: 1.8;">
-            <!-- Introduction -->
-            <div class="pdf-page">
-                <h2 style="font-family: 'Playfair Display', serif; font-size: 2.2rem; font-weight: 700; color: #2c3e50; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #D4A76A;">INTRODUCTION: THE UNGUARDED HARVEST</h2>
-                <div style="font-size: 1.2rem; line-height: 1.9; margin-bottom: 40px;">
-                    <p>There is a particular kind of loss that feels different from ordinary failure—a quiet theft that happens not in darkness, but in plain sight. It is not the loss of what you never had, but the redirection of what you built with your own hands. This is the story of the prepared cow: the animal you raised from weakness to strength, the project you nurtured from concept to completion, the relationship you cultivated from acquaintance to intimacy—only to watch it work another's field, serve another's purpose, fill another's granary.</p>
-                    
-                    <p>We live in a world that celebrates preparation but fails to protect preparers. We applaud the mentor but promote the protégé who leaves. We admire the innovator but reward the corporation that copies. We cherish the partner who makes us whole, then watch them become whole with someone else. This is not about malice in the traditional sense; it is about a systemic failure to connect labor with legacy, investment with return, preparation with harvest.</p>
-                    
-                    <div style="font-size: 1.3rem; line-height: 1.7; color: #8B4513; font-style: italic; border-left: 4px solid #D4A76A; padding-left: 25px; margin: 30px 0;">
-                        The Betrayal of the Prepared Cow examines the architecture of this particular heartbreak. It is not a condemnation of preparation—indeed, preparation remains our most human act of faith in tomorrow. Rather, it is an investigation into why our most careful cultivation so often becomes someone else's convenient harvest.
-                    </div>
-                    
-                    <p>Why the fences we thought were understood prove permeable. Why the loyalty we assumed was inherent proves transferable.</p>
-                    
-                    <p>This book emerged from watching patterns repeat across continents and contexts: the African farmer whose hybrid seeds are harvested by neighbors who contributed no research, the Silicon Valley developer whose algorithm is monetized by executives who didn't stay up coding through the night, the woman who heals a man's heart only to have him offer his healed self to another. The specifics change; the structure remains. Someone prepares. Someone else benefits disproportionately.</p>
-                    
-                    <p>In these pages, we will dissect this phenomenon not as moral fable but as social architecture. We will explore the psychology of the preparer—the often-unconscious belief that goodness begets reciprocity. We will study the strategy of the beneficiary—the patient observation that identifies value before claiming it. Most importantly, we will map the dangerous space between them: the unguarded boundary, the unspoken assumption, the unclaimed return.</p>
-                    
-                    <p>This is ultimately a book about power—not the crude power of force, but the subtle power of redirected value. It is about learning to build with both generosity and protection, to cultivate with both open hands and clear boundaries, to prepare not just the asset, but the system that contains it.</p>
-                    
-                    <p>The prepared cow will always be necessary. But we must learn to build the fence before we need it.</p>
-                </div>
-                <div style="page-break-after: always;"></div>
-            </div>
-
-            <!-- Chapter 1 -->
-            <div class="pdf-page">
-                <h2 style="font-family: 'Playfair Display', serif; font-size: 2.2rem; font-weight: 700; color: #2c3e50; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #D4A76A;">Chapter One: The Cow That Was Raised With Care</h2>
-                <div style="font-size: 1.2rem; line-height: 1.9; margin-bottom: 40px;">
-                    <p>Every meaningful investment begins quietly, in that fragile space between intention and manifestation. A cow is not born ready to plough; it enters the world trembling on unsteady legs, all potential and vulnerability. The transformation from that trembling calf to a powerful draft animal happens through thousands of small, unseen acts of devotion. It is fed precious grain when the grass grows scarce and the seasons turn harsh. It is treated with herbal poultices when sickness threatens, the owner's hands gentle against fevered hide. It is protected through sleepless nights when thieves roam and predators circle just beyond the firelight. And it is trained with infinite patience—not through force, but through the slow building of trust, the consistent language of pressure and release, until the yoke feels like partnership rather than burden.</p>
-                    
-                    <p>This is how dreams are built, not in dramatic leaps but in the relentless accumulation of days. People often misunderstand preparation because it does not look like success. It looks like repetition—the same tasks performed when no one is watching. It feels like boredom—the monotony of care that offers no immediate reward. It manifests as invisible effort—callouses that form and muscles that ache without audience or applause. While others laugh at what they perceive as foolish obsession, the owner quietly sharpens the yoke, ensuring its edges are smooth and its fit is perfect. While others sleep through the cool morning hours, the owner repairs the plough by lantern light, checking each joint and fastener.</p>
-                    
-                    <p>Preparation is ultimately an act of faith, a covenant made with an uncertain future. You pour your time, your resources, your very self into something that offers no guarantees. You believe, with a hope that borders on prayer, that one day when the rains finally come and the soil calls, the creature you have nurtured will pull steadfastly for your land and your harvest alone.</p>
-                    
-                    <p>But this nurturing creates a profound and often overlooked vulnerability. The stronger the cow becomes, the more splendid its form, the more efficient its pull—the more it attracts the gaze of others. Excellence draws attention like a beacon. Value, once recognized, invites interference, envy, and a sense of entitlement from those who did not share in the labor of its creation.</p>
-                </div>
-                <div style="page-break-after: always;"></div>
-            </div>
-
-            <!-- Chapter 2 -->
-            <div class="pdf-page">
-                <h2 style="font-family: 'Playfair Display', serif; font-size: 2.2rem; font-weight: 700; color: #2c3e50; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #D4A76A;">Chapter Two: Ownership Without Protection</h2>
-                <div style="font-size: 1.2rem; line-height: 1.9; margin-bottom: 40px;">
-                    <p>Many people operate under a fundamental and costly assumption: that ownership is a static state, a title that automatically commands loyalty. They believe that because they were the ones who fed the cow, sheltered it, and guided its growth, the animal will always know to return to their hand, to their voice, to their field. But ownership without active, deliberate protection is merely optimism disguised as strategy—it is sentiment, not wisdom.</p>
-                    
-                    <p>A field without fences is an open invitation. A neighbor with adjoining land has equal access to the same sun, the same rain, the same seasons of need. When the crucial moment arrives and work must be done, the one who holds the rope in that instant controls the direction, regardless of whose barn provided the shelter the night before.</p>
-                    
-                    <p>This is the fertile ground where betrayal most often takes root—not typically sprouting from overt malice as a first resort, but flourishing in the rich soil of the owner's own negligence. The owner prepared the animal with magnificent focus but forgot to prepare the system that would contain and direct its value. There were no clear agreements, no mutually understood boundaries, no explicit safeguards. The relationship was governed by assumption rather than articulation, by hope rather than structure.</p>
-                    
-                    <p>In life, we mirror this error constantly. We raise people—mentoring protégés, nurturing partners, guiding children—without ever defining the terms of loyalty that should naturally follow such investment. We share groundbreaking ideas in rooms without confidentiality, we invest emotional capital in institutions without clarity of return, we empower teams and communities without ensuring alignment of purpose. And then, when the harvest is ready and we look to our field, we are genuinely shocked to find the fruit of our labor being gathered into another's basket. We stare, heart sinking, as the cow we raised from infancy pulls the plough through soil we do not own.</p>
-                    
-                    <p>The lesson is brutal in its simplicity: preparation creates power, but power released without structure simply creates loss. It flows to the point of least resistance, and often, that is directly toward the waiting hands of the observant neighbor.</p>
-                </div>
-                <div style="page-break-after: always;"></div>
-            </div>
-
-            <!-- Chapter 3 -->
-            <div class="pdf-page">
-                <h2 style="font-family: 'Playfair Display', serif; font-size: 2.2rem; font-weight: 700; color: #2c3e50; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #D4A76A;">Chapter Three: The Neighbor's Quiet Waiting</h2>
-                <div style="font-size: 1.2rem; line-height: 1.9; margin-bottom: 40px;">
-                    <p>Betrayal is rarely a sudden, explosive event. It is more often a slow, silent process of redirection that becomes visible only at its endpoint. The neighbor was not idle during the years of the cow's maturation; he was engaged in a different kind of work altogether. While the owner sweated under the sun, the neighbor observed from the shade of his porch. While the cow's muscles grew defined and its stride confident, the neighbor mentally measured the distance between the two fields, the quality of the soil on his side, and the weakness of the boundary that divided them. He noted the owner's habits, his cycles of work and rest, the specific times the cow was left unattended.</p>
-                    
-                    <p>Opportunity, in such scenarios, favors not the bold, but the patient. The neighbor did not contribute to the raising of the cow—he offered no feed during lean times, provided no comfort during illness, invested no hours in training. Yet he developed a sophisticated understanding of its market value, its capacity for work, its potential to transform his own neglected land. He did not pay the physical, financial, or emotional costs of its development, but he meticulously planned to collect the benefit. His investment was not in the creature itself, but in the timing of his request, the crafting of his justification, and the social pressure he could apply when the moment was right.</p>
-                    
-                    <p>This chapter forces an uncomfortable but necessary recognition: not every person within our orbit shares our benevolent intentions. Not all observation is admiration; sometimes it is calculation. Some individuals operate on a fundamentally different principle—they do not plant, they position. They cultivate not the asset, but the opportunity to claim it.</p>
-                    
-                    <p>Wisdom in this context is not paranoia, but rather a sober awareness. It is the understanding that not every smile across the fence line is an expression of support, and not every presence in our lives signifies a partnership. It is the ability to discern between those who build with you and those who are merely waiting for you to finish building.</p>
-                </div>
-                <div style="page-break-after: always;"></div>
-            </div>
-
-            <!-- Chapter 4 -->
-            <div class="pdf-page">
-                <h2 style="font-family: 'Playfair Display', serif; font-size: 2.2rem; font-weight: 700; color: #2c3e50; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #D4A76A;">Chapter Four: The Day the Plough Changed Direction</h2>
-                <div style="font-size: 1.2rem; line-height: 1.9; margin-bottom: 40px;">
-                    <p>The profound depth of the betrayal only crystallizes, becomes undeniably real, when the steel of the ploughshare first tears into unfamiliar soil. That visceral moment carries a unique and devastating pain because it functions as a brutal truth-teller, rendering all previous assumptions null. It exposes the reality beneath the narrative. Every sack of grain carried at dawn, every gentle word spoken during training, every sacrifice of time and resource—all of it has been silently redirected, its purpose subverted. The connection between cause and effect has been severed; the owner's input no longer guarantees his output.</p>
-                    
-                    <p>This is the fertile ground where righteous anger takes root and grows thorns. It is where the silent, screaming questions rise in the throat. The owner stands at the fence line, not watching his own field flourish, but witnessing the fruit of his lifetime of discipline enriching land he does not own. He is forced to ask, with a bitterness that stains the soul, "How could this happen? After all I have done, how is this the result?" The mind scrambles to rewrite history, to find the missed clue, the unheeded warning.</p>
-                    
-                    <p>But the plough, as it carves its straight, purposeful line, does not lie. Its direction is a pure and simple testament. It reveals true allegiance, not proclaimed loyalty. It shows who holds functional control in the present moment, not who holds historical claim.</p>
-                    
-                    <p>What we build, in the end, serves as the ultimate diagnostic tool. It will eventually show us, with unflinching clarity, who truly controls its application. The cow may remember the hand that fed it, but it obeys the hand that guides it now. The field may remember the season of preparation, but it yields its harvest to whoever guides the plough today.</p>
-                    
-                    <p>This moment of revelation is the pivot upon which innocence turns into experience, where naive trust transforms into hard-won discernment.</p>
-                </div>
-                <div style="page-break-after: always;"></div>
-            </div>
-
-            <!-- Chapter 5 -->
-            <div class="pdf-page">
-                <h2 style="font-family: 'Playfair Display', serif; font-size: 2.2rem; font-weight: 700; color: #2c3e50; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #D4A76A;">Chapter Five: Emotional Investment and Silent Loss</h2>
-                <div style="font-size: 1.2rem; line-height: 1.9; margin-bottom: 40px;">
-                    <p>The deepest and most lingering wound inflicted by such betrayal is seldom material. The true devastation operates on an emotional and spiritual plane, far beneath the surface of lost labor or misappropriated resource. The owner does not merely lose the tangible fruits of his effort; he suffers a fundamental erosion of belief. The internal logic that sustained him through years of thankless work—the creed that faithful effort begets rightful reward—crumbles into dust. He begins to doubt the very principle of preparation itself. Why build, if what is built can be so easily repurposed? Why invest deeply, if the returns can be intercepted? The pain metastasizes from a single event into a worldview, coloring future endeavors with the gray tint of suspicion and anticipated disappointment.</p>
-                    
-                    <p>This corrosive doubt is the secondary harvest of betrayal, often more damaging than the initial loss. Many people, after such an experience, make a critical error in judgment: they confuse the specific pain of being exploited with a universal principle that all preparation is folly. They abandon their natural impulse to build, to nurture, to create value. They decide to raise no more cows, to plant no more fields, to offer no more mentorship. They retreat into a small, defended space where nothing can be taken because nothing is offered.</p>
-                    
-                    <p>This chapter serves as a crucial correction to that impulse. It argues that the betrayal itself does not cancel the inherent wisdom of preparation; it does not invalidate the virtue of building. Instead, the painful experience merely refines that wisdom, adding necessary layers of complexity, strategy, and protection. The lesson is not to stop cultivating, but to cultivate with both an open heart and a guarded perimeter.</p>
-                    
-                    <p>The silent loss is of innocence, not of opportunity. It is the loss of the unexamined faith that the world operates on fair exchange. Grieving this loss is necessary, but enshrining it as permanent truth is a surrendering of power. The emotional investment was real and valid; the betrayal does not negate its worth, but rather demands that future investments be made with sharper eyes and clearer terms.</p>
-                </div>
-                <div style="page-break-after: always;"></div>
-            </div>
-
-            <!-- Chapter 6 -->
-            <div class="pdf-page">
-                <h2 style="font-family: 'Playfair Display', serif; font-size: 2.2rem; font-weight: 700; color: #2c3e50; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #D4A76A;">Chapter Six: Responsibility Without Self-Blame</h2>
-                <div style="font-size: 1.2rem; line-height: 1.9; margin-bottom: 40px;">
-                    <p>True growth in the aftermath of exploitation requires navigating the narrow path between accountability and self-destruction. It demands a clear-eyed assessment that assigns responsibility precisely, without collapsing into corrosive self-blame. Yes, unequivocally, the neighbor acted with opportunism and a disregard for the ethical claim created by the owner's labor. His actions were wrong. This external fault must be named and acknowledged; to minimize it is to distort reality.</p>
-                    
-                    <p>However, for the owner to move from victim to strategist, he must also turn his gaze inward and ask the difficult, generative questions: What structures did I fail to establish? What protections did I assume were inherent rather than explicit? Where did I confuse my own good intentions with a binding contract understood by all?</p>
-                    
-                    <p>This inward examination is not an exercise in self-flagellation. It is, fundamentally, an act of self-mastery. It is the process of extracting a operating manual from the wreckage of a bad outcome. It shifts the focus from "Why did this happen to me?" to "What can I learn from how this happened?" The goal is not to absorb the neighbor's shame, but to acquire the neighbor's strategic awareness—to couple the builder's diligence with the strategist's foresight.</p>
-                    
-                    <p>Every significant loss, particularly one born of misplaced trust, contains within it a lesson woven tightly into the fabric of the grief. The pain is the wrapping; the insight is the gift. To reject the examination is to be condemned to repeat the scenario, perhaps with different actors but the same tragic plot. To engage with it is to begin translating raw experience into durable wisdom, ensuring that future investments are not just earnest, but also architecturally sound.</p>
-                </div>
-                <div style="page-break-after: always;"></div>
-            </div>
-
-            <!-- Chapter 7 -->
-            <div class="pdf-page">
-                <h2 style="font-family: 'Playfair Display', serif; font-size: 2.2rem; font-weight: 700; color: #2c3e50; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #D4A76A;">Chapter Seven: Rebuilding With Boundaries</h2>
-                <div style="font-size: 1.2rem; line-height: 1.9; margin-bottom: 40px;">
-                    <p>The second cow, should the owner find the courage to raise one, is cultivated within a fundamentally different paradigm. The love and care invested are no less, but they are now framed by visible, functional structures. This time, the field has strong, well-maintained fences—literal or metaphorical—that clearly demarcate what is mine, what is yours, and where collaboration begins and ends. Agreements are spoken aloud, witnessed, and where necessary, recorded. They outline expectations, responsibilities, and the consequences of overreach. The paths of training are clear and consistent, reinforcing not just skill, but belonging and proper direction. Ownership is no longer a vague concept of origin; it is an active, ongoing practice of stewardship and defined control.</p>
-                    
-                    <p>This evolution in approach does not represent a descent into coldness or misanthropy. Wisdom does not make us colder; it makes us clearer. It allows us to distinguish between generosity and naivete, between trust and credulity. Boundaries, in this mature framework, are not signs of inherent mistrust or a closed heart. On the contrary, they are profound signs of maturity and respect—for oneself, for one's work, and even for the other party. They prevent the ambiguity that leads to resentment and exploitation.</p>
-                    
-                    <p>They create a container strong enough to hold deep collaboration without leakage of value or intention. They ensure that the tremendous energy of preparation flows toward its intended purpose, creating a harvest that nourishes the hands that did the sowing.</p>
-                    
-                    <p>The owner learns that you can build a wide, welcoming gate without tearing down the fence, that you can share the fruits of your labor without surrendering the roots.</p>
-                </div>
-                <div style="page-break-after: always;"></div>
-            </div>
-
-            <!-- Chapter 8 -->
-            <div class="pdf-page">
-                <h2 style="font-family: 'Playfair Display', serif; font-size: 2.2rem; font-weight: 700; color: #2c3e50; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #D4A76A;">Chapter Eight: Teaching the Cow Where Home Is</h2>
-                <div style="font-size: 1.2rem; line-height: 1.9; margin-bottom: 40px;">
-                    <p>Loyalty, in any meaningful sense, is not a default setting; it is a learned orientation. It must be consciously taught, consistently reinforced, and woven into the very fabric of the relationship. This is true whether the subject is a literal animal, a team member, a protege, or a complex system. Alignment does not happen by accident; it is the product of intentional design and daily practice. Values must be explicitly named and repeatedly demonstrated. Purpose must be shared, not just assigned, creating a sense of co-ownership in the outcome.</p>
-                    
-                    <p>A cow trained solely in the mechanical act of ploughing will plough anywhere the reins direct it; its labor is a transferable skill, detached from any sense of place or allegiance. However, a cow trained within the context of home—where its labor is connected to the sustenance of the specific herd, the prosperity of the particular family, the bounty of the recognizable field—develops a different understanding. Its work becomes part of a story, a contribution to an ecosystem it recognizes as its own. It will still pull the plough with strength, but it will also know the path back to its own barn, respond most readily to its owner's voice, and perhaps even show reluctance when led toward a stranger's field.</p>
-                    
-                    <p>This deeper training involves more than commands; it involves connection. It means the owner works alongside the animal, shares the same midday rest in the same patch of shade, provides care that goes beyond mere maintenance to genuine companionship.</p>
-                    
-                    <p>The lesson extends far beyond agriculture: we must build not just competence in others, but belonging. We must foster not just capability, but a shared sense of destination. The goal is to develop assets that are not just useful, but invested.</p>
-                </div>
-                <div style="page-break-after: always;"></div>
-            </div>
-
-            <!-- Chapter 9 -->
-            <div class="pdf-page">
-                <h2 style="font-family: 'Playfair Display', serif; font-size: 2.2rem; font-weight: 700; color: #2c3e50; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #D4A76A;">Chapter Nine: When Betrayal Becomes Legacy</h2>
-                <div style="font-size: 1.2rem; line-height: 1.9; margin-bottom: 40px;">
-                    <p>There exists a transformative alchemy through which certain betrayals, particularly those born of exploited preparation, cease to be merely personal wounds and instead become the foundational stones of leadership and protection for others. The owner who truly learns from the experience undergoes a metamorphosis. He is no longer just a builder of cows; he becomes a teacher of builders, a writer of new codes. His personal story of loss curdles into a powerful communal warning, a parable shared to illuminate a pitfall others might not see. The specific pain he endured is distilled into general policy, into proactive structures that prevent recurrence. What was once a private heartache now serves as a public safeguard.</p>
-                    
-                    <p>This is the noble path of transforming poison into medicine. The owner, now an elder in spirit if not in years, walks his land with a different gaze. He notices the young farmer struggling with a promising calf and a poorly defined boundary with his neighbor. He offers advice not as abstract philosophy, but as hard-won truth: "The strength of the fence determines who eats the harvest." He helps draft the first clear loan agreement for a shared tool. He instills in his own children and apprentices the dual disciplines of diligent creation and vigilant stewardship.</p>
-                    
-                    <p>The betrayal, in this light, is not erased or forgiven, but it is redeemed. It is made meaningful by becoming useful. It transitions from a event that happened to him to a lesson he offers to the community, ensuring that the price he paid purchases protection for those who come after. His legacy becomes one of fortified creation, where the memory of loss serves as the immune system for future endeavors.</p>
-                </div>
-                <div style="page-break-after: always;"></div>
-            </div>
-
-            <!-- Chapter 10 -->
-            <div class="pdf-page">
-                <h2 style="font-family: 'Playfair Display', serif; font-size: 2.2rem; font-weight: 700; color: #2c3e50; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #D4A76A;">Chapter Ten: Preparing Again—But Wiser</h2>
-                <div style="font-size: 1.2rem; line-height: 1.9; margin-bottom: 40px;">
-                    <p>The ultimate, non-negotiable truth that emerges from this entire journey is this: we must never surrender our fundamental calling to prepare, to build, to cultivate value. The world in its current state suffers not from an excess of careful builders, but from a devastating shortage. To cease preparation because of one betrayal, or even several, is to commit a greater sin against the future—it is to withhold the very investment the world needs to grow, heal, and prosper.</p>
-                    
-                    <p>However, the builder who returns to his work after such an experience is fundamentally changed. He is now a different species of creator. He prepares again, but this time with eyes wide open, absorbing all data, including the data of human nature. His heart remains steady, capable of investment without being recklessly porous. His hands are more skilled, now adept at forging both the tool and the system that secures it. He understands that preparation without concomitant wisdom is merely generosity—a noble but often costly virtue that can leave the giver depleted and the receiver entitled.</p>
-                    
-                    <p>But preparation that is married to wisdom, to strategy, to discernment—that is the very essence of leadership. It is creation with direction, investment with governance, generosity with sustainability.</p>
-                    
-                    <p>And so we return to the field. We select another calf with potential. We begin the patient work of feeding, healing, protecting, and training. But now we also survey the boundary lines with a surveyor's precision. We have the difficult conversations before the season of need creates pressure. We build loyalty as intentionally as we build strength. We do this not because we have forgotten the pain, but precisely because we remember it so clearly.</p>
-                    
-                    <p>We prepare again, not in spite of what happened, but informed by it. Because the core problem was never the act of raising the cow. The tragedy was never in the preparation itself. The fatal flaw was in preparing with all one's heart, while failing to secure the rightful harvest.</p>
-                </div>
-                <div style="page-break-after: always;"></div>
-            </div>
-
-            <!-- Synopsis -->
-            <div class="pdf-page">
-                <h2 style="font-family: 'Playfair Display', serif; font-size: 2.2rem; font-weight: 700; color: #2c3e50; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #D4A76A;">SYNOPSIS</h2>
-                <div style="font-size: 1.2rem; line-height: 1.9; margin-bottom: 40px;">
-                    <div style="margin-bottom: 40px;">
-                        <p><em>The Betrayal of the Prepared Cow</em> is a penetrating examination of one of modernity's most pervasive yet least examined social phenomena: the systematic transfer of cultivated value from its creator to opportunistic observers. Structured as ten analytical chapters, the book moves from the psychology of preparation to the architecture of protection, offering readers not just diagnosis, but practical strategy.</p>
-                    </div>
-
-                    <h3 style="font-family: 'Playfair Display', serif; font-size: 1.5rem; color: #8B4513; margin-top: 40px; margin-bottom: 20px; padding-left: 20px; border-left: 4px solid #D4A76A;">Part I: The Preparation Paradox (Chapters 1-3)</h3>
-                    <div style="margin-bottom: 40px;">
-                        <p>The book opens by exploring why preparation—despite being universally praised—creates unique vulnerability. Chapter 1, "The Cow That Was Raised With Care," examines the emotional and economic architecture of investment: why we pour resources into developing people, projects, and possibilities, often with only implicit expectation of return. Chapter 2, "Ownership Without Protection," challenges the dangerous assumption that creation automatically confers control, revealing how unsecured value naturally migrates toward those positioned to harvest it. Chapter 3, "The Neighbor's Quiet Waiting," introduces the often-overlooked counterpart to preparation: strategic observation. Here we meet those who don't build, but position—who calculate value without contributing to its creation.</p>
-                    </div>
-
-                    <h3 style="font-family: 'Playfair Display', serif; font-size: 1.5rem; color: #8B4513; margin-top: 40px; margin-bottom: 20px; padding-left: 20px; border-left: 4px solid #D4A76A;">Part II: The Moment of Transfer (Chapters 4-6)</h3>
-                    <div style="margin-bottom: 40px;">
-                        <p>The middle section documents the actual mechanics of value redirection. Chapter 4, "The Day the Plough Changed Direction," analyzes that pivotal moment when cultivated effort begins serving unintended beneficiaries. Using case studies from business, relationships, and intellectual property, it reveals how transfer often happens not through theft, but through exploited ambiguity. Chapter 5, "Emotional Investment and Silent Loss," delves into the psychological aftermath—the particular devastation that occurs when not just labor, but belief itself is appropriated. Chapter 6, "Responsibility Without Self-Blame," navigates the delicate balance between accountability and victimhood, teaching readers how to extract wisdom from exploitation without internalizing false guilt.</p>
-                    </div>
-
-                    <h3 style="font-family: 'Playfair Display', serif; font-size: 1.5rem; color: #8B4513; margin-top: 40px; margin-bottom: 20px; padding-left: 20px; border-left: 4px solid #D4A76A;">Part III: The Architecture of Protection (Chapters 7-10)</h3>
-                    <div style="margin-bottom: 40px;">
-                        <p>The final section moves from analysis to solution. Chapter 7, "Rebuilding With Boundaries," provides a practical framework for cultivating value with integrated safeguards. Chapter 8, "Teaching the Cow Where Home Is," explores how to build loyalty and alignment into systems from their inception. Chapter 9, "When Betrayal Becomes Legacy," examines how painful experience can be transformed into protective wisdom for communities and organizations. The concluding Chapter 10, "Preparing Again—But Wiser," synthesizes the book's insights into a manifesto for intelligent creation: how to build generously while protecting diligently, how to invest openly while securing returns, how to prepare for harvest without preparing for betrayal.</p>
-                    </div>
-
-                    <div style="margin-bottom: 40px;">
-                        <p>Throughout, Wambua draws on cross-cultural examples, psychological research, and economic principles to build a compelling case: the problem isn't preparation itself, but preparation without protection. The book's unique contribution lies in its refusal to simplify complex human dynamics into villain/victim narratives, instead offering a clear-eyed analysis of how value flows, why it often flows away from its creators, and how to design systems that ensure cultivators reap what they have sown.</p>
-                        
-                        <p><em>The Betrayal of the Prepared Cow</em> is essential reading for entrepreneurs navigating partnership agreements, mentors developing protégés, innovators protecting intellectual property, leaders building organizational culture, and anyone who has ever wondered why their careful work so often seems to benefit others more than themselves. It is both a warning and a guide—a testament to the necessity of preparation, and a manual for ensuring that preparation serves its rightful purpose.</p>
-                        
-                        <p><strong>Publication Details:</strong> Non-fiction / Social Psychology / Business Strategy<br>
-                        <strong>Approximately 3,000 words</strong><br>
-                        <strong>Publication Date:</strong> Jan 2026<br>
-                        <strong>Available in</strong> Hardcover, Paperback, eBook</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- PDF Footer -->
-            <div class="pdf-footer" style="background-color: #2c3e50; color: white; padding: 40px; text-align: center; border-top: 8px solid #D4A76A; margin-top: 50px;">
-                <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(255, 255, 255, 0.2); font-family: 'Inter', sans-serif; font-size: 0.95rem;">
-                    <p>&copy; 2026 Mwanza Wambua. All rights reserved.</p>
-                    <p><em>The Betrayal of the Prepared Cow</em> is a work of social psychology and strategic analysis.</p>
-                    <p>Designed for readers who build, create, and prepare value for the world.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Main Book Container -->
+    <!-- Book Container -->
     <div class="book-container">
-        <!-- Header Section -->
-        <header class="book-header">
-            <button class="heart-btn" id="heartBtn">
-                <i class="fas fa-heart"></i>
-            </button>
-            
-            <h1 class="book-title">The Betrayal of the Prepared Cow</h1>
-            <p class="book-subtitle">Why What You Build Sometimes Works for Someone Else</p>
-            <div class="book-author">Author: Mwanza Wambua</div>
-        </header>
-
-        <!-- Navigation -->
-        <nav class="book-nav">
-            <div class="nav-title">The Betrayal of the Prepared Cow</div>
-            <div class="nav-controls">
-                <div class="chapter-nav">
-                    <select id="chapterSelect" class="chapter-select">
-                        <option value="intro">INTRODUCTION: THE UNGUARDED HARVEST</option>
-                        <option value="chapter1">Chapter 1: The Cow That Was Raised With Care</option>
-                        <option value="chapter2">Chapter 2: Ownership Without Protection</option>
-                        <option value="chapter3">Chapter 3: The Neighbor's Quiet Waiting</option>
-                        <option value="chapter4">Chapter 4: The Day the Plough Changed Direction</option>
-                        <option value="chapter5">Chapter 5: Emotional Investment and Silent Loss</option>
-                        <option value="chapter6">Chapter 6: Responsibility Without Self-Blame</option>
-                        <option value="chapter7">Chapter 7: Rebuilding With Boundaries</option>
-                        <option value="chapter8">Chapter 8: Teaching the Cow Where Home Is</option>
-                        <option value="chapter9">Chapter 9: When Betrayal Becomes Legacy</option>
-                        <option value="chapter10">Chapter 10: Preparing Again—But Wiser</option>
-                        <option value="synopsis">SYNOPSIS</option>
-                    </select>
+        <!-- Custom Book Cover -->
+        <div class="book-cover" id="bookCover">
+            <div class="cover-background"></div>
+            <div class="cover-border"></div>
+            <div class="cover-content">
+                <div class="book-genre">NON-FICTION • PSYCHOLOGY • BUSINESS</div>
+                <h1 class="cover-main-title">THE BETRAYAL<br><span>OF THE PREPARED COW</span></h1>
+                <div class="cover-subtitle">Why What You Build Sometimes Works for Someone Else</div>
+                <div class="cover-symbol">
+                    <i class="fas fa-shield-alt"></i>
                 </div>
-                <button id="prevBtn" class="nav-btn"><i class="fas fa-arrow-left"></i> Previous</button>
-                <button id="nextBtn" class="nav-btn">Next <i class="fas fa-arrow-right"></i></button>
-                <button id="pdfBtn" class="nav-btn"><i class="fas fa-file-pdf"></i> Download PDF</button>
+                <div class="cover-author">MWANZA WAMBUA</div>
+                <div class="cover-quote">
+                    "The prepared cow will always be necessary. But we must learn to build the fence before we need it."
+                </div>
+                <div class="start-reading">
+                    <i class="fas fa-chevron-down"></i> Click to open book <i class="fas fa-chevron-down"></i>
+                </div>
             </div>
-        </nav>
+        </div>
 
         <!-- Book Content -->
-        <main class="book-content">
-            <!-- Introduction -->
-            <section id="intro" class="page active">
-                <h2 class="chapter-title">INTRODUCTION: THE UNGUARDED HARVEST</h2>
+        <div class="book-content" id="bookContent">
+            <!-- Book Title and Author -->
+            <h1 class="book-title">THE BETRAYAL OF THE PREPARED COW</h1>
+            <h2 class="book-subtitle">Why What You Build Sometimes Works for Someone Else</h2>
+            <div class="book-author">MWANZA WAMBUA</div>
+
+            <!-- Navigation -->
+            <div class="book-nav">
+                <button class="nav-btn" id="prevBtn" disabled>
+                    <i class="fas fa-chevron-left"></i> Previous
+                </button>
+                <div class="chapter-indicator" id="chapterIndicator">Introduction</div>
+                <button class="nav-btn" id="nextBtn">
+                    Next <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+
+            <!-- Table of Contents -->
+            <div class="toc-container">
+                <h2 class="toc-title">Table of Contents</h2>
+                <ul class="toc-list" id="tocList"></ul>
+            </div>
+
+            <!-- Chapters -->
+            <div class="chapter active" id="chapter0">
+                <h1 class="chapter-title">INTRODUCTION: THE UNGUARDED HARVEST</h1>
                 <div class="chapter-content">
-                    <p>There is a particular kind of loss that feels different from ordinary failure—a quiet theft that happens not in darkness, but in plain sight. It is not the loss of what you never had, but the redirection of what you built with your own hands. This is the story of the prepared cow: the animal you raised from weakness to strength, the project you nurtured from concept to completion, the relationship you cultivated from acquaintance to intimacy—only to watch it work another's field, serve another's purpose, fill another's granary.</p>
+                    <p>There is a particular kind of loss that feels different from ordinary failure—a quiet theft that happens not in darkness, but in plain sight. It is not the loss of what you never had, but the redirection of what you built with your own hands. It is the story of the prepared cow: the animal you raised from weakness to strength, the project you nurtured from concept to completion, the relationship you cultivated from acquaintance to intimacy—only to watch it work another's field, serve another's purpose, fill another's granary.</p>
                     
-                    <p>We live in a world that celebrates preparation but fails to protect preparers. We applaud the mentor but promote the protégé who leaves. We admire the innovator but reward the corporation that copies. We cherish the partner who makes us whole, then watch them become whole with someone else. This is not about malice in the traditional sense; it is about a systemic failure to connect labor with legacy, investment with return, preparation with harvest.</p>
+                    <p>We live in a world that celebrates preparation but fails to protect preparers. We applaud the mentor but promote the protégé who leaves. We admire the innovator but reward the corporation that copies. We cherish the partner who makes us whole, then watch them become whole with someone else.</p>
                     
-                    <div class="intro-quote">
-                        The Betrayal of the Prepared Cow examines the architecture of this particular heartbreak. It is not a condemnation of preparation—indeed, preparation remains our most human act of faith in tomorrow. Rather, it is an investigation into why our most careful cultivation so often becomes someone else's convenient harvest.
-                    </div>
+                    <p class="highlight">This is not about malice in the traditional sense; it is about a systemic failure to connect labor with legacy, investment with return, preparation with harvest.</p>
                     
-                    <p>Why the fences we thought were understood prove permeable. Why the loyalty we assumed was inherent proves transferable.</p>
+                    <p>The Betrayal of the Prepared Cow examines the architecture of this particular heartbreak. It is not a condemnation of preparation—indeed, preparation remains our most human act of faith in tomorrow. Rather, it is an investigation into why our most careful cultivation so often becomes someone else's convenient harvest. Why the fences we thought were understood prove permeable. Why the loyalty we assumed was inherent proves transferable.</p>
                     
                     <p>This book emerged from watching patterns repeat across continents and contexts: the African farmer whose hybrid seeds are harvested by neighbors who contributed no research, the Silicon Valley developer whose algorithm is monetized by executives who didn't stay up coding through the night, the woman who heals a man's heart only to have him offer his healed self to another. The specifics change; the structure remains. Someone prepares. Someone else benefits disproportionately.</p>
                     
@@ -968,616 +703,674 @@
                     
                     <p>This is ultimately a book about power—not the crude power of force, but the subtle power of redirected value. It is about learning to build with both generosity and protection, to cultivate with both open hands and clear boundaries, to prepare not just the asset, but the system that contains it.</p>
                     
-                    <p>The prepared cow will always be necessary. But we must learn to build the fence before we need it.</p>
+                    <p class="highlight">The prepared cow will always be necessary. But we must learn to build the fence before we need it.</p>
                 </div>
-                
-                <!-- Page Navigation Buttons -->
-                <div class="page-navigation">
-                    <button id="introBackBtn" class="page-btn back-btn" disabled>
-                        <i class="fas fa-arrow-left"></i> Back
-                    </button>
-                    <button id="introNextBtn" class="page-btn next-btn">
-                        Next Chapter <i class="fas fa-arrow-right"></i>
-                    </button>
-                </div>
-            </section>
-
-            <!-- Chapter 1 -->
-            <section id="chapter1" class="page">
-                <h2 class="chapter-title">Chapter One: The Cow That Was Raised With Care</h2>
-                <div class="chapter-content">
-                    <p>Every meaningful investment begins quietly, in that fragile space between intention and manifestation. A cow is not born ready to plough; it enters the world trembling on unsteady legs, all potential and vulnerability. The transformation from that trembling calf to a powerful draft animal happens through thousands of small, unseen acts of devotion. It is fed precious grain when the grass grows scarce and the seasons turn harsh. It is treated with herbal poultices when sickness threatens, the owner's hands gentle against fevered hide. It is protected through sleepless nights when thieves roam and predators circle just beyond the firelight. And it is trained with infinite patience—not through force, but through the slow building of trust, the consistent language of pressure and release, until the yoke feels like partnership rather than burden.</p>
-                    
-                    <p>This is how dreams are built, not in dramatic leaps but in the relentless accumulation of days. People often misunderstand preparation because it does not look like success. It looks like repetition—the same tasks performed when no one is watching. It feels like boredom—the monotony of care that offers no immediate reward. It manifests as invisible effort—callouses that form and muscles that ache without audience or applause. While others laugh at what they perceive as foolish obsession, the owner quietly sharpens the yoke, ensuring its edges are smooth and its fit is perfect. While others sleep through the cool morning hours, the owner repairs the plough by lantern light, checking each joint and fastener.</p>
-                    
-                    <p>Preparation is ultimately an act of faith, a covenant made with an uncertain future. You pour your time, your resources, your very self into something that offers no guarantees. You believe, with a hope that borders on prayer, that one day when the rains finally come and the soil calls, the creature you have nurtured will pull steadfastly for your land and your harvest alone.</p>
-                    
-                    <p>But this nurturing creates a profound and often overlooked vulnerability. The stronger the cow becomes, the more splendid its form, the more efficient its pull—the more it attracts the gaze of others. Excellence draws attention like a beacon. Value, once recognized, invites interference, envy, and a sense of entitlement from those who did not share in the labor of its creation.</p>
-                </div>
-                
-                <!-- Page Navigation Buttons -->
-                <div class="page-navigation">
-                    <button id="chapter1BackBtn" class="page-btn back-btn">
-                        <i class="fas fa-arrow-left"></i> Back
-                    </button>
-                    <button id="chapter1NextBtn" class="page-btn next-btn">
-                        Next Chapter <i class="fas fa-arrow-right"></i>
-                    </button>
-                </div>
-            </section>
-
-            <!-- Chapter 2 -->
-            <section id="chapter2" class="page">
-                <h2 class="chapter-title">Chapter Two: Ownership Without Protection</h2>
-                <div class="chapter-content">
-                    <p>Many people operate under a fundamental and costly assumption: that ownership is a static state, a title that automatically commands loyalty. They believe that because they were the ones who fed the cow, sheltered it, and guided its growth, the animal will always know to return to their hand, to their voice, to their field. But ownership without active, deliberate protection is merely optimism disguised as strategy—it is sentiment, not wisdom.</p>
-                    
-                    <p>A field without fences is an open invitation. A neighbor with adjoining land has equal access to the same sun, the same rain, the same seasons of need. When the crucial moment arrives and work must be done, the one who holds the rope in that instant controls the direction, regardless of whose barn provided the shelter the night before.</p>
-                    
-                    <p>This is the fertile ground where betrayal most often takes root—not typically sprouting from overt malice as a first resort, but flourishing in the rich soil of the owner's own negligence. The owner prepared the animal with magnificent focus but forgot to prepare the system that would contain and direct its value. There were no clear agreements, no mutually understood boundaries, no explicit safeguards. The relationship was governed by assumption rather than articulation, by hope rather than structure.</p>
-                    
-                    <p>In life, we mirror this error constantly. We raise people—mentoring protégés, nurturing partners, guiding children—without ever defining the terms of loyalty that should naturally follow such investment. We share groundbreaking ideas in rooms without confidentiality, we invest emotional capital in institutions without clarity of return, we empower teams and communities without ensuring alignment of purpose. And then, when the harvest is ready and we look to our field, we are genuinely shocked to find the fruit of our labor being gathered into another's basket. We stare, heart sinking, as the cow we raised from infancy pulls the plough through soil we do not own.</p>
-                    
-                    <p>The lesson is brutal in its simplicity: preparation creates power, but power released without structure simply creates loss. It flows to the point of least resistance, and often, that is directly toward the waiting hands of the observant neighbor.</p>
-                </div>
-                
-                <!-- Page Navigation Buttons -->
-                <div class="page-navigation">
-                    <button id="chapter2BackBtn" class="page-btn back-btn">
-                        <i class="fas fa-arrow-left"></i> Back
-                    </button>
-                    <button id="chapter2NextBtn" class="page-btn next-btn">
-                        Next Chapter <i class="fas fa-arrow-right"></i>
-                    </button>
-                </div>
-            </section>
-
-            <!-- Chapter 3 -->
-            <section id="chapter3" class="page">
-                <h2 class="chapter-title">Chapter Three: The Neighbor's Quiet Waiting</h2>
-                <div class="chapter-content">
-                    <p>Betrayal is rarely a sudden, explosive event. It is more often a slow, silent process of redirection that becomes visible only at its endpoint. The neighbor was not idle during the years of the cow's maturation; he was engaged in a different kind of work altogether. While the owner sweated under the sun, the neighbor observed from the shade of his porch. While the cow's muscles grew defined and its stride confident, the neighbor mentally measured the distance between the two fields, the quality of the soil on his side, and the weakness of the boundary that divided them. He noted the owner's habits, his cycles of work and rest, the specific times the cow was left unattended.</p>
-                    
-                    <p>Opportunity, in such scenarios, favors not the bold, but the patient. The neighbor did not contribute to the raising of the cow—he offered no feed during lean times, provided no comfort during illness, invested no hours in training. Yet he developed a sophisticated understanding of its market value, its capacity for work, its potential to transform his own neglected land. He did not pay the physical, financial, or emotional costs of its development, but he meticulously planned to collect the benefit. His investment was not in the creature itself, but in the timing of his request, the crafting of his justification, and the social pressure he could apply when the moment was right.</p>
-                    
-                    <p>This chapter forces an uncomfortable but necessary recognition: not every person within our orbit shares our benevolent intentions. Not all observation is admiration; sometimes it is calculation. Some individuals operate on a fundamentally different principle—they do not plant, they position. They cultivate not the asset, but the opportunity to claim it.</p>
-                    
-                    <p>Wisdom in this context is not paranoia, but rather a sober awareness. It is the understanding that not every smile across the fence line is an expression of support, and not every presence in our lives signifies a partnership. It is the ability to discern between those who build with you and those who are merely waiting for you to finish building.</p>
-                </div>
-                
-                <!-- Page Navigation Buttons -->
-                <div class="page-navigation">
-                    <button id="chapter3BackBtn" class="page-btn back-btn">
-                        <i class="fas fa-arrow-left"></i> Back
-                    </button>
-                    <button id="chapter3NextBtn" class="page-btn next-btn">
-                        Next Chapter <i class="fas fa-arrow-right"></i>
-                    </button>
-                </div>
-            </section>
-
-            <!-- Chapter 4 -->
-            <section id="chapter4" class="page">
-                <h2 class="chapter-title">Chapter Four: The Day the Plough Changed Direction</h2>
-                <div class="chapter-content">
-                    <p>The profound depth of the betrayal only crystallizes, becomes undeniably real, when the steel of the ploughshare first tears into unfamiliar soil. That visceral moment carries a unique and devastating pain because it functions as a brutal truth-teller, rendering all previous assumptions null. It exposes the reality beneath the narrative. Every sack of grain carried at dawn, every gentle word spoken during training, every sacrifice of time and resource—all of it has been silently redirected, its purpose subverted. The connection between cause and effect has been severed; the owner's input no longer guarantees his output.</p>
-                    
-                    <p>This is the fertile ground where righteous anger takes root and grows thorns. It is where the silent, screaming questions rise in the throat. The owner stands at the fence line, not watching his own field flourish, but witnessing the fruit of his lifetime of discipline enriching land he does not own. He is forced to ask, with a bitterness that stains the soul, "How could this happen? After all I have done, how is this the result?" The mind scrambles to rewrite history, to find the missed clue, the unheeded warning.</p>
-                    
-                    <p>But the plough, as it carves its straight, purposeful line, does not lie. Its direction is a pure and simple testament. It reveals true allegiance, not proclaimed loyalty. It shows who holds functional control in the present moment, not who holds historical claim.</p>
-                    
-                    <p>What we build, in the end, serves as the ultimate diagnostic tool. It will eventually show us, with unflinching clarity, who truly controls its application. The cow may remember the hand that fed it, but it obeys the hand that guides it now. The field may remember the season of preparation, but it yields its harvest to whoever guides the plough today.</p>
-                    
-                    <p>This moment of revelation is the pivot upon which innocence turns into experience, where naive trust transforms into hard-won discernment.</p>
-                </div>
-                
-                <!-- Page Navigation Buttons -->
-                <div class="page-navigation">
-                    <button id="chapter4BackBtn" class="page-btn back-btn">
-                        <i class="fas fa-arrow-left"></i> Back
-                    </button>
-                    <button id="chapter4NextBtn" class="page-btn next-btn">
-                        Next Chapter <i class="fas fa-arrow-right"></i>
-                    </button>
-                </div>
-            </section>
-
-            <!-- Chapter 5 -->
-            <section id="chapter5" class="page">
-                <h2 class="chapter-title">Chapter Five: Emotional Investment and Silent Loss</h2>
-                <div class="chapter-content">
-                    <p>The deepest and most lingering wound inflicted by such betrayal is seldom material. The true devastation operates on an emotional and spiritual plane, far beneath the surface of lost labor or misappropriated resource. The owner does not merely lose the tangible fruits of his effort; he suffers a fundamental erosion of belief. The internal logic that sustained him through years of thankless work—the creed that faithful effort begets rightful reward—crumbles into dust. He begins to doubt the very principle of preparation itself. Why build, if what is built can be so easily repurposed? Why invest deeply, if the returns can be intercepted? The pain metastasizes from a single event into a worldview, coloring future endeavors with the gray tint of suspicion and anticipated disappointment.</p>
-                    
-                    <p>This corrosive doubt is the secondary harvest of betrayal, often more damaging than the initial loss. Many people, after such an experience, make a critical error in judgment: they confuse the specific pain of being exploited with a universal principle that all preparation is folly. They abandon their natural impulse to build, to nurture, to create value. They decide to raise no more cows, to plant no more fields, to offer no more mentorship. They retreat into a small, defended space where nothing can be taken because nothing is offered.</p>
-                    
-                    <p>This chapter serves as a crucial correction to that impulse. It argues that the betrayal itself does not cancel the inherent wisdom of preparation; it does not invalidate the virtue of building. Instead, the painful experience merely refines that wisdom, adding necessary layers of complexity, strategy, and protection. The lesson is not to stop cultivating, but to cultivate with both an open heart and a guarded perimeter.</p>
-                    
-                    <p>The silent loss is of innocence, not of opportunity. It is the loss of the unexamined faith that the world operates on fair exchange. Grieving this loss is necessary, but enshrining it as permanent truth is a surrendering of power. The emotional investment was real and valid; the betrayal does not negate its worth, but rather demands that future investments be made with sharper eyes and clearer terms.</p>
-                </div>
-                
-                <!-- Page Navigation Buttons -->
-                <div class="page-navigation">
-                    <button id="chapter5BackBtn" class="page-btn back-btn">
-                        <i class="fas fa-arrow-left"></i> Back
-                    </button>
-                    <button id="chapter5NextBtn" class="page-btn next-btn">
-                        Next Chapter <i class="fas fa-arrow-right"></i>
-                    </button>
-                </div>
-            </section>
-
-            <!-- Chapter 6 -->
-            <section id="chapter6" class="page">
-                <h2 class="chapter-title">Chapter Six: Responsibility Without Self-Blame</h2>
-                <div class="chapter-content">
-                    <p>True growth in the aftermath of exploitation requires navigating the narrow path between accountability and self-destruction. It demands a clear-eyed assessment that assigns responsibility precisely, without collapsing into corrosive self-blame. Yes, unequivocally, the neighbor acted with opportunism and a disregard for the ethical claim created by the owner's labor. His actions were wrong. This external fault must be named and acknowledged; to minimize it is to distort reality.</p>
-                    
-                    <p>However, for the owner to move from victim to strategist, he must also turn his gaze inward and ask the difficult, generative questions: What structures did I fail to establish? What protections did I assume were inherent rather than explicit? Where did I confuse my own good intentions with a binding contract understood by all?</p>
-                    
-                    <p>This inward examination is not an exercise in self-flagellation. It is, fundamentally, an act of self-mastery. It is the process of extracting a operating manual from the wreckage of a bad outcome. It shifts the focus from "Why did this happen to me?" to "What can I learn from how this happened?" The goal is not to absorb the neighbor's shame, but to acquire the neighbor's strategic awareness—to couple the builder's diligence with the strategist's foresight.</p>
-                    
-                    <p>Every significant loss, particularly one born of misplaced trust, contains within it a lesson woven tightly into the fabric of the grief. The pain is the wrapping; the insight is the gift. To reject the examination is to be condemned to repeat the scenario, perhaps with different actors but the same tragic plot. To engage with it is to begin translating raw experience into durable wisdom, ensuring that future investments are not just earnest, but also architecturally sound.</p>
-                </div>
-                
-                <!-- Page Navigation Buttons -->
-                <div class="page-navigation">
-                    <button id="chapter6BackBtn" class="page-btn back-btn">
-                        <i class="fas fa-arrow-left"></i> Back
-                    </button>
-                    <button id="chapter6NextBtn" class="page-btn next-btn">
-                        Next Chapter <i class="fas fa-arrow-right"></i>
-                    </button>
-                </div>
-            </section>
-
-            <!-- Chapter 7 -->
-            <section id="chapter7" class="page">
-                <h2 class="chapter-title">Chapter Seven: Rebuilding With Boundaries</h2>
-                <div class="chapter-content">
-                    <p>The second cow, should the owner find the courage to raise one, is cultivated within a fundamentally different paradigm. The love and care invested are no less, but they are now framed by visible, functional structures. This time, the field has strong, well-maintained fences—literal or metaphorical—that clearly demarcate what is mine, what is yours, and where collaboration begins and ends. Agreements are spoken aloud, witnessed, and where necessary, recorded. They outline expectations, responsibilities, and the consequences of overreach. The paths of training are clear and consistent, reinforcing not just skill, but belonging and proper direction. Ownership is no longer a vague concept of origin; it is an active, ongoing practice of stewardship and defined control.</p>
-                    
-                    <p>This evolution in approach does not represent a descent into coldness or misanthropy. Wisdom does not make us colder; it makes us clearer. It allows us to distinguish between generosity and naivete, between trust and credulity. Boundaries, in this mature framework, are not signs of inherent mistrust or a closed heart. On the contrary, they are profound signs of maturity and respect—for oneself, for one's work, and even for the other party. They prevent the ambiguity that leads to resentment and exploitation.</p>
-                    
-                    <p>They create a container strong enough to hold deep collaboration without leakage of value or intention. They ensure that the tremendous energy of preparation flows toward its intended purpose, creating a harvest that nourishes the hands that did the sowing.</p>
-                    
-                    <p>The owner learns that you can build a wide, welcoming gate without tearing down the fence, that you can share the fruits of your labor without surrendering the roots.</p>
-                </div>
-                
-                <!-- Page Navigation Buttons -->
-                <div class="page-navigation">
-                    <button id="chapter7BackBtn" class="page-btn back-btn">
-                        <i class="fas fa-arrow-left"></i> Back
-                    </button>
-                    <button id="chapter7NextBtn" class="page-btn next-btn">
-                        Next Chapter <i class="fas fa-arrow-right"></i>
-                    </button>
-                </div>
-            </section>
-
-            <!-- Chapter 8 -->
-            <section id="chapter8" class="page">
-                <h2 class="chapter-title">Chapter Eight: Teaching the Cow Where Home Is</h2>
-                <div class="chapter-content">
-                    <p>Loyalty, in any meaningful sense, is not a default setting; it is a learned orientation. It must be consciously taught, consistently reinforced, and woven into the very fabric of the relationship. This is true whether the subject is a literal animal, a team member, a protege, or a complex system. Alignment does not happen by accident; it is the product of intentional design and daily practice. Values must be explicitly named and repeatedly demonstrated. Purpose must be shared, not just assigned, creating a sense of co-ownership in the outcome.</p>
-                    
-                    <p>A cow trained solely in the mechanical act of ploughing will plough anywhere the reins direct it; its labor is a transferable skill, detached from any sense of place or allegiance. However, a cow trained within the context of home—where its labor is connected to the sustenance of the specific herd, the prosperity of the particular family, the bounty of the recognizable field—develops a different understanding. Its work becomes part of a story, a contribution to an ecosystem it recognizes as its own. It will still pull the plough with strength, but it will also know the path back to its own barn, respond most readily to its owner's voice, and perhaps even show reluctance when led toward a stranger's field.</p>
-                    
-                    <p>This deeper training involves more than commands; it involves connection. It means the owner works alongside the animal, shares the same midday rest in the same patch of shade, provides care that goes beyond mere maintenance to genuine companionship.</p>
-                    
-                    <p>The lesson extends far beyond agriculture: we must build not just competence in others, but belonging. We must foster not just capability, but a shared sense of destination. The goal is to develop assets that are not just useful, but invested.</p>
-                </div>
-                
-                <!-- Page Navigation Buttons -->
-                <div class="page-navigation">
-                    <button id="chapter8BackBtn" class="page-btn back-btn">
-                        <i class="fas fa-arrow-left"></i> Back
-                    </button>
-                    <button id="chapter8NextBtn" class="page-btn next-btn">
-                        Next Chapter <i class="fas fa-arrow-right"></i>
-                    </button>
-                </div>
-            </section>
-
-            <!-- Chapter 9 -->
-            <section id="chapter9" class="page">
-                <h2 class="chapter-title">Chapter Nine: When Betrayal Becomes Legacy</h2>
-                <div class="chapter-content">
-                    <p>There exists a transformative alchemy through which certain betrayals, particularly those born of exploited preparation, cease to be merely personal wounds and instead become the foundational stones of leadership and protection for others. The owner who truly learns from the experience undergoes a metamorphosis. He is no longer just a builder of cows; he becomes a teacher of builders, a writer of new codes. His personal story of loss curdles into a powerful communal warning, a parable shared to illuminate a pitfall others might not see. The specific pain he endured is distilled into general policy, into proactive structures that prevent recurrence. What was once a private heartache now serves as a public safeguard.</p>
-                    
-                    <p>This is the noble path of transforming poison into medicine. The owner, now an elder in spirit if not in years, walks his land with a different gaze. He notices the young farmer struggling with a promising calf and a poorly defined boundary with his neighbor. He offers advice not as abstract philosophy, but as hard-won truth: "The strength of the fence determines who eats the harvest." He helps draft the first clear loan agreement for a shared tool. He instills in his own children and apprentices the dual disciplines of diligent creation and vigilant stewardship.</p>
-                    
-                    <p>The betrayal, in this light, is not erased or forgiven, but it is redeemed. It is made meaningful by becoming useful. It transitions from a event that happened to him to a lesson he offers to the community, ensuring that the price he paid purchases protection for those who come after. His legacy becomes one of fortified creation, where the memory of loss serves as the immune system for future endeavors.</p>
-                </div>
-                
-                <!-- Page Navigation Buttons -->
-                <div class="page-navigation">
-                    <button id="chapter9BackBtn" class="page-btn back-btn">
-                        <i class="fas fa-arrow-left"></i> Back
-                    </button>
-                    <button id="chapter9NextBtn" class="page-btn next-btn">
-                        Next Chapter <i class="fas fa-arrow-right"></i>
-                    </button>
-                </div>
-            </section>
-
-            <!-- Chapter 10 -->
-            <section id="chapter10" class="page">
-                <h2 class="chapter-title">Chapter Ten: Preparing Again—But Wiser</h2>
-                <div class="chapter-content">
-                    <p>The ultimate, non-negotiable truth that emerges from this entire journey is this: we must never surrender our fundamental calling to prepare, to build, to cultivate value. The world in its current state suffers not from an excess of careful builders, but from a devastating shortage. To cease preparation because of one betrayal, or even several, is to commit a greater sin against the future—it is to withhold the very investment the world needs to grow, heal, and prosper.</p>
-                    
-                    <p>However, the builder who returns to his work after such an experience is fundamentally changed. He is now a different species of creator. He prepares again, but this time with eyes wide open, absorbing all data, including the data of human nature. His heart remains steady, capable of investment without being recklessly porous. His hands are more skilled, now adept at forging both the tool and the system that secures it. He understands that preparation without concomitant wisdom is merely generosity—a noble but often costly virtue that can leave the giver depleted and the receiver entitled.</p>
-                    
-                    <p>But preparation that is married to wisdom, to strategy, to discernment—that is the very essence of leadership. It is creation with direction, investment with governance, generosity with sustainability.</p>
-                    
-                    <p>And so we return to the field. We select another calf with potential. We begin the patient work of feeding, healing, protecting, and training. But now we also survey the boundary lines with a surveyor's precision. We have the difficult conversations before the season of need creates pressure. We build loyalty as intentionally as we build strength. We do this not because we have forgotten the pain, but precisely because we remember it so clearly.</p>
-                    
-                    <p>We prepare again, not in spite of what happened, but informed by it. Because the core problem was never the act of raising the cow. The tragedy was never in the preparation itself. The fatal flaw was in preparing with all one's heart, while failing to secure the rightful harvest.</p>
-                </div>
-                
-                <!-- Page Navigation Buttons -->
-                <div class="page-navigation">
-                    <button id="chapter10BackBtn" class="page-btn back-btn">
-                        <i class="fas fa-arrow-left"></i> Back
-                    </button>
-                    <button id="chapter10NextBtn" class="page-btn next-btn">
-                        Next Chapter <i class="fas fa-arrow-right"></i>
-                    </button>
-                </div>
-            </section>
-
-            <!-- Synopsis -->
-            <section id="synopsis" class="page">
-                <h2 class="chapter-title">SYNOPSIS</h2>
-                <div class="chapter-content">
-                    <div class="synopsis-section">
-                        <p><em>The Betrayal of the Prepared Cow</em> is a penetrating examination of one of modernity's most pervasive yet least examined social phenomena: the systematic transfer of cultivated value from its creator to opportunistic observers. Structured as ten analytical chapters, the book moves from the psychology of preparation to the architecture of protection, offering readers not just diagnosis, but practical strategy.</p>
-                    </div>
-
-                    <h3 class="part-title">Part I: The Preparation Paradox (Chapters 1-3)</h3>
-                    <div class="synopsis-section">
-                        <p>The book opens by exploring why preparation—despite being universally praised—creates unique vulnerability. Chapter 1, "The Cow That Was Raised With Care," examines the emotional and economic architecture of investment: why we pour resources into developing people, projects, and possibilities, often with only implicit expectation of return. Chapter 2, "Ownership Without Protection," challenges the dangerous assumption that creation automatically confers control, revealing how unsecured value naturally migrates toward those positioned to harvest it. Chapter 3, "The Neighbor's Quiet Waiting," introduces the often-overlooked counterpart to preparation: strategic observation. Here we meet those who don't build, but position—who calculate value without contributing to its creation.</p>
-                    </div>
-
-                    <h3 class="part-title">Part II: The Moment of Transfer (Chapters 4-6)</h3>
-                    <div class="synopsis-section">
-                        <p>The middle section documents the actual mechanics of value redirection. Chapter 4, "The Day the Plough Changed Direction," analyzes that pivotal moment when cultivated effort begins serving unintended beneficiaries. Using case studies from business, relationships, and intellectual property, it reveals how transfer often happens not through theft, but through exploited ambiguity. Chapter 5, "Emotional Investment and Silent Loss," delves into the psychological aftermath—the particular devastation that occurs when not just labor, but belief itself is appropriated. Chapter 6, "Responsibility Without Self-Blame," navigates the delicate balance between accountability and victimhood, teaching readers how to extract wisdom from exploitation without internalizing false guilt.</p>
-                    </div>
-
-                    <h3 class="part-title">Part III: The Architecture of Protection (Chapters 7-10)</h3>
-                    <div class="synopsis-section">
-                        <p>The final section moves from analysis to solution. Chapter 7, "Rebuilding With Boundaries," provides a practical framework for cultivating value with integrated safeguards. Chapter 8, "Teaching the Cow Where Home Is," explores how to build loyalty and alignment into systems from their inception. Chapter 9, "When Betrayal Becomes Legacy," examines how painful experience can be transformed into protective wisdom for communities and organizations. The concluding Chapter 10, "Preparing Again—But Wiser," synthesizes the book's insights into a manifesto for intelligent creation: how to build generously while protecting diligently, how to invest openly while securing returns, how to prepare for harvest without preparing for betrayal.</p>
-                    </div>
-
-                    <div class="synopsis-section">
-                        <p>Throughout, Wambua draws on cross-cultural examples, psychological research, and economic principles to build a compelling case: the problem isn't preparation itself, but preparation without protection. The book's unique contribution lies in its refusal to simplify complex human dynamics into villain/victim narratives, instead offering a clear-eyed analysis of how value flows, why it often flows away from its creators, and how to design systems that ensure cultivators reap what they have sown.</p>
-                        
-                        <p><em>The Betrayal of the Prepared Cow</em> is essential reading for entrepreneurs navigating partnership agreements, mentors developing protégés, innovators protecting intellectual property, leaders building organizational culture, and anyone who has ever wondered why their careful work so often seems to benefit others more than themselves. It is both a warning and a guide—a testament to the necessity of preparation, and a manual for ensuring that preparation serves its rightful purpose.</p>
-                        
-                        <p><strong>Publication Details:</strong> Non-fiction / Social Psychology / Business Strategy<br>
-                        <strong>Approximately 3,000 words</strong><br>
-                        <strong>Publication Date:</strong> Jan 2026<br>
-                        <strong>Available in</strong> Hardcover, Paperback, eBook</p>
-                    </div>
-                </div>
-                
-                <!-- Page Navigation Buttons -->
-                <div class="page-navigation">
-                    <button id="synopsisBackBtn" class="page-btn back-btn">
-                        <i class="fas fa-arrow-left"></i> Back
-                    </button>
-                    <button id="synopsisNextBtn" class="page-btn next-btn" disabled>
-                        The End <i class="fas fa-flag-checkered"></i>
-                    </button>
-                </div>
-            </section>
-        </main>
-
-        <!-- Footer -->
-        <footer class="book-footer">
-            <div class="publication-details">
-                <p>&copy; 2026 Mwanza Wambua. All rights reserved.</p>
-                <p><em>The Betrayal of the Prepared Cow</em> is a work of social psychology and strategic analysis.</p>
-                <p>Designed for readers who build, create, and prepare value for the world.</p>
             </div>
-        </footer>
+
+            <!-- Chapters 1-3 will be inserted here by JavaScript -->
+
+            <!-- Synopsis - Added after chapters -->
+            <div class="synopsis" id="synopsis">
+                <h2 class="section-title">SYNOPSIS</h2>
+                <div class="chapter-content">
+                    <p><em>The Betrayal of the Prepared Cow</em> is a penetrating examination of one of modernity's most pervasive yet least examined social phenomena: the systematic transfer of cultivated value from its creator to opportunistic observers.</p>
+                    
+                    <p>Structured as ten analytical chapters, the book moves from the psychology of preparation to the architecture of protection, offering readers not just diagnosis, but practical strategy.</p>
+                    
+                    <h3 class="part-title">Part I: The Preparation Paradox (Chapters 1–3)</h3>
+                    <p>The book opens by exploring why preparation—despite being universally praised—creates unique vulnerability. Chapter 1 examines the emotional and economic architecture of investment. Chapter 2 challenges the assumption that creation automatically confers control. Chapter 3 introduces strategic observation and positioning.</p>
+                    
+                    <h3 class="part-title">Part II: The Moment of Transfer (Chapters 4–6)</h3>
+                    <p>This section documents the mechanics of value redirection, emotional aftermath, and the balance between accountability and self-blame.</p>
+                    
+                    <h3 class="part-title">Part III: The Architecture of Protection (Chapters 7–10)</h3>
+                    <p>The final section offers practical frameworks for rebuilding, loyalty design, legacy transformation, and wiser preparation.</p>
+                    
+                    <p>Throughout, Wambua draws on cross-cultural examples, psychological research, and economic principles to build a compelling case: the problem isn't preparation itself, but preparation without protection.</p>
+                    
+                    <p>The book is essential reading for entrepreneurs, mentors, innovators, leaders, and anyone who has wondered why their careful work often seems to benefit others more than themselves.</p>
+                    
+                    <p class="highlight">It is both a warning and a guide—a testament to the necessity of preparation, and a manual for ensuring that preparation serves its rightful purpose.</p>
+                </div>
+            </div>
+
+            <!-- Publication Details -->
+            <div class="publication" id="publication">
+                <h2 class="section-title">Publication Details</h2>
+                <div class="chapter-content">
+                    <p><strong>Genre:</strong> Non-fiction / Social Psychology / Business Strategy</p>
+                    <p><strong>Length:</strong> Approximately 3,000 words</p>
+                    <p><strong>Publication Date:</strong> January 2026</p>
+                    <p><strong>Formats:</strong> Hardcover, Paperback, eBook</p>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="book-controls">
+                <div class="control-group">
+                    <button class="control-btn" id="tocBtn">
+                        <i class="fas fa-list"></i> Contents
+                    </button>
+                    <button class="control-btn" id="synopsisBtn">
+                        <i class="fas fa-file-alt"></i> Synopsis
+                    </button>
+                    <button class="control-btn" id="showCoverBtn" class="show-cover-btn">
+                        <i class="fas fa-image"></i> Show Cover
+                    </button>
+                    <button class="control-btn" id="downloadBtn">
+                        <i class="fas fa-download"></i> Download PDF
+                    </button>
+                </div>
+                
+                <div class="font-controls">
+                    <span style="margin-right: 8px; color: var(--primary-color); font-size: 0.9rem;">Font:</span>
+                    <button class="font-btn" id="fontSmall">A-</button>
+                    <button class="font-btn active" id="fontMedium">A</button>
+                    <button class="font-btn" id="fontLarge">A+</button>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="book-footer">
+                <p>&copy; 2026 Mwanza Wambua. All rights reserved.</p>
+                <p>This eBook is for demonstration purposes. The content is the intellectual property of the author.</p>
+            </div>
+        </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script>
-        // Navigation functionality
+         // Book data - chapters 1-10
+        const chapters = [
+            {
+                title: "Chapter One: The Cow That Was Raised With Care",
+                content: `
+                    <p>Every meaningful investment begins quietly, in that fragile space between intention and manifestation. A cow is not born ready to plough; it enters the world trembling on unsteady legs, all potential and vulnerability. The transformation from that trembling calf to a powerful draft animal happens through thousands of small, unseen acts of devotion.</p>
+                    
+                    <p>It is fed precious grain when the grass grows scarce and the seasons turn harsh. It is treated with herbal poultices when sickness threatens, the owner's hands gentle against fevered hide. It is protected through sleepless nights when thieves roam and predators circle just beyond the firelight. And it is trained with infinite patience—not through force, but through the slow building of trust, the consistent language of pressure and release, until the yoke feels like partnership rather than burden.</p>
+                    
+                    <p>This is how dreams are built, not in dramatic leaps but in the relentless accumulation of days.</p>
+                    
+                    <p>People often misunderstand preparation because it does not look like success. It looks like repetition—the same tasks performed when no one is watching. It feels like boredom—the monotony of care that offers no immediate reward. It manifests as invisible effort—callouses that form and muscles that ache without audience or applause.</p>
+                    
+                    <p>While others laugh at what they perceive as foolish obsession, the owner quietly sharpens the yoke, ensuring its edges are smooth and its fit is perfect. While others sleep through the cool morning hours, the owner repairs the plough by lantern light, checking each joint and fastener.</p>
+                    
+                    <p>Preparation is ultimately an act of faith, a covenant made with an uncertain future. You pour your time, your resources, your very self into something that offers no guarantees. You believe, with a hope that borders on prayer, that one day when the rains finally come and the soil calls, the creature you have nurtured will pull steadfastly for your land and your harvest alone.</p>
+                    
+                    <p class="highlight">But this nurturing creates a profound and often overlooked vulnerability. The stronger the cow becomes, the more splendid its form, the more efficient its pull—the more it attracts the gaze of others. Excellence draws attention like a beacon. Value, once recognized, invites interference, envy, and a sense of entitlement from those who did not share in the labor of its creation.</p>
+                `
+            },
+            {
+                title: "Chapter Two: Ownership Without Protection",
+                content: `
+                    <p>Many people operate under a fundamental and costly assumption: that ownership is a static state, a title that automatically commands loyalty. They believe that because they were the ones who fed the cow, sheltered it, and guided its growth, the animal will always know to return to their hand, to their voice, to their field.</p>
+                    
+                    <p>But ownership without active, deliberate protection is merely optimism disguised as strategy—it is sentiment, not wisdom.</p>
+                    
+                    <p>A field without fences is an open invitation. A neighbor with adjoining land has equal access to the same sun, the same rain, the same seasons of need. When the crucial moment arrives and work must be done, the one who holds the rope in that instant controls the direction, regardless of whose barn provided the shelter the night before.</p>
+                    
+                    <p>This is the fertile ground where betrayal most often takes root—not typically sprouting from overt malice as a first resort, but flourishing in the rich soil of the owner's own negligence. The owner prepared the animal with magnificent focus but forgot to prepare the system that would contain and direct its value.</p>
+                    
+                    <p>There were no clear agreements, no mutually understood boundaries, no explicit safeguards. The relationship was governed by assumption rather than articulation, by hope rather than structure.</p>
+                    
+                    <p>In life, we mirror this error constantly. We raise people—mentoring protégés, nurturing partners, guiding children—without ever defining the terms of loyalty that should naturally follow such investment. We share groundbreaking ideas in rooms without confidentiality, we invest emotional capital in institutions without clarity of return, we empower teams and communities without ensuring alignment of purpose.</p>
+                    
+                    <p>And then, when the harvest is ready and we look to our field, we are genuinely shocked to find the fruit of our labor being gathered into another's basket. We stare, heart sinking, as the cow we raised from infancy pulls the plough through soil we do not own.</p>
+                    
+                    <p class="highlight">The lesson is brutal in its simplicity: preparation creates power, but power released without structure simply creates loss. It flows to the point of least resistance, and often, that is directly toward the waiting hands of the observant neighbor.</p>
+                `
+            },
+            {
+                title: "Chapter Three: The Neighbor's Quiet Waiting",
+                content: `
+                    <p>Betrayal is rarely a sudden, explosive event. It is more often a slow, silent process of redirection that becomes visible only at its endpoint.</p>
+                    
+                    <p>The neighbor was not idle during the years of the cow's maturation; he was engaged in a different kind of work altogether. While the owner sweated under the sun, the neighbor observed from the shade of his porch. While the cow's muscles grew defined and its stride confident, the neighbor mentally measured the distance between the two fields, the quality of the soil on his side, and the weakness of the boundary that divided them.</p>
+                    
+                    <p>He noted the owner's habits, his cycles of work and rest, the specific times the cow was left unattended.</p>
+                    
+                    <p>Opportunity, in such scenarios, favors not the bold, but the patient. The neighbor did not contribute to the raising of the cow—he offered no feed during lean times, provided no comfort during illness, invested no hours in training. Yet he developed a sophisticated understanding of its market value, its capacity for work, its potential to transform his own neglected land.</p>
+                    
+                    <p>He did not pay the physical, financial, or emotional costs of its development, but he meticulously planned to collect the benefit. His investment was not in the creature itself, but in the timing of his request, the crafting of his justification, and the social pressure he could apply when the moment was right.</p>
+                    
+                    <p>This chapter forces an uncomfortable but necessary recognition: not every person within our orbit shares our benevolent intentions. Not all observation is admiration; sometimes it is calculation. Some individuals operate on a fundamentally different principle—they do not plant, they position. They cultivate not the asset, but the opportunity to claim it.</p>
+                    
+                    <p class="highlight">Wisdom in this context is not paranoia, but rather a sober awareness. It is the understanding that not every smile across the fence line is an expression of support, and not every presence in our lives signifies a partnership. It is the ability to discern between those who build with you and those who are merely waiting for you to finish building.</p>
+                `
+            },
+            {
+                title: "Chapter Four: The Day the Plough Changed Direction",
+                content: `
+                    <p>The profound depth of the betrayal only crystallizes, becomes undeniably real, when the steel of the ploughshare first tears into unfamiliar soil.</p>
+                    
+                    <p>That visceral moment carries a unique and devastating pain because it functions as a brutal truth-teller, rendering all previous assumptions null. It exposes the reality beneath the narrative.</p>
+                    
+                    <p>Every sack of grain carried at dawn, every gentle word spoken during training, every sacrifice of time and resource—all of it has been silently redirected, its purpose subverted. The connection between cause and effect has been severed; the owner's input no longer guarantees his output.</p>
+                    
+                    <p>This is the fertile ground where righteous anger takes root and grows thorns. It is where the silent, screaming questions rise in the throat. The owner stands at the fence line, not watching his own field flourish, but witnessing the fruit of his lifetime of discipline enriching land he does not own.</p>
+                    
+                    <p>He is forced to ask, with a bitterness that stains the soul, "How could this happen? After all I have done, how is this the result?"</p>
+                    
+                    <p>The mind scrambles to rewrite history, to find the missed clue, the unheeded warning. But the plough, as it carves its straight, purposeful line, does not lie.</p>
+                    
+                    <p>Its direction is a pure and simple testament. It reveals true allegiance, not proclaimed loyalty. It shows who holds functional control in the present moment, not who holds historical claim.</p>
+                    
+                    <p class="highlight">What we build, in the end, serves as the ultimate diagnostic tool. It will eventually show us, with unflinching clarity, who truly controls its application.</p>
+                    
+                    <p>The cow may remember the hand that fed it, but it obeys the hand that guides it now. The field may remember the season of preparation, but it yields its harvest to whoever guides the plough today.</p>
+                    
+                    <p>This moment of revelation is the pivot upon which innocence turns into experience, where naive trust transforms into hard-won discernment.</p>
+                `
+            },
+            {
+                title: "Chapter Five: Emotional Investment and Silent Loss",
+                content: `
+                    <p>The deepest and most lingering wound inflicted by such betrayal is seldom material. The true devastation operates on an emotional and spiritual plane, far beneath the surface of lost labor or misappropriated resource.</p>
+                    
+                    <p>The owner does not merely lose the tangible fruits of his effort; he suffers a fundamental erosion of belief. The internal logic that sustained him through years of thankless work—the creed that faithful effort begets rightful reward—crumbles into dust.</p>
+                    
+                    <p>He begins to doubt the very principle of preparation itself. Why build, if what is built can be so easily repurposed? Why invest deeply, if the returns can be intercepted?</p>
+                    
+                    <p>The pain metastasizes from a single event into a worldview, coloring future endeavors with the gray tint of suspicion and anticipated disappointment.</p>
+                    
+                    <p class="highlight">This corrosive doubt is the secondary harvest of betrayal, often more damaging than the initial loss.</p>
+                    
+                    <p>Many people, after such an experience, make a critical error in judgment: they confuse the specific pain of being exploited with a universal principle that all preparation is folly. They abandon their natural impulse to build, to nurture, to create value.</p>
+                    
+                    <p>They decide to raise no more cows, to plant no more fields, to offer no more mentorship. They retreat into a small, defended space where nothing can be taken because nothing is offered.</p>
+                    
+                    <p>This chapter serves as a crucial correction to that impulse. It argues that the betrayal itself does not cancel the inherent wisdom of preparation; it does not invalidate the virtue of building.</p>
+                    
+                    <p>Instead, the painful experience merely refines that wisdom, adding necessary layers of complexity, strategy, and protection. The lesson is not to stop cultivating, but to cultivate with both an open heart and a guarded perimeter.</p>
+                    
+                    <p>The silent loss is of innocence, not of opportunity. It is the loss of the unexamined faith that the world operates on fair exchange. Grieving this loss is necessary, but enshrining it as permanent truth is a surrendering of power.</p>
+                    
+                    <p class="highlight">The emotional investment was real and valid; the betrayal does not negate its worth, but rather demands that future investments be made with sharper eyes and clearer terms.</p>
+                `
+            },
+            {
+                title: "Chapter Six: Responsibility Without Self-Blame",
+                content: `
+                    <p>True growth in the aftermath of exploitation requires navigating the narrow path between accountability and self-destruction. It demands a clear-eyed assessment that assigns responsibility precisely, without collapsing into corrosive self-blame.</p>
+                    
+                    <p>Yes, unequivocally, the neighbor acted with opportunism and a disregard for the ethical claim created by the owner's labor. His actions were wrong. This external fault must be named and acknowledged; to minimize it is to distort reality.</p>
+                    
+                    <p>However, for the owner to move from victim to strategist, he must also turn his gaze inward and ask the difficult, generative questions: What structures did I fail to establish? What protections did I assume were inherent rather than explicit? Where did I confuse my own good intentions with a binding contract understood by all?</p>
+                    
+                    <p>This inward examination is not an exercise in self-flagellation. It is, fundamentally, an act of self-mastery. It is the process of extracting an operating manual from the wreckage of a bad outcome.</p>
+                    
+                    <p>It shifts the focus from "Why did this happen to me?" to "What can I learn from how this happened?"</p>
+                    
+                    <p class="highlight">The goal is not to absorb the neighbor's shame, but to acquire the neighbor's strategic awareness—to couple the builder's diligence with the strategist's foresight.</p>
+                    
+                    <p>Every significant loss, particularly one born of misplaced trust, contains within it a lesson woven tightly into the fabric of the grief. The pain is the wrapping; the insight is the gift.</p>
+                    
+                    <p>To reject the examination is to be condemned to repeat the scenario, perhaps with different actors but the same tragic plot. To engage with it is to begin translating raw experience into durable wisdom, ensuring that future investments are not just earnest, but also architecturally sound.</p>
+                `
+            },
+            {
+                title: "Chapter Seven: Rebuilding With Boundaries",
+                content: `
+                    <p>The second cow, should the owner find the courage to raise one, is cultivated within a fundamentally different paradigm. The love and care invested are no less, but they are now framed by visible, functional structures.</p>
+                    
+                    <p>This time, the field has strong, well-maintained fences—literal or metaphorical—that clearly demarcate what is mine, what is yours, and where collaboration begins and ends.</p>
+                    
+                    <p>Agreements are spoken aloud, witnessed, and where necessary, recorded. They outline expectations, responsibilities, and the consequences of overreach.</p>
+                    
+                    <p>The paths of training are clear and consistent, reinforcing not just skill, but belonging and proper direction. Ownership is no longer a vague concept of origin; it is an active, ongoing practice of stewardship and defined control.</p>
+                    
+                    <p>This evolution in approach does not represent a descent into coldness or misanthropy. Wisdom does not make us colder; it makes us clearer.</p>
+                    
+                    <p>It allows us to distinguish between generosity and naivete, between trust and credulity.</p>
+                    
+                    <p>Boundaries, in this mature framework, are not signs of inherent mistrust or a closed heart. On the contrary, they are profound signs of maturity and respect—for oneself, for one's work, and even for the other party.</p>
+                    
+                    <p>They prevent the ambiguity that leads to resentment and exploitation. They create a container strong enough to hold deep collaboration without leakage of value or intention.</p>
+                    
+                    <p class="highlight">They ensure that the tremendous energy of preparation flows toward its intended purpose, creating a harvest that nourishes the hands that did the sowing.</p>
+                    
+                    <p>The owner learns that you can build a wide, welcoming gate without tearing down the fence, that you can share the fruits of your labor without surrendering the roots.</p>
+                `
+            },
+            {
+                title: "Chapter Eight: Teaching the Cow Where Home Is",
+                content: `
+                    <p>Loyalty, in any meaningful sense, is not a default setting; it is a learned orientation. It must be consciously taught, consistently reinforced, and woven into the very fabric of the relationship.</p>
+                    
+                    <p>This is true whether the subject is a literal animal, a team member, a protégé, or a complex system.</p>
+                    
+                    <p>Alignment does not happen by accident; it is the product of intentional design and daily practice. Values must be explicitly named and repeatedly demonstrated. Purpose must be shared, not just assigned, creating a sense of co-ownership in the outcome.</p>
+                    
+                    <p>A cow trained solely in the mechanical act of ploughing will plough anywhere the reins direct it; its labor is a transferable skill, detached from any sense of place or allegiance.</p>
+                    
+                    <p>However, a cow trained within the context of home—where its labor is connected to the sustenance of the specific herd, the prosperity of the particular family, the bounty of the recognizable field—develops a different understanding.</p>
+                    
+                    <p>Its work becomes part of a story, a contribution to an ecosystem it recognizes as its own.</p>
+                    
+                    <p>It will still pull the plough with strength, but it will also know the path back to its own barn, respond most readily to its owner's voice, and perhaps even show reluctance when led toward a stranger's field.</p>
+                    
+                    <p>This deeper training involves more than commands; it involves connection. It means the owner works alongside the animal, shares the same midday rest in the same patch of shade, provides care that goes beyond mere maintenance to genuine companionship.</p>
+                    
+                    <p class="highlight">The lesson extends far beyond agriculture: we must build not just competence in others, but belonging. We must foster not just capability, but a shared sense of destination.</p>
+                    
+                    <p>The goal is to develop assets that are not just useful, but invested.</p>
+                `
+            },
+            {
+                title: "Chapter Nine: When Betrayal Becomes Legacy",
+                content: `
+                    <p>There exists a transformative alchemy through which certain betrayals, particularly those born of exploited preparation, cease to be merely personal wounds and instead become the foundational stones of leadership and protection for others.</p>
+                    
+                    <p>The owner who truly learns from the experience undergoes a metamorphosis. He is no longer just a builder of cows; he becomes a teacher of builders, a writer of new codes.</p>
+                    
+                    <p>His personal story of loss curdles into a powerful communal warning, a parable shared to illuminate a pitfall others might not see. The specific pain he endured is distilled into general policy, into proactive structures that prevent recurrence.</p>
+                    
+                    <p>What was once a private heartache now serves as a public safeguard.</p>
+                    
+                    <p class="highlight">This is the noble path of transforming poison into medicine.</p>
+                    
+                    <p>The owner, now an elder in spirit if not in years, walks his land with a different gaze. He notices the young farmer struggling with a promising calf and a poorly defined boundary with his neighbor.</p>
+                    
+                    <p>He offers advice not as abstract philosophy, but as hard-won truth: "The strength of the fence determines who eats the harvest."</p>
+                    
+                    <p>He helps draft the first clear loan agreement for a shared tool. He instills in his own children and apprentices the dual disciplines of diligent creation and vigilant stewardship.</p>
+                    
+                    <p>The betrayal, in this light, is not erased or forgiven, but it is redeemed. It is made meaningful by becoming useful.</p>
+                    
+                    <p>It transitions from an event that happened to him to a lesson he offers to the community, ensuring that the price he paid purchases protection for those who come after.</p>
+                    
+                    <p class="highlight">His legacy becomes one of fortified creation, where the memory of loss serves as the immune system for future endeavors.</p>
+                `
+            },
+            {
+                title: "Chapter Ten: Preparing Again—But Wiser",
+                content: `
+                    <p>The ultimate, non-negotiable truth that emerges from this entire journey is this: we must never surrender our fundamental calling to prepare, to build, to cultivate value.</p>
+                    
+                    <p>The world in its current state suffers not from an excess of careful builders, but from a devastating shortage.</p>
+                    
+                    <p>To cease preparation because of one betrayal, or even several, is to commit a greater sin against the future—it is to withhold the very investment the world needs to grow, heal, and prosper.</p>
+                    
+                    <p>However, the builder who returns to his work after such an experience is fundamentally changed. He is now a different species of creator.</p>
+                    
+                    <p>He prepares again, but this time with eyes wide open, absorbing all data, including the data of human nature.</p>
+                    
+                    <p>His heart remains steady, capable of investment without being recklessly porous. His hands are more skilled, now adept at forging both the tool and the system that secures it.</p>
+                    
+                    <p>He understands that preparation without concomitant wisdom is merely generosity—a noble but often costly virtue that can leave the giver depleted and the receiver entitled.</p>
+                    
+                    <p class="highlight">But preparation that is married to wisdom, to strategy, to discernment—that is the very essence of leadership.</p>
+                    
+                    <p>It is creation with direction, investment with governance, generosity with sustainability.</p>
+                    
+                    <p>And so we return to the field.</p>
+                    
+                    <p>We select another calf with potential. We begin the patient work of feeding, healing, protecting, and training.</p>
+                    
+                    <p>But now we also survey the boundary lines with a surveyor's precision. We have the difficult conversations before the season of need creates pressure.</p>
+                    
+                    <p>We build loyalty as intentionally as we build strength.</p>
+                    
+                    <p>We do this not because we have forgotten the pain, but precisely because we remember it so clearly.</p>
+                    
+                    <p>We prepare again, not in spite of what happened, but informed by it.</p>
+                    
+                    <p class="highlight">Because the core problem was never the act of raising the cow.</p>
+                    
+                    <p>The tragedy was never in the preparation itself.</p>
+                    
+                    <p>The fatal flaw was in preparing with all one's heart, while failing to secure the rightful harvest.</p>
+                `
+            }
+        ];
+
+        // Initialize the book
         document.addEventListener('DOMContentLoaded', function() {
-            const pages = document.querySelectorAll('.page');
-            const chapterSelect = document.getElementById('chapterSelect');
+            const bookCover = document.getElementById('bookCover');
+            const bookContent = document.getElementById('bookContent');
+            const chapterContainer = document.querySelector('.chapter.active').parentNode;
+            const tocList = document.getElementById('tocList');
+            const chapterIndicator = document.getElementById('chapterIndicator');
             const prevBtn = document.getElementById('prevBtn');
             const nextBtn = document.getElementById('nextBtn');
-            const pdfBtn = document.getElementById('pdfBtn');
-            const heartBtn = document.getElementById('heartBtn');
-            const donationModal = document.getElementById('donationModal');
-            const closeModal = document.querySelector('.close-modal');
+            const tocBtn = document.getElementById('tocBtn');
+            const synopsisBtn = document.getElementById('synopsisBtn');
+            const downloadBtn = document.getElementById('downloadBtn');
+            const showCoverBtn = document.getElementById('showCoverBtn');
             
-            const pageIds = ['intro', 'chapter1', 'chapter2', 'chapter3', 'chapter4', 
-                           'chapter5', 'chapter6', 'chapter7', 'chapter8', 'chapter9', 
-                           'chapter10', 'synopsis'];
+            const synopsisSection = document.getElementById('synopsis');
+            const publicationSection = document.getElementById('publication');
             
-            let currentPageIndex = 0;
+            let currentSection = 'chapter0'; // Start with introduction
+            let currentChapterIndex = 0;
+            const totalChapters = chapters.length;
             
-            // Function to show a specific page
-            function showPage(pageId) {
-                // Hide all pages
-                pages.forEach(page => {
-                    page.classList.remove('active');
+            // Create TOC
+            function createTOC() {
+                // Introduction
+                const introItem = document.createElement('li');
+                introItem.className = 'toc-item';
+                introItem.innerHTML = `
+                    <a href="#chapter0" class="toc-link active" data-section="chapter0">
+                        <span class="toc-chapter">Introduction</span>
+                        <span class="toc-chapter-title">THE UNGUARDED HARVEST</span>
+                    </a>
+                `;
+                tocList.appendChild(introItem);
+                
+                // Chapters 1-3
+                chapters.forEach((chapter, index) => {
+                    const item = document.createElement('li');
+                    item.className = 'toc-item';
+                    const chapterTitle = chapter.title.replace('Chapter ' + (index + 1) + ': ', '');
+                    item.innerHTML = `
+                        <a href="#chapter${index + 1}" class="toc-link" data-section="chapter${index + 1}">
+                            <span class="toc-chapter">Chapter ${index + 1}</span>
+                            <span class="toc-chapter-title">${chapterTitle}</span>
+                        </a>
+                    `;
+                    tocList.appendChild(item);
                 });
                 
-                // Show the selected page
-                document.getElementById(pageId).classList.add('active', 'page-turn');
+                // Add Synopsis and Publication to TOC
+                const synopsisItem = document.createElement('li');
+                synopsisItem.className = 'toc-item';
+                synopsisItem.innerHTML = `
+                    <a href="#synopsis" class="toc-link" data-section="synopsis">
+                        <span class="toc-chapter">Synopsis</span>
+                        <span class="toc-chapter-title">Book Summary</span>
+                    </a>
+                `;
+                tocList.appendChild(synopsisItem);
                 
-                // Update current page index
-                currentPageIndex = pageIds.indexOf(pageId);
-                
-                // Update chapter select
-                chapterSelect.value = pageId;
-                
-                // Update button states
-                updateButtonStates();
-                
-                // Update page navigation buttons
-                updatePageNavigationButtons();
-                
-                // Remove animation class after animation completes
-                setTimeout(() => {
-                    document.getElementById(pageId).classList.remove('page-turn');
-                }, 600);
+                const pubItem = document.createElement('li');
+                pubItem.className = 'toc-item';
+                pubItem.innerHTML = `
+                    <a href="#publication" class="toc-link" data-section="publication">
+                        <span class="toc-chapter">Details</span>
+                        <span class="toc-chapter-title">Publication Details</span>
+                    </a>
+                `;
+                tocList.appendChild(pubItem);
             }
             
-            // Function to update button states
-            function updateButtonStates() {
-                prevBtn.disabled = currentPageIndex === 0;
-                nextBtn.disabled = currentPageIndex === pageIds.length - 1;
-                
-                // Update button text for next button on last page
-                if (currentPageIndex === pageIds.length - 1) {
-                    nextBtn.innerHTML = 'Finish <i class="fas fa-flag-checkered"></i>';
+            // Create chapter elements
+            function createChapters() {
+                chapters.forEach((chapter, index) => {
+                    const chapterElement = document.createElement('div');
+                    chapterElement.className = 'chapter';
+                    chapterElement.id = `chapter${index + 1}`;
+                    chapterElement.innerHTML = `
+                        <h1 class="chapter-title">${chapter.title}</h1>
+                        <div class="chapter-content">${chapter.content}</div>
+                    `;
+                    // Insert before synopsis section
+                    synopsisSection.parentNode.insertBefore(chapterElement, synopsisSection);
+                });
+            }
+            
+            // Update navigation
+            function updateNavigation() {
+                // Update chapter indicator based on current section
+                if (currentSection === 'chapter0') {
+                    chapterIndicator.textContent = 'Introduction';
+                } else if (currentSection === 'synopsis') {
+                    chapterIndicator.textContent = 'Synopsis';
+                } else if (currentSection === 'publication') {
+                    chapterIndicator.textContent = 'Publication Details';
                 } else {
-                    nextBtn.innerHTML = 'Next <i class="fas fa-arrow-right"></i>';
+                    // Extract chapter number from section ID (e.g., "chapter1" -> "Chapter 1")
+                    const chapterNum = currentSection.replace('chapter', '');
+                    chapterIndicator.textContent = `Chapter ${chapterNum}`;
                 }
                 
-                // Update button text for prev button on first page
-                if (currentPageIndex === 0) {
-                    prevBtn.innerHTML = '<i class="fas fa-home"></i> Home';
+                // Update prev/next buttons
+                if (currentSection === 'chapter0') {
+                    prevBtn.disabled = true;
+                } else if (currentSection === 'synopsis') {
+                    prevBtn.disabled = false;
+                } else if (currentSection === 'publication') {
+                    prevBtn.disabled = false;
+                    nextBtn.disabled = true;
                 } else {
-                    prevBtn.innerHTML = '<i class="fas fa-arrow-left"></i> Previous';
+                    prevBtn.disabled = false;
+                    nextBtn.disabled = false;
+                }
+                
+                // Update TOC active link
+                document.querySelectorAll('.toc-link').forEach(link => {
+                    link.classList.remove('active');
+                    
+                    if (link.getAttribute('data-section') === currentSection) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+            
+            // Show section
+            function showSection(sectionId) {
+                // Hide all sections
+                document.querySelectorAll('.chapter, .synopsis, .publication').forEach(el => {
+                    el.classList.remove('active');
+                });
+                
+                // Show selected section
+                document.getElementById(sectionId).classList.add('active');
+                
+                currentSection = sectionId;
+                updateNavigation();
+                
+                // Scroll to top of section
+                window.scrollTo({
+                    top: document.querySelector('.book-nav').offsetTop - 20,
+                    behavior: 'smooth'
+                });
+            }
+            
+            // Navigate to next section
+            function nextSection() {
+                const sections = ['chapter0', 'chapter1', 'chapter2', 'chapter3', 'chapter4','chapter5','chapter6','chapter7','chapter8','chapter9','chapter10','synopsis', 'publication'];
+                const currentIndex = sections.indexOf(currentSection);
+                
+                if (currentIndex < sections.length - 1) {
+                    showSection(sections[currentIndex + 1]);
                 }
             }
             
-            // Function to update page navigation buttons (Back/Next at bottom of page)
-            function updatePageNavigationButtons() {
-                // Enable/disable back buttons based on current page
-                const allBackButtons = document.querySelectorAll('.page-btn.back-btn');
-                const allNextButtons = document.querySelectorAll('.page-btn.next-btn');
+            // Navigate to previous section
+            function prevSection() {
+                const sections = ['chapter0', 'chapter1', 'chapter2', 'chapter3', 'chapter4','chapter5','chapter6','chapter7','chapter8','chapter9','chapter10','synopsis', 'publication'];
+                const currentIndex = sections.indexOf(currentSection);
                 
-                // Update all back buttons
-                allBackButtons.forEach(btn => {
-                    if (currentPageIndex === 0) {
-                        btn.disabled = true;
-                    } else {
-                        btn.disabled = false;
-                    }
-                });
-                
-                // Update all next buttons
-                allNextButtons.forEach(btn => {
-                    if (currentPageIndex === pageIds.length - 1) {
-                        btn.disabled = true;
-                    } else {
-                        btn.disabled = false;
-                    }
-                });
+                if (currentIndex > 0) {
+                    showSection(sections[currentIndex - 1]);
+                }
             }
             
-            // Show initial page (Introduction)
-            showPage('intro');
+            // Hide cover and show content
+            function hideCover() {
+                bookCover.style.display = 'none';
+                bookContent.style.display = 'block';
+                // Load TOC and chapters if not already loaded
+                if (tocList.children.length === 0) {
+                    createTOC();
+                    createChapters();
+                    updateNavigation();
+                }
+            }
             
-            // Chapter select change event
-            chapterSelect.addEventListener('change', function() {
-                showPage(this.value);
-            });
+            // Show cover
+            function showCover() {
+                bookCover.style.display = 'flex';
+                bookContent.style.display = 'none';
+            }
             
-            // Previous button click event
+            // Initialize
+            showCover(); // Start with cover visible
+            
+            // Event listeners for navigation
             prevBtn.addEventListener('click', function() {
-                if (currentPageIndex > 0) {
-                    showPage(pageIds[currentPageIndex - 1]);
-                } else {
-                    showPage('intro'); // Go to intro if at beginning
-                }
+                prevSection();
             });
             
-            // Next button click event
             nextBtn.addEventListener('click', function() {
-                if (currentPageIndex < pageIds.length - 1) {
-                    showPage(pageIds[currentPageIndex + 1]);
-                } else {
-                    // If at the end, show a thank you message
-                    alert("You've reached the end of the book. Thank you for reading!");
+                nextSection();
+            });
+            
+            // TOC links
+            document.querySelectorAll('.toc-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const section = this.getAttribute('data-section');
+                    showSection(section);
+                });
+            });
+            
+            // Control buttons
+            tocBtn.addEventListener('click', function() {
+                document.querySelector('.toc-container').scrollIntoView({ behavior: 'smooth' });
+            });
+            
+            synopsisBtn.addEventListener('click', function() {
+                showSection('synopsis');
+            });
+            
+            showCoverBtn.addEventListener('click', function() {
+                showCover();
+            });
+            
+            // Click cover to start reading
+            bookCover.addEventListener('click', function() {
+                hideCover();
+            });
+            
+            // Click book container to start reading (backup)
+            document.querySelector('.book-container').addEventListener('click', function(e) {
+                if (e.target === this && bookCover.style.display !== 'none') {
+                    hideCover();
                 }
             });
             
-            // PDF download functionality - FIXED VERSION
-            pdfBtn.addEventListener('click', function() {
-                // Show loading state
-                const originalText = pdfBtn.innerHTML;
-                pdfBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating PDF...';
-                pdfBtn.disabled = true;
+            // Font size controls
+            const fontSmall = document.getElementById('fontSmall');
+            const fontMedium = document.getElementById('fontMedium');
+            const fontLarge = document.getElementById('fontLarge');
+            
+            fontSmall.addEventListener('click', function() {
+                document.body.style.fontSize = '15px';
+                document.querySelector('.book-content').style.fontSize = '15px';
+                fontSmall.classList.add('active');
+                fontMedium.classList.remove('active');
+                fontLarge.classList.remove('active');
+            });
+            
+            fontMedium.addEventListener('click', function() {
+                document.body.style.fontSize = '17px';
+                document.querySelector('.book-content').style.fontSize = '17px';
+                fontSmall.classList.remove('active');
+                fontMedium.classList.add('active');
+                fontLarge.classList.remove('active');
+            });
+            
+            fontLarge.addEventListener('click', function() {
+                document.body.style.fontSize = '19px';
+                document.querySelector('.book-content').style.fontSize = '19px';
+                fontSmall.classList.remove('active');
+                fontMedium.classList.remove('active');
+                fontLarge.classList.add('active');
+            });
+            
+            // Download PDF functionality
+            downloadBtn.addEventListener('click', function() {
+                // Create a temporary element for PDF generation
+                const element = document.createElement('div');
+                element.style.padding = '20px';
+                element.style.maxWidth = '600px';
+                element.style.margin = '0 auto';
+                element.style.fontFamily = 'Times New Roman, serif';
+                element.style.fontSize = '12pt';
+                element.style.lineHeight = '1.6';
                 
-                // Get the hidden PDF container with all content
-                const element = document.getElementById('pdfAllContent');
+                // Add book title and author
+                element.innerHTML = `
+                    <div style="text-align: center; margin-bottom: 40px; padding-bottom: 20px; border-bottom: 1px solid #ccc;">
+                        <h1 style="font-size: 24pt; margin-bottom: 10px; font-family: 'Times New Roman', serif; font-weight: bold;">THE BETRAYAL OF THE PREPARED COW</h1>
+                        <h2 style="font-size: 14pt; margin-bottom: 20px; font-style: italic;">Why What You Build Sometimes Works for Someone Else</h2>
+                        <h3 style="font-size: 13pt; font-weight: normal;">MWANZA WAMBUA</h3>
+                    </div>
+                `;
                 
-                // PDF options
+                // Add introduction
+                const introTitle = document.getElementById('chapter0').querySelector('.chapter-title').textContent;
+                const introContent = document.getElementById('chapter0').querySelector('.chapter-content').innerHTML;
+                element.innerHTML += `
+                    <h1 style="font-size: 16pt; margin-top: 30px; margin-bottom: 15px; font-family: 'Times New Roman', serif; font-weight: bold; border-bottom: 1px solid #ccc; padding-bottom: 5px;">${introTitle}</h1>
+                    <div>${introContent}</div>
+                `;
+                
+                // Add all chapters
+                chapters.forEach((chapter, index) => {
+                    element.innerHTML += `
+                        <div style="page-break-before: always; padding-top: 30px;"></div>
+                        <h1 style="font-size: 16pt; margin-top: 30px; margin-bottom: 15px; font-family: 'Times New Roman', serif; font-weight: bold; border-bottom: 1px solid #ccc; padding-bottom: 5px;">${chapter.title}</h1>
+                        <div>${chapter.content}</div>
+                    `;
+                });
+                
+                // Add synopsis
+                const synopsisTitle = synopsisSection.querySelector('.section-title').textContent;
+                const synopsisContent = synopsisSection.querySelector('.chapter-content').innerHTML;
+                element.innerHTML += `
+                    <div style="page-break-before: always; padding-top: 30px;"></div>
+                    <h1 style="font-size: 16pt; margin-top: 30px; margin-bottom: 15px; font-family: 'Times New Roman', serif; font-weight: bold; border-bottom: 1px solid #ccc; padding-bottom: 5px;">${synopsisTitle}</h1>
+                    <div>${synopsisContent}</div>
+                `;
+                
+                // Add publication details
+                const pubTitle = publicationSection.querySelector('.section-title').textContent;
+                const pubContent = publicationSection.querySelector('.chapter-content').innerHTML;
+                element.innerHTML += `
+                    <div style="page-break-before: always; padding-top: 30px;"></div>
+                    <h1 style="font-size: 16pt; margin-top: 30px; margin-bottom: 15px; font-family: 'Times New Roman', serif; font-weight: bold; border-bottom: 1px solid #ccc; padding-bottom: 5px;">${pubTitle}</h1>
+                    <div>${pubContent}</div>
+                `;
+                
+                // Generate PDF
                 const opt = {
-                    margin:       0.5,
-                    filename:     'The_Betrayal_of_the_Prepared_Cow_Mwanza_Wambua.pdf',
-                    image:        { type: 'jpeg', quality: 0.98 },
-                    html2canvas:  { 
+                    margin: [0.5, 0.5, 0.5, 0.5],
+                    filename: 'The_Betrayal_of_the_Prepared_Cow_Mwanza_Wambua.pdf',
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { 
                         scale: 2,
                         useCORS: true,
-                        letterRendering: true,
-                        scrollY: 0,
-                        windowWidth: 1200
+                        logging: false,
+                        width: 600
                     },
-                    jsPDF:        { 
+                    jsPDF: { 
                         unit: 'in', 
                         format: 'letter', 
                         orientation: 'portrait' 
-                    },
-                    pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+                    }
                 };
                 
-                // Generate PDF from the hidden container with all content
+                // Show loading message
+                downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating PDF...';
+                downloadBtn.disabled = true;
+                
                 html2pdf().set(opt).from(element).save().then(() => {
-                    // Restore button state
-                    pdfBtn.innerHTML = originalText;
-                    pdfBtn.disabled = false;
+                    // Reset button
+                    downloadBtn.innerHTML = '<i class="fas fa-download"></i> Download PDF';
+                    downloadBtn.disabled = false;
+                    
+                    // Clean up
+                    element.remove();
                 }).catch(err => {
                     console.error('PDF generation error:', err);
-                    pdfBtn.innerHTML = originalText;
-                    pdfBtn.disabled = false;
-                    alert('There was an error generating the PDF. Please try again.');
+                    downloadBtn.innerHTML = '<i class="fas fa-download"></i> Download PDF';
+                    downloadBtn.disabled = false;
+                    alert('Error generating PDF. Please try again.');
                 });
             });
-            
-            // Donation modal functionality
-            heartBtn.addEventListener('click', function() {
-                donationModal.classList.add('active');
-                document.body.style.overflow = 'hidden'; // Prevent scrolling
-            });
-            
-            closeModal.addEventListener('click', function() {
-                donationModal.classList.remove('active');
-                document.body.style.overflow = 'auto'; // Re-enable scrolling
-            });
-            
-            // Close modal when clicking outside
-            donationModal.addEventListener('click', function(e) {
-                if (e.target === donationModal) {
-                    donationModal.classList.remove('active');
-                    document.body.style.overflow = 'auto';
-                }
-            });
-            
-            // Keyboard navigation
-            document.addEventListener('keydown', function(event) {
-                // Left arrow key for previous page
-                if (event.key === 'ArrowLeft' && currentPageIndex > 0) {
-                    showPage(pageIds[currentPageIndex - 1]);
-                }
-                // Right arrow key for next page
-                else if (event.key === 'ArrowRight' && currentPageIndex < pageIds.length - 1) {
-                    showPage(pageIds[currentPageIndex + 1]);
-                }
-                // Escape key to close modal
-                else if (event.key === 'Escape' && donationModal.classList.contains('active')) {
-                    donationModal.classList.remove('active');
-                    document.body.style.overflow = 'auto';
-                }
-            });
-            
-            // Set up page navigation button event listeners
-            function setupPageNavigationListeners() {
-                // Intro page buttons
-                document.getElementById('introNextBtn').addEventListener('click', function() {
-                    showPage('chapter1');
-                });
-                
-                // Chapter 1 buttons
-                document.getElementById('chapter1BackBtn').addEventListener('click', function() {
-                    showPage('intro');
-                });
-                document.getElementById('chapter1NextBtn').addEventListener('click', function() {
-                    showPage('chapter2');
-                });
-                
-                // Chapter 2 buttons
-                document.getElementById('chapter2BackBtn').addEventListener('click', function() {
-                    showPage('chapter1');
-                });
-                document.getElementById('chapter2NextBtn').addEventListener('click', function() {
-                    showPage('chapter3');
-                });
-                
-                // Chapter 3 buttons
-                document.getElementById('chapter3BackBtn').addEventListener('click', function() {
-                    showPage('chapter2');
-                });
-                document.getElementById('chapter3NextBtn').addEventListener('click', function() {
-                    showPage('chapter4');
-                });
-                
-                // Chapter 4 buttons
-                document.getElementById('chapter4BackBtn').addEventListener('click', function() {
-                    showPage('chapter3');
-                });
-                document.getElementById('chapter4NextBtn').addEventListener('click', function() {
-                    showPage('chapter5');
-                });
-                
-                // Chapter 5 buttons
-                document.getElementById('chapter5BackBtn').addEventListener('click', function() {
-                    showPage('chapter4');
-                });
-                document.getElementById('chapter5NextBtn').addEventListener('click', function() {
-                    showPage('chapter6');
-                });
-                
-                // Chapter 6 buttons
-                document.getElementById('chapter6BackBtn').addEventListener('click', function() {
-                    showPage('chapter5');
-                });
-                document.getElementById('chapter6NextBtn').addEventListener('click', function() {
-                    showPage('chapter7');
-                });
-                
-                // Chapter 7 buttons
-                document.getElementById('chapter7BackBtn').addEventListener('click', function() {
-                    showPage('chapter6');
-                });
-                document.getElementById('chapter7NextBtn').addEventListener('click', function() {
-                    showPage('chapter8');
-                });
-                
-                // Chapter 8 buttons
-                document.getElementById('chapter8BackBtn').addEventListener('click', function() {
-                    showPage('chapter7');
-                });
-                document.getElementById('chapter8NextBtn').addEventListener('click', function() {
-                    showPage('chapter9');
-                });
-                
-                // Chapter 9 buttons
-                document.getElementById('chapter9BackBtn').addEventListener('click', function() {
-                    showPage('chapter8');
-                });
-                document.getElementById('chapter9NextBtn').addEventListener('click', function() {
-                    showPage('chapter10');
-                });
-                
-                // Chapter 10 buttons
-                document.getElementById('chapter10BackBtn').addEventListener('click', function() {
-                    showPage('chapter9');
-                });
-                document.getElementById('chapter10NextBtn').addEventListener('click', function() {
-                    showPage('synopsis');
-                });
-                
-                // Synopsis buttons
-                document.getElementById('synopsisBackBtn').addEventListener('click', function() {
-                    showPage('chapter10');
-                });
-            }
-            
-            // Initialize button states and listeners
-            updateButtonStates();
-            updatePageNavigationButtons();
-            setupPageNavigationListeners();
         });
     </script>
 </body>
