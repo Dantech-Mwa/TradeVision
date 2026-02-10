@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>The Beautiful Worm - Interactive Ebook</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Georgia', serif;
+        }
+        
+        body {
+            background-color: #f5f2e9;
+            color: #333;
+            line-height: 1.6;
+            overflow-x: hidden;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+        }
+        
+        /* Ebook container - Novel size (6x9 inches) */
+        .ebook-container {
+            width: 100%;
+            max-width: 600px; /* Novel width */
+            min-height: 90vh;
+            max-height: 90vh;
+            margin: 0 auto;
+            background-color: #fff;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+            border-radius: 3px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Cover Page */
+        .cover-page {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a472a 0%, #2a623d 50%, #5d8b6f 100%);
+            color: #f5f2e9;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 40px 30px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .cover-page::before {
+            content: "";
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23f5f2e9' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+            opacity: 0.3;
+            animation: float 20s linear infinite;
+        }
+        
+        @keyframes float {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        
+        .book-title {
+            font-size: 2.8rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 2;
+            line-height: 1.2;
+        }
+        
+        .book-subtitle {
+            font-size: 1.3rem;
+            font-style: italic;
+            margin-bottom: 30px;
+            max-width: 85%;
+            z-index: 2;
+            position: relative;
+            line-height: 1.4;
+        }
+        
+        .author-name {
+            font-size: 1.5rem;
+            margin-bottom: 40px;
+            border-top: 1px solid rgba(245, 242, 233, 0.3);
+            padding-top: 20px;
+            z-index: 2;
+            position: relative;
+        }
+        
+        .open-book-btn {
+            background-color: #f5a623;
+            color: #1a472a;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 2;
+            position: relative;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .open-book-btn:hover {
+            background-color: #ffbf00;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+        }
+        
+        .worm-decoration {
+            position: absolute;
+            width: 120px;
+            height: 15px;
+            background: linear-gradient(to right, #e67e22, #f5a623, #e67e22);
+            border-radius: 10px;
+            z-index: 1;
+            animation: wormMove 8s ease-in-out infinite;
+        }
+        
+        .worm-1 {
+            top: 20%;
+            left: -120px;
+            animation-delay: 0s;
+        }
+        
+        .worm-2 {
+            top: 60%;
+            right: -120px;
+            animation-delay: 2s;
+        }
+        
+        .worm-3 {
+            bottom: 30%;
+            left: -120px;
+            animation-delay: 4s;
+        }
+        
+        @keyframes wormMove {
+            0% { transform: translateX(0) rotate(0deg); }
+            50% { transform: translateX(calc(100vw + 120px)) rotate(180deg); }
+            100% { transform: translateX(0) rotate(360deg); }
+        }
+        
+        /* Book Content */
+        .book-content {
+            display: none;
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+        
+        .content-visible {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Reading Area */
+        .reading-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        /* Table of Contents - Initially hidden in reading mode */
+        .table-of-contents {
+            background-color: #f9f6ef;
+            border-left: 5px solid #2a623d;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 0 5px 5px 0;
+            display: none; /* Hidden by default in reading mode */
+        }
+        
+        .toc-visible {
+            display: block;
+        }
+        
+        .toc-title {
+            font-size: 1.5rem;
+            color: #1a472a;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .toc-list {
+            list-style-type: none;
+        }
+        
+        .toc-item {
+            margin-bottom: 10px;
+            padding-left: 10px;
+            border-left: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .toc-item:hover {
+            border-left: 3px solid #f5a623;
+            padding-left: 15px;
+        }
+        
+        .toc-link {
+            color: #333;
+            text-decoration: none;
+            font-size: 1rem;
+            display: block;
+            padding: 5px 0;
+        }
+        
+        .toc-link:hover {
+            color: #1a472a;
+            font-weight: bold;
+        }
+        
+        /* Chapter Styling */
+        .chapter {
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .chapter-title {
+            font-size: 1.8rem;
+            color: #1a472a;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #f5a623;
+        }
+        
+        .chapter-content {
+            font-size: 1.05rem;
+            line-height: 1.7;
+        }
+        
+        .chapter-content p {
+            margin-bottom: 18px;
+            text-align: justify;
+        }
+        
+        /* Highlighted Text */
+        .highlight {
+            background-color: rgba(245, 166, 35, 0.2);
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-weight: bold;
+            font-style: italic;
+        }
+        
+        .important-quote {
+            border-left: 4px solid #2a623d;
+            padding-left: 15px;
+            margin: 20px 0;
+            font-style: italic;
+            color: #555;
+            font-size: 1.1rem;
+            background-color: #f9f6ef;
+            padding: 15px;
+            border-radius: 0 5px 5px 0;
+        }
+        
+        /* Navigation - Mobile friendly */
+        .ebook-nav {
+            position: fixed;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            pointer-events: none;
+        }
+        
+        .nav-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #1a472a;
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.3rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            pointer-events: auto;
+        }
+        
+        .nav-btn:hover {
+            background-color: #2a623d;
+            transform: scale(1.1);
+        }
+        
+        .nav-btn:disabled {
+            background-color: #aaa;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        /* Mobile tap zones for navigation */
+        .nav-tap-zone {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 40%;
+            z-index: 50;
+        }
+        
+        .prev-tap-zone {
+            left: 0;
+        }
+        
+        .next-tap-zone {
+            right: 0;
+        }
+        
+        /* Progress Bar */
+        .progress-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: #eee;
+            z-index: 101;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background-color: #f5a623;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        /* Control Bar */
+        .control-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background-color: #f9f6ef;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .control-btn {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            color: #1a472a;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .control-btn:hover {
+            background-color: rgba(26, 71, 42, 0.1);
+        }
+        
+        .chapter-indicator {
+            font-size: 0.9rem;
+            color: #666;
+            font-weight: bold;
+        }
+        
+        /* Footer */
+        .book-footer {
+            background-color: #1a472a;
+            color: #f5f2e9;
+            padding: 20px;
+            text-align: center;
+            font-size: 0.8rem;
+        }
+        
+        .footer-text {
+            opacity: 0.8;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .ebook-container {
+                max-width: 100%;
+                min-height: 100vh;
+                max-height: 100vh;
+                border-radius: 0;
+                box-shadow: none;
+            }
+            
+            body {
+                padding: 0;
+            }
+            
+            .book-title {
+                font-size: 2.2rem;
+            }
+            
+            .book-subtitle {
+                font-size: 1.1rem;
+            }
+            
+            .chapter-title {
+                font-size: 1.6rem;
+            }
+            
+            .chapter-content {
+                font-size: 1rem;
+            }
+            
+            .nav-btn {
+                width: 50px;
+                height: 50px;
+                font-size: 1.1rem;
+            }
+            
+            .important-quote {
+                font-size: 1rem;
+                padding: 12px;
+            }
+            
+            .reading-area {
+                padding: 15px;
+            }
+        }
+        
+        /* Page turning animation */
+        @keyframes pageTurn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        .chapter {
+            animation: pageTurn 0.3s ease forwards;
+        }
+        
+        /* Hide scrollbar for cleaner look */
+        .reading-area::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .reading-area::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        .reading-area::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
+        }
+        
+        .reading-area::-webkit-scrollbar-thumb:hover {
+            background: #a1a1a1;
+        }
+    </style>
+</head>
+<body>
+    <div class="ebook-container">
+        <!-- Cover Page -->
+        <div class="cover-page" id="coverPage">
+            <div class="worm-decoration worm-1"></div>
+            <div class="worm-decoration worm-2"></div>
+            <div class="worm-decoration worm-3"></div>
+            
+            <h1 class="book-title">THE BEAUTIFUL WORM</h1>
+            <h2 class="book-subtitle">Wisdom, Temptation, and the Hidden Hook</h2>
+            <div class="author-name">Mwanza Wambua</div>
+            <button class="open-book-btn" id="openBookBtn">
+                <i class="fas fa-book-open"></i> Open Book
+            </button>
+        </div>
+        
+        <!-- Book Content -->
+        <div class="book-content" id="bookContent">
+            <!-- Progress Bar -->
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            
+            <!-- Control Bar -->
+            <div class="control-bar">
+                <button class="control-btn" id="backBtn" title="Back to Cover">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <div class="chapter-indicator" id="chapterIndicator">Introduction</div>
+                <button class="control-btn" id="tocToggleBtn" title="Table of Contents">
+                    <i class="fas fa-list"></i>
+                </button>
+            </div>
+            
+            <!-- Reading Area -->
+            <div class="reading-area" id="readingArea">
+                <!-- Table of Contents - Hidden by default -->
+                <div class="table-of-contents" id="tableOfContents">
+                    <h2 class="toc-title">Table of Contents</h2>
+                    <ul class="toc-list" id="tocList">
+                        <!-- Table of Contents will be generated by JavaScript -->
+                    </ul>
+                </div>
+                
+                <!-- Chapters -->
+                <div id="chaptersContainer">
+                    <!-- Chapters will be loaded here by JavaScript -->
+                </div>
+            </div>
+            
+            <!-- Navigation Tap Zones (for mobile) -->
+            <div class="nav-tap-zone prev-tap-zone" id="prevTapZone"></div>
+            <div class="nav-tap-zone next-tap-zone" id="nextTapZone"></div>
+            
+            <!-- Navigation Buttons -->
+            <div class="ebook-nav">
+                <button class="nav-btn" id="prevBtn" title="Previous Chapter">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <button class="nav-btn" id="nextBtn" title="Next Chapter">
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Book data with all 13 chapters + intro + conclusion
+        const bookData = {
+            title: "THE BEAUTIFUL WORM",
+            subtitle: "Wisdom, Temptation, and the Hidden Hook",
+            author: "Mwanza Wambua",
+            chapters: [
+                {
+                    id: "intro",
+                    title: "Introduction -- The Day the Water Lied",
+                    content: `
+                        <p>The river had always been honest.</p>
+                        <p>That is what the fish believed. The water had taught it seasons, currents, and survival. When the water was calm, life was safe. When it moved violently, danger was near. The fish trusted the river because it had never betrayed it before.</p>
+                        <p>Then came the worm.</p>
+                        <p>It did not arrive with force. It drifted gently, suspended in the water like a gift. It was pink, alive, and perfectly sized. It moved just enough to awaken hunger but not enough to cause fear. Everything about it said, <span class="highlight">This is meant for you.</span></p>
+                        <div class="important-quote">
+                            In human life, danger rarely comes as danger. It comes as convenience. It comes as beauty. It comes as opportunity. It comes as someone saying, "This is your time."
+                        </div>
+                        <p>We live in a world that trains us to act quickly. To seize moments. To take chances. To move fast before someone else does. Slowness is mocked. Caution is called fear. Discernment is mistaken for weakness.</p>
+                        <p><span class="highlight">Yet wisdom has always been slow.</span></p>
+                        <p>Many people carry hooks in their mouths today—not because they were evil, stupid, or careless, but because they were hungry. They were tired of waiting. They were lonely. They were under pressure. They wanted relief.</p>
+                        <p>The worm did not lie. It was truly beautiful. What it hid was the price.</p>
+                        <div class="important-quote">
+                            The hook is always invisible—until it is inside you.
+                        </div>
+                        <p>Wisdom is the ability to see consequences before they arrive. It is the courage to pause when appetite screams. It is the discipline to ask questions when everyone else is swallowing.</p>
+                    `
+                },
+                {
+                    id: "chapter1",
+                    title: "Chapter 1 -- Hunger Is Not an Emergency",
+                    content: `
+                        <p>Hunger is powerful. It convinces the mind that delay equals death. It tells the heart that waiting is suffering. It whispers that survival requires immediate action.</p>
+                        <p><span class="highlight">But hunger is not an emergency.</span></p>
+                        <p>In the river, fish do not starve because they skipped one worm. They die because they swallow the wrong one.</p>
+                        <p>In human life, hunger appears in many forms. Financial hunger pushes people into unethical deals. Emotional hunger pulls people into dangerous relationships. Recognition hunger drives people to compromise values for applause. Spiritual hunger makes people chase shortcuts instead of growth.</p>
+                        <div class="important-quote">
+                            The problem is not hunger itself. Hunger is natural. The danger is allowing hunger to become the decision-maker.
+                        </div>
+                        <p>A hungry fish does not inspect food. It reacts.</p>
+                        <p>Many of life's worst decisions are reactions, not choices.</p>
+                        <p>When a person is desperate, even poison tastes sweet. Desperation narrows vision. It creates tunnel thinking where only one outcome matters—relief. And once relief becomes the goal, wisdom becomes optional.</p>
+                        <p>This is why temptation often arrives during seasons of lack. When you are tired, lonely, broke, grieving, or frustrated, the worm shines brighter. What you would normally question suddenly feels reasonable.</p>
+                        <p><span class="highlight">The wise fish understands this truth: I am most vulnerable when I am hungry.</span></p>
+                        <p>So it slows down.</p>
+                        <p>Wisdom creates distance between appetite and action. It asks:</p>
+                        <ul>
+                            <li>Why now?</li>
+                            <li>Why is this so easy?</li>
+                            <li>What happens after I swallow?</li>
+                        </ul>
+                        <div class="important-quote">
+                            Urgency is one of temptation's favorite tools. Anything that says, "Decide now or lose everything," deserves suspicion. True opportunities survive examination. Traps collapse under it.
+                        </div>
+                        <p>The world praises fast movers, but history celebrates careful ones. Many people who rushed ahead are no longer in the river. Those who waited are still swimming.</p>
+                        <p><span class="highlight">Hunger is a signal, not a command.</span></p>
+                        <p>The fish that lives longest is not the one that eats the most—but the one that eats wisely.</p>
+                    `
+                },
+                {
+                    id: "chapter2",
+                    title: "Chapter 2 -- Not Everything That Shines Is Food",
+                    content: `
+                        <p>In the river, light is deceptive.</p>
+                        <p>When sunlight breaks through the surface, it scatters into fragments, turning ordinary objects into moving reflections. Stones glitter like treasure. Broken glass sparkles like jewels. Even danger can look beautiful when wrapped in light.</p>
+                        <p>Fish learn early that brightness does not equal safety. Humans, however, often forget this lesson.</p>
+                        <p>From childhood, we are trained to associate shine with value. Clean shoes, polished words, confident smiles, impressive titles, loud success. We assume that what looks good must be good. What attracts attention must be worth pursuing. What sparkles must be nourishment.</p>
+                        <p>Yet wisdom whispers a quieter truth: <span class="highlight">attraction is not proof of suitability</span>.</p>
+                        <p>The beautiful worm is designed to shine. It is not just food; it is advertising. Its color, movement, and placement are intentional. It exists to be noticed. If it blended in, no fish would approach. Its beauty is its strategy.</p>
+                        <p>In life, temptation often uses the same language. It dresses itself in improvement, growth, and progress. It arrives wearing labels like <em>opportunity</em>, <em>connection</em>, <em>breakthrough</em>, and <em>favor</em>. It looks like an answered prayer. It feels like timing.</p>
+                        <div class="important-quote">
+                            But shine without substance is a warning, not an invitation.
+                        </div>
+                        <p>Many destructive paths begin with admiration. People admire lifestyles they do not understand. They admire wealth without asking how it was built. They admire influence without examining character. They admire confidence without measuring integrity.</p>
+                        <p><span class="highlight">The shine distracts from the hook.</span></p>
+                        <p>Wise people do not ask, "Do I like this?" They ask, "Is this good for me?" Liking is emotional. Goodness is structural. Something can excite you and still destroy you. Something can impress you and still trap you.</p>
+                        <p>In African wisdom, elders warn that <span class="highlight">the drum that sounds sweetest may be hollow inside</span>. Noise, shine, and display often hide emptiness.</p>
+                        <p>The world is full of polished worms.</p>
+                        <p>A relationship that flatters you quickly but demands silence later. A job that pays well but erodes your values. A shortcut that saves time but steals peace. A deal that looks small now but grows teeth later.</p>
+                        <p>The danger is not the shine—it is our surrender to it.</p>
+                        <div class="important-quote">
+                            Discipline trains the eye. Discernment teaches us to look past first impressions.
+                        </div>
+                        <p>The wise fish circles the worm. It observes its movement. It studies its position in the water. It notices what is unusual.</p>
+                        <p>Wisdom always asks: <span class="highlight">Who benefits if I swallow this?</span></p>
+                        <p>Shine often benefits the one offering, not the one consuming.</p>
+                        <p>This is why mature people are rarely impressed. They have seen too many bright things fade. They have watched glamorous promises collapse under pressure. They have tasted sweetness that later turned bitter.</p>
+                        <p><span class="highlight">Shine fades. Consequences remain.</span></p>
+                        <p>The wise fish does not fear beauty—it respects it. It understands that beauty is powerful, and power must be handled carefully. Beauty without truth is manipulation. Attraction without alignment is danger.</p>
+                        <p>Not everything that shines is food.</p>
+                        <p><span class="highlight">Some shine is bait.</span></p>
+                    `
+                },
+                {
+                    id: "chapter3",
+                    title: "Chapter 3 -- The Hook Is Always Silent",
+                    content: `
+                        <p>The most dangerous thing about a hook is not its sharpness.<br>It is its silence.</p>
+                        <p>The hook does not shimmer like the worm. It does not move. It does not call attention to itself. It stays hidden, patient, and still. Its power lies in remaining unnoticed until the moment it is too late.</p>
+                        <p>In life, consequences rarely introduce themselves. They wait.</p>
+                        <p>People often say, "If it was dangerous, I would have known." But danger does not announce itself. It disguises itself as comfort. It hides inside pleasure, convenience, and permission. It allows you to enjoy the worm first.</p>
+                        <div class="important-quote">
+                            The hook is felt only after commitment.
+                        </div>
+                        <p>This is why many people are shocked by outcomes they helped create. They say, "I didn't see this coming." What they mean is, "I did not look deeply enough." Silence is not absence. Silence is strategy.</p>
+                        <p>In human relationships, the hook may be control. It may be manipulation. It may be dependency. At first, everything feels light. The conversations are easy. The promises are generous. But slowly, freedom begins to tighten. Expectations increase. Boundaries shrink.</p>
+                        <p><span class="highlight">The hook was always there.</span></p>
+                        <p>In careers and ambition, the hook often appears as compromise. At first, it is small—<em>just this once</em>. Then it becomes routine. Then it becomes identity. What you once tolerated, you now defend. The hook tightens not because someone pulls it, but because you keep swimming forward.</p>
+                        <p>Hooks do not drag you immediately. They let you move—just not freely.</p>
+                        <p>This is the tragedy of unnoticed consequences. People continue living, working, and smiling while quietly trapped. They function, but they are no longer free. They succeed, but they are not at peace.</p>
+                        <p><span class="highlight">Wisdom trains itself to listen to silence.</span></p>
+                        <p>Silence speaks through discomfort, unease, and inner resistance. That quiet voice that says, "Something is not right," is often the first glimpse of the hook. Many people ignore it because it is inconvenient. Listening would require stopping, questioning, or letting go.</p>
+                        <p>The world rewards those who ignore their conscience—temporarily. But the bill always arrives.</p>
+                        <div class="important-quote">
+                            A wise fish senses resistance before pain. It feels the unnatural pull. It notices the tension in the water. It understands that ease followed by restriction is not normal.
+                        </div>
+                        <p>Not every opportunity that begins well ends well.</p>
+                        <p>The hook's silence is its greatest weapon. The wise person's attentiveness is the only defense.</p>
+                    `
+                },
+                {
+                    id: "chapter4",
+                    title: "Chapter 4 -- Experience Does Not Immunize You",
+                    content: `
+                        <p>There is a dangerous belief that lives quietly in the minds of the experienced: <span class="highlight">"This cannot happen to me."</span></p>
+                        <p>Experience is valuable, but it is not armor. In fact, experience often creates confidence, and confidence can dull caution. The old fish swims faster because it has survived before. It trusts its instincts because they have worked in the past.</p>
+                        <p>But rivers change.</p>
+                        <p>New hooks appear. New bait is designed specifically for the wise-looking fish. What failed yesterday is improved today. What once looked suspicious is now polished and refined.</p>
+                        <div class="important-quote">
+                            Many people fall not because they lacked wisdom, but because they stopped using it.
+                        </div>
+                        <p>Pride is the worm seasoned for mature mouths. It whispers, "You've seen this before. You know better." It replaces curiosity with assumption. It convinces people that discernment is no longer necessary.</p>
+                        <p>Yet history shows that the most painful falls often involve the most knowledgeable people. Leaders, elders, professionals, and believers are not exempt. When they fall, the damage is deeper because their influence is greater.</p>
+                        <p><span class="highlight">Experience should sharpen humility, not erase it.</span></p>
+                        <p>The wise fish knows that survival in one season does not guarantee safety in the next. It stays alert. It respects the river. It understands that repetition does not equal mastery.</p>
+                        <p>There is also a subtler danger: nostalgia. The belief that what worked before will work again. The assumption that old strategies protect against new threats. This is how experienced people miss evolving traps.</p>
+                        <div class="important-quote">
+                            Wisdom is not stored knowledge—it is active awareness.
+                        </div>
+                        <p>The fish that survives longest is not the one that knows the most worms, but the one that keeps watching. It learns, yes—but it also listens, adapts, and questions.</p>
+                        <p>True maturity increases caution, not arrogance. It makes you slower to trust appearances and quicker to inspect motives.</p>
+                        <p>Experience should teach this one lesson above all: <span class="highlight">no one is above the hook</span>.</p>
+                    `
+                },
+                {
+                    id: "chapter5",
+                    title: "Chapter 5 -- The Price Is Always Higher Than Advertised",
+                    content: `
+                        <p>The worm never tells you the full cost.</p>
+                        <p>If it did, no fish would swallow it. If temptation announced its consequences honestly, its power would disappear. That is why the offer is always partial. The pleasure is highlighted. The reward is emphasized. The benefit is immediate. The cost is postponed.</p>
+                        <div class="important-quote">
+                            Life sells worms the same way markets sell debt—<em>enjoy now, pay later</em>.
+                        </div>
+                        <p>At first, the price seems small. A little compromise. A quiet lie. A harmless indulgence. A deal you convince yourself you will correct later. The worm tastes good, and nothing bad happens immediately. This delay creates false confidence. You begin to believe the warnings were exaggerated.</p>
+                        <p>But hooks do not charge interest upfront. They wait.</p>
+                        <p>The true cost appears slowly, and by the time it does, the fish is already caught. Freedom reduces before pain increases. Choices narrow. Options disappear. What began as control becomes captivity.</p>
+                        <p>Many people underestimate the cost because they only calculate what they gain, not what they lose. They count money, pleasure, influence, or attention—but they do not count peace, integrity, trust, health, and time. These losses are invisible until they are gone.</p>
+                        <p><span class="highlight">The price of a worm is rarely paid in the same currency it was bought with.</span></p>
+                        <p>You may gain money and lose sleep. You may gain influence and lose sincerity. You may gain companionship and lose self-respect. You may gain speed and lose direction.</p>
+                        <p>This is why wisdom insists on long thinking. It projects forward. It imagines outcomes. It asks not only, "What will this give me?" but also, "What will this take from me?"</p>
+                        <div class="important-quote">
+                            Traps thrive on short-term thinking.
+                        </div>
+                        <p>The fish that lives longest understands delayed consequences. It does not confuse silence with safety. It knows that just because the hook has not pulled does not mean it is not there.</p>
+                        <p>The world often celebrates success without asking about the cost. We applaud results without inspecting sacrifices. We admire arrival without questioning the route taken.</p>
+                        <p>But life always keeps records.</p>
+                        <p>Eventually, the bill arrives—sometimes publicly, sometimes privately. Some people pay with reputation. Others pay with family. Others pay with health. Some pay quietly with regret.</p>
+                        <p><span class="highlight">The worm never mentions this part.</span></p>
+                        <p>Wisdom does not fear cost; it respects it. It understands that everything valuable requires payment, but not every payment is worth making.</p>
+                        <p>The wise fish refuses deals that hide the invoice.</p>
+                    `
+                },
+                {
+                    id: "chapter6",
+                    title: "Chapter 6 -- Some Worms Are Thrown by Friends",
+                    content: `
+                        <p>The most dangerous worms do not come from strangers.</p>
+                        <p>They come from familiar hands.</p>
+                        <p>Trust lowers guard. Familiarity reduces suspicion. When the worm is thrown by someone you know, it feels safer. You assume good intention. You believe loyalty guarantees protection. You forget that proximity does not equal purity.</p>
+                        <div class="important-quote">
+                            Not everyone who feeds you loves you.
+                        </div>
+                        <p>Some people benefit from your capture. Others are unaware they are being used as bait themselves. Some throw worms out of jealousy, insecurity, or fear of your growth. Others do it because the system rewards them for delivering fish.</p>
+                        <p>Betrayal rarely begins with hostility. It begins with comfort.</p>
+                        <p>The fish does not expect danger from the water it has always known. It swims confidently, assuming safety. This is why the hook hurts more when it comes from close range.</p>
+                        <p>In life, friends can introduce you to habits that destroy you. Mentors can push you into paths that benefit them more than you. Family can pressure you into choices that limit your future. Communities can normalize behavior that slowly erodes your values.</p>
+                        <p>The danger is subtle. It hides behind phrases like:</p>
+                        <ul>
+                            <li>"Everyone is doing it."</li>
+                            <li>"This is how things work."</li>
+                            <li>"Trust me."</li>
+                            <li>"I've got your back."</li>
+                        </ul>
+                        <p><span class="highlight">Discernment must be stronger than loyalty.</span></p>
+                        <p>Wisdom does not mean suspicion of everyone—it means clarity about influence. The wise fish knows that good intentions do not cancel bad outcomes. Someone can care about you and still lead you into danger.</p>
+                        <div class="important-quote">
+                            Love without wisdom is not safe.
+                        </div>
+                        <p>This is why strong individuals sometimes disappoint others. They refuse worms that others swallow gladly. They ask questions that make people uncomfortable. They step back when pressured to step forward.</p>
+                        <p>Not every offer deserves acceptance just because it comes with affection.</p>
+                        <p>The wise fish listens politely—but chooses independently.</p>
+                    `
+                },
+                {
+                    id: "chapter7",
+                    title: "Chapter 7 -- The River Rewards Patience",
+                    content: `
+                        <p>In the river, impatience kills more fish than hunger.</p>
+                        <p>The water is full of movement—ripples, currents, flashes of light. Everything appears urgent. Food passes quickly. Opportunities seem to vanish if not taken immediately. This constant motion creates pressure, and pressure creates mistakes.</p>
+                        <p><span class="highlight">The wise fish learns to wait.</span></p>
+                        <p>Patience is not passivity; it is control. It is the discipline of allowing things to reveal themselves fully before responding. In a river full of hooks, patience is protection.</p>
+                        <div class="important-quote">
+                            Many people confuse waiting with weakness. They believe that those who hesitate lose. But in reality, those who rush often lose more. Speed amplifies error. Slowness exposes truth.
+                        </div>
+                        <p>Time is the enemy of traps.</p>
+                        <p>A worm left floating long enough begins to reveal its secret. The shine fades. The tension in the line becomes visible. The stillness of the hook becomes noticeable. What looked perfect at first glance starts to feel unnatural.</p>
+                        <p>This is why temptation hates delay. It demands immediate action. It creates artificial deadlines. It threatens loss if you do not move quickly. Patience disarms it completely.</p>
+                        <p>In life, time clarifies motives. People reveal intentions. Systems expose flaws. Deals show hidden clauses. Relationships reveal patterns. What survives time is usually safe. What collapses under waiting was never stable.</p>
+                        <p><span class="highlight">The river tests every fish, but it favors those who can wait.</span></p>
+                        <p>Patience also builds strength. When you wait, you practice restraint. You learn that you will not die if you do not consume everything presented to you. You discover that scarcity is often exaggerated. There is always another worm.</p>
+                        <p>The patient fish eats fewer worms but chooses better ones. It lives longer, grows stronger, and swims with confidence rather than desperation.</p>
+                        <div class="important-quote">
+                            Wisdom understands that life is not a sprint between baits. It is a long swim. Surviving today means nothing if tomorrow is compromised.
+                        </div>
+                        <p><span class="highlight">Patience is the quiet refusal to be rushed into regret.</span></p>
+                    `
+                },
+                {
+                    id: "chapter8",
+                    title: "Chapter 8 -- Freedom Is the Ability to Say No",
+                    content: `
+                        <p>Freedom is often misunderstood.</p>
+                        <p>Many believe freedom means access—to eat anything, do anything, go anywhere. But real freedom is not about access; it is about restraint. It is the ability to refuse what others feel compelled to accept.</p>
+                        <div class="important-quote">
+                            The fish that eats everything is not free—it is vulnerable.
+                        </div>
+                        <p>Every "yes" carries a cost. Time, energy, attention, loyalty, identity. Saying yes without discernment slowly builds invisible chains. Eventually, the fish realizes it cannot swim the way it once did.</p>
+                        <p><span class="highlight">Freedom is preserved through selective refusal.</span></p>
+                        <p>Saying no requires courage. It invites misunderstanding. People question your motives. They label you proud, fearful, or ungrateful. But wisdom accepts temporary misunderstanding over permanent captivity.</p>
+                        <p>Many people are trapped not by force, but by agreement. They swallowed the worm willingly. They said yes when they should have paused. They accepted what felt good instead of what was right.</p>
+                        <p>The wise fish understands that not every opportunity deserves participation. Some doors are open because they are traps. Some paths are popular because they lead downhill.</p>
+                        <div class="important-quote">
+                            Saying no is an act of self-respect.
+                        </div>
+                        <p>It is choosing long-term peace over short-term pleasure. It is protecting future freedom at the expense of present comfort. It is understanding that appetite is not authority.</p>
+                        <p>In African wisdom, elders say, <span class="highlight">"The hand that refuses poison is not proud; it is wise."</span></p>
+                        <p>Freedom grows where discipline lives.</p>
+                        <p>The fish that says no swims lighter. It moves without resistance. It is not pulled by unseen lines. It chooses direction instead of being dragged.</p>
+                        <p><span class="highlight">The ultimate test of wisdom is not intelligence—it is refusal.</span></p>
+                    `
+                },
+                {
+                    id: "chapter9",
+                    title: "Chapter 9 -- Pain Is a Teacher, Not a Curse",
+                    content: `
+                        <p>Pain is often misunderstood. It is feared, avoided, and resented. Yet in the river of life, pain is one of the clearest teachers a fish can encounter.</p>
+                        <div class="important-quote">
+                            Not every fish escapes the hook. Some feel its sharpness and survive. Their survival is not accidental—it is instructional.
+                        </div>
+                        <p>Pain reveals truth that comfort hides.</p>
+                        <p>When the hook pierces, illusions disappear. The shine of the worm fades instantly. What once looked like opportunity is exposed as danger. Pain clarifies reality with brutal honesty.</p>
+                        <p>Many people wish pain away, but wisdom listens to it. Pain asks questions comfort never will:</p>
+                        <ul>
+                            <li>Why did I ignore the signs?</li>
+                            <li>What hunger drove me here?</li>
+                            <li>What did I assume instead of examine?</li>
+                        </ul>
+                        <p><span class="highlight">Pain becomes destructive only when it is wasted.</span></p>
+                        <p>The fish that escapes the hook but learns nothing will be caught again. But the fish that studies its wound swims differently forever. It becomes alert. It respects hesitation. It listens to its instincts with renewed seriousness.</p>
+                        <p>Some of the wisest people are not those who avoided pain, but those who learned from it.</p>
+                        <p>In human life, pain humbles. It strips pride. It exposes false confidence. It forces reflection. It slows us down long enough to see what we missed.</p>
+                        <div class="important-quote">
+                            This is why wisdom often follows suffering.
+                        </div>
+                        <p>The danger lies not in pain itself, but in bitterness. Bitterness turns pain into poison. Wisdom turns pain into instruction.</p>
+                        <p><span class="highlight">Pain does not mean you are weak. It means you are alive.</span></p>
+                        <p>The river is not cruel because it contains hooks. It is honest. Pain teaches the rules of survival. Ignoring pain only guarantees repetition.</p>
+                        <p>A wise fish honors pain without living in it. It remembers the lesson without reopening the wound.</p>
+                        <p><span class="highlight">Pain is not the end—it is the turning point.</span></p>
+                    `
+                },
+                {
+                    id: "chapter10",
+                    title: "Chapter 10 -- The Water Will Always Test You",
+                    content: `
+                        <p>There is a comforting lie many people tell themselves after surviving a trap: <span class="highlight">"That was the last time."</span></p>
+                        <p>It is rarely true.</p>
+                        <p>The river never stops testing. New worms appear. New shine emerges. New hunger develops. The environment changes, but the challenge remains the same—discernment.</p>
+                        <div class="important-quote">
+                            Wisdom is not a destination. It is a practice.
+                        </div>
+                        <p>The fish that survives one hook does not relax forever. It remains watchful. It understands that safety is maintained, not achieved once.</p>
+                        <p><span class="highlight">Life tests consistency, not intention.</span></p>
+                        <p>Good intentions do not protect against repeated exposure. Strong principles must be practiced daily. Discernment dulls when neglected.</p>
+                        <p>This is why vigilance matters. Wisdom fades when attention fades. People often fall not during crisis, but during comfort. When life feels stable, caution relaxes. Guard lowers. Familiarity breeds assumption.</p>
+                        <p>The river takes advantage of this.</p>
+                        <p>Tests do not always come as temptation. Sometimes they come as fatigue. Sometimes as success. Sometimes as boredom. Sometimes as overconfidence.</p>
+                        <p>The wise fish stays grounded regardless of conditions.</p>
+                        <p>Wisdom also requires renewal. Reflection, community, accountability, and spiritual grounding sharpen perception. Without these, even disciplined individuals drift.</p>
+                        <div class="important-quote">
+                            The goal is not paranoia—it is awareness.
+                        </div>
+                        <p>The water will always test you, but it does not have to defeat you. The fish that understands the rules swims with calm confidence. It is neither fearful nor careless.</p>
+                        <p><span class="highlight">Survival becomes a lifestyle.</span></p>
+                    `
+                },
+                {
+                    id: "chapter11",
+                    title: "Chapter 11 -- Teach the Young Fish Early",
+                    content: `
+                        <p>Wisdom that is not shared is incomplete.</p>
+                        <p>In every river, young fish are born into danger they do not yet understand. They swim with excitement, curiosity, and appetite, unaware that the same water that sustains them can also destroy them. They are not careless—they are untrained.</p>
+                        <div class="important-quote">
+                            This is why elders matter.
+                        </div>
+                        <p>The experienced fish carries scars, memory, and knowledge. Its responsibility is not only to survive, but to teach. Silence from the wise is not humility; it is neglect. Every generation that fails to pass on wisdom condemns the next to repeat pain.</p>
+                        <p><span class="highlight">Young fish must be warned before they feel the hook.</span></p>
+                        <p>Teaching wisdom early does not mean frightening—it means preparing. It means naming danger without drama. It means explaining that not every worm is food, and not every opportunity is safe.</p>
+                        <p>In human life, guidance is often delayed until after damage. Parents speak after mistakes. Leaders correct after collapse. Communities react after loss. But wisdom works best before wounds.</p>
+                        <p>The young need language for discernment. They need permission to question. They need stories that reveal consequences without shame.</p>
+                        <div class="important-quote">
+                            A river without teachers becomes a graveyard.
+                        </div>
+                        <p>Wisdom shared multiplies life. One lesson can save years. One warning can prevent scars. One example can change direction.</p>
+                        <p>The wise fish understands that survival is not the goal—continuity is. Teaching creates future safety.</p>
+                        <p><span class="highlight">Legacy is built through instruction.</span></p>
+                    `
+                },
+                {
+                    id: "chapter12",
+                    title: "Chapter 12 -- Discernment Is a Spiritual Sense",
+                    content: `
+                        <p>Discernment is more than logic.</p>
+                        <p>There are hooks logic cannot see. There are worms that pass every rational test but still carry danger. This is where discernment becomes spiritual—a deep inner awareness that operates beyond evidence.</p>
+                        <div class="important-quote">
+                            Many people ignore this sense because it does not shout. It whispers.
+                        </div>
+                        <p>Discernment speaks through unease, hesitation, and inner resistance. It communicates through prayer, reflection, conscience, and intuition. It is the voice that says, <span class="highlight">"Something is wrong,"</span> even when everything looks right.</p>
+                        <p>Spiritual discernment requires stillness. Noise drowns it. Pressure silences it. Pride dismisses it.</p>
+                        <p><span class="highlight">The wise fish learns to trust this inner signal.</span></p>
+                        <p>Not every decision can be calculated. Some must be felt. When peace leaves, wisdom pays attention.</p>
+                        <p>This sense grows with alignment. When values are clear, discernment sharpens. When integrity is compromised, discernment weakens.</p>
+                        <div class="important-quote">
+                            Spiritual discernment does not replace wisdom—it completes it.
+                        </div>
+                        <p>In a world that prizes data and visible evidence, this inner knowing is often undervalued. Yet history shows that the greatest disasters often followed decisions that looked perfect on paper but felt wrong in the spirit.</p>
+                        <p>The river speaks in currents, temperature changes, and subtle vibrations. The wise fish learns this language. It feels what it cannot see.</p>
+                        <p>Human wisdom works the same way. There is knowledge that comes from calculation, and there is knowing that comes from connection—to self, to others, to purpose, to truth.</p>
+                        <p><span class="highlight">When logic and intuition agree, move with confidence. When they conflict, pause with humility.</span></p>
+                        <p>The most dangerous hooks are those that make perfect sense but feel wrong in your spirit. This is where spiritual discernment becomes lifesaving.</p>
+                        <p>Wisdom listens to both the mind and the spirit. One calculates risk; the other senses truth.</p>
+                    `
+                },
+                {
+                    id: "chapter13",
+                    title: "Chapter 13 -- The Wise Fish Lives Quietly",
+                    content: `
+                        <p>Wisdom is not loud.</p>
+                        <p>It does not announce itself. It does not compete for attention. It does not chase every movement in the water. It swims with intention, not excitement.</p>
+                        <div class="important-quote">
+                            The wise fish lives quietly—not because it is afraid, but because it understands priorities.
+                        </div>
+                        <p>It chooses depth over display. Peace over applause. Longevity over indulgence.</p>
+                        <p>In a world obsessed with noise, restraint looks strange. People misunderstand calm. They mistake simplicity for lack of ambition. But wisdom is content to be misunderstood if it preserves life.</p>
+                        <p>The wise fish is not driven by hunger, shine, or pressure. It is guided by discernment, patience, and purpose.</p>
+                        <p><span class="highlight">This quiet life is not small—it is sustainable.</span></p>
+                        <p>The river has many fish—some flashy, some fast, some always chasing. They attract attention. They create waves. They seem to be living fully. But often, their energy is spent on movement, not direction.</p>
+                        <p>The wise fish conserves energy. It moves when necessary. It rests when possible. It observes more than it reacts. It listens more than it speaks.</p>
+                        <div class="important-quote">
+                            In the economy of the river, attention is currency. The wise fish spends it carefully.
+                        </div>
+                        <p>Noise attracts predators. Movement reveals position. Excitement creates blind spots. The fish that lives quietly sees more, hears more, and understands more.</p>
+                        <p>This is not about hiding—it's about choosing. Choosing what matters over what sparkles. Choosing substance over show. Choosing the long swim over the quick dash.</p>
+                        <p>Many people believe that to live fully, they must be seen. But wisdom teaches that to live fully, you must see clearly.</p>
+                        <p><span class="highlight">The quiet fish sees the hook before others notice the worm.</span></p>
+                        <p>Living quietly is not passive. It is powerful. It is the discipline of focus. It is the strength of reserve. It is the confidence of knowing what you're about, without needing everyone else to know it too.</p>
+                        <p>In the end, the river does not remember the noisiest fish. It remembers the ones who swam longest.</p>
+                        <p>The wise fish leaves a wake of influence, not a trail of noise.</p>
+                    `
+                },
+                {
+                    id: "conclusion",
+                    title: "Conclusion -- Choose Life Over Appetite",
+                    content: `
+                        <p>Every day, the river presents worms.</p>
+                        <p>Some shine brightly. Some come from trusted hands. Some appear during hunger. Some look harmless. But every worm must be questioned.</p>
+                        <div class="important-quote">
+                            Wisdom is choosing life over appetite.
+                        </div>
+                        <p>It is slowing down when pressured. It is seeing beyond shine. It is listening to silence. It is learning from pain. It is teaching others. It is trusting discernment. It is living quietly.</p>
+                        <p>The beautiful worm will always exist.</p>
+                        <p><span class="highlight">So must wisdom.</span></p>
+                        <p>Through African-style storytelling, reflective prose, and practical wisdom, this book has explored how temptation disguises itself as opportunity. We've examined how hunger—emotional, financial, spiritual, and social—weakens judgment. We've explored betrayal, ambition, impatience, pride, and misplaced trust, showing how each becomes a hook when wrapped in something attractive.</p>
+                        <p>This book does not condemn desire; it teaches discernment. It does not demonize opportunity; it trains perception. It calls readers to slow down, observe deeply, and ask hard questions before swallowing what the world offers freely.</p>
+                        <p><span class="highlight">The Beautiful Worm</span> is written for leaders, believers, dreamers, professionals, youth, and anyone navigating choices in a fast, deceptive world. It is a mirror, a warning, and a guide—urging readers to choose life over appetite, wisdom over impulse, and depth over display.</p>
+                        <p>As you close this book, remember: the river will continue to test you. New worms will appear. New hooks will be set. But with wisdom, discernment, and patience, you can swim safely through waters that trap others.</p>
+                        <p>May you choose life over appetite, wisdom over impulse, and depth over display. May you see the hook before you feel it. And may your journey through the river be guided by truth, not temptation.</p>
+                    `
+                }
+            ]
+        };
+
+        // Ebook state
+        let currentChapterIndex = 0;
+        let tocVisible = false; // TOC hidden by default in reading mode
+
+        // DOM elements
+        const coverPage = document.getElementById('coverPage');
+        const bookContent = document.getElementById('bookContent');
+        const openBookBtn = document.getElementById('openBookBtn');
+        const chaptersContainer = document.getElementById('chaptersContainer');
+        const tocList = document.getElementById('tocList');
+        const tableOfContents = document.getElementById('tableOfContents');
+        const readingArea = document.getElementById('readingArea');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const prevTapZone = document.getElementById('prevTapZone');
+        const nextTapZone = document.getElementById('nextTapZone');
+        const backBtn = document.getElementById('backBtn');
+        const tocToggleBtn = document.getElementById('tocToggleBtn');
+        const progressBar = document.getElementById('progressBar');
+        const chapterIndicator = document.getElementById('chapterIndicator');
+
+        // Initialize the ebook
+        function initEbook() {
+            generateTableOfContents();
+            loadChapter(currentChapterIndex);
+            setupEventListeners();
+            updateProgressBar();
+        }
+
+        // Generate table of contents
+        function generateTableOfContents() {
+            bookData.chapters.forEach((chapter, index) => {
+                const li = document.createElement('li');
+                li.className = 'toc-item';
+                
+                const a = document.createElement('a');
+                a.href = '#';
+                a.className = 'toc-link';
+                a.textContent = chapter.title;
+                a.dataset.index = index;
+                
+                a.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    currentChapterIndex = parseInt(a.dataset.index);
+                    loadChapter(currentChapterIndex);
+                    tocVisible = false;
+                    tableOfContents.classList.remove('toc-visible');
+                });
+                
+                li.appendChild(a);
+                tocList.appendChild(li);
+            });
+        }
+
+        // Load a specific chapter
+        function loadChapter(index) {
+            if (index < 0 || index >= bookData.chapters.length) return;
+            
+            currentChapterIndex = index;
+            
+            // Clear previous chapters
+            chaptersContainer.innerHTML = '';
+            
+            // Create chapter element
+            const chapter = document.createElement('div');
+            chapter.className = 'chapter';
+            chapter.id = bookData.chapters[index].id;
+            
+            // Add chapter title
+            const title = document.createElement('h2');
+            title.className = 'chapter-title';
+            title.textContent = bookData.chapters[index].title;
+            chapter.appendChild(title);
+            
+            // Add chapter content
+            const content = document.createElement('div');
+            content.className = 'chapter-content';
+            content.innerHTML = bookData.chapters[index].content;
+            chapter.appendChild(content);
+            
+            // Add chapter to container
+            chaptersContainer.appendChild(chapter);
+            
+            // Update navigation buttons
+            updateNavigationButtons();
+            
+            // Update progress bar
+            updateProgressBar();
+            
+            // Update chapter indicator
+            updateChapterIndicator();
+            
+            // Hide TOC if it's visible
+            tocVisible = false;
+            tableOfContents.classList.remove('toc-visible');
+            
+            // Scroll to top
+            readingArea.scrollTop = 0;
+        }
+
+        // Update navigation buttons state
+        function updateNavigationButtons() {
+            prevBtn.disabled = currentChapterIndex === 0;
+            nextBtn.disabled = currentChapterIndex === bookData.chapters.length - 1;
+            
+            if (prevBtn.disabled) {
+                prevBtn.style.opacity = '0.5';
+                prevBtn.style.cursor = 'not-allowed';
+            } else {
+                prevBtn.style.opacity = '1';
+                prevBtn.style.cursor = 'pointer';
+            }
+            
+            if (nextBtn.disabled) {
+                nextBtn.style.opacity = '0.5';
+                nextBtn.style.cursor = 'not-allowed';
+            } else {
+                nextBtn.style.opacity = '1';
+                nextBtn.style.cursor = 'pointer';
+            }
+        }
+
+        // Update progress bar
+        function updateProgressBar() {
+            const progress = ((currentChapterIndex + 1) / bookData.chapters.length) * 100;
+            progressBar.style.width = `${progress}%`;
+        }
+
+        // Update chapter indicator
+        function updateChapterIndicator() {
+            const chapter = bookData.chapters[currentChapterIndex];
+            let displayTitle = chapter.title;
+            
+            // Shorten long titles for mobile
+            if (window.innerWidth < 768 && displayTitle.length > 25) {
+                displayTitle = displayTitle.substring(0, 25) + '...';
+            }
+            
+            chapterIndicator.textContent = displayTitle;
+        }
+
+        // Toggle Table of Contents
+        function toggleTableOfContents() {
+            tocVisible = !tocVisible;
+            if (tocVisible) {
+                tableOfContents.classList.add('toc-visible');
+                // Scroll TOC into view
+                tableOfContents.scrollIntoView({ behavior: 'smooth' });
+            } else {
+                tableOfContents.classList.remove('toc-visible');
+            }
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Open book button
+            openBookBtn.addEventListener('click', () => {
+                coverPage.style.display = 'none';
+                bookContent.classList.add('content-visible');
+                readingArea.scrollTop = 0;
+            });
+            
+            // Previous chapter button
+            prevBtn.addEventListener('click', () => {
+                if (currentChapterIndex > 0) {
+                    currentChapterIndex--;
+                    loadChapter(currentChapterIndex);
+                }
+            });
+            
+            // Next chapter button
+            nextBtn.addEventListener('click', () => {
+                if (currentChapterIndex < bookData.chapters.length - 1) {
+                    currentChapterIndex++;
+                    loadChapter(currentChapterIndex);
+                }
+            });
+            
+            // Previous tap zone (for mobile)
+            prevTapZone.addEventListener('click', () => {
+                if (currentChapterIndex > 0) {
+                    currentChapterIndex--;
+                    loadChapter(currentChapterIndex);
+                }
+            });
+            
+            // Next tap zone (for mobile)
+            nextTapZone.addEventListener('click', () => {
+                if (currentChapterIndex < bookData.chapters.length - 1) {
+                    currentChapterIndex++;
+                    loadChapter(currentChapterIndex);
+                }
+            });
+            
+            // Back to cover button
+            backBtn.addEventListener('click', () => {
+                bookContent.classList.remove('content-visible');
+                coverPage.style.display = 'flex';
+                currentChapterIndex = 0;
+            });
+            
+            // Toggle TOC button
+            tocToggleBtn.addEventListener('click', toggleTableOfContents);
+            
+            // Keyboard navigation
+            document.addEventListener('keydown', (e) => {
+                // Only respond if book content is visible
+                if (!bookContent.classList.contains('content-visible')) return;
+                
+                switch(e.key) {
+                    case 'ArrowLeft':
+                        if (currentChapterIndex > 0) {
+                            currentChapterIndex--;
+                            loadChapter(currentChapterIndex);
+                        }
+                        break;
+                    case 'ArrowRight':
+                        if (currentChapterIndex < bookData.chapters.length - 1) {
+                            currentChapterIndex++;
+                            loadChapter(currentChapterIndex);
+                        }
+                        break;
+                    case 'Home':
+                        bookContent.classList.remove('content-visible');
+                        coverPage.style.display = 'flex';
+                        currentChapterIndex = 0;
+                        break;
+                    case 'Escape':
+                        if (tocVisible) {
+                            toggleTableOfContents();
+                        }
+                        break;
+                }
+            });
+            
+            // Swipe gestures for mobile
+            let touchStartX = 0;
+            let touchEndX = 0;
+            
+            readingArea.addEventListener('touchstart', (e) => {
+                touchStartX = e.changedTouches[0].screenX;
+            });
+            
+            readingArea.addEventListener('touchend', (e) => {
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+            });
+            
+            function handleSwipe() {
+                const swipeThreshold = 50;
+                const swipeDistance = touchEndX - touchStartX;
+                
+                // Swipe left (next chapter)
+                if (swipeDistance < -swipeThreshold && currentChapterIndex < bookData.chapters.length - 1) {
+                    currentChapterIndex++;
+                    loadChapter(currentChapterIndex);
+                }
+                // Swipe right (previous chapter)
+                else if (swipeDistance > swipeThreshold && currentChapterIndex > 0) {
+                    currentChapterIndex--;
+                    loadChapter(currentChapterIndex);
+                }
+            }
+            
+            // Progress bar click to navigate (for desktop)
+            progressBar.addEventListener('click', (e) => {
+                const progressBarWidth = e.target.parentElement.offsetWidth;
+                const clickPosition = e.offsetX;
+                const percentage = clickPosition / progressBarWidth;
+                const chapterIndex = Math.floor(percentage * bookData.chapters.length);
+                
+                if (chapterIndex >= 0 && chapterIndex < bookData.chapters.length) {
+                    currentChapterIndex = chapterIndex;
+                    loadChapter(currentChapterIndex);
+                }
+            });
+            
+            // Update chapter indicator on resize
+            window.addEventListener('resize', updateChapterIndicator);
+        }
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initEbook);
+    </script>
+</body>
+</html>
