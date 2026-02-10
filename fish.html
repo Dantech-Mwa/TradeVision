@@ -29,8 +29,7 @@
         .ebook-container {
             width: 100%;
             max-width: 600px; /* Novel width */
-            min-height: 90vh;
-            max-height: 90vh;
+            height: 90vh;
             margin: 0 auto;
             background-color: #fff;
             box-shadow: 0 0 40px rgba(0, 0, 0, 0.2);
@@ -169,12 +168,15 @@
             flex-direction: column;
         }
         
-        /* Reading Area */
+        /* Reading Area - FIXED SCROLLING ISSUE */
         .reading-area {
             flex: 1;
             overflow-y: auto;
+            overflow-x: hidden;
             padding: 20px;
             -webkit-overflow-scrolling: touch;
+            position: relative;
+            height: calc(100% - 120px); /* Account for control bar and nav */
         }
         
         /* Table of Contents - Initially hidden in reading mode */
@@ -276,14 +278,17 @@
         
         /* Navigation - Mobile friendly */
         .ebook-nav {
-            position: fixed;
-            bottom: 20px;
+            position: absolute;
+            bottom: 0;
             left: 0;
             right: 0;
             z-index: 100;
             display: flex;
             justify-content: center;
             gap: 15px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
             pointer-events: none;
         }
         
@@ -315,22 +320,7 @@
             transform: none;
         }
         
-        /* Mobile tap zones for navigation */
-        .nav-tap-zone {
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            width: 40%;
-            z-index: 50;
-        }
-        
-        .prev-tap-zone {
-            left: 0;
-        }
-        
-        .next-tap-zone {
-            right: 0;
-        }
+        /* Mobile tap zones for navigation - REMOVED to avoid interference with scrolling */
         
         /* Progress Bar */
         .progress-container {
@@ -355,9 +345,11 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 15px;
+            padding: 15px;
             background-color: #f9f6ef;
             border-bottom: 1px solid #ddd;
+            height: 60px;
+            flex-shrink: 0;
         }
         
         .control-btn {
@@ -384,6 +376,11 @@
             font-size: 0.9rem;
             color: #666;
             font-weight: bold;
+            text-align: center;
+            max-width: 60%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
         
         /* Footer */
@@ -403,8 +400,7 @@
         @media (max-width: 768px) {
             .ebook-container {
                 max-width: 100%;
-                min-height: 100vh;
-                max-height: 100vh;
+                height: 100vh;
                 border-radius: 0;
                 box-shadow: none;
             }
@@ -442,6 +438,11 @@
             
             .reading-area {
                 padding: 15px;
+                height: calc(100% - 110px); /* Adjusted for mobile */
+            }
+            
+            .ebook-nav {
+                padding: 10px;
             }
         }
         
@@ -523,10 +524,6 @@
                     <!-- Chapters will be loaded here by JavaScript -->
                 </div>
             </div>
-            
-            <!-- Navigation Tap Zones (for mobile) -->
-            <div class="nav-tap-zone prev-tap-zone" id="prevTapZone"></div>
-            <div class="nav-tap-zone next-tap-zone" id="nextTapZone"></div>
             
             <!-- Navigation Buttons -->
             <div class="ebook-nav">
@@ -956,8 +953,6 @@
         const readingArea = document.getElementById('readingArea');
         const prevBtn = document.getElementById('prevBtn');
         const nextBtn = document.getElementById('nextBtn');
-        const prevTapZone = document.getElementById('prevTapZone');
-        const nextTapZone = document.getElementById('nextTapZone');
         const backBtn = document.getElementById('backBtn');
         const tocToggleBtn = document.getElementById('tocToggleBtn');
         const progressBar = document.getElementById('progressBar');
@@ -1092,6 +1087,8 @@
                 tableOfContents.scrollIntoView({ behavior: 'smooth' });
             } else {
                 tableOfContents.classList.remove('toc-visible');
+                // Scroll back to chapter
+                readingArea.scrollTop = 0;
             }
         }
 
@@ -1114,22 +1111,6 @@
             
             // Next chapter button
             nextBtn.addEventListener('click', () => {
-                if (currentChapterIndex < bookData.chapters.length - 1) {
-                    currentChapterIndex++;
-                    loadChapter(currentChapterIndex);
-                }
-            });
-            
-            // Previous tap zone (for mobile)
-            prevTapZone.addEventListener('click', () => {
-                if (currentChapterIndex > 0) {
-                    currentChapterIndex--;
-                    loadChapter(currentChapterIndex);
-                }
-            });
-            
-            // Next tap zone (for mobile)
-            nextTapZone.addEventListener('click', () => {
                 if (currentChapterIndex < bookData.chapters.length - 1) {
                     currentChapterIndex++;
                     loadChapter(currentChapterIndex);
@@ -1180,27 +1161,38 @@
             // Swipe gestures for mobile
             let touchStartX = 0;
             let touchEndX = 0;
+            let touchStartY = 0;
+            let touchEndY = 0;
             
             readingArea.addEventListener('touchstart', (e) => {
                 touchStartX = e.changedTouches[0].screenX;
+                touchStartY = e.changedTouches[0].screenY;
             });
             
             readingArea.addEventListener('touchend', (e) => {
                 touchEndX = e.changedTouches[0].screenX;
+                touchEndY = e.changedTouches[0].screenY;
                 handleSwipe();
             });
             
             function handleSwipe() {
                 const swipeThreshold = 50;
-                const swipeDistance = touchEndX - touchStartX;
+                const swipeDistanceX = touchEndX - touchStartX;
+                const swipeDistanceY = touchEndY - touchStartY;
+                
+                // Only trigger chapter change if it's a horizontal swipe
+                // and not a vertical scroll (vertical scroll has larger Y movement)
+                if (Math.abs(swipeDistanceY) > Math.abs(swipeDistanceX)) {
+                    return; // It's a scroll, not a swipe
+                }
                 
                 // Swipe left (next chapter)
-                if (swipeDistance < -swipeThreshold && currentChapterIndex < bookData.chapters.length - 1) {
+                if (swipeDistanceX < -swipeThreshold && currentChapterIndex < bookData.chapters.length - 1) {
                     currentChapterIndex++;
                     loadChapter(currentChapterIndex);
                 }
                 // Swipe right (previous chapter)
-                else if (swipeDistance > swipeThreshold && currentChapterIndex > 0) {
+                else if (swipeDistanceX > swipeThreshold && currentChapterIndex > 0) {
                     currentChapterIndex--;
                     loadChapter(currentChapterIndex);
                 }
@@ -1221,6 +1213,9 @@
             
             // Update chapter indicator on resize
             window.addEventListener('resize', updateChapterIndicator);
+            
+            // Ensure reading area is scrollable
+            readingArea.style.overflowY = 'auto';
         }
 
         // Initialize when DOM is loaded
