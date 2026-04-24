@@ -5139,7 +5139,7 @@ case 'brush':
     
   async loadHistory(symbol, interval) {
   try {
-    Toast.info(`Loading ${symbol}...`);
+    // Toast.info(`Loading ${symbol}...`);
     const res = await fetch(`${CONFIG.BINANCE_REST}/klines?symbol=${symbol}&interval=${interval}&limit=${CONFIG.CANDLE_LIMIT}`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
@@ -5167,10 +5167,10 @@ case 'brush':
     this.updatePriceDisplay(STATE.candles[STATE.candles.length - 1]);
     await this.load24h(symbol);
     ChartEngine.fitContent();
-    Toast.success(`${symbol} loaded`);
+    //Toast.success(`${symbol} loaded`);
   } catch (e) {
     console.error('Load history error:', e);
-    Toast.error(`Failed to load ${symbol}`);
+    //Toast.error(`Failed to load ${symbol}`);
   }
 },
     
@@ -5373,15 +5373,15 @@ updatePriceDisplay(c) {
     
     reconnect() {
       if(STATE.reconnectAttempts >= CONFIG.MAX_RECONNECT_ATTEMPTS) {
-        Toast.error('Connection lost');
+        //Toast.error('Connection lost');
         return;
       }
       STATE.reconnectAttempts++;
       const delay = Math.min(CONFIG.RECONNECT_BASE_DELAY * Math.pow(1.5, STATE.reconnectAttempts), CONFIG.RECONNECT_MAX_DELAY);
-      const statusDot = document.getElementById('status-dot');
-      const statusText = document.getElementById('status-text');
-      if(statusDot) statusDot.className = 'status-dot reconnecting';
-      if(statusText) statusText.textContent = 'Reconnecting...';
+     // const statusDot = document.getElementById('status-dot');
+      //const statusText = document.getElementById('status-text');
+      //if(statusDot) statusDot.className = 'status-dot reconnecting';
+      //if(statusText) statusText.textContent = 'Reconnecting...';
       setTimeout(() => this.connectWS(), delay);
     },
     
@@ -7025,7 +7025,7 @@ setTimeout(() => {
       setInterval(() => TradeManager.updatePrices(), 1000);
       
       console.log('✅ TradeVision Pro Ready');
-      Toast.success('TradeVision Pro v3.2 Ready');
+      //Toast.success('TradeVision Pro v3.2 Ready');
     } catch(e) {
       console.error('❌ Init failed:', e);
       Toast.error('Failed to initialize. Please refresh.');
