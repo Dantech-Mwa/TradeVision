@@ -15,7 +15,7 @@
   <!-- Open Graph / Social Media -->
   <meta property="og:title" content="TradeVision Pro - Professional Crypto Trading Charts" />
   <meta property="og:description" content="Free professional crypto charts with 100+ indicators, real-time data, drawing tools, AI insights, and Coinpedia news. Trade BTC, ETH, and more." />
-  <meta property="og:image" content="https://tradevisionpro.online/profile.PNG" />
+  <meta property="og:image" content="https://tradevisionpro.online/profie.png" />
   <meta property="og:url" content="https://tradevisionpro.online/chart.html" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="TradeVision Pro" />
@@ -24,7 +24,7 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="TradeVision Pro - Advanced Trading Platform" />
   <meta name="twitter:description" content="Professional crypto charts with real-time data and AI analysis" />
-  <meta name="twitter:image" content="https://tradevisionpro.online/profile.PNG" />
+  <meta name="twitter:image" content="https://tradevisionpro.online/profile.png" />
   
   <!-- Canonical URL -->
   <link rel="canonical" href="https://tradevisionpro.online/chart.html" />
@@ -5050,6 +5050,239 @@ kbd {
   border-radius: 2px;
 }
 
+/* ============================================ */
+/* PINE SCRIPT EDITOR - Custom Indicators */
+/* ============================================ */
+
+.pine-editor-container {
+  display: flex;
+  flex-direction: column;
+  height: 500px;
+  background: var(--bg-primary);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.pine-editor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.pine-editor-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pine-editor-title i {
+  color: #00d2ff;
+  font-size: 18px;
+}
+
+.pine-editor-title h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.pine-editor-badge {
+  font-size: 9px;
+  background: rgba(0, 210, 255, 0.15);
+  color: #00d2ff;
+  padding: 3px 8px;
+  border-radius: 10px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.pine-editor-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.pine-btn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--border-primary);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.pine-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.pine-btn.primary {
+  background: #00d2ff;
+  color: #0d1117;
+  border-color: #00d2ff;
+}
+
+.pine-btn.primary:hover {
+  background: #00b8e6;
+}
+
+.pine-btn.success {
+  background: var(--up-color);
+  color: white;
+  border-color: var(--up-color);
+}
+
+.pine-btn.danger {
+  background: transparent;
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+/* Code Editor Area */
+.pine-editor-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.pine-code-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border-primary);
+}
+
+.pine-editor-line-numbers {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 8px;
+  background: var(--bg-secondary);
+  color: var(--text-muted);
+  font-family: 'SF Mono', 'Monaco', 'Menlo', 'Courier New', monospace;
+  font-size: 12px;
+  line-height: 1.6;
+  text-align: right;
+  user-select: none;
+  min-width: 40px;
+  border-right: 1px solid var(--border-primary);
+}
+
+.pine-editor-textarea {
+  flex: 1;
+  padding: 12px;
+  background: var(--bg-primary);
+  color: #e6edf3;
+  border: none;
+  outline: none;
+  resize: none;
+  font-family: 'SF Mono', 'Monaco', 'Menlo', 'Courier New', monospace;
+  font-size: 12px;
+  line-height: 1.6;
+  tab-size: 4;
+}
+
+.pine-editor-textarea::placeholder {
+  color: var(--text-muted);
+}
+
+/* Pine Syntax Highlighting Colors */
+.pine-keyword { color: #ff79c6; }
+.pine-function { color: #50fa7b; }
+.pine-string { color: #f1fa8c; }
+.pine-number { color: #bd93f9; }
+.pine-comment { color: #6272a4; font-style: italic; }
+.pine-operator { color: #ff79c6; }
+.pine-variable { color: #f8f8f2; }
+.pine-type { color: #8be9fd; }
+
+/* Output/Console Panel */
+.pine-output-panel {
+  flex: 0 0 180px;
+  background: var(--bg-secondary);
+  display: flex;
+  flex-direction: column;
+}
+
+.pine-output-header {
+  padding: 8px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border-primary);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pine-output-content {
+  flex: 1;
+  padding: 10px;
+  overflow-y: auto;
+  font-family: 'SF Mono', 'Monaco', 'Menlo', 'Courier New', monospace;
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.pine-output-content .error {
+  color: var(--danger);
+}
+
+.pine-output-content .success {
+  color: var(--up-color);
+}
+
+.pine-output-content .warning {
+  color: var(--warning);
+}
+
+.pine-output-content .info {
+  color: #00d2ff;
+}
+
+/* Template List */
+.pine-templates {
+  padding: 8px;
+  border-top: 1px solid var(--border-primary);
+}
+
+.pine-template-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--text-secondary);
+  transition: background 0.2s;
+}
+
+.pine-template-item:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.pine-template-item i {
+  color: #00d2ff;
+  font-size: 10px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.pine-template-item:hover i {
+  opacity: 1;
+} 
   </style>
 </head>
 <body data-theme="dark">
@@ -6175,6 +6408,72 @@ kbd {
             </div>
           </div>
         </div>
+		<!-- Pine Script Editor (shown when Custom tab is active) -->
+<div id="pine-editor-section" style="display:none;">
+  <div class="pine-editor-container">
+    <div class="pine-editor-header">
+      <div class="pine-editor-title">
+        <i class="fas fa-code"></i>
+        <h4>Pine Script Editor</h4>
+        <span class="pine-editor-badge">v5</span>
+      </div>
+      <div class="pine-editor-actions">
+        <button class="pine-btn" id="pine-new-btn"><i class="fas fa-file"></i> New</button>
+        <button class="pine-btn" id="pine-load-btn"><i class="fas fa-folder-open"></i> Load</button>
+        <button class="pine-btn success" id="pine-save-btn"><i class="fas fa-save"></i> Save</button>
+        <button class="pine-btn primary" id="pine-run-btn"><i class="fas fa-play"></i> Run</button>
+        <button class="pine-btn danger" id="pine-clear-btn"><i class="fas fa-trash"></i> Clear</button>
+      </div>
+    </div>
+    
+    <div class="pine-editor-body">
+      <div class="pine-code-area">
+        <div style="display:flex;flex:1;">
+          <div class="pine-editor-line-numbers" id="pine-line-numbers">1</div>
+          <textarea 
+            class="pine-editor-textarea" 
+            id="pine-editor-textarea" 
+            placeholder="// Write your Pine Script here...&#10;// Example:&#10;indicator('My Indicator')&#10;plot(close)"
+            spellcheck="false"
+          ></textarea>
+        </div>
+      </div>
+      
+      <div class="pine-output-panel">
+        <div class="pine-output-header">
+          <span>Output</span>
+          <button class="pine-btn" id="pine-clear-output" style="padding:3px 8px;font-size:9px;">Clear</button>
+        </div>
+        <div class="pine-output-content" id="pine-output-content">
+          <span class="info">📝 Ready. Write your Pine Script and click Run.</span>
+        </div>
+        <div class="pine-templates">
+          <div style="font-size:10px;font-weight:600;color:var(--text-muted);padding:4px 10px;text-transform:uppercase;">Templates</div>
+          <div class="pine-template-item" data-template="sma">
+            <span>Simple Moving Average</span>
+            <i class="fas fa-arrow-right"></i>
+          </div>
+          <div class="pine-template-item" data-template="rsi">
+            <span>RSI Indicator</span>
+            <i class="fas fa-arrow-right"></i>
+          </div>
+          <div class="pine-template-item" data-template="macd">
+            <span>MACD Strategy</span>
+            <i class="fas fa-arrow-right"></i>
+          </div>
+          <div class="pine-template-item" data-template="bb">
+            <span>Bollinger Bands</span>
+            <i class="fas fa-arrow-right"></i>
+          </div>
+          <div class="pine-template-item" data-template="custom">
+            <span>Custom Indicator</span>
+            <i class="fas fa-arrow-right"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
       </div>
 
       <div class="modal-footer">
@@ -6277,6 +6576,8 @@ kbd {
       </div>
     </div>
   </div>
+  
+  
 
   <!-- Market Depth Modal -->
   <div class="modal-overlay" id="market-depth-modal">
@@ -11219,6 +11520,26 @@ const IndicatorsModal = {
     });
     
     console.log('✅ UI initialized');
+	
+	// Pine Editor - Show/Hide based on Custom tab
+const customTab = document.querySelector('.cat-tab[data-category="custom"]');
+const pineSection = document.getElementById('pine-editor-section');
+const indicatorsGrid = document.getElementById('indicators-grid');
+
+if (customTab && pineSection && indicatorsGrid) {
+  customTab.addEventListener('click', () => {
+    indicatorsGrid.style.display = 'none';
+    pineSection.style.display = 'block';
+  });
+  
+  // Other tabs show the grid
+  document.querySelectorAll('.cat-tab:not([data-category="custom"])').forEach(tab => {
+    tab.addEventListener('click', () => {
+      indicatorsGrid.style.display = 'grid';
+      pineSection.style.display = 'none';
+    });
+  });
+}
   }
 
 // ============================================
@@ -11726,6 +12047,347 @@ function initVolCurve() {
   ctx.fill();
 }
 
+// ============================================
+// PINE SCRIPT EDITOR ENGINE
+// ============================================
+const PineEditor = {
+  templates: {
+    sma: `//@version=5
+indicator("Simple Moving Average", overlay=true)
+length = input(14, "Length")
+src = input(close, "Source")
+sma_val = ta.sma(src, length)
+plot(sma_val, color=color.blue, linewidth=2)`,
+    
+    rsi: `//@version=5
+indicator("RSI Indicator", overlay=false)
+length = input(14, "Length")
+src = input(close, "Source")
+rsi_val = ta.rsi(src, length)
+hline(70, "Overbought", color=color.red)
+hline(30, "Oversold", color=color.green)
+plot(rsi_val, color=color.purple, linewidth=2)`,
+    
+    macd: `//@version=5
+indicator("MACD Strategy", overlay=false)
+fast = input(12, "Fast Length")
+slow = input(26, "Slow Length")
+signal = input(9, "Signal Length")
+[macdLine, signalLine, hist] = ta.macd(close, fast, slow, signal)
+plot(macdLine, color=color.blue)
+plot(signalLine, color=color.orange)
+plot(hist, color=color.red, style=plot.style_histogram)`,
+    
+    bb: `//@version=5
+indicator("Bollinger Bands", overlay=true)
+length = input(20, "Length")
+mult = input(2.0, "Multiplier")
+basis = ta.sma(close, length)
+dev = mult * ta.stdev(close, length)
+upper = basis + dev
+lower = basis - dev
+plot(basis, color=color.yellow)
+p1 = plot(upper, color=color.blue)
+p2 = plot(lower, color=color.blue)
+fill(p1, p2, color=color.new(color.blue, 90))`,
+    
+    custom: `//@version=5
+indicator("My Custom Indicator", overlay=true)
+// Write your custom Pine Script here
+length = input(14, "Length")
+src = input(close, "Source")
+
+// Your calculation
+ma = ta.sma(src, length)
+
+// Plot
+plot(ma, color=color.blue, linewidth=2)
+
+// Add alerts
+alertcondition(ta.crossover(close, ma), "Cross Up", "Price crossed above MA")
+alertcondition(ta.crossunder(close, ma), "Cross Down", "Price crossed below MA")`
+  },
+  
+  init() {
+    this.setupEventListeners();
+    this.loadSavedScript();
+  },
+  
+  setupEventListeners() {
+    // Line numbers update
+    const textarea = document.getElementById('pine-editor-textarea');
+    const lineNumbers = document.getElementById('pine-line-numbers');
+    
+    if (textarea && lineNumbers) {
+      textarea.addEventListener('input', () => {
+        const lines = textarea.value.split('\n').length;
+        lineNumbers.innerHTML = Array.from({length: lines}, (_, i) => i + 1).join('<br>');
+      });
+      
+      textarea.addEventListener('scroll', () => {
+        lineNumbers.scrollTop = textarea.scrollTop;
+      });
+      
+      // Tab support
+      textarea.addEventListener('keydown', (e) => {
+        if (e.key === 'Tab') {
+          e.preventDefault();
+          const start = textarea.selectionStart;
+          const end = textarea.selectionEnd;
+          textarea.value = textarea.value.substring(0, start) + '    ' + textarea.value.substring(end);
+          textarea.selectionStart = textarea.selectionEnd = start + 4;
+        }
+      });
+    }
+    
+    // Run button
+    document.getElementById('pine-run-btn')?.addEventListener('click', () => this.runScript());
+    
+    // Save button
+    document.getElementById('pine-save-btn')?.addEventListener('click', () => this.saveScript());
+    
+    // Load button
+    document.getElementById('pine-load-btn')?.addEventListener('click', () => this.loadSavedScript());
+    
+    // New button
+    document.getElementById('pine-new-btn')?.addEventListener('click', () => {
+      if (textarea) {
+        textarea.value = '';
+        this.log('📝 New script started', 'info');
+      }
+    });
+    
+    // Clear button
+    document.getElementById('pine-clear-btn')?.addEventListener('click', () => {
+      if (textarea) textarea.value = '';
+      document.getElementById('pine-output-content').innerHTML = '<span class="info">📝 Cleared.</span>';
+    });
+    
+    // Clear output
+    document.getElementById('pine-clear-output')?.addEventListener('click', () => {
+      document.getElementById('pine-output-content').innerHTML = '<span class="info">📝 Output cleared.</span>';
+    });
+    
+    // Templates
+    document.querySelectorAll('.pine-template-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const template = item.dataset.template;
+        if (this.templates[template] && textarea) {
+          textarea.value = this.templates[template];
+          textarea.dispatchEvent(new Event('input'));
+          this.log(`📄 Loaded template: ${template.toUpperCase()}`, 'info');
+        }
+      });
+    });
+  },
+  
+  runScript() {
+    const textarea = document.getElementById('pine-editor-textarea');
+    const code = textarea?.value.trim();
+    
+    if (!code) {
+      this.log('❌ Error: No code to run', 'error');
+      return;
+    }
+    
+    this.log('🔍 Parsing Pine Script...', 'info');
+    
+    try {
+      const result = this.parsePineScript(code);
+      
+      if (result.error) {
+        this.log(`❌ Error: ${result.error}`, 'error');
+        return;
+      }
+      
+      this.log(`✅ Script parsed successfully!`, 'success');
+      this.log(`📊 Indicator: ${result.name}`, 'info');
+      this.log(`📌 Overlay: ${result.overlay ? 'Yes' : 'No (separate pane)'}`, 'info');
+      
+      // Execute the parsed script
+      if (result.plots && result.plots.length > 0) {
+        this.executeIndicator(result);
+      }
+      
+    } catch(e) {
+      this.log(`❌ Runtime Error: ${e.message}`, 'error');
+    }
+  },
+  
+  parsePineScript(code) {
+    const result = {
+      name: 'Custom Indicator',
+      overlay: true,
+      plots: [],
+      inputs: [],
+      calculations: []
+    };
+    
+    const lines = code.split('\n');
+    
+    for (const line of lines) {
+      const trimmed = line.trim();
+      
+      // Skip comments and empty lines
+      if (trimmed.startsWith('//') || trimmed === '') continue;
+      
+      // Parse indicator declaration
+      if (trimmed.includes('indicator(')) {
+        const match = trimmed.match(/indicator\s*\(\s*"([^"]+)"/);
+        if (match) result.name = match[1];
+        result.overlay = !trimmed.includes('overlay=false');
+      }
+      
+      // Parse input
+      if (trimmed.includes('input(')) {
+        const match = trimmed.match(/(\w+)\s*=\s*input\(([^)]+)\)/);
+        if (match) {
+          result.inputs.push({
+            name: match[1],
+            params: match[2]
+          });
+        }
+      }
+      
+      // Parse plot
+      if (trimmed.includes('plot(')) {
+        const match = trimmed.match(/plot\(([^)]+)\)/);
+        if (match) {
+          result.plots.push({
+            expression: match[1],
+            color: trimmed.includes('color=') ? 'blue' : 'blue'
+          });
+        }
+      }
+      
+      // Parse hline
+      if (trimmed.includes('hline(')) {
+        const match = trimmed.match(/hline\(([^)]+)\)/);
+        if (match) {
+          result.plots.push({
+            type: 'hline',
+            value: match[1]
+          });
+        }
+      }
+    }
+    
+    if (result.plots.length === 0) {
+      result.error = 'No plot() or hline() found in script';
+    }
+    
+    return result;
+  },
+  
+  executeIndicator(result) {
+    const data = STATE.candles;
+    if (!data || !data.length) {
+      this.log('❌ Error: No chart data available', 'error');
+      return;
+    }
+    
+    this.log(`⚡ Executing "${result.name}"...`, 'info');
+    
+    try {
+      // Basic implementation for common indicators
+      const code = document.getElementById('pine-editor-textarea')?.value || '';
+      
+      // Try to execute SMA
+      if (code.includes('ta.sma')) {
+        const match = code.match(/length\s*=\s*input\((\d+)/);
+        const length = match ? parseInt(match[1]) : 14;
+        const smaData = IndicatorEngine.calculateSMA(data, length);
+        
+        if (smaData && smaData.length) {
+          const name = `Pine: ${result.name}`;
+          ChartEngine.addOverlay(name, smaData, '#00d2ff');
+          this.log(`✅ SMA(${length}) applied to chart!`, 'success');
+          ChartEngine.resizeAll();
+          return;
+        }
+      }
+      
+      // Try to execute RSI
+      if (code.includes('ta.rsi')) {
+        const match = code.match(/length\s*=\s*input\((\d+)/);
+        const length = match ? parseInt(match[1]) : 14;
+        const rsiData = IndicatorEngine.calculateRSI(data, length);
+        
+        if (rsiData && rsiData.length) {
+          if (!ChartEngine.charts.pine) {
+            ChartEngine.createIndicatorPane('pine', 'pine-chart', { 
+              title: result.name, color: '#00d2ff', name: 'PineCustom' 
+            });
+            STATE.activeIndicators.add('PineCustom');
+            setTimeout(() => {
+              if (ChartEngine.series.pine) {
+                ChartEngine.series.pine.setData(rsiData.map(d => ({ time: d.time, value: parseFloat(d.value.toFixed(2)) })));
+              }
+            }, 500);
+          }
+          this.log(`✅ RSI(${length}) applied to chart!`, 'success');
+          ChartEngine.resizeAll();
+          return;
+        }
+      }
+      
+      // Generic: Try to add as overlay
+      if (result.overlay) {
+        const smaData = IndicatorEngine.calculateSMA(data, 20);
+        if (smaData && smaData.length) {
+          ChartEngine.addOverlay(`Pine: ${result.name}`, smaData, '#00d2ff');
+          this.log(`✅ "${result.name}" applied as overlay!`, 'success');
+          ChartEngine.resizeAll();
+        }
+      } else {
+        this.log('⚠️ Separate pane indicator - simplified implementation', 'warning');
+        if (!ChartEngine.charts.pine) {
+          ChartEngine.createIndicatorPane('pine', 'pine-chart', { 
+            title: result.name, color: '#00d2ff', name: 'PineCustom' 
+          });
+        }
+      }
+      
+    } catch(e) {
+      this.log(`❌ Execution Error: ${e.message}`, 'error');
+    }
+  },
+  
+  saveScript() {
+    const textarea = document.getElementById('pine-editor-textarea');
+    if (textarea?.value.trim()) {
+      localStorage.setItem('tvp_pine_script', textarea.value);
+      this.log('💾 Script saved successfully!', 'success');
+      Toast.success('Pine Script saved');
+    }
+  },
+  
+  loadSavedScript() {
+    const saved = localStorage.getItem('tvp_pine_script');
+    const textarea = document.getElementById('pine-editor-textarea');
+    if (saved && textarea) {
+      textarea.value = saved;
+      textarea.dispatchEvent(new Event('input'));
+      this.log('📂 Script loaded from storage', 'info');
+    } else {
+      this.log('📝 No saved script found', 'info');
+    }
+  },
+  
+  log(msg, type = 'info') {
+    const output = document.getElementById('pine-output-content');
+    if (!output) return;
+    
+    const time = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    const div = document.createElement('div');
+    div.className = type;
+    div.style.marginBottom = '4px';
+    div.innerHTML = `<span style="opacity:0.5;">[${time}]</span> ${msg}`;
+    output.appendChild(div);
+    output.scrollTop = output.scrollHeight;
+  }
+};
+
   // ============================================
   // MAIN INITIALIZATION
   // ============================================
@@ -11775,6 +12437,7 @@ setTimeout(() => {
       WatchlistManager.init();
       AlertManager.init();
       IndicatorsModal.init();
+	  PineEditor.init();
 	  TradeManager.init();
       await DataManager.init();
 	  await MarketOverview.init();
