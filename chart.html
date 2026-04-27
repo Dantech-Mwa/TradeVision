@@ -3511,7 +3511,6 @@ kbd {
 /* TRADINGVIEW-INSPIRED MOBILE LAYOUT */
 /* ============================================ */
 
-/* Hide desktop elements on mobile */
 @media (max-width: 768px) {
   .desktop-only,
   .header-left,
@@ -3520,7 +3519,7 @@ kbd {
   .ticker-tape-wrapper,
   .left-sidebar,
   .right-sidebar,
-  .footer,
+  .footer,                    /* ← THIS hides the footer on mobile */
   .chart-type-selector,
   .floating-toolbar,
   .timeframe-selector,
@@ -3537,7 +3536,7 @@ kbd {
   }
   
   body {
-    padding-bottom: 0;
+    padding-bottom: 40px;
     overflow: hidden;
     position: fixed;
     height: 100vh;
@@ -3686,12 +3685,12 @@ kbd {
 /* ========== MAIN LAYOUT ========== */
 @media (max-width: 768px) {
   .main-layout {
-    display: flex;
-    flex-direction: column;
-    height: calc(100vh - var(--header-height));
-    position: relative;
-    overflow: hidden;
-  }
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - var(--header-height) - 40px);  /* subtract footer height */
+  position: relative;
+  overflow: hidden;
+}
   
   .center-content {
     flex: 1;
@@ -3703,38 +3702,41 @@ kbd {
   
   /* Chart area - takes remaining space */
   .chart-container {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-    transition: flex 0.3s ease;
-  }
-  
-  .chart-container.sheet-open {
-    flex: 0 0 40vh;
-  }
-  
-  #main-chart-pane {
-    flex: 1;
-    min-height: 150px;
-  }
-  
-  #volume-chart-pane {
-    flex: 0 0 80px !important;
-    min-height: 60px !important;
-    max-height: 120px !important;
-  }
-  
-  .indicator-panes-container {
-    flex: 0 1 auto;
-    max-height: 120px;
-    overflow-y: auto;
-  }
-  
-  .chart-pane-indicator {
-    flex: 0 0 60px;
-    min-height: 50px;
-  }
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;                    /* allow scrolling for all panes */
+  -webkit-overflow-scrolling: touch;
+}
+
+.chart-container.sheet-open {
+  max-height: calc(40vh - 40px);       /* leave room for footer */
+}
+
+#main-chart-pane {
+  flex: 0 0 auto;
+  min-height: 250px;
+  max-height: 50vh;                    /* main chart takes up to half the screen */
+}
+
+#volume-chart-pane {
+  flex: 0 0 80px !important;
+  min-height: 60px !important;
+  max-height: 100px !important;
+  display: flex !important;
+}
+
+.indicator-panes-container {
+  flex: 0 0 auto;
+  max-height: none;
+  overflow-y: visible;
+}
+
+.chart-pane-indicator {
+  flex: 0 0 100px;
+  min-height: 80px;
+}
   
   /* Chart header - minimal */
   .chart-header {
@@ -4843,18 +4845,50 @@ kbd {
   
   .mobile-icon-btn:active { background: var(--bg-hover); }
   
-  /* Hide all desktop elements on mobile */
-  .desktop-only,
-  .header-left,
-  .header-center,
-  .header-right,
-  .ticker-tape-wrapper,
-  .left-sidebar,
-  .right-sidebar,
-  .footer,
-  .chart-type-selector,
-  .floating-toolbar,
-  .timeframe-selector { display: none !important; }
+ /* Hide all desktop elements on mobile */
+.desktop-only,
+.header-left,
+.header-center,
+.header-right,
+.ticker-tape-wrapper,
+.left-sidebar,
+.right-sidebar,
+.chart-type-selector,
+.floating-toolbar,
+.timeframe-selector { display: none !important; }
+
+/* Footer stays visible on mobile */
+.footer {
+  display: flex !important;
+  height: 40px !important;
+  min-height: 40px !important;
+  padding: 0 8px !important;
+  position: fixed !important;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 95;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-primary);
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.footer-left,
+.footer-center,
+.footer-right {
+  flex-shrink: 1;
+  overflow: hidden;
+}
+
+.footer-center {
+  font-size: 9px;
+}
+
+.ftf-btn {
+  padding: 2px 5px;
+  font-size: 8px;
+}
   
   /* Bottom sheet */
   .mobile-bottom-sheet {
