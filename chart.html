@@ -15,7 +15,7 @@
   <!-- Open Graph / Social Media -->
   <meta property="og:title" content="TradeVision Pro - Professional Crypto Trading Charts" />
   <meta property="og:description" content="Free professional crypto charts with 100+ indicators, real-time data, drawing tools, AI insights, and Coinpedia news. Trade BTC, ETH, and more." />
-  <meta property="og:image" content="https://tradevisionpro.online/profie.png" />
+  <meta property="og:image" content="https://tradevisionpro.online/assets/og-image.png" />
   <meta property="og:url" content="https://tradevisionpro.online/chart.html" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="TradeVision Pro" />
@@ -24,7 +24,7 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="TradeVision Pro - Advanced Trading Platform" />
   <meta name="twitter:description" content="Professional crypto charts with real-time data and AI analysis" />
-  <meta name="twitter:image" content="https://tradevisionpro.online/profile.png" />
+  <meta name="twitter:image" content="https://tradevisionpro.online/assets/twitter-image.png" />
   
   <!-- Canonical URL -->
   <link rel="canonical" href="https://tradevisionpro.online/chart.html" />
@@ -111,7 +111,37 @@
        TRADEVISION PRO - COMPLETE STYLESHEET
        Professional Trading Platform Design System
        ============================================ */
-    
+    /* === DESKTOP PROTECTION - Ensure desktop works perfectly === */
+@media (min-width: 769px) {
+  .mobile-bottom-sheet,
+  .mobile-top-bar,
+  .mobile-overlay,
+  .mobile-search-overlay,
+  .mobile-timeframe-bar,
+  .mobile-chart-header,
+  .sheet-handle,
+  .sheet-content,
+  .sheet-panel,
+  .sheet-tabs,
+  .sheet-tab,
+  .sheet-indicators-grid,
+  .sheet-tools-grid,
+  .sheet-stats-table,
+  .sheet-indicator-btn,
+  .sheet-tool-btn,
+  .mobile-wl-item,
+  .mobile-menu-item { display: none !important; }
+  
+  .header { display: flex !important; }
+  .header-left, .header-center, .header-right { display: flex !important; }
+  .ticker-tape-wrapper { display: flex !important; }
+  .left-sidebar { display: flex !important; }
+  .right-sidebar { display: flex !important; overflow-y: auto !important; }
+  .footer { display: flex !important; }
+  .main-layout { display: grid !important; grid-template-columns: var(--left-bar-width) 1fr var(--right-panel-width) !important; }
+  .chart-container { flex: 1 !important; }
+  .chart-header { display: flex !important; }
+}
     /* === CSS Custom Properties (Design Tokens) === */
     :root {
       /* Dark Theme (Default) */
@@ -541,77 +571,6 @@ body {
       color: var(--text-primary);
     }
     
-	/* Improved Tooltip System */
-[data-tooltip] {
-position: relative;
-display: inline-flex; /* Better for icons/buttons */
-}
-
-[data-tooltip]::before,
-[data-tooltip]::after {
-opacity: 0;
-pointer-events: none;
-transition: opacity var(--transition-fast);
-position: absolute;
-z-index: 100000;
-left: 50%;
-transform: translateX(-50%);
-white-space: nowrap;
-font-size: var(--font-size-xs);
-padding: 6px 10px;
-border-radius: var(--radius-sm);
-background: var(--bg-overlay);
-color: var(--text-primary);
-border: 1px solid var(--border-primary);
-box-shadow: var(--shadow-lg);
-line-height: 1.3;
-}
-
-/* Tooltip content */
-[data-tooltip]::before {
-content: attr(data-tooltip);
-bottom: 100%; /* Default: above */
-margin-bottom: 8px;
-}
-
-/* Arrow (triangle) */
-[data-tooltip]::after {
-content: '';
-border: 5px solid transparent;
-border-top-color: var(--border-primary); /* Matches border */
-top: 100%; /* Default for above tooltip */
-margin-top: -1px; /* Slight overlap for clean join */
-width: 0;
-height: 0;
-}
-
-/* Hover state */
-[data-tooltip]:hover::before,
-[data-tooltip]:hover::after {
-opacity: 1;
-}
-
-/* Fallback: Show BELOW when above would be clipped */
-@media (max-height: 600px), (hover: none) { /* Also helps on touch/mobile-ish */
-[data-tooltip][data-tooltip-position="below"]::before,
-[data-tooltip]:hover::before { /* Or add a class/data attr for forced below */
-bottom: auto;
-top: 100%;
-margin-bottom: 0;
-margin-top: 8px;
-}
-
-[data-tooltip][data-tooltip-position="below"]::after,
-[data-tooltip]:hover::after {
-top: auto;
-bottom: 100%;
-border-top-color: transparent;
-border-bottom-color: var(--border-primary);
-margin-top: 0;
-margin-bottom: -1px;
-}
-}
-	
     /* === Tooltip Styles === */
     [data-tooltip] {
       position: relative;
@@ -627,20 +586,28 @@ margin-bottom: -1px;
     }
     
     [data-tooltip]::before {
-      content: attr(data-tooltip);
-      background: var(--bg-overlay);
-      color: var(--text-primary);
-      padding: var(--spacing-xs) var(--spacing-sm);
-      border-radius: var(--radius-sm);
-      font-size: var(--font-size-xs);
-      white-space: nowrap;
-      bottom: 100%;
-      left: 50%;
-      transform: translateX(-50%);
-      margin-bottom: 5px;
-	   border: 1px solid var(--border-primary);  /* 🔥 ADD BORDER FOR VISIBILITY */
-	   box-shadow: var(--shadow-lg);
-    }
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: normal;          /* allow wrapping */
+  max-width: calc(100vw - 40px); /* never wider than the screen */
+  width: max-content;
+  text-align: center;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-overlay);
+  color: var(--text-primary);
+  border: 1px solid var(--border-primary);
+  box-shadow: var(--shadow-lg);
+  font-size: var(--font-size-xs);
+  line-height: 1.3;
+  z-index: 100000;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
     
     [data-tooltip]:hover::before,
     [data-tooltip]:hover::after {
@@ -742,6 +709,13 @@ margin-bottom: -1px;
   flex-shrink: 0;
 }
 
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  flex-shrink: 1;
+}
 
 
     .header-left {
@@ -835,7 +809,7 @@ margin-bottom: -1px;
     /* Search Styles */
    .header-center {
   flex: 1 1 200px;
-  min-width: 150px;
+  min-width: 50px;
   max-width: 400px;
 }
     .search-wrapper {
@@ -1024,13 +998,7 @@ margin-bottom: -1px;
       color: white;
     }
 
-   .header-right {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  flex-wrap: wrap;
-  flex-shrink: 1;
-}
+   
 
 .header-actions {
   display: flex;
@@ -3500,779 +3468,208 @@ kbd {
    COMPLETE MOBILE RESPONSIVE DESIGN
    Optimized for all mobile devices
    ============================================ */
+/* ============================================ */
+/* COMPLETE MOBILE RESPONSIVE SYSTEM */
+/* ============================================ */
 
-/* Mobile Breakpoints */
+@media (min-width: 769px) {
+  .mobile-top-bar,
+  .mobile-bottom-nav,
+  .mobile-panel,
+  .mobile-search-overlay,
+  .mobile-timeframe-bar,
+  .mobile-quick-actions {
+    display: none !important;
+  }
+}
+.sidebar-overlay { display: none; }
+
+/* ============================================ */
+/* MOBILE BREAKPOINT - 768px and below */
+/* ============================================ */
+/* ============================================ */
+/* TRADINGVIEW-INSPIRED MOBILE LAYOUT */
+/* ============================================ */
+
+/* Hide desktop elements on mobile */
 @media (max-width: 768px) {
-  
-  /* === GLOBAL MOBILE ADJUSTMENTS === */
+  .desktop-only,
+  .header-left,
+  .header-center,
+  .header-right,
+  .ticker-tape-wrapper,
+  .left-sidebar,
+  .right-sidebar,
+  .footer,
+  .chart-type-selector,
+  .floating-toolbar,
+  .timeframe-selector,
+  .mobile-menu-controls,
+  #timeframe-selector { display: none !important; }
+}
+
+/* ========== MOBILE HEADER (Compact) ========== */
+@media (max-width: 768px) {
   :root {
     --header-height: 48px;
-    --ticker-height: 0px; /* Hide ticker on mobile */
-    --left-bar-width: 0;
-    --right-panel-width: 0;
-    --footer-height: 36px;
-    --font-size-xs: 10px;
-    --font-size-sm: 11px;
-    --font-size-md: 12px;
-    --font-size-lg: 13px;
-    --font-size-xl: 14px;
-    --font-size-2xl: 18px;
-    --spacing-sm: 6px;
-    --spacing-md: 8px;
-    --spacing-lg: 12px;
+    --bottom-sheet-height: 40vh;
+    --bottom-nav-height: 0px;
   }
   
   body {
-    overflow-y: auto;
-    position: relative;
-    height: auto;
-    min-height: 100vh;
+    padding-bottom: 0;
+    overflow: hidden;
+    position: fixed;
+    height: 100vh;
+    width: 100vw;
   }
   
-  /* === HEADER MOBILE === */
+  /* Header */
   .header {
-    padding: 0 var(--spacing-md);
-    gap: var(--spacing-md);
+    height: var(--header-height);
+    padding: 0 8px;
     position: sticky;
     top: 0;
     z-index: 100;
     background: var(--bg-secondary);
-  }
-  
-  .header-left {
-    gap: var(--spacing-sm);
-  }
-  
-  .logo-icon svg {
-    width: 24px;
-    height: 24px;
-  }
-  
-  .logo-brand {
-    font-size: var(--font-size-md);
-  }
-  
-  .logo-pro {
-    font-size: 9px;
-    padding: 1px 3px;
-  }
-  
-  /* Hide search on mobile - show when tapped */
-  .header-center {
-    display: none;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: var(--bg-secondary);
-    padding: var(--spacing-md);
     border-bottom: 1px solid var(--border-primary);
-    z-index: 99;
-  }
-  
-  .header-center.active {
-    display: block;
-  }
-  
-  .search-wrapper {
-    max-width: 100%;
-  }
-  
-  .quick-symbols {
-    flex-wrap: wrap;
-    justify-content: center;
-    margin-top: var(--spacing-sm);
-  }
-  
-  .symbol-pill {
-    padding: 4px 10px;
-    font-size: 10px;
-  }
-  
-  /* Timeframe selector - horizontal scroll */
-  .timeframe-selector {
-    position: relative;
-    max-width: 200px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    white-space: nowrap;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-  }
-  
-  .timeframe-selector::-webkit-scrollbar {
-    display: none;
-  }
-  
-  .tf-btn {
-    padding: 4px 8px;
-    font-size: 10px;
-    display: inline-block;
-  }
-  
-  /* Hide chart type selector on very small screens */
-  .chart-type-selector {
-    display: none;
-  }
-  
-  /* Header actions */
-  .header-actions {
-    gap: 2px;
-  }
-  
-  .action-btn {
-    width: 32px;
-    height: 32px;
-    font-size: 13px;
-  }
-  
-  .action-badge {
-    font-size: 8px;
-    min-width: 14px;
-    top: 1px;
-    right: 1px;
-  }
-  
-  .header-divider {
-    margin: 0 2px;
-  }
-  
-  /* Hide user menu on mobile */
-  .user-menu {
-    display: none;
-  }
-  
-  /* === MAIN LAYOUT MOBILE === */
-  .main-layout {
-    display: flex;
-    flex-direction: column;
-    height: auto;
-    min-height: calc(100vh - var(--header-height) - var(--footer-height));
-  }
-  
-  /* Left Sidebar - Slide out menu */
-  .left-sidebar {
-    position: fixed;
-    left: -280px;
-    top: var(--header-height);
-    bottom: 0;
-    width: 260px;
-    z-index: 200;
-    transition: left 0.3s ease;
-    background: var(--bg-secondary);
-    box-shadow: 2px 0 10px rgba(0,0,0,0.3);
-  }
-  
-  .left-sidebar.visible {
-    left: 0;
-  }
-  
-  .left-sidebar .tool-btn {
-    flex-direction: row;
-    justify-content: flex-start;
-    gap: var(--spacing-md);
-    padding: 10px 12px;
-    min-height: auto;
-  }
-  
-  .left-sidebar .tool-btn i {
-    width: 20px;
-    font-size: 14px;
-  }
-  
-  .left-sidebar .tool-btn span {
-    display: inline;
-    font-size: 12px;
-  }
-  
-  .sidebar-toggle {
-    display: none;
-  }
-  
-  /* Mobile menu button */
-  .mobile-menu-btn {
     display: flex;
     align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-    background: var(--bg-tertiary);
-    border-radius: var(--radius-md);
-    margin-right: var(--spacing-sm);
+    gap: 6px;
   }
   
-  /* Right Sidebar - Slide out */
-  .right-sidebar {
-    position: fixed;
-    right: -320px;
-    top: var(--header-height);
-    bottom: 0;
-    width: 280px;
-    z-index: 200;
-    transition: right 0.3s ease;
-    background: var(--bg-secondary);
-    box-shadow: -2px 0 10px rgba(0,0,0,0.3);
-  }
-  
-  .right-sidebar.visible {
-    right: 0;
-  }
-  
-  /* Overlay when sidebar is open */
-  .sidebar-overlay {
-    position: fixed;
-    top: var(--header-height);
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0,0,0,0.5);
-    z-index: 199;
-    display: none;
-  }
-  
-  .sidebar-overlay.visible {
-    display: block;
-  }
-  
-  /* === CENTER CONTENT MOBILE === */
-  .center-content {
-    flex: 1;
-    min-height: 0;
-  }
-  
-  /* Chart Header Mobile */
-  .chart-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--spacing-sm);
-    padding: var(--spacing-sm);
-  }
-  
-  .chart-header-left {
-    flex-wrap: wrap;
-    gap: var(--spacing-md);
-    width: 100%;
-  }
-  
-  .symbol-info {
-    flex-direction: row;
-    align-items: center;
-    gap: var(--spacing-sm);
-  }
-  
-  .symbol-name {
-    font-size: var(--font-size-lg);
-  }
-  
-  .price-display {
-    flex-wrap: wrap;
-  }
-  
-  .current-price {
-    font-size: var(--font-size-xl);
-  }
-  
-  .price-change {
-    font-size: var(--font-size-xs);
-  }
-  
-  .quick-stats {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--spacing-sm);
-    width: 100%;
-  }
-  
-  .stat-item {
-    background: var(--bg-tertiary);
-    padding: 4px 8px;
-    border-radius: var(--radius-md);
-    text-align: center;
-  }
-  
-  .chart-header-right {
-    width: 100%;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: var(--spacing-sm);
-  }
-  
-  .chart-controls {
-    order: 2;
-  }
-  
-  .interval-stats {
-    order: 1;
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: var(--spacing-sm);
-    width: 100%;
-  }
-  
-  .interval-stat {
-    background: var(--bg-tertiary);
-    padding: 4px 6px;
-    border-radius: var(--radius-md);
-    justify-content: center;
-  }
-  
-  /* Chart Container Mobile */
-  .chart-container {
-    min-height: 400px;
-  }
-  
-  #main-chart-pane {
-    min-height: 350px;
-  }
-  
-  #volume-chart-pane {
-    min-height: 80px;
-    max-height: 100px;
-  }
-  
-  .indicator-panes-container {
-    max-height: 250px;
-  }
-  
-  .chart-pane-indicator {
-    min-height: 140px;
-  }
-  
-  /* Pane headers */
-  .pane-header {
-    padding: 4px 8px;
-  }
-  
-  .pane-title {
-    font-size: 10px;
-  }
-  
-  .indicator-values {
-    padding: 2px 8px;
-    font-size: 10px;
-  }
-  
-  .ind-value {
-    font-size: 11px;
-  }
-  
-  /* === TRADE PANEL MOBILE === */
-  .trade-panel {
-    padding: var(--spacing-sm);
-  }
-  
-  .trade-type {
-    padding: 6px;
-    font-size: 11px;
-  }
-  
-  .trade-input {
-    padding: 8px;
-    font-size: 12px;
-  }
-  
-  .place-order-btn {
-    padding: 10px;
-    font-size: 13px;
-  }
-  
-  /* === WATCHLIST MOBILE === */
-  .watchlist-item {
-    padding: 10px;
-  }
-  
-  .wl-symbol {
-    font-size: 12px;
-  }
-  
-  .wl-price {
-    font-size: 12px;
-  }
-  
-  /* === MODALS MOBILE === */
-  .modal-container {
-    width: 95vw;
-    max-height: 90vh;
-  }
-  
-  .modal-header {
-    padding: var(--spacing-md);
-  }
-  
-  .modal-title h3 {
-    font-size: var(--font-size-lg);
-  }
-  
-  .modal-body {
-    padding: var(--spacing-md);
-  }
-  
-  .indicators-grid {
-    grid-template-columns: 1fr;
-    gap: var(--spacing-sm);
-  }
-  
-  .indicator-card {
-    padding: var(--spacing-sm);
-  }
-  
-  /* News grid mobile */
-  .news-grid {
-    grid-template-columns: 1fr;
-    gap: var(--spacing-md);
-  }
-  
-  .news-card-title {
-    font-size: 13px;
-  }
-  
-  /* Order book mobile */
-  .orderbook-columns {
-    grid-template-columns: 1fr;
-    gap: var(--spacing-md);
-  }
-  
-  /* Settings mobile */
-  .settings-tabs {
-    flex-wrap: wrap;
-  }
-  
-  .settings-tab {
-    padding: 6px 12px;
-    font-size: 11px;
-  }
-  
-  /* === FOOTER MOBILE === */
-  .footer {
-    padding: 0 var(--spacing-md);
-    font-size: 9px;
-  }
-  
-  .footer-btn {
-    padding: 4px 6px;
-  }
-  
-  .footer-btn span {
-    display: none;
-  }
-  
-  .footer-btn i {
-    font-size: 12px;
-  }
-  
-  /* === TOAST NOTIFICATIONS MOBILE === */
-  .toast-container {
-    top: auto;
-    bottom: var(--spacing-md);
-    right: var(--spacing-md);
-    left: var(--spacing-md);
-  }
-  
-  .toast {
-    min-width: auto;
-    max-width: none;
-    width: 100%;
-    padding: var(--spacing-sm) var(--spacing-md);
-    font-size: var(--font-size-xs);
-  }
-}
-
-/* === IPHONE SE / SMALL SCREENS (375px and below) === */
-@media (max-width: 480px) {
-  :root {
-    --header-height: 44px;
-    --footer-height: 32px;
-    --font-size-2xl: 16px;
-    --spacing-lg: 10px;
-  }
-  
-  .chart-header-left {
-    flex-direction: column;
-    gap: var(--spacing-xs);
-  }
-  
-  .symbol-main {
-    flex-wrap: wrap;
-  }
-  
-  .price-display {
-    width: 100%;
-    justify-content: space-between;
-  }
-  
-  .quick-stats {
-    grid-template-columns: repeat(3, 1fr);
-  }
-  
-  .stat-label {
-    font-size: 9px;
-  }
-  
-  .stat-value {
-    font-size: 10px;
-  }
-  
-  .interval-stats {
-    grid-template-columns: repeat(4, 1fr);
-  }
-  
-  .interval-stat span {
-    font-size: 9px;
-  }
-  
-  #main-chart-pane {
-    min-height: 280px;
-  }
-  
-  .trade-row {
-    flex-direction: column;
-    gap: var(--spacing-sm);
-  }
-  
-  .modal-footer {
-    flex-direction: column;
-    gap: var(--spacing-sm);
-  }
-  
-  .modal-footer .btn {
-    width: 100%;
-    justify-content: center;
-  }
-  
-  .setting-item {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--spacing-sm);
-  }
-}
-
-/* === TABLET (768px - 1024px) === */
-@media (min-width: 769px) and (max-width: 1024px) {
-  :root {
-    --left-bar-width: 56px;
-    --right-panel-width: 260px;
-  }
-  
-  .chart-header-left {
-    gap: var(--spacing-lg);
-  }
-  
-  .quick-stats {
-    gap: var(--spacing-md);
-  }
-  
-  .indicators-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  .news-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-/* === MOBILE MENU BUTTON - Add to HTML === */
-/* Add this button to your header for mobile menu toggle */
-@media (max-width: 768px) {
-  .mobile-menu-controls {
-    display: flex;
-    gap: var(--spacing-xs);
-  }
-  
-  .mobile-menu-btn {
-    display: flex;
-  }
-}
-
-/* Hide mobile elements on desktop */
-.mobile-menu-btn,
-.mobile-search-btn {
-  display: none;
-}
-
-@media (max-width: 768px) {
-  .mobile-menu-btn,
-  .mobile-search-btn {
-    display: flex;
-  }
-}
-
-/* === IMPROVED TOUCH TARGETS === */
-@media (max-width: 768px) {
-  button, 
-  .tool-btn,
-  .action-btn,
-  .tf-btn,
-  .ct-btn,
-  .watchlist-item,
-  .ticker-item,
-  .symbol-pill,
-  .ind-apply-btn {
-    min-height: 44px; /* Apple's recommended minimum touch target */
-  }
-  
-  .tool-btn {
-    min-height: 44px;
-  }
-  
-  .action-btn {
-    min-height: 40px;
-  }
-  
-  input,
-  select,
-  textarea {
-    font-size: 16px; /* Prevents zoom on focus in iOS */
-  }
-}
-
-/* === LOADING STATE FOR MOBILE === */
-@media (max-width: 768px) {
-  .chart-watermark {
-    font-size: 24px;
-    opacity: 0.03;
-  }
-}
-
-/* === SCROLL BEHAVIOR === */
-@media (max-width: 768px) {
-  .indicator-panes-container {
-    -webkit-overflow-scrolling: touch;
-  }
-  
-  .watchlist-container {
-    -webkit-overflow-scrolling: touch;
-  }
-}
-/* ============================================
-   MOBILE ADDITIONS - Desktop view unchanged
-   ============================================ */
-
-/* Hide mobile elements on desktop by default */
-.mobile-top-bar,
-.mobile-bottom-nav,
-.mobile-panel,
-.mobile-search-overlay,
-.mobile-timeframe-bar {
-  display: none;
-}
-.sidebar-overlay {
-  display: none;
-}
-
- /* Hide desktop timeframe on mobile */
-  #timeframe-selector {
-    display: flex !important;
-  }
-/* Mobile-only styles */
-@media (max-width: 768px) {
-  /* Root adjustments */
-  :root {
-    --header-height: 48px;
-    --ticker-height: 0px;
-    --left-bar-width: 0;
-    --right-panel-width: 0;
-    --footer-height: 0px;
-    --bottom-nav-height: 56px;
-  }
-
-  /* Body */
-  body {
-    padding-bottom: var(--bottom-nav-height);
-    overflow-x: hidden;
-    position: fixed;
-    height: 100vh;
-  }
-
-  /* Hide desktop elements */
-  .header > .header-left,
-  .header > .header-center,
-  .header > .header-right,
-   #timeframe-selector,
-  .header > .mobile-menu-controls,
-  .ticker-tape-wrapper,
-  .left-sidebar,
-  .right-sidebar,
-  .footer {
-    display: none !important;
-  }
-
-  /* Show mobile top bar */
   .mobile-top-bar {
     display: flex !important;
     align-items: center;
-    justify-content: space-between;
     width: 100%;
-    height: 100%;
-    padding: 0 12px;
+    gap: 8px;
   }
-
-  .mobile-menu-btn,
-  .mobile-action-btn {
-    width: 36px;
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 8px;
-    color: var(--text-primary);
-    font-size: 18px;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-  }
-
-  .mobile-menu-btn:active,
-  .mobile-action-btn:active {
-    background: var(--bg-hover);
-  }
-
+  
   .mobile-logo {
     display: flex;
     align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  
+  .mobile-logo svg { width: 18px; height: 18px; }
+  .mobile-brand { font-size: 12px; font-weight: 700; }
+  .mobile-brand .logo-pro { font-size: 7px; padding: 1px 3px; }
+  
+  /* Symbol + Price inline */
+  .mobile-symbol-info {
+    flex: 1;
+    display: flex;
+    align-items: center;
     gap: 8px;
+    min-width: 0;
   }
-
-  .mobile-logo svg {
-    width: 22px;
-    height: 22px;
-  }
-
-  .mobile-brand {
-    font-size: 14px;
+  
+  .mobile-symbol-name {
+    font-size: 13px;
     font-weight: 700;
     color: var(--text-primary);
+    white-space: nowrap;
   }
-
-  .mobile-brand .logo-pro {
+  
+  .mobile-price {
+    font-size: 13px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  
+  .mobile-price.up { color: var(--up-color); }
+  .mobile-price.down { color: var(--down-color); }
+  
+  .mobile-change {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+  
+  .mobile-change.up { background: var(--up-muted); color: var(--up-color); }
+  .mobile-change.down { background: var(--down-muted); color: var(--down-color); }
+  
+  /* Timeframe pills in header */
+  .mobile-tf-pills {
+    display: flex;
+    gap: 2px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    flex-shrink: 0;
+  }
+  
+  .mobile-tf-pills::-webkit-scrollbar { display: none; }
+  
+  .mobile-tf-pill {
+    padding: 3px 8px;
+    border-radius: 4px;
     font-size: 9px;
-    background: var(--accent-muted);
-    color: var(--accent-primary);
-    padding: 1px 3px;
-    border-radius: 3px;
+    font-weight: 700;
+    color: var(--text-muted);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
-
+  
+  .mobile-tf-pill.active {
+    background: var(--accent-primary);
+    color: white;
+  }
+  
+  /* Header action buttons */
   .mobile-header-actions {
     display: flex;
-    gap: 4px;
+    gap: 2px;
+    flex-shrink: 0;
   }
-
-  /* Header on mobile */
-  .header {
-    height: var(--header-height);
-    padding: 0;
+  
+  .mobile-action-btn {
+    width: 28px;
+    height: 28px;
     display: flex;
-    border-bottom: 1px solid var(--border-primary);
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    color: var(--text-secondary);
+    font-size: 12px;
   }
+  
+  .mobile-action-btn:active { background: var(--bg-hover); }
+}
 
-  /* Main layout */
+.mob-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-size: 13px;
+  cursor: pointer;
+  border-radius: 8px;
+  width: 100%;
+  text-align: left;
+  min-height: 44px;
+}
+.mob-action-btn i { width: 20px; font-size: 14px; color: var(--text-muted); }
+.mob-action-btn:active { background: var(--bg-hover); }
+
+
+/* ========== MAIN LAYOUT ========== */
+@media (max-width: 768px) {
   .main-layout {
     display: flex;
     flex-direction: column;
-    height: calc(100vh - var(--header-height) - var(--bottom-nav-height));
-    grid-template-columns: none !important;
+    height: calc(100vh - var(--header-height));
+    position: relative;
+    overflow: hidden;
   }
-
-  /* Center content */
+  
   .center-content {
     flex: 1;
     display: flex;
@@ -4280,332 +3677,292 @@ kbd {
     min-height: 0;
     overflow: hidden;
   }
-
-  /* Chart header */
-  .chart-header {
-    padding: 6px 12px;
-    flex-shrink: 0;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 6px;
-  }
-
-  .chart-header-left {
-    flex-direction: column;
-    gap: 4px;
-    width: 100%;
-  }
-
-  .symbol-name {
-    font-size: 16px;
-  }
-
-  .current-price {
-    font-size: 18px;
-  }
-
-  .price-change {
-    font-size: 11px;
-  }
-
-  .quick-stats {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 4px;
-    width: 100%;
-    margin-top: 4px;
-  }
-
-  .stat-item {
-    background: var(--bg-tertiary);
-    padding: 4px 6px;
-    border-radius: 6px;
-    text-align: center;
-  }
-
-  .stat-label {
-    font-size: 9px;
-  }
-
-  .stat-value {
-    font-size: 10px;
-  }
-
-  .chart-header-right {
-    width: 100%;
-    flex-wrap: wrap;
-  }
-
-  .interval-stats {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 4px;
-    width: 100%;
-  }
-
-  .interval-stat {
-    background: var(--bg-tertiary);
-    padding: 3px 6px;
-    border-radius: 4px;
-    font-size: 10px;
-    justify-content: center;
-  }
-
-  .chart-controls {
-    display: flex;
-    gap: 4px;
-    margin-top: 6px;
-  }
-
-  .chart-ctrl-btn {
-    width: 30px;
-    height: 30px;
-  }
-
-  /* Chart container */
+  
+  /* Chart area - takes remaining space */
   .chart-container {
     flex: 1;
-    min-height: 250px;
-  }
-
- @media (max-width: 768px) {
-    #main-chart-pane {
-        min-height: 180px;
-        max-height: 50vh;
-    }
-    
-    #volume-chart-pane {
-        min-height: 60px;
-        max-height: 80px;
-        display: flex !important; /* Force visibility */
-    }
-    
-    .indicator-panes-container {
-        max-height: 30vh;
-        min-height: 150px;
-        overflow-y: auto;
-        display: flex !important; /* Force visibility */
-    }
-    
-    .chart-pane-indicator {
-        min-height: 80px;
-        display: flex !important; /* Force visibility */
-    }
-    
-    /* Ensure RSI and MACD panes are visible */
-    #rsi-pane, #macd-pane {
-        display: flex !important;
-        min-height: 80px;
-    }
-}
-
-  /* Show bottom nav */
-  .mobile-bottom-nav {
-    display: flex !important;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: var(--bottom-nav-height);
-    background: var(--bg-secondary);
-    border-top: 1px solid var(--border-primary);
-    z-index: 1000;
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-
-  .mobile-nav-btn {
-    flex: 1;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 2px;
-    color: var(--text-muted);
-    font-size: 10px;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s;
-    padding: 4px 0;
+    min-height: 0;
+    transition: flex 0.3s ease;
   }
-
-  .mobile-nav-btn i {
-    font-size: 18px;
+  
+  .chart-container.sheet-open {
+    flex: 0 0 40vh;
   }
-
-  .mobile-nav-btn.active {
-    color: var(--accent-primary);
+  
+  #main-chart-pane {
+    flex: 1;
+    min-height: 150px;
   }
-
-  /* Mobile panels */
-  .mobile-panel {
-    display: block;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: var(--bg-secondary);
-    border-radius: 16px 16px 0 0;
-    z-index: 1001;
-    max-height: 60vh;
+  
+  #volume-chart-pane {
+    flex: 0 0 40px;
+    min-height: 35px;
+    max-height: 50px;
+  }
+  
+  .indicator-panes-container {
+    flex: 0 1 auto;
+    max-height: 120px;
     overflow-y: auto;
-    transform: translateY(100%);
-    transition: transform 0.3s ease;
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
-    padding-bottom: var(--bottom-nav-height);
   }
-
-  .mobile-panel.visible {
-    transform: translateY(0);
+  
+  .chart-pane-indicator {
+    flex: 0 0 60px;
+    min-height: 50px;
   }
-
-  .mobile-panel-header {
+  
+  /* Chart header - minimal */
+  .chart-header {
+    display: none; /* Hidden on mobile, info in top header */
+  }
+  
+  .mobile-chart-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 16px;
+    padding: 4px 8px;
+    font-size: 10px;
+    color: var(--text-muted);
+    background: var(--bg-primary);
     border-bottom: 1px solid var(--border-primary);
-    position: sticky;
-    top: 0;
-    background: var(--bg-secondary);
-    z-index: 2;
+    flex-shrink: 0;
   }
-
-  .mobile-panel-header h3 {
-    font-size: 16px;
-    font-weight: 600;
-  }
-
-  .mobile-panel-close {
-    width: 32px;
-    height: 32px;
+  
+  .mobile-chart-header .ohlc {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    background: var(--bg-tertiary);
-    border: none;
-    color: var(--text-primary);
-    font-size: 20px;
-    cursor: pointer;
-  }
-
-  .mobile-panel-content {
-    padding: 12px;
-  }
-
-  .mobile-tools-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
     gap: 8px;
   }
+  
+  .mobile-chart-header .ohlc span {
+    display: flex;
+    gap: 3px;
+  }
+  
+  .mobile-chart-header .ohlc span strong {
+    color: var(--text-primary);
+  }
+}
 
-  .mobile-tool-btn {
+/* ========== BOTTOM SHEET (TradingView Style) ========== */
+@media (max-width: 768px) {
+  .mobile-bottom-sheet {
+    display: flex !important;
+    flex-direction: column;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 55vh;
+    background: var(--bg-secondary);
+    border-radius: 14px 14px 0 0;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.4);
+    z-index: 200;
+    transform: translateY(calc(100% - 52px));
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .mobile-bottom-sheet.expanded {
+    transform: translateY(0);
+  }
+  
+  .mobile-bottom-sheet.full {
+    transform: translateY(0);
+    height: 75vh;
+  }
+  
+  /* Sheet handle/header */
+  .sheet-handle {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    padding: 8px 0;
+    cursor: pointer;
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--border-primary);
+  }
+  
+  .sheet-handle-bar {
+    width: 32px;
+    height: 4px;
+    background: var(--border-primary);
+    border-radius: 2px;
+    margin-bottom: 6px;
+  }
+  
+  .sheet-tabs {
+    display: flex;
+    gap: 0;
+    width: 100%;
+    padding: 0 8px;
+  }
+  
+  .sheet-tab {
+    flex: 1;
+    padding: 8px 4px;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-align: center;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  
+  .sheet-tab.active {
+    color: var(--accent-primary);
+    border-bottom-color: var(--accent-primary);
+  }
+  
+  .sheet-tab i { font-size: 12px; display: block; margin-bottom: 2px; }
+  
+  /* Sheet content */
+  .sheet-content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .sheet-panel {
+    display: none;
+    padding: 8px;
+  }
+  
+  .sheet-panel.active { display: block; }
+}
+
+/* ========== BOTTOM SHEET CONTENT STYLES ========== */
+@media (max-width: 768px) {
+  /* Watchlist */
+  .mobile-wl-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 8px;
+    border-bottom: 1px solid rgba(48,54,61,0.3);
+    cursor: pointer;
+    font-size: 12px;
+  }
+  
+  .mobile-wl-item:active { background: var(--bg-hover); }
+  
+  .mobile-wl-symbol { font-weight: 700; }
+  .mobile-wl-price { font-weight: 600; }
+  .mobile-wl-change { font-size: 10px; padding: 2px 6px; border-radius: 3px; }
+  .mobile-wl-change.up { color: var(--up-color); background: var(--up-muted); }
+  .mobile-wl-change.down { color: var(--down-color); background: var(--down-muted); }
+  
+  /* Indicators grid in sheet */
+  .sheet-indicators-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
     gap: 6px;
-    padding: 14px 8px;
+  }
+  
+  .sheet-indicator-btn {
+    padding: 10px 6px;
     background: var(--bg-tertiary);
     border: 1px solid var(--border-primary);
-    border-radius: 12px;
+    border-radius: 8px;
     color: var(--text-secondary);
-    cursor: pointer;
-    transition: all 0.2s;
-    min-height: 60px;
     font-size: 10px;
+    font-weight: 600;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.15s;
   }
-
-  .mobile-tool-btn i {
-    font-size: 18px;
-  }
-
-  .mobile-tool-btn:active,
-  .mobile-tool-btn.active {
+  
+  .sheet-indicator-btn:active,
+  .sheet-indicator-btn.active {
     background: var(--accent-muted);
     border-color: var(--accent-primary);
     color: var(--accent-primary);
   }
-
-  .mobile-menu-list {
+  
+  /* Drawing tools grid */
+  .sheet-tools-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+  
+  .sheet-tool-btn {
     display: flex;
     flex-direction: column;
-    gap: 2px;
-  }
-
-  .mobile-menu-item {
-    display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 14px 16px;
-    background: transparent;
-    border: none;
-    color: var(--text-primary);
-    font-size: 14px;
-    cursor: pointer;
+    gap: 3px;
+    padding: 10px 4px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-primary);
     border-radius: 8px;
-    transition: background 0.2s;
+    color: var(--text-secondary);
+    font-size: 9px;
+    cursor: pointer;
+  }
+  
+  .sheet-tool-btn i { font-size: 14px; }
+  .sheet-tool-btn:active { background: var(--accent-muted); color: var(--accent-primary); }
+  
+  /* Key stats in sheet */
+  .sheet-stats-table {
     width: 100%;
-    text-align: left;
+    font-size: 11px;
+    border-collapse: collapse;
   }
-
-  .mobile-menu-item i {
-    width: 24px;
-    font-size: 16px;
-    color: var(--text-muted);
+  
+  .sheet-stats-table td {
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(48,54,61,0.3);
+    color: var(--text-secondary);
   }
-
-  .mobile-menu-item:active {
-    background: var(--bg-hover);
+  
+  .sheet-stats-table td:last-child {
+    text-align: right;
+    font-weight: 600;
+    color: var(--text-primary);
   }
+}
 
-  /* Search overlay */
+/* ========== MOBILE SEARCH OVERLAY ========== */
+@media (max-width: 768px) {
   .mobile-search-overlay {
     display: flex;
     flex-direction: column;
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    top: 0; left: 0; right: 0; bottom: 0;
     background: var(--bg-primary);
-    z-index: 2000;
+    z-index: 300;
     transform: translateY(-100%);
     transition: transform 0.3s ease;
   }
-
-  .mobile-search-overlay.visible {
-    transform: translateY(0);
-  }
-
+  
+  .mobile-search-overlay.visible { transform: translateY(0); }
+  
   .mobile-search-header {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 8px 12px;
+    padding: 8px 10px;
     border-bottom: 1px solid var(--border-primary);
-    background: var(--bg-secondary);
   }
-
+  
   .mobile-search-back {
-    width: 36px;
-    height: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
     border-radius: 8px;
-    background: transparent;
-    border: none;
     color: var(--text-primary);
-    font-size: 18px;
+    font-size: 16px;
     cursor: pointer;
-    flex-shrink: 0;
   }
-
+  
   .mobile-search-input {
     flex: 1;
-    padding: 10px 12px;
+    padding: 10px;
     background: var(--bg-tertiary);
     border: 1px solid var(--border-primary);
     border-radius: 8px;
@@ -4613,30 +3970,13 @@ kbd {
     font-size: 14px;
     outline: none;
   }
-
-  .mobile-search-input:focus {
-    border-color: var(--accent-primary);
-  }
-
-  .mobile-search-clear {
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: transparent;
-    border: none;
-    color: var(--text-muted);
-    cursor: pointer;
-    flex-shrink: 0;
-  }
-
+  
   .mobile-search-results {
     flex: 1;
     overflow-y: auto;
     padding: 8px;
   }
-
+  
   .mobile-search-result-item {
     display: flex;
     justify-content: space-between;
@@ -4644,65 +3984,76 @@ kbd {
     padding: 12px;
     border-radius: 8px;
     cursor: pointer;
-    transition: background 0.2s;
   }
-
-  .mobile-search-result-item:active {
-    background: var(--bg-hover);
-  }
-
-  .mobile-search-result-symbol {
-    font-weight: 600;
-    font-size: 14px;
-  }
-
-  .mobile-search-result-name {
-    font-size: 11px;
-    color: var(--text-muted);
-  }
-
-  .mobile-search-result-exchange {
-    font-size: 10px;
-    color: var(--accent-primary);
-    background: var(--accent-muted);
-    padding: 2px 8px;
-    border-radius: 10px;
-  }
-
+  
+  .mobile-search-result-item:active { background: var(--bg-hover); }
+  
+  .mobile-search-result-symbol { font-weight: 600; font-size: 13px; }
+  .mobile-search-result-name { font-size: 10px; color: var(--text-muted); }
+  
   .mobile-quick-symbols {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
-    padding: 12px;
+    gap: 5px;
+    padding: 10px;
     border-top: 1px solid var(--border-primary);
   }
+  
+  .mobile-quick-symbols .symbol-pill {
+    padding: 6px 12px;
+    border-radius: 14px;
+    font-size: 10px;
+  }
+}
 
-  /* Overlay */
-  .sidebar-overlay {
+/* ========== OVERLAY ========== */
+@media (max-width: 768px) {
+  .mobile-overlay {
     display: none;
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 999;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 199;
   }
+  
+  .mobile-overlay.visible { display: block; }
+}
 
-  .sidebar-overlay.visible {
-    display: block;
+/* ========== MODALS ON MOBILE ========== */
+@media (max-width: 768px) {
+  .modal-container {
+    width: 95vw;
+    max-height: 85vh;
+    border-radius: 12px;
   }
-
-  /* Toast */
+  
+  .modal-header { padding: 10px 12px; }
+  .modal-body { padding: 10px; }
+  
+  .indicators-grid {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    max-height: 300px;
+  }
+  
+  .category-tabs { overflow-x: auto; gap: 2px; }
+  .cat-tab { padding: 6px 10px; font-size: 10px; white-space: nowrap; flex-shrink: 0; }
+  
+  .pine-editor-container { height: 350px; }
+  .pine-editor-body { flex-direction: column; }
+  .pine-output-panel { flex: 0 0 100px; }
+  
   .toast-container {
     top: var(--header-height);
-    right: 8px;
-    left: 8px;
+    right: 6px;
+    left: 6px;
   }
-
+  
   .toast {
     min-width: auto;
     width: 100%;
+    padding: 10px 12px;
+    font-size: 11px;
   }
 }
 
@@ -5283,6 +4634,414 @@ kbd {
 .pine-template-item:hover i {
   opacity: 1;
 } 
+
+/* ========== CRITICAL MOBILE FIXES ========== */
+@media (max-width: 768px) {
+  .mobile-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 150;
+  }
+  .mobile-overlay.visible { display: block !important; }
+  
+  .mobile-bottom-sheet {
+    display: flex !important;
+    flex-direction: column;
+    position: fixed !important;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 55vh;
+    background: var(--bg-secondary);
+    border-radius: 14px 14px 0 0;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.4);
+    z-index: 200;
+    transform: translateY(calc(100% - 52px));
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .sheet-tab {
+    flex: 1;
+    padding: 8px 4px;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-align: center;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    white-space: nowrap;
+    min-height: 44px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+  }
+  
+  .sheet-tab i { font-size: 13px; }
+  
+  .sheet-tab.active {
+    color: var(--accent-primary) !important;
+    border-bottom-color: var(--accent-primary) !important;
+  }
+  
+  .sheet-handle {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px 0 4px;
+    cursor: pointer;
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--border-primary);
+  }
+  
+  .sheet-handle-bar {
+    width: 32px;
+    height: 4px;
+    background: var(--border-primary);
+    border-radius: 2px;
+    margin-bottom: 6px;
+  }
+  
+  .sheet-tabs {
+    display: flex;
+    width: 100%;
+    padding: 0 4px;
+  }
+  
+  .sheet-content {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .sheet-panel {
+    display: none;
+    padding: 10px;
+  }
+  
+  .sheet-panel.active { display: block; }
+  
+  .sheet-indicators-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+  
+  .sheet-indicator-btn {
+    padding: 10px 6px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 600;
+    text-align: center;
+    cursor: pointer;
+    min-height: 40px;
+  }
+  
+  .sheet-tools-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+  
+  .sheet-tool-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 10px 4px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    color: var(--text-secondary);
+    font-size: 9px;
+    cursor: pointer;
+    min-height: 50px;
+    justify-content: center;
+  }
+  
+  .sheet-tool-btn i { font-size: 14px; }
+  
+  .mobile-wl-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 8px;
+    border-bottom: 1px solid rgba(48,54,61,0.3);
+    cursor: pointer;
+    font-size: 12px;
+    min-height: 44px;
+  }
+}
+
+/* ========== MOBILE HEADER CENTERED ========== */
+@media (max-width: 768px) {
+  .header {
+    height: 44px !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 100 !important;
+    background: var(--bg-secondary) !important;
+    border-bottom: 1px solid var(--border-primary) !important;
+  }
+  
+  .mobile-top-bar {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    padding: 0 10px !important;
+  }
+  
+  .mobile-icon-btn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 16px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .mobile-icon-btn:active { background: var(--bg-hover); }
+  
+  /* Hide all desktop elements on mobile */
+  .desktop-only,
+  .header-left,
+  .header-center,
+  .header-right,
+  .ticker-tape-wrapper,
+  .left-sidebar,
+  .right-sidebar,
+  .footer,
+  .chart-type-selector,
+  .floating-toolbar,
+  .timeframe-selector { display: none !important; }
+  
+  /* Bottom sheet */
+  .mobile-bottom-sheet {
+    display: flex !important;
+    flex-direction: column;
+    position: fixed !important;
+    bottom: 0; left: 0; right: 0;
+    height: 55vh;
+    background: var(--bg-secondary);
+    border-radius: 14px 14px 0 0;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.4);
+    z-index: 200;
+    transform: translateY(calc(100% - 48px));
+    transition: transform 0.35s ease;
+  }
+  
+  .mobile-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 150;
+  }
+  .mobile-overlay.visible { display: block !important; }
+  
+  /* Search overlay */
+  .mobile-search-overlay {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: var(--bg-primary);
+    z-index: 9999;
+    transform: translateY(-100%);
+    transition: transform 0.3s ease;
+  }
+  .mobile-search-overlay.visible { transform: translateY(0) !important; }
+  
+  /* Sheet tabs */
+  .sheet-tab {
+    flex: 1;
+    padding: 6px 4px;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-align: center;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    border-bottom: 2px solid transparent;
+    min-height: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+  }
+  .sheet-tab i { font-size: 14px; }
+}
+
+/* Drawing tool card styles (matching indicator cards) */
+.tool-card {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.tool-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--accent-primary), transparent);
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+}
+.tool-card:hover {
+  border-color: var(--accent-primary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  background: var(--bg-hover);
+}
+.tool-card:hover::before {
+  opacity: 1;
+}
+.tool-card.active {
+  border-color: var(--accent-primary);
+  background: var(--accent-muted);
+  box-shadow: 0 0 0 1px var(--accent-primary), var(--shadow-md);
+}
+.tool-card .tool-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-sm);
+}
+.tool-card .tool-name {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+.tool-card .tool-shortcut kbd {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: var(--font-size-xs);
+  color: var(--text-muted);
+}
+.tool-card .tool-desc {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+  margin-bottom: var(--spacing-md);
+  flex: 1;
+}
+.tool-card .tool-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-top: auto;
+}
+.tool-card .tool-apply-btn {
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  border: 1px solid var(--accent-primary);
+  background: transparent;
+  color: var(--accent-primary);
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.tool-card .tool-apply-btn:hover {
+  background: var(--accent-primary);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+/* Broker card styles */
+.broker-card {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-primary);
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.broker-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--accent-primary) !important;
+  box-shadow: 0 8px 20px rgba(88,166,255,0.2);
+  background: var(--bg-hover);
+}
+.broker-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(45deg, transparent, rgba(88,166,255,0.03));
+  pointer-events: none;
+}
+.broker-flag {
+  font-size: 11px;
+  opacity: 0.7;
+  margin-top: 4px;
+}
+.broker-icon {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+.broker-name {
+  font-weight: 700;
+  font-size: 15px;
+  margin-bottom: 2px;
+}
+.broker-desc {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+.broker-link-btn {
+  display: inline-block;
+  padding: 6px 14px;
+  background: var(--accent-muted);
+  color: var(--accent-primary);
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+.broker-link-btn:hover {
+  background: var(--accent-primary);
+  color: white;
+}
+
+#chart-buy-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(38,166,154,0.5); }
+#chart-sell-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(239,83,80,0.5); }
+
   </style>
 </head>
 <body data-theme="dark">
@@ -5293,172 +5052,87 @@ kbd {
        HEADER SECTION
        ============================================ -->
   <header class="header" id="main-header">
-    <!-- Mobile-only top bar -->
+  <!-- Mobile-only top bar -->
   <div class="mobile-top-bar">
-    <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Menu">
-      <i class="fas fa-bars"></i>
-    </button>
-    <div class="mobile-logo">
-      <svg width="24" height="24" viewBox="0 0 28 28" fill="none">
-        <rect width="28" height="28" rx="6" fill="var(--accent-primary)"/>
-        <path d="M6 20L12 12L16 16L22 8" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-        <circle cx="22" cy="8" r="2" fill="white"/>
-      </svg>
-      <span class="mobile-brand">TradeVision <span class="logo-pro">PRO</span></span>
+   <button id="m-search-btn" onclick="document.getElementById('mobile-search-overlay').classList.add('visible')" style="..."><i class="fas fa-search"></i></button>
+  <div style="display:flex;align-items:center;gap:6px;">
+    <!-- logo SVG -->
+    <span style="font-size:13px;font-weight:700;">TradeVision <span style="font-size:8px;background:var(--accent-muted);color:var(--accent-primary);padding:1px 4px;border-radius:3px;">PRO</span></span>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;">
+    <span id="mobile-symbol-display" style="font-size:12px;font-weight:700;">BTC/USDT</span>
+    <span id="mobile-price-display" style="font-size:12px;font-weight:700;color:var(--up-color);">--</span>
+  </div>
+</div>
+
+  <!-- Desktop header (unchanged) -->
+  <div class="header-left desktop-only">
+    <!-- your existing desktop header-left content -->
+    <div class="logo-container">
+      <a href="index.html" class="logo-link" title="TradeVision Pro Home">
+        <div class="logo-icon">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <rect width="28" height="28" rx="6" fill="var(--accent-primary)"/>
+            <path d="M6 20L12 12L16 16L22 8" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="22" cy="8" r="2" fill="white"/>
+          </svg>
+        </div>
+        <div class="logo-text"><span class="logo-brand">TradeVision</span><span class="logo-pro">PRO</span></div>
+      </a>
     </div>
-    <div class="mobile-header-actions">
-      <button class="mobile-action-btn" id="mobile-search-btn" aria-label="Search">
-        <i class="fas fa-search"></i>
-      </button>
-      <button class="mobile-action-btn" id="mobile-watchlist-btn" aria-label="Watchlist">
-        <i class="fas fa-star"></i>
-      </button>
+    <div class="connection-status" id="connection-status" data-tooltip="Connection Status">
+      <span class="status-dot" id="status-dot"></span>
+      <span class="status-text" id="status-text">Connected</span>
     </div>
   </div>
-  
-    <div class="header-left">
-      <!-- Logo -->
-      <div class="logo-container">
-        <a href="index.html" class="logo-link" title="TradeVision Pro Home">
-          <div class="logo-icon">
-            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-              <rect width="28" height="28" rx="6" fill="var(--accent-primary)"/>
-              <path d="M6 20L12 12L16 16L22 8" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-              <circle cx="22" cy="8" r="2" fill="white"/>
-            </svg>
-          </div>
-          <div class="logo-text">
-            <span class="logo-brand">TradeVision</span>
-            <span class="logo-pro">PRO</span>
-          </div>
-        </a>
-      </div>
 
-<!-- Add this inside header after logo-container -->
-<div class="mobile-menu-controls">
-  <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Menu">
-    <i class="fas fa-bars"></i>
-  </button>
-  <button class="mobile-search-btn" id="mobile-search-btn" aria-label="Search">
-    <i class="fas fa-search"></i>
-  </button>
+  <div class="header-center desktop-only">
+    <div class="search-wrapper">
+      <div class="search-container">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" id="symbol-search" class="search-input" placeholder="Search markets..." value="BTCUSDT" autocomplete="off" spellcheck="false"/>
+        <button class="search-clear" id="search-clear" title="Clear search"><i class="fas fa-times"></i></button>
+        <div class="search-shortcut">/</div>
+      </div>
+      <div id="search-suggestions" class="search-suggestions"></div>
+	  <div class="asset-type-tabs" style="display:flex; gap: 2px; background: var(--bg-tertiary); border-radius: var(--radius-md); padding: 2px; margin-bottom: 6px;">
+  <button class="asset-type-btn active" data-asset="crypto" style="padding: 4px 10px; border: none; background: var(--accent-primary); color: white; border-radius: 5px; font-size: var(--font-size-xs); cursor: pointer; transition: 0.2s;">Crypto</button>
+  <button class="asset-type-btn" data-asset="stocks" style="padding: 4px 10px; border: none; background: transparent; color: var(--text-secondary); border-radius: 5px; font-size: var(--font-size-xs); cursor: pointer; transition: 0.2s;">Stocks</button>
+  <button class="asset-type-btn" data-asset="forex" style="padding: 4px 10px; border: none; background: transparent; color: var(--text-secondary); border-radius: 5px; font-size: var(--font-size-xs); cursor: pointer; transition: 0.2s;">Forex</button>
 </div>
-      <!-- Connection Status -->
-      <div class="connection-status" id="connection-status" data-tooltip="Connection Status">
-        <span class="status-dot" id="status-dot"></span>
-        <span class="status-text" id="status-text">Connected</span>
+      <div class="quick-symbols">
+        <button class="symbol-pill active" data-symbol="BTCUSDT">BTC</button>
+        <button class="symbol-pill" data-symbol="ETHUSDT">ETH</button>
+        <button class="symbol-pill" data-symbol="BNBUSDT">BNB</button>
+        <button class="symbol-pill" data-symbol="SOLUSDT">SOL</button>
+        <button class="symbol-pill" data-symbol="XRPUSDT">XRP</button>
       </div>
     </div>
+  </div>
 
-    <div class="header-center">
-      <!-- Symbol Search -->
-      <div class="search-wrapper">
-        <div class="search-container">
-          <i class="fas fa-search search-icon"></i>
-          <input 
-            type="text" 
-            id="symbol-search" 
-            class="search-input" 
-            placeholder="Search markets..." 
-            value="BTCUSDT"
-            autocomplete="off"
-            spellcheck="false"
-          />
-          <button class="search-clear" id="search-clear" title="Clear search">
-            <i class="fas fa-times"></i>
-          </button>
-          <div class="search-shortcut">/</div>
-        </div>
-        <div id="search-suggestions" class="search-suggestions"></div>
-        
-        <!-- Quick Symbol Pills -->
-        <div class="quick-symbols">
-          <button class="symbol-pill active" data-symbol="BTCUSDT">BTC</button>
-          <button class="symbol-pill" data-symbol="ETHUSDT">ETH</button>
-          <button class="symbol-pill" data-symbol="BNBUSDT">BNB</button>
-          <button class="symbol-pill" data-symbol="SOLUSDT">SOL</button>
-          <button class="symbol-pill" data-symbol="XRPUSDT">XRP</button>
-        </div>
-      </div>
+  <div class="header-right desktop-only">
+    <div class="chart-type-selector">
+      <button class="ct-btn active" data-type="candlestick" data-tooltip="Candlestick"><i class="fas fa-cubes"></i></button>
+      <button class="ct-btn" data-type="line" data-tooltip="Line"><i class="fas fa-chart-line"></i></button>
+      <button class="ct-btn" data-type="area" data-tooltip="Area"><i class="fas fa-chart-area"></i></button>
+      <button class="ct-btn" data-type="bar" data-tooltip="Bar"><i class="fas fa-chart-bar"></i></button>
+      <button class="ct-btn" data-type="heikinashi" data-tooltip="Heikin Ashi"><i class="fas fa-chart-simple"></i></button>
     </div>
-
-    <div class="header-right">
-	
-     <!-- Chart Type Selector -->
-      <div class="chart-type-selector">
-        <button class="ct-btn active" data-type="candlestick" data-tooltip="Candlestick">
-          <i class="fas fa-cubes"></i>
-        </button>
-        <button class="ct-btn" data-type="line" data-tooltip="Line">
-          <i class="fas fa-chart-line"></i>
-        </button>
-        <button class="ct-btn" data-type="area" data-tooltip="Area">
-          <i class="fas fa-chart-area"></i>
-        </button>
-        <button class="ct-btn" data-type="bar" data-tooltip="Bar">
-          <i class="fas fa-chart-bar"></i>
-        </button>
-        <button class="ct-btn" data-type="heikinashi" data-tooltip="Heikin Ashi">
-          <i class="fas fa-chart-simple"></i>
-        </button>
-      </div>
-
-      <!-- Action Buttons -->
-      <div class="header-actions">
-        <button class="action-btn" id="indicators-btn" data-tooltip="Indicators (Ctrl+I)">
-          <i class="fas fa-wave-square"></i>
-          <span class="action-badge" id="indicator-count">0</span>
-        </button>
-        
-        <button class="action-btn" id="drawing-tools-btn" data-tooltip="Drawing Tools (Ctrl+D)">
-          <i class="fas fa-pencil-alt"></i>
-        </button>
-        
-        <button class="action-btn" id="market-depth-btn" data-tooltip="Market Depth (Ctrl+M)">
-          <i class="fas fa-layer-group"></i>
-        </button>
-        
-        <button class="action-btn" id="news-btn" data-tooltip="Coinpedia News (Ctrl+N)">
-          <i class="fas fa-newspaper"></i>
-          <span class="news-dot" id="news-indicator"></span>
-        </button>
-        
-        <button class="action-btn" id="alerts-btn" data-tooltip="Price Alerts (Ctrl+A)">
-          <i class="fas fa-bell"></i>
-          <span class="action-badge hidden" id="alert-count">0</span>
-        </button>
-        
-        <button class="action-btn" id="watchlist-btn" data-tooltip="Watchlist (Ctrl+W)">
-          <i class="fas fa-star"></i>
-        </button>
-
-        <div class="header-divider"></div>
-
-        <button class="action-btn" id="screenshot-btn" data-tooltip="Screenshot (Ctrl+S)">
-          <i class="fas fa-camera"></i>
-        </button>
-        
-        <button class="action-btn" id="fullscreen-btn" data-tooltip="Fullscreen (F)">
-          <i class="fas fa-expand"></i>
-        </button>
-        
-        <button class="action-btn" id="settings-btn" data-tooltip="Settings">
-          <i class="fas fa-cog"></i>
-        </button>
-        
-        <button class="action-btn" id="theme-toggle-btn" data-tooltip="Toggle Theme">
-          <i class="fas fa-moon"></i>
-        </button>
-      </div>
-
-      <!-- User Menu (for future auth) -->
-      <div class="user-menu">
-        <button class="user-btn" id="user-btn">
-          <i class="fas fa-user-circle"></i>
-        </button>
-      </div>
+    <div class="header-actions">
+      <button class="action-btn" id="indicators-btn" data-tooltip="Indicators (Ctrl+I)"><i class="fas fa-wave-square"></i><span class="action-badge" id="indicator-count">0</span></button>
+      <button class="action-btn" id="drawing-tools-btn" data-tooltip="Drawing Tools (Ctrl+D)"><i class="fas fa-pencil-alt"></i></button>
+      <button class="action-btn" id="market-depth-btn" data-tooltip="Market Depth (Ctrl+M)"><i class="fas fa-layer-group"></i></button>
+      <button class="action-btn" id="news-btn" data-tooltip="Coinpedia News (Ctrl+N)"><i class="fas fa-newspaper"></i><span class="news-dot" id="news-indicator"></span></button>
+      <button class="action-btn" id="alerts-btn" data-tooltip="Price Alerts (Ctrl+A)"><i class="fas fa-bell"></i><span class="action-badge hidden" id="alert-count">0</span></button>
+      <button class="action-btn" id="watchlist-btn" data-tooltip="Watchlist (Ctrl+W)"><i class="fas fa-star"></i></button>
+      <div class="header-divider"></div>
+      <button class="action-btn" id="screenshot-btn" data-tooltip="Screenshot (Ctrl+S)"><i class="fas fa-camera"></i></button>
+      <button class="action-btn" id="fullscreen-btn" data-tooltip="Fullscreen (F)"><i class="fas fa-expand"></i></button>
+      <button class="action-btn" id="settings-btn" data-tooltip="Settings"><i class="fas fa-cog"></i></button>
+      <button class="action-btn" id="theme-toggle-btn" data-tooltip="Toggle Theme"><i class="fas fa-moon"></i></button>
     </div>
-  </header>
+  </div>
+</header>
 
   <!-- ============================================
        TICKER TAPE SECTION
@@ -5730,22 +5404,26 @@ kbd {
             </div>
           </div>
           
-          <!-- Floating Drawing Toolbar -->
-          <div class="floating-toolbar" id="floating-toolbar">
-            <button class="float-tool-btn" data-tool="cursor" title="Cursor">
-              <i class="fas fa-mouse-pointer"></i>
-            </button>
-            <button class="float-tool-btn" data-tool="trendline" title="Trend Line">
-              <i class="fas fa-chart-line"></i>
-            </button>
-            <button class="float-tool-btn" data-tool="horizontal-line" title="Horizontal Line">
-              <i class="fas fa-minus"></i>
-            </button>
-            <button class="float-tool-btn" data-tool="text" title="Text">
-              <i class="fas fa-font"></i>
-            </button>
-          </div>
-        </div>
+          <!-- Floating Trade Buttons (over chart) -->
+<div id="chart-trade-buttons" style="position: absolute; top: 12px; left: 12px; z-index: 20; display: flex; gap: 8px; font-family: 'Inter', sans-serif;">
+  <!-- Buy Button -->
+  <button id="chart-buy-btn" style="display: flex; align-items: center; gap: 8px; padding: 8px 16px; background: rgba(38,166,154,0.9); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; color: white; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+    <i class="fas fa-arrow-up" style="font-size: 12px;"></i>
+    <div style="line-height: 1.2;">
+      <div style="font-size: 10px; opacity: 0.8; text-transform: uppercase;">Buy</div>
+      <div id="chart-buy-price" style="font-size: 14px; font-variant-numeric: tabular-nums;">--</div>
+    </div>
+  </button>
+  <!-- Sell Button -->
+  <button id="chart-sell-btn" style="display: flex; align-items: center; gap: 8px; padding: 8px 16px; background: rgba(239,83,80,0.9); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; color: white; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+    <i class="fas fa-arrow-down" style="font-size: 12px;"></i>
+    <div style="line-height: 1.2;">
+      <div style="font-size: 10px; opacity: 0.8; text-transform: uppercase;">Sell</div>
+      <div id="chart-sell-price" style="font-size: 14px; font-variant-numeric: tabular-nums;">--</div>
+    </div>
+  </button>
+</div>
+</div>
 
         <!-- Volume Chart -->
         <div class="chart-pane chart-pane-volume" id="volume-chart-pane">
@@ -5844,6 +5522,24 @@ kbd {
     <button id="quick-trade-btn" class="place-order-btn buy">Place Buy Order</button>
   </div>
 </div>
+
+<!-- ============================================ -->
+<!-- LIVE TRADING BUTTONS -->
+<!-- ============================================ -->
+<div style="padding: 8px 12px; background: var(--bg-secondary); border-bottom: 1px solid var(--border-primary);">
+  <div style="display: flex; gap: 8px;">
+    <button id="live-buy-btn" style="flex:1; padding: 12px; font-weight: 700; font-size: 14px; border: none; border-radius: 8px; cursor: pointer; background: var(--up-color); color: white; text-transform: uppercase; letter-spacing: 1px;">
+      <i class="fas fa-arrow-up"></i> Buy Live
+    </button>
+    <button id="live-sell-btn" style="flex:1; padding: 12px; font-weight: 700; font-size: 14px; border: none; border-radius: 8px; cursor: pointer; background: var(--down-color); color: white; text-transform: uppercase; letter-spacing: 1px;">
+      <i class="fas fa-arrow-down"></i> Sell Live
+    </button>
+  </div>
+  <div style="text-align: center; margin-top: 6px; font-size: 10px; color: var(--text-muted);">
+    Trade with a verified broker
+  </div>
+</div>
+
       <!-- Watchlist Section -->
       <div class="right-section">
         <div class="right-section-header">
@@ -6091,6 +5787,15 @@ kbd {
           </div>
         </div>
       </div>
+	  <!-- Economic Calendar -->
+<div class="right-section">
+  <div class="right-section-header">
+    <span class="section-title">Economic Calendar</span>
+  </div>
+  <div class="tv-panel-section" id="economic-calendar-section" style="max-height: 300px; overflow-y: auto; font-size: 11px;">
+    <div id="economic-calendar-list">Loading...</div>
+  </div>
+</div>
     </aside>
   </div>
 
@@ -6489,93 +6194,51 @@ kbd {
   </div>
 
   <!-- Drawing Tools Modal -->
-  <div class="modal-overlay" id="drawing-tools-modal">
-    <div class="modal-container modal-md">
-      <div class="modal-header">
-        <div class="modal-title">
-          <i class="fas fa-pencil-alt modal-icon"></i>
-          <div>
-            <h3>Drawing Tools</h3>
-            <p class="modal-subtitle">30+ professional drawing tools</p>
-          </div>
+<!-- Drawing Tools Modal (Redesigned) -->
+<div class="modal-overlay" id="drawing-tools-modal">
+  <div class="modal-container modal-lg">
+    <div class="modal-header">
+      <div class="modal-title">
+        <i class="fas fa-pencil-alt modal-icon"></i>
+        <div>
+          <h3>Drawing Tools</h3>
+          <p class="modal-subtitle">30+ professional drawing tools</p>
         </div>
+      </div>
+      <div class="modal-header-actions">
+        <button class="modal-action-btn" id="drawing-search-btn" data-tooltip="Search Tools">
+          <i class="fas fa-search"></i>
+        </button>
         <button class="modal-close" data-modal="drawing-tools-modal">
           <i class="fas fa-times"></i>
         </button>
       </div>
-      
-      <div class="modal-body">
-        <div class="drawing-tools-grid">
-          <button class="drawing-tool-card" data-tool="cursor">
-            <i class="fas fa-mouse-pointer"></i>
-            <span>Cursor</span>
-            <kbd>Esc</kbd>
-          </button>
-          <button class="drawing-tool-card" data-tool="trendline">
-            <i class="fas fa-chart-line"></i>
-            <span>Trend Line</span>
-            <kbd>Alt+T</kbd>
-          </button>
-          <button class="drawing-tool-card" data-tool="horizontal-line">
-            <i class="fas fa-grip-lines"></i>
-            <span>Horizontal</span>
-            <kbd>Alt+H</kbd>
-          </button>
-          <button class="drawing-tool-card" data-tool="vertical-line">
-            <i class="fas fa-grip-lines-vertical"></i>
-            <span>Vertical</span>
-            <kbd>Alt+V</kbd>
-          </button>
-          <button class="drawing-tool-card" data-tool="ray">
-            <i class="fas fa-arrow-trend-up"></i>
-            <span>Ray</span>
-            <kbd>Alt+R</kbd>
-          </button>
-          <button class="drawing-tool-card" data-tool="rectangle">
-            <i class="fas fa-square"></i>
-            <span>Rectangle</span>
-          </button>
-          <button class="drawing-tool-card" data-tool="ellipse">
-            <i class="fas fa-circle"></i>
-            <span>Ellipse</span>
-          </button>
-		  <button class="tool-btn" data-tool="extended-line" data-tooltip="Extended Line">
-  <i class="fas fa-arrows-alt-h"></i>
-  <span>Ext Line</span>
-</button>
-          <button class="drawing-tool-card" data-tool="fibonacci-retracement">
-            <i class="fas fa-ruler"></i>
-            <span>Fib Retrace</span>
-          </button>
-          <button class="drawing-tool-card" data-tool="fibonacci-extension">
-            <i class="fas fa-ruler-combined"></i>
-            <span>Fib Extend</span>
-          </button>
-          <button class="drawing-tool-card" data-tool="text">
-            <i class="fas fa-font"></i>
-            <span>Text</span>
-            <kbd>Alt+Z</kbd>
-          </button>
-          <button class="drawing-tool-card" data-tool="arrow">
-            <i class="fas fa-arrow-up"></i>
-            <span>Arrow</span>
-          </button>
-          <button class="drawing-tool-card" data-tool="measure">
-            <i class="fas fa-ruler-horizontal"></i>
-            <span>Measure</span>
-          </button>
-		  <button class="tool-btn" data-tool="polygon" data-tooltip="Polygon">
-  <i class="fas fa-draw-polygon"></i>
-  <span>Polygon</span>
-</button>
-<button class="tool-btn" data-tool="eraser" data-tooltip="Eraser (Delete)">
-  <i class="fas fa-eraser"></i>
-  <span>Erase</span>
-</button>
-        </div>
+    </div>
+    
+    <div class="modal-body">
+      <!-- Search Bar -->
+      <div class="indicator-search">
+        <i class="fas fa-search"></i>
+        <input type="text" id="drawing-search-input" placeholder="Search drawing tools... (e.g., trendline, fib, text)" autocomplete="off">
+      </div>
+
+      <!-- Category Tabs -->
+      <div class="category-tabs" id="drawing-categories">
+        <button class="cat-tab active" data-category="all">All</button>
+        <button class="cat-tab" data-category="lines">Lines</button>
+        <button class="cat-tab" data-category="shapes">Shapes</button>
+        <button class="cat-tab" data-category="fibonacci">Fibonacci</button>
+        <button class="cat-tab" data-category="annotation">Annotation</button>
+        <button class="cat-tab" data-category="utility">Utility</button>
+      </div>
+
+      <!-- Tools Grid -->
+      <div class="indicators-grid" id="drawing-tools-grid">
+        <!-- Cards will be generated by JavaScript (or you can hardcode them like indicators) -->
       </div>
     </div>
   </div>
+</div>
   
   
 
@@ -6899,6 +6562,43 @@ kbd {
     </div>
   </div>
 
+<!-- ============================================ -->
+<!-- BROKER SELECTION MODAL -->
+<!-- ============================================ -->
+<div class="modal-overlay" id="broker-modal">
+  <div class="modal-container modal-lg" style="max-width: 750px; background: linear-gradient(145deg, #1a1e2b 0%, #161b22 100%); border: 1px solid rgba(88,166,255,0.2); border-radius: 16px; box-shadow: 0 25px 50px rgba(0,0,0,0.7);">
+    <div class="modal-header" style="border-bottom: 1px solid rgba(48,54,61,0.5); background: transparent; padding: 16px 20px;">
+      <div class="modal-title">
+        <i class="fas fa-handshake" style="color: var(--accent-primary); font-size: 22px;"></i>
+        <div>
+          <h3 style="font-weight: 700; margin:0;">Choose Your Broker</h3>
+          <p id="broker-trade-desc" style="margin:4px 0 0 0; font-size:12px; color: var(--text-muted);">Buy 0.01 BTC at $67,000</p>
+        </div>
+      </div>
+      <button class="modal-close" onclick="document.getElementById('broker-modal').classList.remove('visible')" style="background: rgba(255,255,255,0.05); border-radius: 50%; width: 30px; height: 30px;">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    
+    <div class="modal-body" style="padding: 20px; max-height: 65vh; overflow-y: auto;">
+      <!-- Trade summary badge -->
+      <div style="margin-bottom: 20px; padding: 10px 16px; background: rgba(88,166,255,0.05); border-radius: 10px; border: 1px solid var(--border-primary);">
+        <span style="font-size: 12px; color: var(--text-muted);">You're placing a </span>
+        <span id="broker-side-badge" style="font-weight: 700; text-transform: uppercase; margin:0 3px;">BUY</span>
+        <span style="font-size: 12px; color: var(--text-muted);">order of </span>
+        <strong id="broker-amount-badge" style="color: var(--text-primary);">0.01 BTC</strong>
+        <span style="font-size: 12px; color: var(--text-muted);"> at </span>
+        <strong id="broker-price-badge" style="color: var(--text-primary);">$67,000</strong>
+      </div>
+      
+      <!-- Broker cards grid -->
+      <div id="broker-cards-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px;">
+        <!-- Cards will be generated dynamically by JavaScript -->
+      </div>
+    </div>
+  </div>
+</div>
+
   <!-- Toast Container -->
   <div class="toast-container" id="toast-container"></div>
 
@@ -6943,106 +6643,84 @@ kbd {
   </div>
 </footer>
   
-  <!-- Mobile Bottom Navigation -->
-<nav class="mobile-bottom-nav" id="mobile-bottom-nav">
-  <button class="mobile-nav-btn active" data-panel="chart">
-    <i class="fas fa-chart-line"></i>
-    <span>Chart</span>
-  </button>
-  <button class="mobile-nav-btn" data-panel="indicators">
-    <i class="fas fa-wave-square"></i>
-    <span>Indicators</span>
-  </button>
-  <button class="mobile-nav-btn" data-panel="drawing">
-    <i class="fas fa-pencil-alt"></i>
-    <span>Draw</span>
-  </button>
-  <button class="mobile-nav-btn" data-panel="watchlist">
-    <i class="fas fa-star"></i>
-    <span>Watch</span>
-  </button>
-  <button class="mobile-nav-btn" data-panel="more">
-    <i class="fas fa-ellipsis-h"></i>
-    <span>More</span>
-  </button>
-</nav>
-
-<!-- Mobile Panels -->
-<div class="mobile-panel" id="mobile-indicators-panel">
-  <div class="mobile-panel-header">
-    <h3>Indicators</h3>
-    <button class="mobile-panel-close">&times;</button>
-  </div>
-  <div class="mobile-panel-content" id="mobile-indicators-content"></div>
-</div>
-
-<div class="mobile-panel" id="mobile-drawing-panel">
-  <div class="mobile-panel-header">
-    <h3>Drawing Tools</h3>
-    <button class="mobile-panel-close">&times;</button>
-  </div>
-  <div class="mobile-panel-content">
-    <div class="mobile-tools-grid">
-      <button class="mobile-tool-btn" data-tool="cursor"><i class="fas fa-mouse-pointer"></i><span>Select</span></button>
-      <button class="mobile-tool-btn" data-tool="trendline"><i class="fas fa-chart-line"></i><span>Trend</span></button>
-      <button class="mobile-tool-btn" data-tool="horizontal-line"><i class="fas fa-grip-lines"></i><span>H Line</span></button>
-      <button class="mobile-tool-btn" data-tool="vertical-line"><i class="fas fa-grip-lines-vertical"></i><span>V Line</span></button>
-      <button class="mobile-tool-btn" data-tool="rectangle"><i class="fas fa-square"></i><span>Box</span></button>
-      <button class="mobile-tool-btn" data-tool="fibonacci-retracement"><i class="fas fa-ruler"></i><span>Fib</span></button>
-      <button class="mobile-tool-btn" data-tool="text"><i class="fas fa-font"></i><span>Text</span></button>
-      <button class="mobile-tool-btn" data-tool="arrow"><i class="fas fa-arrow-up"></i><span>Arrow</span></button>
-      <button class="mobile-tool-btn" data-tool="measure"><i class="fas fa-ruler-horizontal"></i><span>Measure</span></button>
+<!-- ============================================ -->
+<!-- MOBILE BOTTOM SHEET -->
+<!-- ============================================ -->
+<div class="mobile-bottom-sheet" id="mobile-bottom-sheet">
+  <div class="sheet-handle" id="sheet-handle">
+    <div class="sheet-handle-bar"></div>
+    <div class="sheet-tabs" id="sheet-tabs">
+      <button class="sheet-tab active" data-tab="watchlist"><i class="fas fa-star"></i>Watch</button>
+      <button class="sheet-tab" data-tab="indicators"><i class="fas fa-wave-square"></i>Inds</button>
+      <button class="sheet-tab" data-tab="draw"><i class="fas fa-pencil-alt"></i>Draw</button>
+      <button class="sheet-tab" data-tab="stats"><i class="fas fa-chart-bar"></i>Stats</button>
+      <button class="sheet-tab" data-tab="more"><i class="fas fa-ellipsis-h"></i>More</button>
     </div>
   </div>
-</div>
-
-<div class="mobile-panel" id="mobile-watchlist-panel">
-  <div class="mobile-panel-header">
-    <h3>Watchlist & Trade</h3>
-    <button class="mobile-panel-close">&times;</button>
-  </div>
-  <div class="mobile-panel-content" id="mobile-watchlist-content"></div>
-</div>
-
-<div class="mobile-panel" id="mobile-more-panel">
-  <div class="mobile-panel-header">
-    <h3>More Options</h3>
-    <button class="mobile-panel-close">&times;</button>
-  </div>
-  <div class="mobile-panel-content">
-    <div class="mobile-menu-list">
-      <button class="mobile-menu-item" id="mobile-market-depth-btn"><i class="fas fa-layer-group"></i><span>Market Depth</span></button>
-      <button class="mobile-menu-item" id="mobile-news-btn"><i class="fas fa-newspaper"></i><span>Crypto News</span></button>
-      <button class="mobile-menu-item" id="mobile-alerts-btn"><i class="fas fa-bell"></i><span>Price Alerts</span></button>
-      <button class="mobile-menu-item" id="mobile-settings-btn"><i class="fas fa-cog"></i><span>Settings</span></button>
-      <button class="mobile-menu-item" id="mobile-fullscreen-btn"><i class="fas fa-expand"></i><span>Fullscreen</span></button>
-      <button class="mobile-menu-item" id="mobile-shortcuts-btn"><i class="fas fa-keyboard"></i><span>Shortcuts</span></button>
-      <button class="mobile-menu-item" id="mobile-theme-btn"><i class="fas fa-moon"></i><span>Toggle Theme</span></button>
+  <div class="sheet-content" id="sheet-content">
+    <div class="sheet-panel active" id="sheet-watchlist">
+      <div id="mobile-watchlist-list"></div>
+    </div>
+    <div class="sheet-panel" id="sheet-indicators">
+      <div class="sheet-indicators-grid" id="mobile-indicators-grid"></div>
+    </div>
+    <div class="sheet-panel" id="sheet-draw">
+      <div class="sheet-tools-grid">
+        <button class="sheet-tool-btn" data-tool="cursor"><i class="fas fa-mouse-pointer"></i><span>Select</span></button>
+        <button class="sheet-tool-btn" data-tool="trendline"><i class="fas fa-chart-line"></i><span>Trend</span></button>
+        <button class="sheet-tool-btn" data-tool="horizontal-line"><i class="fas fa-minus"></i><span>H Line</span></button>
+        <button class="sheet-tool-btn" data-tool="vertical-line"><i class="fas fa-grip-lines-vertical"></i><span>V Line</span></button>
+        <button class="sheet-tool-btn" data-tool="rectangle"><i class="fas fa-square"></i><span>Box</span></button>
+        <button class="sheet-tool-btn" data-tool="fibonacci-retracement"><i class="fas fa-ruler"></i><span>Fib</span></button>
+        <button class="sheet-tool-btn" data-tool="text"><i class="fas fa-font"></i><span>Text</span></button>
+        <button class="sheet-tool-btn" data-tool="arrow"><i class="fas fa-arrow-up"></i><span>Arrow</span></button>
+        <button class="sheet-tool-btn" data-tool="eraser"><i class="fas fa-eraser"></i><span>Erase</span></button>
+        <button class="sheet-tool-btn" data-tool="undo"><i class="fas fa-undo"></i><span>Undo</span></button>
+        <button class="sheet-tool-btn" data-tool="clear" style="color:var(--danger);"><i class="fas fa-trash"></i><span>Clear</span></button>
+      </div>
+    </div>
+    <div class="sheet-panel" id="sheet-stats">
+      <table style="width:100%;font-size:11px;border-collapse:collapse;">
+        <tr><td style="padding:6px 0;color:var(--text-muted);">Open</td><td style="text-align:right;font-weight:600;" id="ms-open">--</td></tr>
+        <tr><td style="padding:6px 0;color:var(--text-muted);">High</td><td style="text-align:right;font-weight:600;" id="ms-high">--</td></tr>
+        <tr><td style="padding:6px 0;color:var(--text-muted);">Low</td><td style="text-align:right;font-weight:600;" id="ms-low">--</td></tr>
+        <tr><td style="padding:6px 0;color:var(--text-muted);">Volume</td><td style="text-align:right;font-weight:600;" id="ms-volume">--</td></tr>
+        <tr><td style="padding:6px 0;color:var(--text-muted);">Change</td><td style="text-align:right;font-weight:600;" id="ms-change">--</td></tr>
+      </table>
+    </div>
+    <div class="sheet-panel" id="sheet-more">
+      <div style="display:flex;flex-direction:column;gap:2px;">
+        <button class="mob-action-btn" data-action="search"><i class="fas fa-search"></i> Search Markets</button>
+        <button class="mob-action-btn" data-action="depth"><i class="fas fa-layer-group"></i> Market Depth</button>
+        <button class="mob-action-btn" data-action="news"><i class="fas fa-newspaper"></i> Crypto News</button>
+        <button class="mob-action-btn" data-action="alerts"><i class="fas fa-bell"></i> Price Alerts</button>
+        <button class="mob-action-btn" data-action="settings"><i class="fas fa-cog"></i> Settings</button>
+        <button class="mob-action-btn" data-action="theme"><i class="fas fa-moon"></i> Toggle Theme</button>
+        <button class="mob-action-btn" data-action="fullscreen"><i class="fas fa-expand"></i> Fullscreen</button>
+      </div>
     </div>
   </div>
 </div>
 
 <!-- Mobile Search Overlay -->
+<!-- Mobile Search Overlay -->
 <div class="mobile-search-overlay" id="mobile-search-overlay">
-  <div class="mobile-search-header">
-    <button class="mobile-search-back" id="mobile-search-back"><i class="fas fa-arrow-left"></i></button>
-    <input type="text" id="mobile-search-input" class="mobile-search-input" placeholder="Search markets..." autocomplete="off"/>
-    <button class="mobile-search-clear" id="mobile-search-clear"><i class="fas fa-times"></i></button>
+  <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-bottom:1px solid var(--border-primary);">
+    <button id="m-search-close" style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:8px;background:transparent;border:none;color:var(--text-primary);font-size:18px;cursor:pointer;">✕</button>
+    <input type="text" id="m-search-input" style="flex:1;padding:10px;background:var(--bg-tertiary);border:1px solid var(--border-primary);border-radius:8px;color:var(--text-primary);font-size:14px;outline:none;" placeholder="Search markets..." autocomplete="off">
   </div>
-  <div class="mobile-search-results" id="mobile-search-results"></div>
-  <div class="mobile-quick-symbols">
-    <button class="symbol-pill active" data-symbol="BTCUSDT">BTC</button>
-    <button class="symbol-pill" data-symbol="ETHUSDT">ETH</button>
-    <button class="symbol-pill" data-symbol="BNBUSDT">BNB</button>
-    <button class="symbol-pill" data-symbol="SOLUSDT">SOL</button>
-    <button class="symbol-pill" data-symbol="XRPUSDT">XRP</button>
-    <button class="symbol-pill" data-symbol="ADAUSDT">ADA</button>
-    <button class="symbol-pill" data-symbol="DOGEUSDT">DOGE</button>
+  <div id="m-search-results" style="flex:1;overflow-y:auto;padding:8px;"></div>
+  <div style="display:flex;flex-wrap:wrap;gap:6px;padding:10px;border-top:1px solid var(--border-primary);">
+    <button onclick="window.TV.switchSymbol('BTCUSDT');document.getElementById('mobile-search-overlay').classList.remove('visible')" style="padding:6px 12px;border-radius:14px;font-size:10px;border:1px solid var(--border-primary);background:transparent;color:var(--text-primary);cursor:pointer;">BTC</button>
+<button onclick="window.TV.switchSymbol('ETHUSDT');document.getElementById('mobile-search-overlay').classList.remove('visible')" style="padding:6px 12px;border-radius:14px;font-size:10px;border:1px solid var(--border-primary);background:transparent;color:var(--text-primary);cursor:pointer;">ETH</button>
+<button onclick="window.TV.switchSymbol('BNBUSDT');document.getElementById('mobile-search-overlay').classList.remove('visible')" style="padding:6px 12px;border-radius:14px;font-size:10px;border:1px solid var(--border-primary);background:transparent;color:var(--text-primary);cursor:pointer;">BNB</button>
+<button onclick="window.TV.switchSymbol('SOLUSDT');document.getElementById('mobile-search-overlay').classList.remove('visible')" style="padding:6px 12px;border-radius:14px;font-size:10px;border:1px solid var(--border-primary);background:transparent;color:var(--text-primary);cursor:pointer;">SOL</button>
+<button onclick="window.TV.switchSymbol('XRPUSDT');document.getElementById('mobile-search-overlay').classList.remove('visible')" style="padding:6px 12px;border-radius:14px;font-size:10px;border:1px solid var(--border-primary);background:transparent;color:var(--text-primary);cursor:pointer;">XRP</button>
   </div>
 </div>
 
-<!-- Sidebar Overlay -->
-<div class="sidebar-overlay" id="sidebar-overlay"></div>
+<!-- Mobile Overlay -->
+<div class="mobile-overlay" id="mobile-overlay"></div>
   
 <script>
 // ============================================
@@ -7074,6 +6752,7 @@ kbd {
   // ============================================
   const CONFIG = {
     BINANCE_REST: 'https://api.binance.com/api/v3',
+	TWELVEDATA_BASE: 'https://api.twelvedata.com',
     BINANCE_WS_STREAM: 'wss://stream.binance.com:9443/stream',
     BINANCE_WS_BASE: 'wss://stream.binance.com:9443/ws',
     COINPEDIA_RSS: 'https://cryptopanic.com/api/v1/posts/?auth_token=noauth&public=true&kind=news',
@@ -7109,6 +6788,14 @@ kbd {
       accent: '#58a6ff'
     },
     
+	// === ADD API KEYS ===
+FINNHUB_API_KEY: 'd4178qhr01qo6qdf9jj0d4178qhr01qo6qdf9jjg',
+TWELVEDATA_API_KEY: '21324d6c6641483086731db2d504e2e8',
+
+// Finnhub WebSocket endpoint
+FINNHUB_WS: 'wss://ws.finnhub.io',
+
+	
     STORAGE_KEYS: {
       THEME: 'tvp_theme', WATCHLIST: 'tvp_watchlist',
       ALERTS: 'tvp_alerts', SETTINGS: 'tvp_settings',
@@ -7169,6 +6856,11 @@ kbd {
     orderBook: { bids:[], asks:[] },
     recentTrades: [],
     availableSymbols: [],
+	assetType: 'crypto',            // 'crypto', 'stocks', 'forex'
+stockSymbols: [],               // populated from Finnhub
+lastStockPrice: null,
+finnhubWs: null,
+economicEvents: [],
     watchlist: [],
     alerts: [],
     positions: [],
@@ -9488,6 +9180,117 @@ calculateAll() {
   }
 };
 
+// ============================================
+// DRAWING TOOLS MODAL – Card-based UI
+// ============================================
+const DrawingToolsModal = {
+  tools: [
+    { name: 'Cursor', id: 'cursor', icon: 'fa-mouse-pointer', desc: 'Select and move drawings', shortcut: 'Esc', category: 'utility' },
+    { name: 'Trend Line', id: 'trendline', icon: 'fa-chart-line', desc: 'Draw a trend line', shortcut: 'Alt+T', category: 'lines' },
+    { name: 'Extended Line', id: 'extended-line', icon: 'fa-arrows-alt-h', desc: 'Infinite line through two points', shortcut: '', category: 'lines' },
+    { name: 'Ray', id: 'ray', icon: 'fa-arrow-trend-up', desc: 'Ray starting from a point', shortcut: 'Alt+R', category: 'lines' },
+    { name: 'Horizontal Line', id: 'horizontal-line', icon: 'fa-grip-lines', desc: 'Fixed price level', shortcut: 'Alt+H', category: 'lines' },
+    { name: 'Vertical Line', id: 'vertical-line', icon: 'fa-grip-lines-vertical', desc: 'Fixed date / time', shortcut: 'Alt+V', category: 'lines' },
+    { name: 'Rectangle', id: 'rectangle', icon: 'fa-square', desc: 'Draw a box', shortcut: '', category: 'shapes' },
+    { name: 'Ellipse', id: 'ellipse', icon: 'fa-circle', desc: 'Draw an ellipse', shortcut: '', category: 'shapes' },
+    { name: 'Polygon', id: 'polygon', icon: 'fa-draw-polygon', desc: 'Freeform polygon', shortcut: '', category: 'shapes' },
+    { name: 'Fib Retrace', id: 'fibonacci-retracement', icon: 'fa-ruler', desc: 'Fibonacci retracement levels', shortcut: '', category: 'fibonacci' },
+    { name: 'Fib Extension', id: 'fibonacci-extension', icon: 'fa-ruler-combined', desc: 'Fibonacci extension levels', shortcut: '', category: 'fibonacci' },
+    { name: 'Fib Fan', id: 'fibonacci-fan', icon: 'fa-fan', desc: 'Fibonacci fan lines', shortcut: '', category: 'fibonacci' },
+    { name: 'Pitchfork', id: 'pitchfork', icon: 'fa-draw-polygon', desc: 'Andrews pitchfork', shortcut: '', category: 'fibonacci' },
+    { name: 'Regression Channel', id: 'regression-channel', icon: 'fa-chart-scatter', desc: 'Linear regression channel', shortcut: '', category: 'fibonacci' },
+    { name: 'Text', id: 'text', icon: 'fa-font', desc: 'Add text label', shortcut: 'Alt+Z', category: 'annotation' },
+    { name: 'Arrow', id: 'arrow', icon: 'fa-arrow-up', desc: 'Draw an arrow', shortcut: 'Alt+A', category: 'annotation' },
+    { name: 'Brush', id: 'brush', icon: 'fa-paint-brush', desc: 'Freehand drawing', shortcut: 'Alt+B', category: 'annotation' },
+    { name: 'Measure', id: 'measure', icon: 'fa-ruler-horizontal', desc: 'Measure distance', shortcut: 'Alt+M', category: 'utility' },
+    { name: 'Eraser', id: 'eraser', icon: 'fa-eraser', desc: 'Delete single drawing', shortcut: 'Delete', category: 'utility' },
+  ],
+
+  init() {
+    this.buildCards();
+    this.setupSearch();
+    this.setupCategoryTabs();
+    // Update active state based on current tool
+    this.updateActive(STATE.activeTool);
+  },
+
+  buildCards() {
+    const grid = document.getElementById('drawing-tools-grid');
+    if (!grid) return;
+    grid.innerHTML = this.tools.map(tool => `
+      <div class="tool-card" data-tool="${tool.id}" data-category="${tool.category}">
+        <div class="tool-card-header">
+          <span class="tool-name"><i class="fas ${tool.icon}"></i> ${tool.name}</span>
+          ${tool.shortcut ? `<span class="tool-shortcut"><kbd>${tool.shortcut}</kbd></span>` : ''}
+        </div>
+        <p class="tool-desc">${tool.desc}</p>
+        <div class="tool-actions">
+          <button class="tool-apply-btn" data-tool="${tool.id}">Activate</button>
+        </div>
+      </div>
+    `).join('');
+
+    // Delegate click events
+    grid.addEventListener('click', (e) => {
+      const btn = e.target.closest('.tool-apply-btn');
+      if (!btn) return;
+      const toolId = btn.dataset.tool;
+      if (toolId) {
+        DrawingEngine.setTool(toolId);
+        document.getElementById('drawing-tools-modal').classList.remove('visible');
+        this.updateActive(toolId);
+      }
+    });
+  },
+
+  updateActive(activeToolId) {
+    const grid = document.getElementById('drawing-tools-grid');
+    if (!grid) return;
+    grid.querySelectorAll('.tool-card').forEach(card => {
+      card.classList.toggle('active', card.dataset.tool === activeToolId);
+    });
+  },
+
+  filterByCategory(category) {
+    const cards = document.querySelectorAll('#drawing-tools-grid .tool-card');
+    cards.forEach(card => {
+      const cat = card.dataset.category;
+      card.style.display = (category === 'all' || cat === category) ? 'flex' : 'none';
+    });
+  },
+
+  setupCategoryTabs() {
+    const tabs = document.querySelectorAll('#drawing-categories .cat-tab');
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        this.filterByCategory(tab.dataset.category);
+      });
+    });
+  },
+
+  setupSearch() {
+    const searchInput = document.getElementById('drawing-search-input');
+    if (!searchInput) return;
+    searchInput.addEventListener('input', U.debounce((e) => {
+      const query = e.target.value.toLowerCase().trim();
+      const cards = document.querySelectorAll('#drawing-tools-grid .tool-card');
+      cards.forEach(card => {
+        const name = card.querySelector('.tool-name')?.textContent.toLowerCase();
+        const match = !query || (name && name.includes(query));
+        card.style.display = match ? 'flex' : 'none';
+      });
+      // If query exists, reset tab to 'all'
+      if (query) {
+        document.querySelectorAll('#drawing-categories .cat-tab').forEach(t => t.classList.remove('active'));
+        document.querySelector('#drawing-categories .cat-tab[data-category="all"]')?.classList.add('active');
+      }
+    }, 200));
+  }
+};
+
+
   // ============================================
   // DATA MANAGER
   // ============================================
@@ -9519,6 +9322,7 @@ calculateAll() {
     
 
 async loadHistory(symbol, interval) {
+if (STATE.assetType !== 'crypto') return;
   try {
     const res = await fetch(`${CONFIG.BINANCE_REST}/klines?symbol=${symbol}&interval=${interval}&limit=${CONFIG.CANDLE_LIMIT}`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -9778,19 +9582,34 @@ updatePriceDisplay(c) {
       }
     },
     
-    async switchSymbol(s) {
-      if(s === STATE.symbol) return;
-      STATE.symbol = s;
-      const symbolName = document.getElementById('symbol-name');
-      const symbolSearch = document.getElementById('symbol-search');
-      if(symbolName) symbolName.textContent = s.replace('USDT', '/USDT');
-      if(symbolSearch) symbolSearch.value = s;
-      
-      this.updateWatchlistStar();
-      await this.loadHistory(s, STATE.interval);
-	  await this.load24h(s); 
-      this.connectWS();
-    },
+   async switchSymbol(s) {
+  if (s === STATE.symbol && STATE.assetType === (STATE.assetType || 'crypto')) return;
+  STATE.symbol = s;
+  const symbolName = document.getElementById('symbol-name');
+  const symbolSearch = document.getElementById('symbol-search');
+  if (symbolName) symbolName.textContent = s.includes('/') ? s : s.replace('USDT', '/USDT');
+  if (symbolSearch) symbolSearch.value = s;
+
+  this.updateWatchlistStar();
+
+  // If crypto, use Binance; if stocks/forex, use Finnhub
+  if (STATE.assetType === 'stocks' || STATE.assetType === 'forex') {
+  StockDataManager.stopPolling();
+  const candles = await StockDataManager.loadCandles(s, STATE.interval);
+  STATE.candles = candles;
+  ChartEngine.updateMain(candles);
+  ChartEngine.updateVolume(candles);
+  StockDataManager.startPolling(s);
+  if (candles.length) {
+    this.updatePriceDisplay(candles[candles.length - 1]);
+  }
+  ChartEngine.fitContent();
+} else {
+    await this.loadHistory(s, STATE.interval);
+    await this.load24h(s);
+    this.connectWS();
+  }
+},
     
     async switchInterval(i) {
   if(i === STATE.interval) return;
@@ -9828,6 +9647,43 @@ updatePriceDisplay(c) {
       return STATE.availableSymbols.filter(s => s.symbol.includes(qq) || s.baseAsset.includes(qq)).slice(0, 10);
     },
     
+	async searchAllSymbols(query) {
+  const results = [];
+  // Crypto from local availableSymbols
+  const cryptoMatches = STATE.availableSymbols
+    .filter(s => s.symbol.includes(query.toUpperCase()))
+    .slice(0, 5)
+    .map(s => ({ symbol: s.symbol, name: s.baseAsset, type: 'crypto' }));
+  results.push(...cryptoMatches);
+
+  // Stocks from Finnhub (if loaded)
+  if (STATE.stockSymbols.length) {
+    const stockMatches = STATE.stockSymbols
+      .filter(s => s.symbol.includes(query.toUpperCase()) || s.description.toLowerCase().includes(query.toLowerCase()))
+      .slice(0, 8)
+      .map(s => ({ symbol: s.symbol, name: s.description, type: 'stocks' }));
+    results.push(...stockMatches);
+  }
+
+  // Fallback to Twelve Data symbol search if needed
+  if (results.length === 0 && query.length > 1) {
+    try {
+      const res = await fetch(`https://api.twelvedata.com/symbol_search?symbol=${query}&outputsize=10&apikey=${CONFIG.TWELVEDATA_API_KEY}`);
+      const data = await res.json();
+      if (data.data) {
+        const twelveResults = data.data.map(d => ({
+          symbol: d.symbol,
+          name: d.instrument_name || d.symbol,
+          type: d.instrument_type === 'Forex' ? 'forex' : 'stocks'
+        }));
+        results.push(...twelveResults);
+      }
+    } catch(e) {}
+  }
+
+  return results.slice(0, 12);
+},
+	
     async startMarketOverview() {
       await this.updateMarketOverview();
       setInterval(() => this.updateMarketOverview(), 10000);
@@ -10577,7 +10433,136 @@ const WatchlistManager = {
       }
     }
   };
+// ============================================
+// STOCK & FOREX MANAGER (Finnhub + Twelve Data)
+// ============================================
+const StockDataManager = {
+  pollInterval: null,
 
+  init() {
+    this.loadStockSymbols();
+    console.log('✅ StockDataManager ready (Finnhub live + Twelve Data history)');
+  },
+
+  // ---------- LIVE QUOTES (Finnhub REST polling) ----------
+  startPolling(symbol) {
+  this.stopPolling();
+  console.log(`⏱️ Polling ${symbol} every 10s`);
+  this.pollInterval = setInterval(async () => {
+    try {
+      if (STATE.assetType === 'stocks') {
+        // Use Finnhub for stocks
+        const url = `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${CONFIG.FINNHUB_API_KEY}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.c) {
+          STATE.currentPrice = data.c;
+          DataManager.updatePriceDisplay({ close: data.c, open: data.o, high: data.h, low: data.l });
+        }
+      } else if (STATE.assetType === 'forex') {
+        // Use Twelve Data real‑time price for forex
+        let forexSymbol = symbol;
+        if (symbol.length === 6) forexSymbol = symbol.slice(0, 3) + '/' + symbol.slice(3);
+        const url = `${CONFIG.TWELVEDATA_BASE}/price?symbol=${forexSymbol}&apikey=${CONFIG.TWELVEDATA_API_KEY}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.price) {
+          const price = parseFloat(data.price);
+          STATE.currentPrice = price;
+          DataManager.updatePriceDisplay({ close: price, open: price, high: price, low: price });
+        }
+      }
+      // Update chart buttons
+      const buyPrice = document.getElementById('chart-buy-price');
+      const sellPrice = document.getElementById('chart-sell-price');
+      const priceStr = STATE.currentPrice ? (typeof U !== 'undefined' ? U.formatPrice(STATE.currentPrice) : STATE.currentPrice.toFixed(5)) : '--';
+      if (buyPrice) buyPrice.textContent = priceStr;
+      if (sellPrice) sellPrice.textContent = priceStr;
+    } catch (e) { /* ignore */ }
+  }, 10000);
+},
+
+  stopPolling() {
+    if (this.pollInterval) {
+      clearInterval(this.pollInterval);
+      this.pollInterval = null;
+    }
+  },
+
+  // ---------- SYMBOL SEARCH & LOADING (Twelve Data) ----------
+  async loadStockSymbols() {
+    try {
+      // Fetch a list of US stocks from Twelve Data
+      const url = `${CONFIG.TWELVEDATA_BASE}/stocks?exchange=NASDAQ&apikey=${CONFIG.TWELVEDATA_API_KEY}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data.data) {
+        STATE.stockSymbols = data.data.map(s => ({
+          symbol: s.symbol,
+          description: s.name || s.symbol
+        }));
+        console.log(`✅ Loaded ${STATE.stockSymbols.length} US stocks (Twelve Data)`);
+      } else {
+        // Fallback to a small hard‑coded list
+        STATE.stockSymbols = [
+          {symbol:'AAPL', description:'Apple Inc.'}, {symbol:'MSFT', description:'Microsoft Corp.'},
+          {symbol:'GOOGL', description:'Alphabet Inc.'}, {symbol:'AMZN', description:'Amazon.com Inc.'},
+          {symbol:'TSLA', description:'Tesla Inc.'}, {symbol:'META', description:'Meta Platforms Inc.'},
+          {symbol:'NVDA', description:'NVIDIA Corp.'}, {symbol:'NFLX', description:'Netflix Inc.'}
+        ];
+        console.warn('⚠️ Used fallback stock list');
+      }
+    } catch (e) {
+      console.error('Failed to load stock symbols', e);
+      STATE.stockSymbols = [
+        {symbol:'AAPL', description:'Apple Inc.'}, {symbol:'MSFT', description:'Microsoft Corp.'},
+        {symbol:'GOOGL', description:'Alphabet Inc.'}, {symbol:'AMZN', description:'Amazon.com Inc.'},
+        {symbol:'TSLA', description:'Tesla Inc.'}, {symbol:'META', description:'Meta Platforms Inc.'},
+        {symbol:'NVDA', description:'NVIDIA Corp.'}, {symbol:'NFLX', description:'Netflix Inc.'}
+      ];
+    }
+  },
+
+  // ---------- HISTORICAL CANDLES (Twelve Data) ----------
+  async loadCandles(symbol, interval) {
+  const intervalMap = {
+    '1m': '1min', '5m': '5min', '15m': '15min', '30m': '30min',
+    '1h': '1h', '4h': '4h', '1d': '1day', '1w': '1week', '1M': '1month'
+  };
+  const twelveInterval = intervalMap[interval] || '1day';
+
+  // Fix forex symbols for Twelve Data (EURUSD -> EUR/USD)
+  let twelveSymbol = symbol;
+  if (STATE.assetType === 'forex' && symbol.length === 6) {
+    twelveSymbol = symbol.slice(0, 3) + '/' + symbol.slice(3);
+  }
+
+  const url = `${CONFIG.TWELVEDATA_BASE}/time_series?symbol=${twelveSymbol}&interval=${twelveInterval}&outputsize=500&apikey=${CONFIG.TWELVEDATA_API_KEY}`;
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+    console.log('Twelve Data candle response:', data);
+    if (data.status === 'error') {
+      console.warn('Twelve Data error:', data.message);
+      return [];
+    }
+    if (!data.values || data.values.length === 0) return [];
+
+    const candles = data.values.reverse().map(val => ({
+      time: Date.parse(val.datetime) / 1000,
+      open: parseFloat(val.open),
+      high: parseFloat(val.high),
+      low: parseFloat(val.low),
+      close: parseFloat(val.close),
+      volume: parseFloat(val.volume || 0)
+    }));
+    return candles;
+  } catch (e) {
+    console.error('Failed to load candles from Twelve Data', e);
+    return [];
+  }
+  }
+};
   // ============================================
   // TICKER MANAGER
   // ============================================
@@ -10938,6 +10923,195 @@ const TradeManager = {
   }
 };
 
+// ============================================
+// BROKER MODAL HANDLER
+// ============================================
+const BrokerModal = {
+  brokers: [
+    {
+      name: 'Binance',
+      icon: '₿',
+      color: '#f0b90b',
+      desc: 'Global leader',
+      countries: ['Worldwide'],
+      url: (symbol, side) => `https://www.binance.com/en/trade/${symbol.replace('USDT','')}_USDT?type=spot`
+    },
+    {
+      name: 'Bybit',
+      icon: '📊',
+      color: '#f7a600',
+      desc: 'Derivatives & spot',
+      countries: ['Worldwide'],
+      url: (symbol, side) => `https://www.bybit.com/en/trade/spot/${symbol.replace('USDT','')}/USDT`
+    },
+    {
+      name: 'OKX',
+      icon: '🔄',
+      color: '#00a3ff',
+      desc: 'Web3 & trading',
+      countries: ['Worldwide'],
+      url: (symbol, side) => `https://www.okx.com/trade-spot/${symbol.toLowerCase().replace('usdt','')}-usdt`
+    },
+    {
+      name: 'KuCoin',
+      icon: '🪙',
+      color: '#29b87e',
+      desc: 'Altcoin heaven',
+      countries: ['Worldwide'],
+      url: (symbol, side) => `https://www.kucoin.com/trade/${symbol.replace('USDT','')}-USDT`
+    },
+    {
+      name: 'Coinbase',
+      icon: '🏦',
+      color: '#0052ff',
+      desc: 'Regulated US',
+      countries: ['USA', 'Worldwide'],
+      url: (symbol, side) => `https://pro.coinbase.com/trade/${symbol.replace('USDT','')}-USDT`
+    },
+    {
+      name: 'Kraken',
+      icon: '🐙',
+      color: '#5741d9',
+      desc: 'EU & US friendly',
+      countries: ['USA', 'Germany', 'Worldwide'],
+      url: (symbol, side) => `https://www.kraken.com/trade/${symbol.replace('USDT','')}/usdt`
+    },
+    {
+      name: 'WazirX',
+      icon: '🇮🇳',
+      color: '#3067f0',
+      desc: 'India’s favorite',
+      countries: ['India'],
+      url: (symbol, side) => `https://wazirx.com/exchange/${symbol.replace('USDT','')}-USDT`
+    },
+    {
+      name: 'CoinDCX',
+      icon: '🇮🇳',
+      color: '#ff6b35',
+      desc: 'Indian exchange',
+      countries: ['India'],
+      url: (symbol, side) => `https://coindcx.com/trade/${symbol.replace('USDT','')}USDT`
+    },
+    {
+      name: 'Paxful',
+      icon: '🤝',
+      color: '#a6ff00',
+      desc: 'P2P Africa',
+      countries: ['Nigeria', 'Kenya'],
+      url: (symbol, side) => `https://paxful.com/buy-bitcoin/with/usdt`
+    },
+    {
+      name: 'BitPesa',
+      icon: '🌍',
+      color: '#2d7b4b',
+      desc: 'Kenya based',
+      countries: ['Kenya'],
+      url: (symbol, side) => `https://www.bitpesa.co/`
+    },
+    {
+      name: 'Bitstamp',
+      icon: '🏛️',
+      color: '#13c181',
+      desc: 'Europe trusted',
+      countries: ['Germany', 'Worldwide'],
+      url: (symbol, side) => `https://www.bitstamp.net/markets/btc/usd/`
+    },
+    {
+      name: 'Gemini',
+      icon: '♊',
+      color: '#00dcff',
+      desc: 'US regulated',
+      countries: ['USA'],
+      url: (symbol, side) => `https://www.gemini.com/prices/bitcoin`
+    }
+  ],
+
+  open(side) {
+    const modal = document.getElementById('broker-modal');
+    if (!modal) return;
+
+    // Gather trade details from the demo trade panel (or current symbol/price)
+    const priceInput = document.getElementById('trade-price-input');
+    const amountInput = document.getElementById('trade-amount-input');
+    const price = parseFloat(priceInput?.value) || STATE.currentPrice || 0;
+    const amount = parseFloat(amountInput?.value) || 0;
+    const symbol = STATE.symbol; // e.g., BTCUSDT
+    const displaySymbol = symbol.replace('USDT', '/USDT');
+    const isBuy = (side === 'buy');
+
+    // Update badge in modal
+    document.getElementById('broker-side-badge').textContent = isBuy ? 'Buy' : 'Sell';
+    document.getElementById('broker-side-badge').style.color = isBuy ? 'var(--up-color)' : 'var(--down-color)';
+    document.getElementById('broker-amount-badge').textContent = `${amount || '0.01'} ${displaySymbol}`;
+    document.getElementById('broker-price-badge').textContent = `$${U.formatPrice(price)}`;
+    document.getElementById('broker-trade-desc').textContent = 
+      `${isBuy ? 'Buy' : 'Sell'} ${amount || '0.01'} ${displaySymbol} at $${U.formatPrice(price)}`;
+
+    // Generate broker cards
+    const container = document.getElementById('broker-cards-container');
+    container.innerHTML = this.brokers.map(broker => {
+      const link = broker.url(symbol, side);
+      // Country tags
+      const tags = broker.countries.map(c => `<span style="background: rgba(88,166,255,0.1); padding:2px 6px; border-radius:10px; font-size:10px; margin-left:3px;">${c}</span>`).join('');
+      return `
+        <div class="broker-card" onclick="window.open('${link}', '_blank')">
+          <div class="broker-icon" style="color:${broker.color};">${broker.icon}</div>
+          <div class="broker-name">${broker.name} ${tags}</div>
+          <div class="broker-desc">${broker.desc}</div>
+          <span class="broker-link-btn">Trade →</span>
+        </div>
+      `;
+    }).join('');
+
+    modal.classList.add('visible');
+  }
+};
+
+// Attach event listeners to the new live buttons
+document.getElementById('live-buy-btn')?.addEventListener('click', () => BrokerModal.open('buy'));
+document.getElementById('live-sell-btn')?.addEventListener('click', () => BrokerModal.open('sell'));
+
+// ============================================
+// LIVE CHART TRADE BUTTONS
+// ============================================
+(function() {
+  const buyBtn = document.getElementById('chart-buy-btn');
+  const sellBtn = document.getElementById('chart-sell-btn');
+  const buyPriceEl = document.getElementById('chart-buy-price');
+  const sellPriceEl = document.getElementById('chart-sell-price');
+
+  function updatePrices() {
+    const price = STATE.currentPrice || 0;
+    const formatted = U.formatPrice(price);
+    if (buyPriceEl) buyPriceEl.textContent = formatted;
+    if (sellPriceEl) sellPriceEl.textContent = formatted;
+  }
+
+  // Update every second
+  setInterval(updatePrices, 1000);
+  updatePrices();
+
+  // Click handlers -> open broker modal
+  if (buyBtn) {
+    buyBtn.addEventListener('click', () => {
+      // Make sure the broker modal is available
+      if (typeof BrokerModal !== 'undefined') {
+        BrokerModal.open('buy');
+      } else {
+        console.error('BrokerModal not defined');
+      }
+    });
+  }
+  if (sellBtn) {
+    sellBtn.addEventListener('click', () => {
+      if (typeof BrokerModal !== 'undefined') {
+        BrokerModal.open('sell');
+      }
+    });
+  }
+})();
+
+
   // ============================================
 // INDICATORS MODAL UI - COMPLETELY IMPROVED
 // ============================================
@@ -11187,47 +11361,62 @@ const IndicatorsModal = {
     const suggestions = document.getElementById('search-suggestions');
     
     if(searchInput) {
-      searchInput.addEventListener('input', U.debounce((e) => {
-        const q = e.target.value.trim();
-        if(q.length < 1) {
-          if(suggestions) suggestions.style.display = 'none';
-          return;
-        }
-        const results = DataManager.searchSymbols(q);
-        if(!results.length) {
-          if(suggestions) suggestions.style.display = 'none';
-          return;
-        }
-        if(suggestions) {
-          suggestions.innerHTML = results.map(s => `
-            <div class="suggestion-item" data-symbol="${s.symbol}">
-              <div class="suggestion-info">
-                <span class="suggestion-symbol">${s.symbol.replace('USDT','/USDT')}</span>
-                <span class="suggestion-name">${s.baseAsset}</span>
-              </div>
-              <span class="suggestion-exchange">Binance</span>
-            </div>
-          `).join('');
-          suggestions.style.display = 'block';
-          suggestions.querySelectorAll('.suggestion-item').forEach(item => {
-            item.onclick = () => {
-              DataManager.switchSymbol(item.dataset.symbol);
-              if(suggestions) suggestions.style.display = 'none';
-              if(searchInput) searchInput.value = item.dataset.symbol;
-            };
+     searchInput.addEventListener('input', U.debounce(async (e) => {
+    const q = e.target.value.trim();
+    if(q.length < 1) {
+      if(suggestions) suggestions.style.display = 'none';
+      return;
+    }
+    const results = await DataManager.searchAllSymbols(q);
+    if(!results.length) {
+      if(suggestions) suggestions.style.display = 'none';
+      return;
+    }
+    if(suggestions) {
+      suggestions.innerHTML = results.map(s => `
+        <div class="suggestion-item" data-symbol="${s.symbol}" data-type="${s.type}">
+          <div class="suggestion-info">
+            <span class="suggestion-symbol">${s.symbol}</span>
+            <span class="suggestion-name">${s.name || s.symbol}</span>
+          </div>
+          <span class="suggestion-exchange">${s.type === 'crypto' ? 'Crypto' : s.type === 'stocks' ? 'Stock' : 'Forex'}</span>
+        </div>
+      `).join('');
+      suggestions.style.display = 'block';
+
+      // Click handler – also switch asset type when needed
+      suggestions.querySelectorAll('.suggestion-item').forEach(item => {
+        item.onclick = () => {
+          const sym = item.dataset.symbol;
+          const type = item.dataset.type;
+          // Update asset tabs visually
+          document.querySelectorAll('.asset-type-btn').forEach(b => {
+            b.style.background = 'transparent';
+            b.style.color = 'var(--text-secondary)';
           });
-        }
-      }, 300));
+          const activeTab = document.querySelector(`.asset-type-btn[data-asset="${type}"]`);
+          if (activeTab) {
+            activeTab.style.background = 'var(--accent-primary)';
+            activeTab.style.color = 'white';
+          }
+          STATE.assetType = type;
+          DataManager.switchSymbol(sym);
+          if(suggestions) suggestions.style.display = 'none';
+          if(searchInput) searchInput.value = sym;
+        };
+      });
+    }
+}, 300));
       
-      searchInput.addEventListener('keypress', (e) => {
-        if(e.key === 'Enter') {
-          const s = searchInput.value.trim().toUpperCase();
-          if(s) {
+   searchInput.addEventListener('keypress', (e) => {
+    if(e.key === 'Enter') {
+        const s = searchInput.value.trim().toUpperCase();
+        if(s) {
             DataManager.switchSymbol(s);
             if(suggestions) suggestions.style.display = 'none';
-          }
         }
-      });
+    }
+});
     }
     
     document.addEventListener('click', (e) => {
@@ -11261,6 +11450,33 @@ const IndicatorsModal = {
       });
     });
     
+	// Asset Type Tabs
+document.querySelectorAll('.asset-type-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const asset = this.dataset.asset;
+    if (STATE.assetType === asset) return;
+    
+    // Update active button
+    document.querySelectorAll('.asset-type-btn').forEach(b => {
+      b.style.background = 'transparent';
+      b.style.color = 'var(--text-secondary)';
+    });
+    this.style.background = 'var(--accent-primary)';
+    this.style.color = 'white';
+    
+    STATE.assetType = asset;
+    
+    // Reset symbol accordingly
+    if (asset === 'crypto') {
+      DataManager.switchSymbol('BTCUSDT');
+    } else if (asset === 'stocks') {
+      DataManager.switchSymbol('AAPL'); // US stock
+    } else if (asset === 'forex') {
+      DataManager.switchSymbol('EURUSD'); // forex example
+    }
+  });
+});
+	
     // Drawing tools
     $$('.tool-btn').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -12388,6 +12604,254 @@ alertcondition(ta.crossunder(close, ma), "Cross Down", "Price crossed below MA")
   }
 };
 
+// ============================================
+// MOBILE SHEET - FULLY WORKING
+// ============================================
+function initMobileSheet() {
+  const sheet = document.getElementById('mobile-bottom-sheet');
+  const overlay = document.getElementById('mobile-overlay');
+  const chartContainer = document.querySelector('.chart-container');
+  
+  if (!sheet) return;
+  
+  let sheetState = 'collapsed'; // collapsed, expanded, full
+  
+  function setSheetState(state) {
+    sheetState = state;
+    switch(state) {
+      case 'collapsed':
+        sheet.style.transform = 'translateY(calc(100% - 52px))';
+        overlay.classList.remove('visible');
+        if (chartContainer) chartContainer.classList.remove('sheet-open');
+        break;
+      case 'expanded':
+        sheet.style.transform = 'translateY(30%)';
+        overlay.classList.remove('visible');
+        if (chartContainer) chartContainer.classList.remove('sheet-open');
+        break;
+      case 'full':
+        sheet.style.transform = 'translateY(0)';
+        overlay.classList.add('visible');
+        if (chartContainer) chartContainer.classList.add('sheet-open');
+        break;
+    }
+  }
+  
+  // TAP handle to cycle
+  document.getElementById('sheet-handle').addEventListener('click', function(e) {
+    if (e.target.closest('.sheet-tab')) return; // Don't trigger on tab clicks
+    if (sheetState === 'collapsed') setSheetState('expanded');
+    else if (sheetState === 'expanded') setSheetState('full');
+    else setSheetState('collapsed');
+  });
+  
+  overlay.addEventListener('click', () => setSheetState('collapsed'));
+  
+  // ========== TAB SWITCHING ==========
+  document.querySelectorAll('.sheet-tab').forEach(tab => {
+    tab.addEventListener('click', function(e) {
+      e.stopPropagation();
+      
+      document.querySelectorAll('.sheet-tab').forEach(t => t.classList.remove('active'));
+      this.classList.add('active');
+      
+      const tabName = this.getAttribute('data-tab');
+      document.querySelectorAll('.sheet-panel').forEach(p => p.classList.remove('active'));
+      const panel = document.getElementById('sheet-' + tabName);
+      if (panel) panel.classList.add('active');
+      
+      if (tabName === 'watchlist') buildMobileWatchlist();
+      if (tabName === 'indicators') buildMobileIndicators();
+      if (tabName === 'stats') updateMobileStats();
+      
+      if (sheetState === 'collapsed') setSheetState('expanded');
+    });
+  });
+  
+  // ========== DRAWING TOOLS ==========
+  document.querySelectorAll('.sheet-tool-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const tool = this.getAttribute('data-tool');
+      if (tool === 'clear' && typeof DrawingEngine !== 'undefined') DrawingEngine.clearAll();
+      else if (tool === 'undo' && typeof DrawingEngine !== 'undefined') DrawingEngine.undo();
+      else if (tool && typeof DrawingEngine !== 'undefined') DrawingEngine.setTool(tool);
+      setSheetState('collapsed');
+    });
+  });
+  
+  // ========== MORE PANEL ACTIONS ==========
+  document.querySelectorAll('.mob-action-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const action = this.getAttribute('data-action');
+      
+      if (action === 'search') {
+        document.getElementById('mobile-search-overlay').classList.add('visible');
+      } else if (action === 'depth') {
+        document.getElementById('market-depth-modal')?.classList.add('visible');
+      } else if (action === 'news') {
+        document.getElementById('news-modal')?.classList.add('visible');
+      } else if (action === 'alerts') {
+        document.getElementById('create-alert-modal')?.classList.add('visible');
+      } else if (action === 'settings') {
+        document.getElementById('settings-modal')?.classList.add('visible');
+      } else if (action === 'theme') {
+        const current = document.body.getAttribute('data-theme') || 'dark';
+        document.body.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+        U.storage.set('tvp_theme', current === 'dark' ? 'light' : 'dark');
+      } else if (action === 'fullscreen') {
+        if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+        else document.exitFullscreen();
+      }
+      setSheetState('collapsed');
+    });
+  });
+  
+  
+  
+  setSheetState('collapsed');
+}
+
+// ========== BUILD MOBILE WATCHLIST ==========
+function buildMobileWatchlist() {
+  const container = document.getElementById('mobile-watchlist-list');
+  if (!container) return;
+  
+  const wl = STATE.watchlist || [{symbol:'BTCUSDT'},{symbol:'ETHUSDT'},{symbol:'BNBUSDT'},{symbol:'SOLUSDT'}];
+  container.innerHTML = wl.map(item => `
+    <div class="mob-wl" data-symbol="${item.symbol}" style="display:flex;justify-content:space-between;padding:10px 8px;border-bottom:1px solid rgba(48,54,61,0.3);cursor:pointer;">
+      <div><strong>${item.symbol.replace('USDT','/USDT')}</strong><br><small style="color:var(--text-muted);">Binance</small></div>
+      <div style="text-align:right;"><span id="mwl-p-${item.symbol}">--</span><br><small id="mwl-c-${item.symbol}">--</small></div>
+    </div>
+  `).join('');
+  
+  container.querySelectorAll('.mob-wl').forEach(el => {
+    el.addEventListener('click', () => {
+      if (window.TV) window.TV.switchSymbol(el.dataset.symbol);
+    });
+  });
+}
+
+// ========== BUILD MOBILE INDICATORS ==========
+function buildMobileIndicators() {
+  const container = document.getElementById('mobile-indicators-grid');
+  if (!container) return;
+  
+  const inds = ['RSI','MACD','SMA','EMA','Bollinger','VWAP','Stochastic','ATR','Ichimoku','SuperTrend','PSAR','CCI','WilliamsR','Keltner','OBV','MFI'];
+  container.innerHTML = inds.map(ind => {
+    const active = STATE.activeIndicators?.has(ind);
+    return `<button class="mob-ind-btn${active?' active':''}" data-ind="${ind}" style="padding:10px;background:${active?'var(--accent-muted)':'var(--bg-tertiary)'};border:1px solid ${active?'var(--accent-primary)':'var(--border-primary)'};border-radius:8px;color:${active?'var(--accent-primary)':'var(--text-secondary)'};font-size:10px;font-weight:600;cursor:pointer;">${ind}</button>`;
+  }).join('');
+  
+  container.querySelectorAll('.mob-ind-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const ind = this.dataset.ind;
+      if (typeof IndicatorEngine !== 'undefined') IndicatorEngine.toggleIndicator(ind);
+      // Refresh indicator states after toggle
+      setTimeout(() => buildMobileIndicators(), 300);
+    });
+  });
+}
+
+// ========== UPDATE MOBILE STATS ==========
+function updateMobileStats() {
+  const c = STATE.candles?.[STATE.candles.length - 1];
+  if (!c) return;
+  document.getElementById('ms-open') && (document.getElementById('ms-open').textContent = U.formatPrice(c.open));
+  document.getElementById('ms-high') && (document.getElementById('ms-high').textContent = U.formatPrice(c.high));
+  document.getElementById('ms-low') && (document.getElementById('ms-low').textContent = U.formatPrice(c.low));
+  document.getElementById('ms-volume') && (document.getElementById('ms-volume').textContent = U.formatVolume(c.volume));
+  document.getElementById('ms-change') && (document.getElementById('ms-change').textContent = (STATE.change24h!=null?(STATE.change24h>=0?'+':'')+U.formatNum(STATE.change24h,2)+'%':'--'));
+}
+
+// ========== UPDATE MOBILE PRICES ==========
+function updateMobilePrices() {
+  setInterval(() => {
+    if (!STATE.currentPrice) return;
+    const priceEl = document.getElementById('mobile-price');
+    const symbolEl = document.getElementById('mobile-symbol-name');
+    if (priceEl) {
+      priceEl.textContent = U.formatPrice(STATE.currentPrice);
+      priceEl.style.color = STATE.change24h >= 0 ? 'var(--up-color)' : 'var(--down-color)';
+    }
+    if (symbolEl) symbolEl.textContent = STATE.symbol.replace('USDT', '/USDT');
+    
+    // Update watchlist prices in sheet
+    document.querySelectorAll('.mob-wl').forEach(el => {
+      const sym = el.dataset.symbol;
+      const data = STATE.marketData?.get(sym);
+      const pEl = document.getElementById('mwl-p-' + sym);
+      const cEl = document.getElementById('mwl-c-' + sym);
+      if (pEl && data?.price) pEl.textContent = '$' + U.formatPrice(data.price);
+      if (cEl && data?.change !== undefined) {
+        cEl.textContent = (data.change>=0?'+':'') + U.formatNum(data.change, 2) + '%';
+        cEl.style.color = data.change>=0 ? 'var(--up-color)' : 'var(--down-color)';
+      }
+    });
+  }, 2000);
+}
+
+// ============================================
+// ECONOMIC CALENDAR MODULE
+// ============================================
+const EconomicCalendar = {
+  async init() {
+    await this.fetchEvents();
+    setInterval(() => this.fetchEvents(), 3600000); // refresh hourly
+  },
+
+  async fetchEvents() {
+    const today = new Date();
+    const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+    const from = today.toISOString().slice(0,10);
+    const to = nextWeek.toISOString().slice(0,10);
+    
+    try {
+      const res = await fetch(`https://finnhub.io/api/v1/calendar/economic?from=${from}&to=${to}&token=${CONFIG.FINNHUB_API_KEY}`);
+      const data = await res.json();
+      if (!data.economicCalendar) return;
+
+      const events = data.economicCalendar.filter(e => e.impact >= 2); // only medium/high impact
+      STATE.economicEvents = events.slice(0, 20); // keep top 20
+      this.render();
+    } catch(e) {
+      document.getElementById('economic-calendar-list').innerHTML = 'Failed to load calendar.';
+    }
+  },
+
+  render() {
+    const container = document.getElementById('economic-calendar-list');
+    if (!container) return;
+    if (!STATE.economicEvents || STATE.economicEvents.length === 0) {
+      container.innerHTML = 'No high‑impact events this week.';
+      return;
+    }
+
+    container.innerHTML = STATE.economicEvents.map(e => {
+      const date = new Date(e.date).toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
+      const actual = e.actual !== null ? e.actual : '-';
+      const previous = e.previous !== null ? e.previous : '-';
+      const forecast = e.forecast !== null ? e.forecast : '-';
+      const impactStars = '★'.repeat(e.impact) + '☆'.repeat(3 - e.impact);
+      return `
+        <div style="margin-bottom: 8px; padding: 6px; background: var(--bg-primary); border-radius: 6px;">
+          <div style="display:flex; justify-content:space-between; font-size: 10px; color: var(--text-muted);">
+            <span>${date}</span>
+            <span>${e.country}</span>
+          </div>
+          <div style="font-weight: 600; margin: 2px 0;">${e.event}</div>
+          <div style="display:flex; justify-content:space-between; font-size: 10px; color: var(--text-muted);">
+            <span>Act: <b>${actual}</b></span>
+            <span>Prev: ${previous}</span>
+            <span>Est: ${forecast}</span>
+            <span style="color: var(--accent-primary);">${impactStars}</span>
+          </div>
+        </div>`;
+    }).join('');
+  }
+};
+
   // ============================================
   // MAIN INITIALIZATION
   // ============================================
@@ -12408,6 +12872,7 @@ alertcondition(ta.crossunder(close, ma), "Cross Down", "Price crossed below MA")
       }
 	  
       ChartEngine.init();
+
 	  // Force indicator panes to be visible and scrollable
 setTimeout(() => {
   const indicatorContainer = document.getElementById('indicator-panes-container');
@@ -12432,6 +12897,7 @@ setTimeout(() => {
   ChartEngine.resizeAll();
 }, 500);
       DrawingEngine.init();
+	  DrawingToolsModal.init();
       setupUI();
 	  setupFooterTimeframes();
       WatchlistManager.init();
@@ -12442,15 +12908,220 @@ setTimeout(() => {
       await DataManager.init();
 	  await MarketOverview.init();
       TickerManager.init();
+	  StockDataManager.init();
 	  // Initialize TradingView-style panels
 	  initTVPanels();
       await NewsManager.init();
+	  EconomicCalendar.init();
+	  
+	  // ============================================
+// INITIALIZE MOBILE (runs after everything is ready)
+// ============================================
+if (window.innerWidth <= 768) {
+  console.log('📱 Setting up mobile features...');
+  
+  // === SEARCH ===
+  const searchOverlay = document.getElementById('mobile-search-overlay');
+  const searchInput = document.getElementById('mobile-search-input');
+  const searchResults = document.getElementById('mobile-search-results');
+  
+  function openSearch() {
+    if (searchOverlay) {
+      searchOverlay.classList.add('visible');
+      setTimeout(() => searchInput?.focus(), 300);
+    }
+  }
+  
+  // Search trigger button
+  document.getElementById('mobile-search-trigger')?.addEventListener('click', openSearch);
+  document.getElementById('mobile-menu-btn')?.addEventListener('click', openSearch);
+  
+  // Also add search icon in header if it exists
+  document.querySelector('.mobile-icon-btn .fa-search')?.parentElement?.addEventListener('click', openSearch);
+  
+  // Back button
+  document.getElementById('mobile-search-back')?.addEventListener('click', () => {
+    searchOverlay?.classList.remove('visible');
+    if (searchInput) searchInput.value = '';
+    if (searchResults) searchResults.innerHTML = '';
+  });
+  
+  // Search input
+  searchInput?.addEventListener('input', function() {
+    const q = this.value.trim().toUpperCase();
+    if (!searchResults) return;
+    if (q.length < 1) { searchResults.innerHTML = ''; return; }
+    
+    const syms = (STATE.availableSymbols || [])
+      .filter(s => s.symbol.includes(q))
+      .slice(0, 15);
+    
+    searchResults.innerHTML = syms.length ? syms.map(s => 
+      `<div class="ms-item" data-sym="${s.symbol}" style="display:flex;justify-content:space-between;padding:12px;border-bottom:1px solid rgba(48,54,61,0.3);cursor:pointer;">
+        <div><strong>${s.symbol.replace('USDT','/USDT')}</strong><br><small style="color:var(--text-muted);">${s.baseAsset} · Binance</small></div>
+        <span style="color:var(--accent-primary);font-size:10px;">→</span>
+      </div>`
+    ).join('') : '<div style="padding:30px;text-align:center;color:var(--text-muted);">No results</div>';
+    
+    searchResults.querySelectorAll('.ms-item').forEach(el => {
+      el.addEventListener('click', () => {
+        const sym = el.dataset.sym;
+        if (sym && window.TV) window.TV.switchSymbol(sym);
+        searchOverlay?.classList.remove('visible');
+        if (searchInput) searchInput.value = '';
+        if (searchResults) searchResults.innerHTML = '';
+      });
+    });
+  });
+  
+  // Quick symbol pills
+  document.querySelectorAll('.symbol-pill[data-symbol]').forEach(pill => {
+    pill.addEventListener('click', function() {
+      const sym = this.dataset.symbol;
+      if (sym && window.TV) window.TV.switchSymbol(sym);
+      searchOverlay?.classList.remove('visible');
+    });
+  });
+  
+  // === BOTTOM SHEET ===
+  const sheet = document.getElementById('mobile-bottom-sheet');
+  const overlay = document.getElementById('mobile-overlay');
+  let expanded = false;
+  
+  document.getElementById('sheet-handle')?.addEventListener('click', function(e) {
+    if (e.target.closest('.sheet-tab')) return;
+    expanded = !expanded;
+    if (sheet) sheet.style.transform = expanded ? 'translateY(0)' : 'translateY(calc(100% - 48px))';
+    if (overlay) overlay.classList.toggle('visible', expanded);
+  });
+  
+  overlay?.addEventListener('click', () => {
+    expanded = false;
+    if (sheet) sheet.style.transform = 'translateY(calc(100% - 48px))';
+    if (overlay) overlay.classList.remove('visible');
+  });
+  
+  // === TABS ===
+  document.querySelectorAll('.sheet-tab').forEach(tab => {
+    tab.addEventListener('click', function(e) {
+      e.stopPropagation();
+      
+      document.querySelectorAll('.sheet-tab').forEach(t => {
+        t.classList.remove('active');
+        t.style.color = 'var(--text-muted)';
+        t.style.borderBottomColor = 'transparent';
+      });
+      this.classList.add('active');
+      this.style.color = 'var(--accent-primary)';
+      this.style.borderBottomColor = 'var(--accent-primary)';
+      
+      const tabName = this.dataset.tab;
+      document.querySelectorAll('.sheet-panel').forEach(p => p.style.display = 'none');
+      const panel = document.getElementById('sheet-' + tabName);
+      if (panel) panel.style.display = 'block';
+      
+      if (tabName === 'indicators') loadMobileIndicators();
+      if (tabName === 'watchlist') loadMobileWatchlist();
+      
+      if (!expanded) {
+        expanded = true;
+        if (sheet) sheet.style.transform = 'translateY(0)';
+        if (overlay) overlay.classList.add('visible');
+      }
+    });
+  });
+  
+  // === LOAD INDICATORS ===
+  function loadMobileIndicators() {
+    const c = document.getElementById('mobile-indicators-grid');
+    if (!c) return;
+    const inds = ['RSI','MACD','SMA','EMA','Bollinger','VWAP','Stochastic','ATR','Ichimoku','SuperTrend','PSAR','CCI','WilliamsR','Keltner','OBV','MFI'];
+    c.innerHTML = inds.map(ind => {
+      const a = STATE.activeIndicators?.has(ind);
+      return `<button class="m-ind-btn" data-ind="${ind}" style="padding:10px;background:${a?'var(--accent-muted)':'var(--bg-tertiary)'};border:1px solid ${a?'var(--accent-primary)':'var(--border-primary)'};border-radius:8px;color:${a?'var(--accent-primary)':'var(--text-secondary)'};font-size:10px;font-weight:600;cursor:pointer;">${ind}</button>`;
+    }).join('');
+    
+    c.querySelectorAll('.m-ind-btn').forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const ind = this.dataset.ind;
+        if (typeof IndicatorEngine !== 'undefined') IndicatorEngine.toggleIndicator(ind);
+        setTimeout(() => loadMobileIndicators(), 300);
+      });
+    });
+  }
+  
+  // === LOAD WATCHLIST ===
+  function loadMobileWatchlist() {
+    const c = document.getElementById('mobile-watchlist-list');
+    if (!c) return;
+    const wl = STATE.watchlist || [{symbol:'BTCUSDT'},{symbol:'ETHUSDT'},{symbol:'BNBUSDT'},{symbol:'SOLUSDT'}];
+    c.innerHTML = wl.map(item => 
+      `<div class="m-wl-item" data-sym="${item.symbol}" style="display:flex;justify-content:space-between;padding:10px 8px;border-bottom:1px solid rgba(48,54,61,0.3);cursor:pointer;">
+        <div><strong>${item.symbol.replace('USDT','/USDT')}</strong><br><small style="color:var(--text-muted);">Binance</small></div>
+        <div style="text-align:right;font-weight:600;">--</div>
+      </div>`
+    ).join('');
+    
+    c.querySelectorAll('.m-wl-item').forEach(el => {
+      el.addEventListener('click', () => {
+        if (window.TV) window.TV.switchSymbol(el.dataset.sym);
+      });
+    });
+  }
+  
+  // === DRAWING TOOLS ===
+  document.querySelectorAll('.sheet-tool-btn[data-tool]').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const tool = this.dataset.tool;
+      if (tool === 'clear' && typeof DrawingEngine !== 'undefined') DrawingEngine.clearAll();
+      else if (tool === 'undo' && typeof DrawingEngine !== 'undefined') DrawingEngine.undo();
+      else if (tool && typeof DrawingEngine !== 'undefined') DrawingEngine.setTool(tool);
+    });
+  });
+  
+  // === MORE BUTTONS ===
+  document.querySelectorAll('.mob-action-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const action = this.dataset.action;
+      if (action === 'search') openSearch();
+      else if (action === 'depth') document.getElementById('market-depth-modal')?.classList.add('visible');
+      else if (action === 'news') document.getElementById('news-modal')?.classList.add('visible');
+      else if (action === 'alerts') document.getElementById('alerts-modal')?.classList.add('visible');
+      else if (action === 'settings') document.getElementById('settings-modal')?.classList.add('visible');
+      else if (action === 'theme') {
+        const cur = document.body.getAttribute('data-theme') || 'dark';
+        document.body.setAttribute('data-theme', cur === 'dark' ? 'light' : 'dark');
+        if (typeof U !== 'undefined') U.storage.set('tvp_theme', cur === 'dark' ? 'light' : 'dark');
+      } else if (action === 'fullscreen') {
+        document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen();
+      }
+    });
+  });
+  
+  // === PRICE UPDATE ===
+  setInterval(() => {
+    const p = document.getElementById('mobile-price-display');
+    const s = document.getElementById('mobile-symbol-display');
+    if (p && STATE.currentPrice) {
+      p.textContent = typeof U !== 'undefined' ? U.formatPrice(STATE.currentPrice) : STATE.currentPrice.toFixed(2);
+      p.style.color = (STATE.change24h || 0) >= 0 ? 'var(--up-color)' : 'var(--down-color)';
+    }
+    if (s) s.textContent = STATE.symbol?.replace('USDT','/USDT') || '--';
+  }, 2000);
+  
+  console.log('✅ Mobile features ready!');
+}
       
       setInterval(() => AlertManager.check(), 1000);
       setInterval(() => TradeManager.updatePrices(), 1000);
       
       console.log('✅ TradeVision Pro Ready');
       //Toast.success('TradeVision Pro v3.2 Ready');
+	  // ============================================
+
     } catch(e) {
       console.error('❌ Init failed:', e);
       Toast.error('Failed to initialize. Please refresh.');
@@ -12461,326 +13132,663 @@ setTimeout(() => {
     document.addEventListener('DOMContentLoaded', main);
   } else {
     main();
-  }
-// ============================================
-// MOBILE FUNCTIONALITY (Clean, no conflicts)
-// ============================================
-
-// Only run mobile setup if elements exist
-(function initMobile() {
-  const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-  const mobileSearchBtn = document.getElementById('mobile-search-btn');
-  const mobileWatchlistBtn = document.getElementById('mobile-watchlist-btn');
-  const mobileSearchOverlay = document.getElementById('mobile-search-overlay');
-  const mobileSearchInput = document.getElementById('mobile-search-input');
-  const mobileSearchResults = document.getElementById('mobile-search-results');
-  const mobileSearchBack = document.getElementById('mobile-search-back');
-  const mobileSearchClear = document.getElementById('mobile-search-clear');
-  const sidebarOverlay = document.getElementById('sidebar-overlay');
-  const bottomNavBtns = document.querySelectorAll('.mobile-nav-btn');
-  const mobilePanels = document.querySelectorAll('.mobile-panel');
-
-  // Close all panels
-  function closeAllMobilePanels() {
-    mobilePanels.forEach(panel => panel.classList.remove('visible'));
-    if (sidebarOverlay) sidebarOverlay.classList.remove('visible');
-    bottomNavBtns.forEach(btn => btn.classList.remove('active'));
-    // Activate chart button
-    const chartBtn = document.querySelector('.mobile-nav-btn[data-panel="chart"]');
-    if (chartBtn) chartBtn.classList.add('active');
-  }
-
-  // Open a specific panel
-  function openMobilePanel(panelId) {
-    closeAllMobilePanels();
-    const panel = document.getElementById(`mobile-${panelId}-panel`);
-    if (panel) {
-      panel.classList.add('visible');
-      if (sidebarOverlay) sidebarOverlay.classList.add('visible');
+	// Setup mobile timeframe pills
+document.querySelectorAll('.mobile-tf-pill').forEach(pill => {
+  pill.addEventListener('click', function() {
+    const interval = this.getAttribute('data-interval');
+    if (interval && window.TV) {
+      window.TV.switchInterval(interval);
+      document.querySelectorAll('.mobile-tf-pill').forEach(p => p.classList.remove('active'));
+      this.classList.add('active');
     }
-    const activeBtn = document.querySelector(`.mobile-nav-btn[data-panel="${panelId}"]`);
-    if (activeBtn) activeBtn.classList.add('active');
-  }
+  });
+});
 
-  // Bottom navigation clicks
-  if (bottomNavBtns.length) {
-    bottomNavBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        const panelId = btn.getAttribute('data-panel');
-        if (panelId === 'chart') {
-          closeAllMobilePanels();
-        } else {
-          openMobilePanel(panelId);
-        }
-      });
+// Setup mobile search button in header
+// ============================================
+// MOBILE SEARCH - COMPLETE WORKING VERSION
+// ============================================
+(function setupMobileSearch() {
+  const searchBtn = document.getElementById('m-search-btn');
+  const searchOverlay = document.getElementById('mobile-search-overlay');
+  const searchClose = document.getElementById('m-search-close');
+  const searchInput = document.getElementById('m-search-input');
+  const searchResults = document.getElementById('m-search-results');
+  
+  if (!searchOverlay) return;
+  
+  // OPEN SEARCH
+  function openSearch() {
+    searchOverlay.classList.add('visible');
+    setTimeout(() => searchInput?.focus(), 300);
+  }
+  
+  // CLOSE SEARCH
+  function closeSearch() {
+    searchOverlay.classList.remove('visible');
+    if (searchInput) searchInput.value = '';
+    if (searchResults) searchResults.innerHTML = '';
+  }
+  
+  // Search button click
+  if (searchBtn) {
+    searchBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      openSearch();
     });
   }
+  
+  // Close button
+  if (searchClose) {
+    searchClose.addEventListener('click', closeSearch);
+  }
+  
+  // Close on overlay background click
+  searchOverlay.addEventListener('click', function(e) {
+    if (e.target === searchOverlay) closeSearch();
+  });
+  
+  // Close on Escape key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && searchOverlay.classList.contains('visible')) {
+      closeSearch();
+    }
+  });
+  
+  // Keyboard shortcut "/" to open search
+  document.addEventListener('keydown', function(e) {
+    if (e.key === '/' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+      e.preventDefault();
+      openSearch();
+    }
+  });
+  
+  
+  
+  console.log('✅ Mobile search ready');
+})();
+(function() {
+  const input = document.getElementById('m-search-input');
+  const resultsDiv = document.getElementById('m-search-results');
+  if (!input || !resultsDiv) return;
 
-  // Mobile timeframe bar buttons
-  document.querySelectorAll('.mobile-timeframe-bar .tf-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const interval = this.getAttribute('data-interval');
-      if (!interval) return;
-      
-      // Update active state on mobile bar
-      document.querySelectorAll('.mobile-timeframe-bar .tf-btn').forEach(b => b.classList.remove('active'));
-      this.classList.add('active');
-      
-      // Update active state on desktop timeframe (sync)
-      document.querySelectorAll('#timeframe-selector .tf-btn').forEach(b => {
-        b.classList.toggle('active', b.getAttribute('data-interval') === interval);
+  input.addEventListener('input', function() {
+    const query = this.value.trim().toUpperCase();
+    if (query.length < 1) {
+      resultsDiv.innerHTML = '';
+      return;
+    }
+
+    // Get symbols from Binance list (populated by DataManager) or fallback to config
+    const symbols = (typeof STATE !== 'undefined' && STATE.availableSymbols && STATE.availableSymbols.length > 0)
+      ? STATE.availableSymbols
+      : (typeof CONFIG !== 'undefined' ? CONFIG.TICKER_SYMBOLS.map(s => ({ symbol: s, baseAsset: s.replace('USDT', '') })) : []);
+
+    const matches = symbols
+      .filter(s => s.symbol.includes(query) || (s.baseAsset && s.baseAsset.includes(query)))
+      .slice(0, 15);
+
+    if (matches.length === 0) {
+      resultsDiv.innerHTML = '<div style="padding:30px;text-align:center;color:var(--text-muted);">No results</div>';
+      return;
+    }
+
+    resultsDiv.innerHTML = matches.map(s => {
+      const displaySymbol = s.symbol.replace('USDT', '/USDT');
+      return `
+        <div class="m-search-result-item" data-symbol="${s.symbol}" style="display:flex;justify-content:space-between;padding:12px;border-bottom:1px solid var(--border-primary);cursor:pointer;">
+          <div>
+            <div style="font-weight:600;font-size:14px;">${displaySymbol}</div>
+            <div style="font-size:11px;color:var(--text-muted);">${s.baseAsset} · Binance</div>
+          </div>
+          <span style="color:var(--accent-primary);">→</span>
+        </div>
+      `;
+    }).join('');
+
+    // Add click handlers to each result
+    resultsDiv.querySelectorAll('.m-search-result-item').forEach(item => {
+      item.addEventListener('click', function() {
+        const symbol = this.getAttribute('data-symbol');
+        if (symbol && typeof window.TV !== 'undefined' && window.TV.switchSymbol) {
+          window.TV.switchSymbol(symbol);
+        }
+        // Close the overlay
+        const overlay = document.getElementById('mobile-search-overlay');
+        if (overlay) overlay.classList.remove('visible');
+        input.value = '';
+        resultsDiv.innerHTML = '';
       });
+    });
+  });
+})();
+  }
+
+// ============================================
+// MOBILE BOTTOM SHEET 
+// ============================================
+// ============================================
+// MOBILE BOTTOM SHEET - WORKING VERSION
+// ============================================
+(function initMobile() {
+  // Only run on mobile
+  if (window.innerWidth > 768) return;
+  
+  console.log('📱 Initializing mobile view...');
+  
+  const sheet = document.getElementById('mobile-bottom-sheet');
+  const handle = document.getElementById('sheet-handle');
+  const overlay = document.getElementById('mobile-overlay');
+  const chartContainer = document.querySelector('.chart-container');
+  const sheetContent = document.getElementById('sheet-content');
+  
+  if (!sheet) {
+    console.error('Mobile sheet not found!');
+    return;
+  }
+  
+  // Sheet state management
+  let sheetState = 'collapsed';
+  let startY = 0;
+  let currentY = 0;
+  let isDragging = false;
+  
+  function setSheetState(state) {
+    sheetState = state;
+    
+    switch(state) {
+      case 'collapsed':
+        sheet.style.transform = 'translateY(calc(100% - 52px))';
+        sheet.style.height = '55vh';
+        if (overlay) overlay.classList.remove('visible');
+        if (chartContainer) chartContainer.classList.remove('sheet-open');
+        break;
+      case 'expanded':
+        sheet.style.transform = 'translateY(30%)';
+        sheet.style.height = '55vh';
+        if (overlay) overlay.classList.remove('visible');
+        if (chartContainer) chartContainer.classList.remove('sheet-open');
+        break;
+      case 'full':
+        sheet.style.transform = 'translateY(0)';
+        sheet.style.height = '75vh';
+        if (overlay) overlay.classList.add('visible');
+        if (chartContainer) chartContainer.classList.add('sheet-open');
+        break;
+    }
+  }
+  
+  // Touch events for dragging
+  handle.addEventListener('touchstart', function(e) {
+    startY = e.touches[0].clientY;
+    isDragging = true;
+    sheet.style.transition = 'none';
+  }, { passive: true });
+  
+  handle.addEventListener('touchmove', function(e) {
+    if (!isDragging) return;
+    currentY = e.touches[0].clientY;
+    const diff = currentY - startY;
+    const windowHeight = window.innerHeight;
+    
+    let baseTranslate;
+    if (sheetState === 'collapsed') baseTranslate = windowHeight - 100;
+    else if (sheetState === 'expanded') baseTranslate = windowHeight * 0.3;
+    else baseTranslate = 0;
+    
+    let newTranslate = baseTranslate + diff;
+    newTranslate = Math.max(0, Math.min(newTranslate, windowHeight - 100));
+    sheet.style.transform = `translateY(${newTranslate}px)`;
+  }, { passive: true });
+  
+  handle.addEventListener('touchend', function() {
+    isDragging = false;
+    sheet.style.transition = 'transform 0.35s cubic-bezier(0.4, 0, 0.2, 1)';
+    
+    const diff = currentY - startY;
+    
+    if (Math.abs(diff) < 10) {
+      // Tap detected - cycle states
+      if (sheetState === 'collapsed') setSheetState('expanded');
+      else if (sheetState === 'expanded') setSheetState('full');
+      else setSheetState('collapsed');
+    } else if (diff < -30) {
+      // Swipe up
+      if (sheetState === 'collapsed') setSheetState('expanded');
+      else setSheetState('full');
+    } else if (diff > 30) {
+      // Swipe down
+      if (sheetState === 'full') setSheetState('expanded');
+      else setSheetState('collapsed');
+    } else {
+      setSheetState(sheetState);
+    }
+  });
+  
+  // Click on handle also cycles
+  handle.addEventListener('click', function(e) {
+    if (isDragging) { isDragging = false; return; }
+    if (sheetState === 'collapsed') setSheetState('expanded');
+    else if (sheetState === 'expanded') setSheetState('full');
+    else setSheetState('collapsed');
+  });
+  
+  // Overlay click = collapse
+  if (overlay) {
+    overlay.addEventListener('click', function() {
+      setSheetState('collapsed');
+    });
+  }
+  
+  // ============================================
+  // TAB SWITCHING
+  // ============================================
+  const tabs = document.querySelectorAll('.sheet-tab');
+  
+  tabs.forEach(function(tab) {
+    tab.addEventListener('click', function(e) {
+      e.stopPropagation(); // Don't trigger handle click
       
-      // Switch interval using the existing function
-      if (window.TV && window.TV.switchInterval) {
-        window.TV.switchInterval(interval);
+      // Update active tab
+      tabs.forEach(function(t) { t.classList.remove('active'); });
+      tab.classList.add('active');
+      
+      const tabName = tab.getAttribute('data-tab');
+      
+      // Show correct panel
+      const panels = document.querySelectorAll('.sheet-panel');
+      panels.forEach(function(p) { p.classList.remove('active'); });
+      
+      const targetPanel = document.getElementById('sheet-' + tabName);
+      if (targetPanel) {
+        targetPanel.classList.add('active');
       }
       
-      // Close any open panels
-      closeAllMobilePanels();
+      // Populate content based on tab
+      if (tabName === 'indicators') {
+        populateMobileIndicators();
+      }
+      
+      if (tabName === 'watchlist') {
+        populateMobileWatchlist();
+      }
+      
+      if (tabName === 'stats') {
+        updateMobileStats();
+      }
+      
+      // Expand sheet if collapsed
+      if (sheetState === 'collapsed') {
+        setSheetState('expanded');
+      }
+      
+      console.log('Tab clicked:', tabName);
     });
   });
   
-  // Sync desktop timeframe to mobile when changed via keyboard or other methods
-  // Override the switchInterval to also update mobile bar
-  const originalSwitchInterval = window.TV?.switchInterval;
-  if (originalSwitchInterval) {
-    window.TV.switchInterval = function(interval) {
-      originalSwitchInterval(interval);
-      // Sync mobile bar
-      document.querySelectorAll('.mobile-timeframe-bar .tf-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.getAttribute('data-interval') === interval);
-      });
-    };
-  }
-
-  // Panel close buttons
-  document.querySelectorAll('.mobile-panel-close').forEach(btn => {
-    btn.addEventListener('click', closeAllMobilePanels);
-  });
-
-  // Overlay click
-  if (sidebarOverlay) {
-    sidebarOverlay.addEventListener('click', closeAllMobilePanels);
-  }
-
-  // Panel indicators auto-populate
-  const indicatorsNavBtn = document.querySelector('.mobile-nav-btn[data-panel="indicators"]');
-  if (indicatorsNavBtn) {
-    indicatorsNavBtn.addEventListener('click', () => {
-      const content = document.getElementById('mobile-indicators-content');
-      if (content && !content.querySelector('.mobile-tool-btn')) {
-        const indicators = ['RSI','MACD','SMA','EMA','Bollinger','VWAP','Stochastic','ATR','Ichimoku'];
-        const icons = {'RSI':'fa-chart-line','MACD':'fa-wave-square','SMA':'fa-chart-simple','EMA':'fa-chart-area','Bollinger':'fa-chart-bar','VWAP':'fa-weight-scale','Stochastic':'fa-percent','ATR':'fa-arrows-left-right','Ichimoku':'fa-cloud'};
-        content.innerHTML = `<div class="mobile-tools-grid" style="grid-template-columns: repeat(3, 1fr); gap: 8px;">` +
-          indicators.map(ind => {
-            const isActive = STATE.activeIndicators.has(ind);
-            return `<button class="mobile-tool-btn${isActive ? ' active' : ''}" data-indicator="${ind}" style="background:${isActive ? 'var(--accent-muted)' : 'var(--bg-tertiary)'};border-color:${isActive ? 'var(--accent-primary)' : 'var(--border-primary)'};color:${isActive ? 'var(--accent-primary)' : 'var(--text-secondary)'};">
-              <i class="fas ${icons[ind]||'fa-chart-line'}" style="font-size:20px;"></i>
-              <span style="font-size:10px;">${ind}</span>
-              ${isActive ? '<span style="font-size:9px;color:var(--success);">✓</span>' : ''}
-            </button>`;
-          }).join('') + `</div>`;
-        content.querySelectorAll('.mobile-tool-btn').forEach(btn => {
-          btn.addEventListener('click', () => {
-            const ind = btn.getAttribute('data-indicator');
-            if (ind && typeof IndicatorEngine !== 'undefined') {
-              IndicatorEngine.toggleIndicator(ind);
-            }
-          });
-        });
-      }
-    });
-  }
-
-  // Watchlist panel
-  const watchlistNavBtn = document.querySelector('.mobile-nav-btn[data-panel="watchlist"]');
-  if (watchlistNavBtn) {
-    watchlistNavBtn.addEventListener('click', () => {
-      const content = document.getElementById('mobile-watchlist-content');
-      if (content) {
-        content.innerHTML = `
-          <div style="margin-bottom:16px;">
-            <h4 style="font-size:14px;font-weight:600;margin-bottom:8px;">Watchlist</h4>
-            ${STATE.watchlist.length > 0 ? STATE.watchlist.map(item => `
-              <div class="mobile-watchlist-item" data-symbol="${item.symbol}" style="display:flex;justify-content:space-between;align-items:center;padding:12px;border-radius:8px;margin-bottom:4px;cursor:pointer;${item.symbol === STATE.symbol ? 'background:var(--accent-muted);' : ''}">
-                <div><div style="font-weight:600;font-size:13px;">${item.symbol.replace('USDT','/USDT')}</div><div style="font-size:10px;color:var(--text-muted);">Binance</div></div>
-                <div style="text-align:right;"><div style="font-size:12px;font-weight:500;" id="mobile-wl-price-${item.symbol}">--</div><div style="font-size:10px;" id="mobile-wl-change-${item.symbol}">--</div></div>
-              </div>
-            `).join('') : '<div style="text-align:center;padding:20px;color:var(--text-muted);">No symbols in watchlist</div>'}
-            <button id="mobile-add-watchlist-btn" style="width:100%;padding:10px;margin-top:8px;background:var(--accent-primary);color:white;border:none;border-radius:8px;font-size:14px;cursor:pointer;"><i class="fas fa-plus"></i> Add Symbol</button>
-          </div>
-          <div style="margin-top:16px;">
-            <h4 style="font-size:14px;font-weight:600;margin-bottom:8px;">Quick Trade</h4>
-            <div style="background:var(--bg-tertiary);padding:12px;border-radius:8px;">
-              <div style="display:flex;gap:8px;margin-bottom:12px;">
-                <button id="mobile-trade-buy" style="flex:1;padding:10px;border:1px solid var(--up-color);border-radius:6px;color:var(--up-color);font-weight:600;cursor:pointer;background:var(--up-color);color:white;">BUY</button>
-                <button id="mobile-trade-sell" style="flex:1;padding:10px;border:1px solid var(--down-color);border-radius:6px;color:var(--down-color);font-weight:600;cursor:pointer;background:transparent;">SELL</button>
-              </div>
-              <div style="margin-bottom:8px;"><label style="font-size:10px;color:var(--text-muted);">PRICE (USDT)</label><input type="text" id="mobile-trade-price" style="width:100%;padding:10px;background:var(--bg-primary);border:1px solid var(--border-primary);border-radius:6px;color:var(--text-primary);" value="${STATE.currentPrice ? U.formatPrice(STATE.currentPrice) : ''}" readonly></div>
-              <div style="margin-bottom:8px;"><label style="font-size:10px;color:var(--text-muted);">AMOUNT</label><input type="text" id="mobile-trade-amount" style="width:100%;padding:10px;background:var(--bg-primary);border:1px solid var(--border-primary);border-radius:6px;color:var(--text-primary);" placeholder="0.00"></div>
-              <button id="mobile-place-order-btn" style="width:100%;padding:12px;border:none;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;background:var(--up-color);color:white;">Place BUY Order</button>
-            </div>
-          </div>
-        `;
-        // Add click handlers
-        content.querySelectorAll('.mobile-watchlist-item').forEach(item => {
-          item.addEventListener('click', () => {
-            const sym = item.getAttribute('data-symbol');
-            if (sym && window.TV && window.TV.switchSymbol) {
-              window.TV.switchSymbol(sym);
-              closeAllMobilePanels();
-            }
-          });
-        });
-        const addBtn = document.getElementById('mobile-add-watchlist-btn');
-        if (addBtn) {
-          addBtn.addEventListener('click', () => {
-            const symbol = prompt('Enter symbol (e.g., ADAUSDT):');
-            if (symbol && WindowWatchlistManager && WindowWatchlistManager.addSymbol) {
-              WindowWatchlistManager.addSymbol(symbol);
-            }
-          });
-        }
-        const buyBtn = document.getElementById('mobile-trade-buy');
-        const sellBtn = document.getElementById('mobile-trade-sell');
-        const orderBtn = document.getElementById('mobile-place-order-btn');
-        if (buyBtn && sellBtn && orderBtn) {
-          buyBtn.addEventListener('click', () => { buyBtn.style.background = 'var(--up-color)'; buyBtn.style.color = 'white'; sellBtn.style.background = 'transparent'; sellBtn.style.color = 'var(--down-color)'; orderBtn.style.background = 'var(--up-color)'; orderBtn.textContent = 'Place BUY Order'; });
-          sellBtn.addEventListener('click', () => { sellBtn.style.background = 'var(--down-color)'; sellBtn.style.color = 'white'; buyBtn.style.background = 'transparent'; buyBtn.style.color = 'var(--up-color)'; orderBtn.style.background = 'var(--down-color)'; orderBtn.textContent = 'Place SELL Order'; });
-          orderBtn.addEventListener('click', () => { Toast.info('Trade placed (demo)'); });
-        }
-      }
-    });
-  }
-
-  // Drawing tools
-  document.querySelectorAll('.mobile-tool-btn[data-tool]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const tool = btn.getAttribute('data-tool');
-      if (tool && typeof DrawingEngine !== 'undefined') {
-        DrawingEngine.setTool(tool);
-        closeAllMobilePanels();
-      }
-    });
-  });
-
-  // More panel buttons
-  const moreBtnMap = {
-    'mobile-market-depth-btn': 'market-depth-modal',
-    'mobile-news-btn': 'news-modal',
-    'mobile-alerts-btn': 'alerts-modal',
-    'mobile-settings-btn': 'settings-modal',
-    'mobile-shortcuts-btn': 'shortcuts-modal'
-  };
-  Object.entries(moreBtnMap).forEach(([btnId, modalId]) => {
-    const btn = document.getElementById(btnId);
-    if (btn) {
-      btn.addEventListener('click', () => {
-        const modal = document.getElementById(modalId);
-        if (modal) modal.classList.add('visible');
-        closeAllMobilePanels();
-      });
+  // ============================================
+  // INDICATORS - POPULATE & TOGGLE
+  // ============================================
+  function populateMobileIndicators() {
+    const container = document.getElementById('mobile-indicators-grid');
+    if (!container) return;
+    
+    // Only populate once
+    if (container.children.length > 0) {
+      // Update active states
+      updateIndicatorStates(container);
+      return;
     }
-  });
-  const fullscreenBtn = document.getElementById('mobile-fullscreen-btn');
-  if (fullscreenBtn) {
-    fullscreenBtn.addEventListener('click', () => {
-      if (!document.fullscreenElement) document.documentElement.requestFullscreen();
-      else document.exitFullscreen();
-      closeAllMobilePanels();
+    
+    const indicators = [
+      'RSI', 'MACD', 'SMA', 'EMA', 'Bollinger', 'VWAP', 
+      'Stochastic', 'ATR', 'Ichimoku', 'SuperTrend', 'PSAR',
+      'CCI', 'WilliamsR', 'Keltner', 'OBV', 'MFI'
+    ];
+    
+    container.innerHTML = indicators.map(function(ind) {
+      const isActive = STATE.activeIndicators && STATE.activeIndicators.has(ind);
+      return '<button class="sheet-indicator-btn' + (isActive ? ' active' : '') + '" data-indicator="' + ind + '">' + ind + '</button>';
+    }).join('');
+    
+    // Add click handlers
+    container.querySelectorAll('.sheet-indicator-btn').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const ind = btn.getAttribute('data-indicator');
+        
+        if (ind && typeof IndicatorEngine !== 'undefined') {
+          IndicatorEngine.toggleIndicator(ind);
+          
+          // Update button state
+          if (STATE.activeIndicators.has(ind)) {
+            btn.classList.add('active');
+            btn.style.background = 'var(--accent-muted)';
+            btn.style.borderColor = 'var(--accent-primary)';
+            btn.style.color = 'var(--accent-primary)';
+            Toast.success(ind + ' added');
+          } else {
+            btn.classList.remove('active');
+            btn.style.background = 'var(--bg-tertiary)';
+            btn.style.borderColor = 'var(--border-primary)';
+            btn.style.color = 'var(--text-secondary)';
+            Toast.info(ind + ' removed');
+          }
+        }
+      });
     });
   }
-  const themeBtn = document.getElementById('mobile-theme-btn');
-  if (themeBtn) {
-    themeBtn.addEventListener('click', () => {
+  
+  function updateIndicatorStates(container) {
+    container.querySelectorAll('.sheet-indicator-btn').forEach(function(btn) {
+      const ind = btn.getAttribute('data-indicator');
+      if (STATE.activeIndicators && STATE.activeIndicators.has(ind)) {
+        btn.classList.add('active');
+        btn.style.background = 'var(--accent-muted)';
+        btn.style.borderColor = 'var(--accent-primary)';
+        btn.style.color = 'var(--accent-primary)';
+      } else {
+        btn.classList.remove('active');
+        btn.style.background = 'var(--bg-tertiary)';
+        btn.style.borderColor = 'var(--border-primary)';
+        btn.style.color = 'var(--text-secondary)';
+      }
+    });
+  }
+  
+  // ============================================
+  // WATCHLIST
+  // ============================================
+  function populateMobileWatchlist() {
+    const container = document.getElementById('mobile-watchlist-list');
+    if (!container) return;
+    
+    const watchlist = STATE.watchlist || [
+      { symbol: 'BTCUSDT' }, { symbol: 'ETHUSDT' }, 
+      { symbol: 'BNBUSDT' }, { symbol: 'SOLUSDT' }
+    ];
+    
+    container.innerHTML = watchlist.map(function(item) {
+      const sym = item.symbol;
+      const ds = sym.replace('USDT', '/USDT');
+      return `
+        <div class="mobile-wl-item" data-symbol="${sym}" style="display:flex;justify-content:space-between;align-items:center;padding:10px 8px;border-bottom:1px solid rgba(48,54,61,0.3);cursor:pointer;font-size:12px;">
+          <div>
+            <div style="font-weight:700;">${ds}</div>
+            <div style="font-size:9px;color:var(--text-muted);">Binance</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-weight:600;" id="mwl-price-${sym}">--</div>
+            <div style="font-size:10px;padding:2px 6px;border-radius:3px;" id="mwl-change-${sym}">--</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+    
+    // Click to switch symbol
+    container.querySelectorAll('.mobile-wl-item').forEach(function(item) {
+      item.addEventListener('click', function() {
+        const sym = item.getAttribute('data-symbol');
+        if (sym && window.TV && window.TV.switchSymbol) {
+          window.TV.switchSymbol(sym);
+          Toast.info('Switched to ' + sym.replace('USDT', '/USDT'));
+        }
+      });
+    });
+  }
+  
+  // ============================================
+  // STATS
+  // ============================================
+  function updateMobileStats() {
+    const lastCandle = STATE.candles && STATE.candles[STATE.candles.length - 1];
+    if (lastCandle) {
+      const setVal = function(id, val) {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val;
+      };
+      setVal('ms-open', U.formatPrice(lastCandle.open));
+      setVal('ms-high', U.formatPrice(lastCandle.high));
+      setVal('ms-low', U.formatPrice(lastCandle.low));
+      setVal('ms-prev', STATE.candles.length > 1 ? U.formatPrice(STATE.candles[STATE.candles.length - 2].close) : '--');
+      setVal('ms-volume', U.formatVolume(lastCandle.volume));
+    }
+    const mcapEl = document.getElementById('ms-mcap');
+    if (mcapEl) mcapEl.textContent = '--';
+  }
+  
+  // ============================================
+  // DRAWING TOOLS
+  // ============================================
+  document.querySelectorAll('.sheet-tool-btn[data-tool]').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const tool = btn.getAttribute('data-tool');
+      
+      if (tool === 'clear' && typeof DrawingEngine !== 'undefined') {
+        DrawingEngine.clearAll();
+        Toast.info('All drawings cleared');
+      } else if (tool === 'undo' && typeof DrawingEngine !== 'undefined') {
+        DrawingEngine.undo();
+      } else if (tool && typeof DrawingEngine !== 'undefined') {
+        DrawingEngine.setTool(tool);
+      }
+      
+      setSheetState('collapsed');
+    });
+  });
+  
+  // ============================================
+  // MORE PANEL BUTTONS
+  // ============================================
+  function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      modal.classList.add('visible');
+      console.log('Opening modal:', modalId);
+    }
+    setSheetState('collapsed');
+  }
+  
+  const moreButtonMap = {
+    'mob-search-btn': function() {
+  const overlay = document.getElementById('mobile-search-overlay');
+  if (overlay) {
+    overlay.style.display = '';
+    overlay.classList.add('visible');
+    setTimeout(() => document.getElementById('m-search-input')?.focus(), 300);
+  }
+  setSheetState('collapsed');
+},
+    'mob-depth-btn': function() { openModal('market-depth-modal'); },
+    'mob-news-btn': function() { openModal('news-modal'); },
+    'mob-alerts-btn': function() { 
+      document.getElementById('alerts-modal')?.classList.add('visible');
+      setSheetState('collapsed');
+    },
+    'mob-settings-btn': function() { openModal('settings-modal'); },
+    'mob-theme-btn': function() {
       const current = document.body.getAttribute('data-theme') || 'dark';
       const next = current === 'dark' ? 'light' : 'dark';
       document.body.setAttribute('data-theme', next);
-      U.storage.set(CONFIG.STORAGE_KEYS.THEME, next);
-      closeAllMobilePanels();
-    });
-  }
-
-  // Search overlay
-  if (mobileSearchBtn) {
-    mobileSearchBtn.addEventListener('click', () => {
-      if (mobileSearchOverlay) mobileSearchOverlay.classList.add('visible');
-      if (mobileSearchInput) mobileSearchInput.focus();
-    });
-  }
-  if (mobileSearchBack) {
-    mobileSearchBack.addEventListener('click', () => {
-      if (mobileSearchOverlay) mobileSearchOverlay.classList.remove('visible');
-      if (mobileSearchInput) mobileSearchInput.value = '';
-      if (mobileSearchResults) mobileSearchResults.innerHTML = '';
-    });
-  }
-  if (mobileSearchClear) {
-    mobileSearchClear.addEventListener('click', () => {
-      if (mobileSearchInput) mobileSearchInput.value = '';
-      if (mobileSearchResults) mobileSearchResults.innerHTML = '';
-      if (mobileSearchInput) mobileSearchInput.focus();
-    });
-  }
-  if (mobileSearchInput) {
-    mobileSearchInput.addEventListener('input', U.debounce(async (e) => {
-      const query = e.target.value.trim().toUpperCase();
-      if (!mobileSearchResults) return;
-      if (query.length < 1) { mobileSearchResults.innerHTML = ''; return; }
-      const results = DataManager.searchSymbols(query);
-      if (results.length === 0) {
-        mobileSearchResults.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-muted);"><i class="fas fa-search" style="font-size:32px;margin-bottom:12px;display:block;"></i><span>No results for "${query}"</span></div>`;
-        return;
-      }
-      mobileSearchResults.innerHTML = results.map(s => `
-        <div class="mobile-search-result-item" data-symbol="${s.symbol}">
-          <div><div class="mobile-search-result-symbol">${s.symbol.replace('USDT','/USDT')}</div><div class="mobile-search-result-name">${s.baseAsset}</div></div>
-          <span class="mobile-search-result-exchange">Binance</span>
-        </div>
-      `).join('');
-      mobileSearchResults.querySelectorAll('.mobile-search-result-item').forEach(item => {
-        item.addEventListener('click', () => {
-          const symbol = item.getAttribute('data-symbol');
-          if (symbol && window.TV && window.TV.switchSymbol) {
-            window.TV.switchSymbol(symbol);
-            mobileSearchOverlay.classList.remove('visible');
-            mobileSearchInput.value = '';
-            mobileSearchResults.innerHTML = '';
-          }
-        });
+      if (typeof U !== 'undefined') U.storage.set('tvp_theme', next);
+      Toast.info('Theme: ' + next);
+    },
+    'mob-fullscreen-btn': function() {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+      else document.exitFullscreen();
+    }
+  };
+  
+  Object.keys(moreButtonMap).forEach(function(btnId) {
+    const btn = document.getElementById(btnId);
+    if (btn) {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        moreButtonMap[btnId]();
       });
-    }, 300));
-  }
-  document.querySelectorAll('.mobile-quick-symbols .symbol-pill').forEach(pill => {
-    pill.addEventListener('click', () => {
-      const symbol = pill.getAttribute('data-symbol');
-      if (symbol && window.TV && window.TV.switchSymbol) {
-        window.TV.switchSymbol(symbol);
-        if (mobileSearchOverlay) mobileSearchOverlay.classList.remove('visible');
-      }
-    });
-  });
-
-  // Watchlist header button
-  if (mobileWatchlistBtn) {
-    mobileWatchlistBtn.addEventListener('click', () => {
-      openMobilePanel('watchlist');
-      watchlistNavBtn?.click();
-    });
-  }
-
-  // Search shortcut on mobile
-  document.addEventListener('keydown', (e) => {
-    if (window.innerWidth > 768) return;
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-    if (e.key === '/' && !e.ctrlKey && !e.metaKey) {
-      e.preventDefault();
-      if (mobileSearchBtn) mobileSearchBtn.click();
     }
   });
+  
+  // ============================================
+  // SEARCH OVERLAY
+  // ============================================
+  document.getElementById('m-search-close')?.addEventListener('click', function() {
+  const overlay = document.getElementById('mobile-search-overlay');
+  if (overlay) overlay.classList.remove('visible');
+});
 
+// Also close when clicking the overlay background
+document.getElementById('mobile-search-overlay')?.addEventListener('click', function(e) {
+  if (e.target === this) {
+    this.classList.remove('visible');
+    const input = document.getElementById('m-search-input');
+    if (input) input.value = '';
+  }
+});
+  
+  document.querySelectorAll('.mobile-quick-symbols .symbol-pill').forEach(function(pill) {
+    pill.addEventListener('click', function() {
+      const symbol = pill.getAttribute('data-symbol');
+      if (symbol && window.TV) window.TV.switchSymbol(symbol);
+      document.getElementById('mobile-search-overlay')?.classList.remove('visible');
+      Toast.info('Switched to ' + symbol.replace('USDT', '/USDT'));
+    });
+  });
+  
+  
+  
+  // ============================================
+  // PRICE UPDATE INTERVAL
+  // ============================================
+  setInterval(function() {
+    if (STATE.currentPrice) {
+      const priceEl = document.querySelector('.mobile-price');
+      if (priceEl) {
+        priceEl.textContent = U.formatPrice(STATE.currentPrice);
+        priceEl.className = 'mobile-price ' + (STATE.change24h >= 0 ? 'up' : 'down');
+      }
+    }
+    
+    // Update watchlist prices in sheet
+    document.querySelectorAll('#mobile-watchlist-list .mobile-wl-item').forEach(function(item) {
+      const sym = item.getAttribute('data-symbol');
+      const data = STATE.marketData?.get(sym);
+      const priceEl = document.getElementById('mwl-price-' + sym);
+      const changeEl = document.getElementById('mwl-change-' + sym);
+      
+      if (priceEl && data?.price) {
+        priceEl.textContent = '$' + U.formatPrice(data.price);
+      }
+      if (changeEl && data?.change !== undefined) {
+        changeEl.textContent = (data.change >= 0 ? '+' : '') + U.formatNum(data.change, 2) + '%';
+        changeEl.style.color = data.change >= 0 ? 'var(--up-color)' : 'var(--down-color)';
+        changeEl.style.background = data.change >= 0 ? 'var(--up-muted)' : 'var(--down-muted)';
+      }
+    });
+  }, 2000);
+  
+  console.log('✅ Mobile sheet ready! Click tabs to use.');
 })();
+ 
+})();
+</script>
+
+<script>
+(function() {
+  'use strict';
+
+  /* ---------- 1. Remove all old listeners by replacing the input ---------- */
+  const oldInput = document.getElementById('m-search-input');
+  if (!oldInput) return;
+  const newInput = oldInput.cloneNode(true);
+  oldInput.parentNode.replaceChild(newInput, oldInput);
+  /* Now newInput is completely clean */
+
+  const resultsDiv = document.getElementById('m-search-results');
+  const overlay = document.getElementById('mobile-search-overlay');
+
+  if (!resultsDiv || !overlay) return;
+
+  /* ---------- 2. Hard‑coded fallback list (always works) ---------- */
+  var FALLBACK_SYMBOLS = [
+    'BTCUSDT','ETHUSDT','BNBUSDT','SOLUSDT','XRPUSDT','ADAUSDT','DOGEUSDT',
+    'DOTUSDT','MATICUSDT','LINKUSDT','UNIUSDT','AVAXUSDT','LTCUSDT','ATOMUSDT',
+    'ETCUSDT','ALGOUSDT','VETUSDT','FILUSDT','ICPUSDT','SANDUSDT','AAVEUSDT',
+    'NEARUSDT','FTMUSDT','MANAUSDT','EGLDUSDT','THETAUSDT','AXSUSDT','GRTUSDT',
+    'HBARUSDT','XTZUSDT','EOSUSDT','FLOWUSDT','QNTUSDT','CHZUSDT','ENJUSDT',
+    'BATUSDT','ZRXUSDT','1INCHUSDT','COMPUSDT','SNXUSDT','CRVUSDT','KSMUSDT',
+    'RUNEUSDT','RENUSDT','LRCUSDT','COTIUSDT','CELOUSDT','ONEUSDT','IOTAUSDT'
+  ];
+
+  function getSymbolList() {
+    /* Use Binance list if it's populated, otherwise the hard‑coded list */
+    try {
+      if (typeof STATE !== 'undefined' && STATE.availableSymbols && STATE.availableSymbols.length > 0) {
+        return STATE.availableSymbols;
+      }
+    } catch(e) {}
+    return FALLBACK_SYMBOLS.map(function(s) {
+      return { symbol: s, baseAsset: s.replace('USDT','') };
+    });
+  }
+
+  /* ---------- 3. The real input handler ---------- */
+  newInput.addEventListener('input', function() {
+    var query = this.value.trim().toUpperCase();
+    console.log('[Mobile Search] Query:', query);   // <-- Check this in DevTools console
+
+    if (query.length < 1) {
+      resultsDiv.innerHTML = '';
+      return;
+    }
+
+    var symbols = getSymbolList();
+    console.log('[Mobile Search] Symbol count:', symbols.length);
+
+    var matches = symbols.filter(function(s) {
+      return s.symbol.indexOf(query) !== -1 || (s.baseAsset && s.baseAsset.indexOf(query) !== -1);
+    }).slice(0, 15);
+
+    console.log('[Mobile Search] Matches:', matches.length);
+
+    if (matches.length === 0) {
+      resultsDiv.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);">No results for "' + query + '"</div>';
+      return;
+    }
+
+    var html = '';
+    for (var i = 0; i < matches.length; i++) {
+      var s = matches[i];
+      var display = s.symbol.replace('USDT', '/USDT');
+      html +=
+        '<div class="ms-item" data-symbol="' + s.symbol + '" style="display:flex;justify-content:space-between;padding:12px;border-bottom:1px solid var(--border-primary);cursor:pointer;">' +
+          '<div>' +
+            '<div style="font-weight:600;font-size:14px;">' + display + '</div>' +
+            '<div style="font-size:11px;color:var(--text-muted);">' + s.baseAsset + ' · Binance</div>' +
+          '</div>' +
+          '<span style="color:var(--accent-primary);font-size:18px;">→</span>' +
+        '</div>';
+    }
+    resultsDiv.innerHTML = html;
+
+    /* Add click handlers */
+    resultsDiv.querySelectorAll('.ms-item').forEach(function(item) {
+      item.addEventListener('click', function() {
+        var sym = this.getAttribute('data-symbol');
+        console.log('[Mobile Search] Selected:', sym);
+        if (sym && typeof window.TV !== 'undefined' && window.TV.switchSymbol) {
+          window.TV.switchSymbol(sym);
+        }
+        overlay.classList.remove('visible');
+        newInput.value = '';
+        resultsDiv.innerHTML = '';
+      });
+    });
+  });
+
+  console.log('✅ Mobile search suggestions ready (hard‑coded fallback active until Binance symbols load)');
 })();
 </script>
 
