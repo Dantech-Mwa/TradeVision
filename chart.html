@@ -15,7 +15,7 @@
   <!-- Open Graph / Social Media -->
   <meta property="og:title" content="TradeVision Pro - Professional Crypto Trading Charts" />
   <meta property="og:description" content="Free professional crypto charts with 100+ indicators, real-time data, drawing tools, AI insights, and Coinpedia news. Trade BTC, ETH, and more." />
-  <meta property="og:image" content="https://raw.githubusercontent.com/Dantech-Mwa/TradeVision/refs/heads/main/profile1.png" />
+  <meta property="og:image" content="https://tradevisionpro.online/profile.png" />
   <meta property="og:url" content="https://tradevisionpro.online/chart.html" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="TradeVision Pro" />
@@ -24,7 +24,7 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="TradeVision Pro - Advanced Trading Platform" />
   <meta name="twitter:description" content="Professional crypto charts with real-time data and AI analysis" />
-  <meta name="twitter:image" content="https://raw.githubusercontent.com/Dantech-Mwa/TradeVision/refs/heads/main/profile1.png" />
+  <meta name="twitter:image" content="https://tradevisionpro.online/profile.png" />
   
   <!-- Canonical URL -->
   <link rel="canonical" href="https://tradevisionpro.online/chart.html" />
@@ -2075,6 +2075,26 @@ body {
   background: var(--bg-hover);
 }
 
+/* Clean TradingView-style pane labels */
+.chart-pane[data-title]::before {
+  content: attr(data-title);
+  position: absolute;
+  top: 6px;
+  left: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  opacity: 0.75;
+  z-index: 10;
+  pointer-events: none;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Hide the old pane headers in case any remain */
+.pane-header {
+  display: none !important;
+}
+
 /* Responsive Improvements */
 @media (max-width: 768px) {
   .indicators-grid {
@@ -3523,6 +3543,9 @@ kbd {
     height: 100vh;
     width: 100vw;
   }
+    #price-chart, #volume-chart {
+    touch-action: manipulation;
+  }
   
   /* Header */
   .header {
@@ -3697,9 +3720,9 @@ kbd {
   }
   
   #volume-chart-pane {
-    flex: 0 0 40px;
-    min-height: 35px;
-    max-height: 50px;
+    flex: 0 0 80px !important;
+    min-height: 60px !important;
+    max-height: 120px !important;
   }
   
   .indicator-panes-container {
@@ -5425,16 +5448,11 @@ kbd {
 </div>
 </div>
 
+       
         <!-- Volume Chart -->
-        <div class="chart-pane chart-pane-volume" id="volume-chart-pane">
-          <div class="pane-header">
-            <span class="pane-title">Volume</span>
-            <button class="pane-close" title="Remove Volume">
-              <i class="fas fa-times"></i>
-            </button>
-          </div>
-          <div id="volume-chart" class="chart-canvas"></div>
-        </div>
+<div class="chart-pane chart-pane-volume" id="volume-chart-pane" data-title="Volume">
+  <div id="volume-chart" class="chart-canvas"></div>
+</div>
 
         <!-- Dynamic Indicator Panes Container -->
         <div id="indicator-panes-container" class="indicator-panes-container">
@@ -6845,7 +6863,7 @@ FINNHUB_WS: 'wss://ws.finnhub.io',
     drawingsVisible: true,
     gridVisible: true,
     crosshairActive: false,
-    activeIndicators: new Set(['Volume','RSI','MACD']),
+    activeIndicators: new Set([]),
     indicatorSettings: {},
     drawnObjects: new Map(),
     isDrawing: false,
@@ -7158,31 +7176,20 @@ createIndicatorPane(id, containerId, opts = {}) {
   const pane = document.createElement('div');
   pane.className = 'chart-pane chart-pane-indicator';
   pane.id = `${id}-pane`;
+  pane.setAttribute('data-title', opts.title || id.toUpperCase());   // 👈 add title as attribute
   
   pane.innerHTML = `
-    <div class="pane-header" style="display:flex;justify-content:space-between;align-items:center;padding:2px 8px;background:var(--bg-secondary);border-bottom:1px solid var(--border-primary);">
-      <span class="pane-title" style="font-size:10px;font-weight:600;color:var(--text-secondary);">${opts.title || id.toUpperCase()}</span>
-      <div style="display:flex;gap:2px;">
-        <button class="pane-remove-btn" title="Remove" style="width:20px;height:20px;display:flex;align-items:center;justify-content:center;border-radius:3px;color:var(--text-muted);background:transparent;border:none;cursor:pointer;font-size:9px;">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
-    </div>
     <div id="${containerId}" class="chart-canvas" style="flex:1;min-height:60px;width:100%;"></div>
   `;
   
   container.appendChild(pane);
   
-  const self = this;
-  
-  pane.querySelector('.pane-remove-btn').addEventListener('click', () => {
-    self.removeIndicatorPane(id, opts.name || id);
-  });
+  // No remove button needed here – users can use the indicator modal to remove
   
   setTimeout(() => {
     const el = document.getElementById(containerId);
     if (el && el.clientWidth > 0 && el.clientHeight > 0) {
-      self._createChartInternal(id, containerId, el, opts, pane);
+      this._createChartInternal(id, containerId, el, opts, pane);
     } else {
       console.error(`Failed to create chart for ${id}: container has no size`);
     }
@@ -12862,40 +12869,10 @@ const EconomicCalendar = {
     try {
 	
 	
-	const indicatorContainer = document.getElementById('indicator-panes-container');
-      if (indicatorContainer) {
-        indicatorContainer.style.display = 'flex';
-        indicatorContainer.style.minHeight = '200px';
-        indicatorContainer.style.maxHeight = '400px';
-        indicatorContainer.style.overflowY = 'auto';
-        indicatorContainer.style.borderTop = '1px solid var(--border-primary)';
-      }
+	
 	  
       ChartEngine.init();
 
-	  // Force indicator panes to be visible and scrollable
-setTimeout(() => {
-  const indicatorContainer = document.getElementById('indicator-panes-container');
-  if (indicatorContainer) {
-    indicatorContainer.style.overflowY = 'auto';
-    indicatorContainer.style.maxHeight = 'none';
-    indicatorContainer.style.flex = '1';
-    
-    // Log the heights for debugging
-    console.log('Indicator container height:', indicatorContainer.clientHeight);
-    console.log('RSI pane height:', document.getElementById('rsi-pane')?.clientHeight);
-    console.log('MACD pane height:', document.getElementById('macd-pane')?.clientHeight);
-  }
-  
-  // Make sure RSI and MACD panes are visible
-  const rsiPane = document.getElementById('rsi-pane');
-  const macdPane = document.getElementById('macd-pane');
-  if (rsiPane) rsiPane.style.display = 'flex';
-  if (macdPane) macdPane.style.display = 'flex';
-  
-  // Force resize of all charts
-  ChartEngine.resizeAll();
-}, 500);
       DrawingEngine.init();
 	  DrawingToolsModal.init();
       setupUI();
