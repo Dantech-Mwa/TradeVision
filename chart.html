@@ -3788,14 +3788,14 @@ kbd {
 
 /* ========== MAIN LAYOUT ========== */
 /* ============================================ */
-/* MOBILE CHART LAYOUT - COMPLETE FIX */
+/* MOBILE CHART LAYOUT - PROFESSIONAL FIX v4.0  */
 /* ============================================ */
 @media (max-width: 768px) {
+  /* Reset the main grid to flex column */
   .main-layout {
     display: flex !important;
     flex-direction: column !important;
-    height: calc(100vh - var(--header-height) - 40px) !important;
-    position: relative;
+    height: calc(100vh - 48px - 40px) !important;
     overflow: hidden;
     padding: 0 !important;
     margin: 0 !important;
@@ -3811,7 +3811,7 @@ kbd {
     margin: 0 !important;
   }
   
-  /* ========== CHART CONTAINER ========== */
+  /* The scrollable chart container */
   .chart-container {
     flex: 1 1 auto;
     display: flex !important;
@@ -3820,26 +3820,28 @@ kbd {
     overflow-y: auto !important;
     overflow-x: hidden !important;
     -webkit-overflow-scrolling: touch;
+    touch-action: pan-y pinch-zoom;
+    overscroll-behavior-y: contain;
     padding: 0 !important;
     margin: 0 !important;
     width: 100% !important;
   }
   
   .chart-container.sheet-open {
-    max-height: calc(40vh - 40px);
+    max-height: calc(45vh - 40px);
   }
   
   /* ========== MAIN PRICE CHART ========== */
   #main-chart-pane {
-    flex: 0 0 auto !important;
-    min-height: 280px !important;
-    height: 42vh !important;
-    max-height: 45vh !important;
+    flex: 1 1 55%;
+    min-height: 220px !important;
+    max-height: none !important;
     position: relative;
     overflow: hidden;
     padding: 0 !important;
     margin: 0 !important;
     width: 100% !important;
+    touch-action: pinch-zoom pan-x;
   }
   
   #price-chart {
@@ -3847,6 +3849,7 @@ kbd {
     height: 100% !important;
     padding: 0 !important;
     margin: 0 !important;
+    touch-action: pinch-zoom pan-x;
   }
   
   /* ========== VOLUME CHART - ALWAYS VISIBLE ========== */
@@ -3862,6 +3865,7 @@ kbd {
     border-bottom: 1px solid var(--border-primary);
     padding: 0 !important;
     margin: 0 !important;
+    touch-action: pinch-zoom pan-x;
   }
   
   #volume-chart {
@@ -3869,31 +3873,31 @@ kbd {
     height: 100% !important;
   }
 
-  /* ========== INDICATOR PANES ========== */
+  /* ========== INDICATOR PANES CONTAINER ========== */
   .indicator-panes-container {
-    flex: 0 0 auto !important;
-    display: flex !important;
+    flex: 0 1 auto !important;
+    display: none !important;
     flex-direction: column !important;
-    max-height: none !important;
-    overflow-y: visible !important;
+    max-height: 45% !important;
+    overflow-y: auto !important;
     overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y pinch-zoom;
     width: 100% !important;
     padding: 0 !important;
     margin: 0 !important;
-    border-top: 1px solid var(--border-primary);
+    border-top: 2px solid var(--border-primary);
+    background: var(--bg-primary);
   }
   
-  .indicator-panes-container:empty {
-    display: none !important;
-    max-height: 0 !important;
-    flex: 0 0 0 !important;
-    border: none !important;
+  .indicator-panes-container:not(:empty) {
+    display: flex !important;
   }
   
   .chart-pane-indicator {
     flex: 0 0 100px !important;
-    min-height: 100px !important;
-    max-height: 120px !important;
+    min-height: 90px !important;
+    max-height: 130px !important;
     display: flex !important;
     flex-direction: column !important;
     border-bottom: 1px solid var(--border-primary);
@@ -3901,16 +3905,18 @@ kbd {
     width: 100% !important;
     padding: 0 !important;
     margin: 0 !important;
+    touch-action: pinch-zoom pan-x;
   }
   
   .chart-pane-indicator:last-child {
     border-bottom: none;
     padding-bottom: 10px !important;
+    margin-bottom: 5px !important;
   }
   
   .chart-pane-indicator .chart-canvas {
     flex: 1 1 auto;
-    min-height: 80px !important;
+    min-height: 70px !important;
     width: 100% !important;
   }
   
@@ -3944,7 +3950,880 @@ kbd {
   .mobile-chart-header .ohlc span strong {
     color: var(--text-primary);
   }
+  
+  /* ========== TIMEFRAME OVERLAY ON CHART ========== */
+  .mobile-timeframe-overlay {
+    display: flex !important;
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    z-index: 20;
+    align-items: center;
+    gap: 4px;
+  }
+  
+  .mobile-current-tf {
+    display: flex !important;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 10px;
+    background: rgba(13, 17, 23, 0.9);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--border-primary);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  
+  .mobile-current-tf i {
+    font-size: 8px;
+    color: var(--text-muted);
+  }
+  
+  .mobile-tf-quick {
+    display: flex !important;
+    gap: 2px;
+    background: rgba(13, 17, 23, 0.9);
+    backdrop-filter: blur(8px);
+    border-radius: 6px;
+    padding: 2px;
+    border: 1px solid var(--border-primary);
+  }
+  
+  .mobile-tf-pill {
+    padding: 3px 6px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 9px;
+    font-weight: 600;
+    border-radius: 4px;
+    cursor: pointer;
+    white-space: nowrap;
+    min-width: 26px;
+    text-align: center;
+    transition: all 0.15s ease;
+  }
+  
+  .mobile-tf-pill.active {
+    background: var(--accent-primary);
+    color: white;
+  }
+  
+  /* ========== FLOATING TRADE BUTTONS ========== */
+  #chart-trade-buttons {
+    top: 6px !important;
+    left: 6px !important;
+    gap: 4px !important;
+  }
+  
+  #chart-trade-buttons button {
+    padding: 6px 10px !important;
+    font-size: 11px !important;
+  }
+  
+  #chart-buy-price,
+  #chart-sell-price {
+    font-size: 12px !important;
+  }
+  
+  /* ========== BOTTOM SHEET - TradingView Style ========== */
+  .mobile-bottom-sheet {
+    display: flex !important;
+    flex-direction: column;
+    position: fixed !important;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 55vh;
+    background: var(--bg-secondary);
+    border-radius: 14px 14px 0 0;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.4);
+    z-index: 200;
+    transform: translateY(calc(100% - 52px));
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
+  }
+  
+  .mobile-bottom-sheet.expanded {
+    transform: translateY(30%);
+  }
+  
+  .mobile-bottom-sheet.full {
+    transform: translateY(0);
+  }
+  
+  /* Sheet handle/header */
+  .sheet-handle {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px 0 4px;
+    cursor: pointer;
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--border-primary);
+    user-select: none;
+  }
+  
+  .sheet-handle-bar {
+    width: 32px;
+    height: 4px;
+    background: var(--border-primary);
+    border-radius: 2px;
+    margin-bottom: 6px;
+  }
+  
+  .sheet-tabs {
+    display: flex;
+    width: 100%;
+    padding: 0 4px;
+    gap: 0;
+  }
+  
+  .sheet-tab {
+    flex: 1;
+    padding: 8px 4px;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-align: center;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    white-space: nowrap;
+    min-height: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+  }
+  
+  .sheet-tab i {
+    font-size: 13px;
+  }
+  
+  .sheet-tab.active {
+    color: var(--accent-primary) !important;
+    border-bottom-color: var(--accent-primary) !important;
+  }
+  
+  /* Sheet content */
+  .sheet-content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+  }
+  
+  .sheet-panel {
+    display: none;
+    padding: 10px;
+  }
+  
+  .sheet-panel.active {
+    display: block;
+  }
+  
+  /* ========== SHEET CONTENT STYLES ========== */
+  .mobile-wl-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 8px;
+    border-bottom: 1px solid rgba(48,54,61,0.3);
+    cursor: pointer;
+    font-size: 12px;
+    min-height: 44px;
+  }
+  
+  .mobile-wl-item:active {
+    background: var(--bg-hover);
+  }
+  
+  .mobile-wl-symbol {
+    font-weight: 700;
+  }
+  
+  .mobile-wl-price {
+    font-weight: 600;
+  }
+  
+  .mobile-wl-change {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 3px;
+  }
+  
+  .mobile-wl-change.up {
+    color: var(--up-color);
+    background: var(--up-muted);
+  }
+  
+  .mobile-wl-change.down {
+    color: var(--down-color);
+    background: var(--down-muted);
+  }
+  
+  /* Indicators grid in sheet */
+  .sheet-indicators-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+  
+  .sheet-indicator-btn {
+    padding: 10px 6px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 600;
+    text-align: center;
+    cursor: pointer;
+    min-height: 40px;
+    transition: all 0.15s ease;
+  }
+  
+  .sheet-indicator-btn:active,
+  .sheet-indicator-btn.active {
+    background: var(--accent-muted) !important;
+    border-color: var(--accent-primary) !important;
+    color: var(--accent-primary) !important;
+  }
+  
+  /* Drawing tools grid */
+  .sheet-tools-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+  
+  .sheet-tool-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 10px 4px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    color: var(--text-secondary);
+    font-size: 9px;
+    cursor: pointer;
+    min-height: 50px;
+    justify-content: center;
+    transition: all 0.15s ease;
+  }
+  
+  .sheet-tool-btn i {
+    font-size: 14px;
+  }
+  
+  .sheet-tool-btn:active {
+    background: var(--accent-muted);
+    color: var(--accent-primary);
+  }
+  
+  /* Stats table in sheet */
+  .sheet-stats-table {
+    width: 100%;
+    font-size: 11px;
+    border-collapse: collapse;
+  }
+  
+  .sheet-stats-table td {
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(48,54,61,0.3);
+    color: var(--text-secondary);
+  }
+  
+  .sheet-stats-table td:last-child {
+    text-align: right;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  
+  /* More panel actions */
+  .mob-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-size: 13px;
+    cursor: pointer;
+    border-radius: 8px;
+    width: 100%;
+    text-align: left;
+    min-height: 44px;
+    transition: background 0.15s ease;
+  }
+  
+  .mob-action-btn i {
+    width: 20px;
+    font-size: 14px;
+    color: var(--text-muted);
+  }
+  
+  .mob-action-btn:active {
+    background: var(--bg-hover);
+  }
+  
+  /* ========== MOBILE OVERLAY ========== */
+  .mobile-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 150;
+  }
+  
+  .mobile-overlay.visible {
+    display: block !important;
+  }
+  
+  /* ========== MOBILE SEARCH OVERLAY ========== */
+  .mobile-search-overlay {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--bg-primary);
+    z-index: 300;
+    transform: translateY(-100%);
+    transition: transform 0.3s ease;
+    will-change: transform;
+  }
+  
+  .mobile-search-overlay.visible {
+    transform: translateY(0) !important;
+  }
+  
+  .mobile-search-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border-primary);
+    flex-shrink: 0;
+  }
+  
+  .mobile-search-back {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 16px;
+    cursor: pointer;
+  }
+  
+  .mobile-search-input {
+    flex: 1;
+    padding: 10px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 14px;
+    outline: none;
+  }
+  
+  .mobile-search-results {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .mobile-search-result-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  
+  .mobile-search-result-item:active {
+    background: var(--bg-hover);
+  }
+  
+  .mobile-search-result-symbol {
+    font-weight: 600;
+    font-size: 13px;
+  }
+  
+  .mobile-search-result-name {
+    font-size: 10px;
+    color: var(--text-muted);
+  }
+  
+  .mobile-quick-symbols {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    padding: 10px;
+    border-top: 1px solid var(--border-primary);
+    flex-shrink: 0;
+  }
+  
+  .mobile-quick-symbols .symbol-pill {
+    padding: 6px 12px;
+    border-radius: 14px;
+    font-size: 10px;
+  }
+  
+  /* ========== MOBILE TIMEFRAME MODAL ========== */
+  .mobile-tf-modal {
+    display: none !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 10000;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  
+  .mobile-tf-modal.open {
+    display: flex !important;
+  }
+  
+  .mobile-tf-modal-content {
+    background: var(--bg-secondary);
+    border-radius: 16px 16px 0 0;
+    width: 100%;
+    padding: 16px;
+    animation: slideInUp 0.3s ease;
+  }
+  
+  .mobile-tf-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  
+  .mobile-tf-modal-header h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  
+  .mobile-tf-modal-close {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--bg-tertiary);
+    border: none;
+    color: var(--text-muted);
+    font-size: 16px;
+    cursor: pointer;
+  }
+  
+  .mobile-tf-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+  
+  .mobile-tf-option {
+    padding: 12px;
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s ease;
+  }
+  
+  .mobile-tf-option:active,
+  .mobile-tf-option.active {
+    background: var(--accent-muted);
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
+  }
+  
+  /* ========== MOBILE RIGHT PANEL ========== */
+  .mobile-right-panel {
+    display: flex !important;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 320px;
+    max-width: 85vw;
+    height: 100vh;
+    height: 100dvh;
+    background: var(--bg-secondary);
+    z-index: 9998;
+    transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: -4px 0 20px rgba(0,0,0,0.4);
+    overflow-y: auto;
+  }
+  
+  .mobile-right-panel.open {
+    right: 0 !important;
+  }
+  
+  .mobile-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 16px;
+    background: var(--bg-tertiary);
+    border-bottom: 1px solid var(--border-primary);
+    flex-shrink: 0;
+    min-height: 52px;
+  }
+  
+  .mobile-panel-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .mobile-panel-title i {
+    color: var(--accent-primary);
+  }
+  
+  .mobile-panel-close {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 16px;
+    cursor: pointer;
+  }
+  
+  .mobile-panel-close:active {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+  }
+  
+  .mobile-panel-content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+  }
+  
+  .mobile-panel-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 9997;
+  }
+  
+  .mobile-panel-overlay.visible {
+    display: block !important;
+  }
+  
+  /* ========== MOBILE HEADER ========== */
+  .header {
+    height: 48px !important;
+    min-height: 48px !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 100 !important;
+    background: var(--bg-secondary) !important;
+    border-bottom: 1px solid var(--border-primary) !important;
+  }
+  
+  .mobile-top-bar {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    padding: 0 10px !important;
+    gap: 8px;
+  }
+  
+  .mobile-icon-btn {
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    font-size: 15px;
+    border: none;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  
+  .mobile-icon-btn:active {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+  }
+  
+  /* Symbol area in header */
+  .mobile-symbol-area {
+    display: flex !important;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: var(--bg-tertiary);
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .mobile-symbol-area:active {
+    background: var(--bg-hover);
+  }
+  
+  .mobile-symbol-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-primary);
+    white-space: nowrap;
+  }
+  
+  .mobile-price-change {
+    display: flex !important;
+    align-items: center;
+    gap: 4px;
+    margin-left: auto;
+  }
+  
+  .mobile-price {
+    font-size: 12px;
+    font-weight: 600;
+    font-family: 'SF Mono', 'Monaco', monospace;
+    color: var(--text-primary);
+  }
+  
+  .mobile-change-badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+  
+  .mobile-change-badge.up {
+    color: var(--up-color);
+    background: var(--up-muted);
+  }
+  
+  .mobile-change-badge.down {
+    color: var(--down-color);
+    background: var(--down-muted);
+  }
+  
+  /* Mobile symbol search dropdown */
+  .mobile-symbol-search-dropdown {
+    display: none !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--bg-primary);
+    z-index: 9999;
+    flex-direction: column;
+  }
+  
+  .mobile-symbol-search-dropdown.open {
+    display: flex !important;
+  }
+  
+  .mobile-search-input-wrapper {
+    display: flex;
+    align-items: center;
+    padding: 10px 14px;
+    gap: 10px;
+    border-bottom: 1px solid var(--border-primary);
+    background: var(--bg-secondary);
+    flex-shrink: 0;
+  }
+  
+  .mobile-search-close-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--bg-tertiary);
+    border: none;
+    color: var(--text-muted);
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .mobile-search-tabs {
+    display: flex;
+    padding: 8px 12px;
+    gap: 6px;
+    border-bottom: 1px solid var(--border-primary);
+    overflow-x: auto;
+    flex-shrink: 0;
+  }
+  
+  .mobile-search-tab {
+    padding: 6px 14px;
+    border-radius: 16px;
+    border: 1px solid var(--border-primary);
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  
+  .mobile-search-tab.active {
+    background: var(--accent-primary);
+    border-color: var(--accent-primary);
+    color: white;
+  }
+  
+  /* ========== FOOTER ON MOBILE ========== */
+  .footer {
+    height: 40px !important;
+    min-height: 40px !important;
+    position: fixed !important;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 95;
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border-primary);
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    padding: 0 12px;
+    overflow: hidden;
+  }
+  
+  .footer-left,
+  .footer-right {
+    display: none !important;
+  }
+  
+  .footer-center {
+    font-size: 10px;
+    color: var(--text-muted);
+    text-align: center;
+  }
+  
+  /* ========== HIDE DESKTOP ELEMENTS ON MOBILE ========== */
+  .desktop-only,
+  .header-left,
+  .header-center,
+  .header-right,
+  .ticker-tape-wrapper,
+  .left-sidebar,
+  .right-sidebar,
+  .chart-header,
+  .chart-type-selector,
+  .floating-toolbar,
+  .timeframe-selector {
+    display: none !important;
+  }
+  
+  /* ========== MODAL ADJUSTMENTS ========== */
+  .modal-container {
+    width: 95vw;
+    max-height: 85vh;
+    border-radius: 12px;
+  }
+  
+  .modal-header {
+    padding: 10px 12px;
+  }
+  
+  .modal-body {
+    padding: 10px;
+  }
+  
+  .indicators-grid {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    max-height: 300px;
+  }
+  
+  .category-tabs {
+    overflow-x: auto;
+    gap: 2px;
+  }
+  
+  .cat-tab {
+    padding: 6px 10px;
+    font-size: 10px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  
+  .pine-editor-container {
+    height: 350px;
+  }
+  
+  .pine-editor-body {
+    flex-direction: column;
+  }
+  
+  .pine-output-panel {
+    flex: 0 0 100px;
+  }
+  
+  .toast-container {
+    top: var(--header-height);
+    right: 6px;
+    left: 6px;
+  }
+  
+  .toast {
+    min-width: auto;
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 11px;
+  }
 }
+
 /* ========== BOTTOM SHEET (TradingView Style) ========== */
 @media (max-width: 768px) {
   .mobile-bottom-sheet {
@@ -6405,23 +7284,7 @@ kbd {
   </div>
 </div>
 
-<!-- Mobile Symbol Search Dropdown (hidden by default) -->
-<div class="mobile-symbol-search-dropdown" id="mobile-symbol-search-dropdown">
-  <div class="mobile-search-input-wrapper">
-    <i class="fas fa-search mobile-search-icon"></i>
-    <input type="text" id="mobile-symbol-search-input" placeholder="Search markets..." autocomplete="off">
-    <button class="mobile-search-close-btn" id="mobile-search-close-btn">✕</button>
-  </div>
-  <div class="mobile-search-tabs">
-    <button class="mobile-search-tab active" data-tab="all">All</button>
-    <button class="mobile-search-tab" data-tab="crypto">Crypto</button>
-    <button class="mobile-search-tab" data-tab="stocks">Stocks</button>
-    <button class="mobile-search-tab" data-tab="forex">Forex</button>
-  </div>
-  <div class="mobile-search-results" id="mobile-search-results">
-    <!-- Results appear here -->
-  </div>
-</div>
+
 
   <!-- Desktop header (unchanged) -->
   <div class="header-left desktop-only">
@@ -6476,6 +7339,59 @@ kbd {
     </div>
   </div>
 </header>
+
+<!-- ============================================ -->
+<!-- MOBILE SEARCH OVERLAY (Single Clean Version) -->
+<!-- ============================================ -->
+<div class="mobile-search-overlay" id="mobile-search-overlay">
+  <!-- Search Header -->
+  <div class="mobile-search-header">
+    <button class="mobile-search-back" id="mobile-search-back-btn">
+      <i class="fas fa-arrow-left"></i>
+    </button>
+    <input 
+      type="text" 
+      class="mobile-search-input" 
+      id="mobile-search-input" 
+      placeholder="Search markets... (BTC, ETH, AAPL, EURUSD)" 
+      autocomplete="off"
+      spellcheck="false"
+    />
+  </div>
+  
+  <!-- Category Tabs -->
+  <div class="mobile-search-tabs" id="mobile-search-tabs">
+    <button class="mobile-search-tab active" data-tab="all">All</button>
+    <button class="mobile-search-tab" data-tab="crypto">Crypto</button>
+    <button class="mobile-search-tab" data-tab="stocks">Stocks</button>
+    <button class="mobile-search-tab" data-tab="forex">Forex</button>
+  </div>
+  
+  <!-- Results Container -->
+  <div class="mobile-search-results" id="mobile-search-results">
+    <div style="padding: 30px; text-align: center; color: var(--text-muted);">
+      <i class="fas fa-search" style="font-size: 32px; margin-bottom: 12px; display: block; opacity: 0.5;"></i>
+      <span style="font-size: 14px;">Start typing to search markets</span>
+      <div style="margin-top: 8px; font-size: 11px; opacity: 0.6;">
+        Try: BTC, ETH, SOL, AAPL, TSLA
+      </div>
+    </div>
+  </div>
+  
+  <!-- Quick Symbols Footer -->
+  <div class="mobile-quick-symbols" id="mobile-quick-symbols">
+    <button class="symbol-pill" data-symbol="BTCUSDT">BTC</button>
+    <button class="symbol-pill" data-symbol="ETHUSDT">ETH</button>
+    <button class="symbol-pill" data-symbol="BNBUSDT">BNB</button>
+    <button class="symbol-pill" data-symbol="SOLUSDT">SOL</button>
+    <button class="symbol-pill" data-symbol="XRPUSDT">XRP</button>
+    <button class="symbol-pill" data-symbol="ADAUSDT">ADA</button>
+    <button class="symbol-pill" data-symbol="DOGEUSDT">DOGE</button>
+    <button class="symbol-pill" data-symbol="AAPL">AAPL</button>
+    <button class="symbol-pill" data-symbol="TSLA">TSLA</button>
+    <button class="symbol-pill" data-symbol="EURUSD">EUR/USD</button>
+  </div>
+</div>
 
   <!-- ============================================
        TICKER TAPE SECTION
@@ -8042,22 +8958,6 @@ kbd {
   </div>
 </div>
 
-<!-- Mobile Search Overlay -->
-<!-- Mobile Search Overlay -->
-<div class="mobile-search-overlay" id="mobile-search-overlay">
-  <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-bottom:1px solid var(--border-primary);">
-    <button id="m-search-close" style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:8px;background:transparent;border:none;color:var(--text-primary);font-size:18px;cursor:pointer;">✕</button>
-    <input type="text" id="m-search-input" style="flex:1;padding:10px;background:var(--bg-tertiary);border:1px solid var(--border-primary);border-radius:8px;color:var(--text-primary);font-size:14px;outline:none;" placeholder="Search markets..." autocomplete="off">
-  </div>
-  <div id="m-search-results" style="flex:1;overflow-y:auto;padding:8px;"></div>
-  <div style="display:flex;flex-wrap:wrap;gap:6px;padding:10px;border-top:1px solid var(--border-primary);">
-    <button onclick="window.TV.switchSymbol('BTCUSDT');document.getElementById('mobile-search-overlay').classList.remove('visible')" style="padding:6px 12px;border-radius:14px;font-size:10px;border:1px solid var(--border-primary);background:transparent;color:var(--text-primary);cursor:pointer;">BTC</button>
-<button onclick="window.TV.switchSymbol('ETHUSDT');document.getElementById('mobile-search-overlay').classList.remove('visible')" style="padding:6px 12px;border-radius:14px;font-size:10px;border:1px solid var(--border-primary);background:transparent;color:var(--text-primary);cursor:pointer;">ETH</button>
-<button onclick="window.TV.switchSymbol('BNBUSDT');document.getElementById('mobile-search-overlay').classList.remove('visible')" style="padding:6px 12px;border-radius:14px;font-size:10px;border:1px solid var(--border-primary);background:transparent;color:var(--text-primary);cursor:pointer;">BNB</button>
-<button onclick="window.TV.switchSymbol('SOLUSDT');document.getElementById('mobile-search-overlay').classList.remove('visible')" style="padding:6px 12px;border-radius:14px;font-size:10px;border:1px solid var(--border-primary);background:transparent;color:var(--text-primary);cursor:pointer;">SOL</button>
-<button onclick="window.TV.switchSymbol('XRPUSDT');document.getElementById('mobile-search-overlay').classList.remove('visible')" style="padding:6px 12px;border-radius:14px;font-size:10px;border:1px solid var(--border-primary);background:transparent;color:var(--text-primary);cursor:pointer;">XRP</button>
-  </div>
-</div>
 
 <!-- Mobile Overlay -->
 <div class="mobile-overlay" id="mobile-overlay"></div>
@@ -8391,15 +9291,58 @@ createPriceChart() {
   const el = document.getElementById('price-chart');
   if(!el) return;
   
-  const chart = LightweightCharts.createChart(el,{
-    layout:{background:{type:'solid',color:'transparent'},textColor:'#c9d1d9'},
-    grid:{vertLines:{color:'#21262d'},horzLines:{color:'#21262d'}},
-    crosshair:{mode:1,vertLine:{color:'#8b949e',width:1,style:2,labelBackgroundColor:'#1c2128'},horzLine:{color:'#8b949e',width:1,style:2,labelBackgroundColor:'#1c2128'}},
-    rightPriceScale:{borderColor:'#30363d',scaleMargins:{top:0.1,bottom:0.25},autoScale:true},
-    timeScale:{borderColor:'#30363d',timeVisible:true,secondsVisible:false},
-    handleScroll:{vertTouchDrag:true,horzTouchDrag:true},
-    handleScale:{axisPressedMouseMove:true,pinch:true,mouseWheel:true},
-    width:el.clientWidth,height:el.clientHeight||450
+  // Detect mobile for touch handling
+  const isMobile = window.innerWidth <= 768;
+  
+  const chart = LightweightCharts.createChart(el, {
+    layout: {
+      background: { type: 'solid', color: 'transparent' },
+      textColor: '#c9d1d9'
+    },
+    grid: {
+      vertLines: { color: '#21262d' },
+      horzLines: { color: '#21262d' }
+    },
+    crosshair: {
+      mode: 1,
+      vertLine: { 
+        color: '#8b949e', 
+        width: 1, 
+        style: 2, 
+        labelBackgroundColor: '#1c2128' 
+      },
+      horzLine: { 
+        color: '#8b949e', 
+        width: 1, 
+        style: 2, 
+        labelBackgroundColor: '#1c2128' 
+      }
+    },
+    rightPriceScale: {
+      borderColor: '#30363d',
+      scaleMargins: { top: 0.1, bottom: 0.25 },
+      autoScale: true
+    },
+    timeScale: {
+      borderColor: '#30363d',
+      timeVisible: true,
+      secondsVisible: false
+    },
+    // KEY MOBILE FIX: Disable vertical touch drag to allow page scroll
+    handleScroll: {
+      vertTouchDrag: !isMobile,   // FALSE on mobile = page scrolls
+      horzTouchDrag: true
+    },
+    handleScale: {
+      axisPressedMouseMove: {
+        time: true,
+        price: !isMobile   // Disable price axis drag on mobile
+      },
+      pinch: true,          // Keep pinch-to-zoom
+      mouseWheel: !isMobile  // Disable mouse wheel zoom on mobile
+    },
+    width: el.clientWidth,
+    height: el.clientHeight || 450
   });
   
   this.mainSeries = chart.addCandlestickSeries({
@@ -8414,15 +9357,14 @@ createPriceChart() {
   this.charts.price = chart;
   this.series.main = this.mainSeries;
   
-  chart.subscribeClick((param) => {
-    // Chart click handled by drawing canvas directly
+  // Store crosshair subscription for drawing engine
+  chart.subscribeCrosshairMove((param) => {
+    if (DrawingEngine && typeof DrawingEngine.handleCrosshairMove === 'function') {
+      DrawingEngine.handleCrosshairMove(param);
+    }
   });
   
- chart.subscribeCrosshairMove((param) => {
-    if (DrawingEngine && typeof DrawingEngine.handleCrosshairMove === 'function') {
-        DrawingEngine.handleCrosshairMove(param);
-    }
-});
+  console.log('✅ Price chart created (mobile optimized: ' + isMobile + ')');
 },
 
 changeChartType(type) {
@@ -8480,19 +9422,51 @@ changeChartType(type) {
 createVolumeChart() {
   const el = document.getElementById('volume-chart');
   if(!el) return;
-  const chart = LightweightCharts.createChart(el,{
-    layout:{background:{type:'solid',color:'transparent'},textColor:'#c9d1d9'},
-    grid:{vertLines:{visible:false},horzLines:{visible:false}},
-    rightPriceScale:{visible:true},
-    timeScale:{borderColor:'#30363d'},
-    handleScroll:true,handleScale:true,
-    width:el.clientWidth,height:el.clientHeight||100
+  
+  const isMobile = window.innerWidth <= 768;
+  
+  const chart = LightweightCharts.createChart(el, {
+    layout: {
+      background: { type: 'solid', color: 'transparent' },
+      textColor: '#c9d1d9'
+    },
+    grid: {
+      vertLines: { visible: false },
+      horzLines: { visible: false }
+    },
+    rightPriceScale: { 
+      visible: true,
+      borderColor: '#30363d'
+    },
+    timeScale: { 
+      borderColor: '#30363d',
+      visible: true
+    },
+    // Mobile touch: never allow vertical drag on volume
+    handleScroll: {
+      vertTouchDrag: false,
+      horzTouchDrag: true
+    },
+    handleScale: {
+      axisPressedMouseMove: {
+        time: true,
+        price: false
+      },
+      pinch: true,
+      mouseWheel: !isMobile
+    },
+    width: el.clientWidth,
+    height: el.clientHeight || 100
   });
+  
   const series = chart.addHistogramSeries({
     priceFormat: { type: 'volume' }
   });
+  
   this.charts.volume = chart;
   this.series.volume = series;
+  
+  console.log('✅ Volume chart created');
 },
 
 createIndicatorPane(id, containerId, opts = {}) {
@@ -8537,12 +9511,54 @@ createIndicatorPane(id, containerId, opts = {}) {
 },
 
 _createChartInternal(id, containerId, el, opts, pane) {
+  const isMobile = window.innerWidth <= 768;
+  
   const chart = LightweightCharts.createChart(el, {
-    layout: { background: { type: 'solid', color: 'transparent' }, textColor: '#c9d1d9' },
-    grid: { vertLines: { color: '#21262d' }, horzLines: { color: '#21262d' } },
-    crosshair: { mode: 1 },
-    rightPriceScale: { borderColor: '#30363d', scaleMargins: { top: 0.1, bottom: 0.2 }, autoScale: true },
-    timeScale: { borderColor: '#30363d', timeVisible: true },
+    layout: {
+      background: { type: 'solid', color: 'transparent' },
+      textColor: '#c9d1d9'
+    },
+    grid: {
+      vertLines: { color: '#21262d' },
+      horzLines: { color: '#21262d' }
+    },
+    crosshair: {
+      mode: 1,
+      vertLine: {
+        color: '#8b949e',
+        width: 1,
+        style: 2,
+        labelBackgroundColor: '#1c2128',
+        visible: !isMobile
+      },
+      horzLine: {
+        color: '#8b949e',
+        width: 1,
+        style: 2,
+        labelBackgroundColor: '#1c2128',
+        visible: !isMobile
+      }
+    },
+    rightPriceScale: {
+      borderColor: '#30363d',
+      scaleMargins: { top: 0.1, bottom: 0.2 },
+      autoScale: true
+    },
+    timeScale: {
+      borderColor: '#30363d',
+      timeVisible: true,
+      secondsVisible: false
+    },
+    // Mobile: indicator panes should not capture vertical touch
+    handleScroll: {
+      vertTouchDrag: false,
+      horzTouchDrag: true
+    },
+    handleScale: {
+      axisPressedMouseMove: false,
+      pinch: true,
+      mouseWheel: false
+    },
     width: el.clientWidth,
     height: el.clientHeight
   });
@@ -8557,13 +9573,20 @@ _createChartInternal(id, containerId, el, opts, pane) {
   this.charts[id] = chart;
   this.series[id] = series;
   
+  // Sync time scale with main chart
   if (this.charts.price) {
     this.charts.price.timeScale().subscribeVisibleTimeRangeChange((range) => {
       if (range && chart) {
-        try { chart.timeScale().setVisibleRange(range); } catch(e) {}
+        try { 
+          chart.timeScale().setVisibleRange(range); 
+        } catch(e) {
+          // Ignore sync errors on mobile
+        }
       }
     });
   }
+  
+  console.log('✅ Indicator pane created: ' + id);
 },
 
 removeIndicatorPane(id, name) {
@@ -16223,188 +17246,421 @@ alertcondition(ta.crossunder(close, ma), "Cross Down", "Price crossed below MA")
 };
 
 // ============================================
-// MOBILE SHEET - FULLY WORKING
+// MOBILE BOTTOM SHEET - COMPLETE
 // ============================================
 function initMobileSheet() {
   const sheet = document.getElementById('mobile-bottom-sheet');
   const overlay = document.getElementById('mobile-overlay');
   const chartContainer = document.querySelector('.chart-container');
   
-  if (!sheet) return;
+  if (!sheet) {
+    console.warn('Mobile bottom sheet not found');
+    return;
+  }
   
-  let sheetState = 'collapsed'; // collapsed, expanded, full
+  let sheetState = 'collapsed'; // 'collapsed', 'expanded', 'full'
+  let touchStartY = 0;
   
   function setSheetState(state) {
     sheetState = state;
+    
     switch(state) {
       case 'collapsed':
         sheet.style.transform = 'translateY(calc(100% - 52px))';
-        overlay.classList.remove('visible');
+        sheet.classList.remove('expanded', 'full');
+        if (overlay) overlay.classList.remove('visible');
         if (chartContainer) chartContainer.classList.remove('sheet-open');
         break;
+        
       case 'expanded':
         sheet.style.transform = 'translateY(30%)';
-        overlay.classList.remove('visible');
+        sheet.classList.add('expanded');
+        sheet.classList.remove('full');
+        if (overlay) overlay.classList.remove('visible');
         if (chartContainer) chartContainer.classList.remove('sheet-open');
         break;
+        
       case 'full':
         sheet.style.transform = 'translateY(0)';
-        overlay.classList.add('visible');
+        sheet.classList.add('expanded', 'full');
+        if (overlay) overlay.classList.add('visible');
         if (chartContainer) chartContainer.classList.add('sheet-open');
         break;
     }
+    
+    console.log('Sheet state: ' + state);
   }
   
-  // TAP handle to cycle
-  document.getElementById('sheet-handle').addEventListener('click', function(e) {
-    if (e.target.closest('.sheet-tab')) return; // Don't trigger on tab clicks
-    if (sheetState === 'collapsed') setSheetState('expanded');
-    else if (sheetState === 'expanded') setSheetState('full');
-    else setSheetState('collapsed');
-  });
-  
-  overlay.addEventListener('click', () => setSheetState('collapsed'));
-  
-  // ========== TAB SWITCHING ==========
-  document.querySelectorAll('.sheet-tab').forEach(tab => {
-    tab.addEventListener('click', function(e) {
-      e.stopPropagation();
+  // ============================================
+  // HANDLE BAR CLICK - Cycle through states
+  // ============================================
+  const sheetHandle = document.getElementById('sheet-handle');
+  if (sheetHandle) {
+    sheetHandle.addEventListener('click', function(e) {
+      // Don't trigger when a tab button was clicked
+      if (e.target.closest('.sheet-tab')) return;
       
-      document.querySelectorAll('.sheet-tab').forEach(t => t.classList.remove('active'));
+      // Cycle: collapsed -> expanded -> full -> collapsed
+      if (sheetState === 'collapsed') {
+        setSheetState('expanded');
+      } else if (sheetState === 'expanded') {
+        setSheetState('full');
+      } else {
+        setSheetState('collapsed');
+      }
+    });
+  }
+  
+  // ============================================
+  // SWIPE GESTURES
+  // ============================================
+  sheet.addEventListener('touchstart', function(e) {
+    touchStartY = e.touches[0].clientY;
+  }, { passive: true });
+  
+  sheet.addEventListener('touchmove', function(e) {
+    const diff = e.touches[0].clientY - touchStartY;
+    
+    // Swipe down to dismiss
+    if (diff > 80 && sheetState !== 'collapsed') {
+      setSheetState('collapsed');
+    }
+    
+    // Swipe up to expand
+    if (diff < -40 && sheetState === 'collapsed') {
+      setSheetState('expanded');
+    }
+  }, { passive: true });
+  
+  // ============================================
+  // OVERLAY CLICK - Close sheet
+  // ============================================
+  if (overlay) {
+    overlay.addEventListener('click', function() {
+      setSheetState('collapsed');
+    });
+  }
+  
+  // ============================================
+  // TAB SWITCHING
+  // ============================================
+  document.querySelectorAll('.sheet-tab').forEach(function(tab) {
+    tab.addEventListener('click', function(e) {
+      e.stopPropagation(); // Don't trigger sheet handle click
+      
+      // Update active tab styling
+      document.querySelectorAll('.sheet-tab').forEach(function(t) {
+        t.classList.remove('active');
+      });
       this.classList.add('active');
       
+      // Show the correct panel
       const tabName = this.getAttribute('data-tab');
-      document.querySelectorAll('.sheet-panel').forEach(p => p.classList.remove('active'));
-      const panel = document.getElementById('sheet-' + tabName);
-      if (panel) panel.classList.add('active');
+      document.querySelectorAll('.sheet-panel').forEach(function(p) {
+        p.classList.remove('active');
+      });
       
-      if (tabName === 'watchlist') buildMobileWatchlist();
-      if (tabName === 'indicators') buildMobileIndicators();
-      if (tabName === 'stats') updateMobileStats();
+      const targetPanel = document.getElementById('sheet-' + tabName);
+      if (targetPanel) {
+        targetPanel.classList.add('active');
+      }
       
-      if (sheetState === 'collapsed') setSheetState('expanded');
+      // Populate content based on tab
+      if (tabName === 'watchlist') {
+        buildMobileWatchlist();
+      }
+      if (tabName === 'indicators') {
+        buildMobileIndicators();
+      }
+      if (tabName === 'stats') {
+        updateMobileStats();
+      }
+      
+      // Auto-expand if collapsed
+      if (sheetState === 'collapsed') {
+        setSheetState('expanded');
+      }
     });
   });
   
-  // ========== DRAWING TOOLS ==========
-  document.querySelectorAll('.sheet-tool-btn').forEach(btn => {
+  // ============================================
+  // DRAWING TOOLS IN SHEET
+  // ============================================
+  document.querySelectorAll('.sheet-tool-btn[data-tool]').forEach(function(btn) {
     btn.addEventListener('click', function(e) {
       e.stopPropagation();
+      
       const tool = this.getAttribute('data-tool');
-      if (tool === 'clear' && typeof DrawingEngine !== 'undefined') DrawingEngine.clearAll();
-      else if (tool === 'undo' && typeof DrawingEngine !== 'undefined') DrawingEngine.undo();
-      else if (tool && typeof DrawingEngine !== 'undefined') DrawingEngine.setTool(tool);
+      
+      if (tool === 'clear' && typeof DrawingEngine !== 'undefined') {
+        DrawingEngine.clearAll();
+        if (typeof Toast !== 'undefined') Toast.info('All drawings cleared');
+      } else if (tool === 'undo' && typeof DrawingEngine !== 'undefined') {
+        DrawingEngine.undo();
+      } else if (tool === 'eraser' && typeof DrawingEngine !== 'undefined') {
+        DrawingEngine.setTool('eraser');
+        if (typeof Toast !== 'undefined') Toast.info('Eraser mode - tap a drawing to delete');
+      } else if (tool && typeof DrawingEngine !== 'undefined') {
+        DrawingEngine.setTool(tool);
+      }
+      
+      // Collapse sheet after selecting a tool
       setSheetState('collapsed');
     });
   });
   
-  // ========== MORE PANEL ACTIONS ==========
-  document.querySelectorAll('.mob-action-btn').forEach(btn => {
+  // ============================================
+  // MORE PANEL ACTIONS
+  // ============================================
+  document.querySelectorAll('.mob-action-btn[data-action]').forEach(function(btn) {
     btn.addEventListener('click', function(e) {
       e.stopPropagation();
+      
       const action = this.getAttribute('data-action');
       
-      if (action === 'search') {
-        document.getElementById('mobile-search-overlay').classList.add('visible');
-      } else if (action === 'depth') {
-        document.getElementById('market-depth-modal')?.classList.add('visible');
-      } else if (action === 'news') {
-        document.getElementById('news-modal')?.classList.add('visible');
-      } else if (action === 'alerts') {
-        document.getElementById('create-alert-modal')?.classList.add('visible');
-      } else if (action === 'settings') {
-        document.getElementById('settings-modal')?.classList.add('visible');
-      } else if (action === 'theme') {
-        const current = document.body.getAttribute('data-theme') || 'dark';
-        document.body.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
-        U.storage.set('tvp_theme', current === 'dark' ? 'light' : 'dark');
-      } else if (action === 'fullscreen') {
-        if (!document.fullscreenElement) document.documentElement.requestFullscreen();
-        else document.exitFullscreen();
+      switch(action) {
+        case 'search':
+          // Open mobile search overlay
+          const searchOverlay = document.getElementById('mobile-search-overlay');
+          if (searchOverlay) {
+            searchOverlay.classList.add('visible');
+            setTimeout(function() {
+              const searchInput = document.getElementById('m-search-input') || 
+                                  document.getElementById('mobile-symbol-search-input');
+              if (searchInput) searchInput.focus();
+            }, 300);
+          }
+          break;
+          
+        case 'depth':
+          document.getElementById('market-depth-modal')?.classList.add('visible');
+          break;
+          
+        case 'news':
+          document.getElementById('news-modal')?.classList.add('visible');
+          break;
+          
+        case 'alerts':
+          document.getElementById('alerts-modal')?.classList.add('visible');
+          break;
+          
+        case 'settings':
+          document.getElementById('settings-modal')?.classList.add('visible');
+          break;
+          
+        case 'theme':
+          const current = document.body.getAttribute('data-theme') || 'dark';
+          const next = current === 'dark' ? 'light' : 'dark';
+          document.body.setAttribute('data-theme', next);
+          if (typeof U !== 'undefined') {
+            U.storage.set('tvp_theme', next);
+          }
+          if (typeof Toast !== 'undefined') {
+            Toast.info('Theme: ' + next.charAt(0).toUpperCase() + next.slice(1));
+          }
+          break;
+          
+        case 'fullscreen':
+          if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(function(){});
+          } else {
+            document.exitFullscreen();
+          }
+          break;
       }
+      
+      // Collapse sheet after action
       setSheetState('collapsed');
     });
   });
   
-  
-  
+  // ============================================
+  // INITIAL STATE
+  // ============================================
   setSheetState('collapsed');
+  
+  // Build initial watchlist for the sheet
+  buildMobileWatchlist();
+  buildMobileIndicators();
+  
+  console.log('✅ Mobile bottom sheet initialized');
 }
 
-// ========== BUILD MOBILE WATCHLIST ==========
+// ============================================
+// BUILD MOBILE WATCHLIST
+// ============================================
 function buildMobileWatchlist() {
   const container = document.getElementById('mobile-watchlist-list');
   if (!container) return;
   
-  const wl = STATE.watchlist || [{symbol:'BTCUSDT'},{symbol:'ETHUSDT'},{symbol:'BNBUSDT'},{symbol:'SOLUSDT'}];
-  container.innerHTML = wl.map(item => `
-    <div class="mob-wl" data-symbol="${item.symbol}" style="display:flex;justify-content:space-between;padding:10px 8px;border-bottom:1px solid rgba(48,54,61,0.3);cursor:pointer;">
-      <div><strong>${item.symbol.replace('USDT','/USDT')}</strong><br><small style="color:var(--text-muted);">Binance</small></div>
-      <div style="text-align:right;"><span id="mwl-p-${item.symbol}">--</span><br><small id="mwl-c-${item.symbol}">--</small></div>
-    </div>
-  `).join('');
+  const watchlist = STATE.watchlist || [
+    { symbol: 'BTCUSDT' },
+    { symbol: 'ETHUSDT' },
+    { symbol: 'BNBUSDT' },
+    { symbol: 'SOLUSDT' }
+  ];
   
-  container.querySelectorAll('.mob-wl').forEach(el => {
-    el.addEventListener('click', () => {
-      if (window.TV) window.TV.switchSymbol(el.dataset.symbol);
+  container.innerHTML = watchlist.map(function(item) {
+    const sym = item.symbol;
+    const display = sym.replace('USDT', '/USDT');
+    
+    return `
+      <div class="mobile-wl-item" data-symbol="${sym}">
+        <div>
+          <div style="font-weight: 700; font-size: 13px;">${display}</div>
+          <div style="font-size: 9px; color: var(--text-muted);">Binance</div>
+        </div>
+        <div style="text-align: right;">
+          <div style="font-weight: 600; font-size: 13px;" id="mwl-price-${sym}">--</div>
+          <div style="font-size: 10px; padding: 2px 6px; border-radius: 3px;" id="mwl-change-${sym}">--</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+  
+  // Add click handlers to switch symbol
+  container.querySelectorAll('.mobile-wl-item').forEach(function(item) {
+    item.addEventListener('click', function() {
+      const sym = this.getAttribute('data-symbol');
+      if (sym && typeof window.TV !== 'undefined' && window.TV.switchSymbol) {
+        window.TV.switchSymbol(sym);
+        if (typeof Toast !== 'undefined') {
+          Toast.info('Switched to ' + sym.replace('USDT', '/USDT'));
+        }
+      }
     });
   });
 }
 
-// ========== BUILD MOBILE INDICATORS ==========
+// ============================================
+// BUILD MOBILE INDICATORS GRID
+// ============================================
 function buildMobileIndicators() {
   const container = document.getElementById('mobile-indicators-grid');
   if (!container) return;
   
-  const inds = ['RSI','MACD','SMA','EMA','Bollinger','VWAP','Stochastic','ATR','Ichimoku','SuperTrend','PSAR','CCI','WilliamsR','Keltner','OBV','MFI'];
-  container.innerHTML = inds.map(ind => {
-    const active = STATE.activeIndicators?.has(ind);
-    return `<button class="mob-ind-btn${active?' active':''}" data-ind="${ind}" style="padding:10px;background:${active?'var(--accent-muted)':'var(--bg-tertiary)'};border:1px solid ${active?'var(--accent-primary)':'var(--border-primary)'};border-radius:8px;color:${active?'var(--accent-primary)':'var(--text-secondary)'};font-size:10px;font-weight:600;cursor:pointer;">${ind}</button>`;
+  const indicators = [
+    'RSI', 'MACD', 'SMA', 'EMA', 'Bollinger', 'VWAP',
+    'Stochastic', 'ATR', 'Ichimoku', 'SuperTrend', 'PSAR',
+    'CCI', 'WilliamsR', 'Keltner', 'OBV', 'MFI'
+  ];
+  
+  container.innerHTML = indicators.map(function(ind) {
+    const isActive = STATE.activeIndicators && STATE.activeIndicators.has(ind);
+    return `
+      <button class="sheet-indicator-btn ${isActive ? 'active' : ''}" 
+              data-indicator="${ind}"
+              style="background: ${isActive ? 'var(--accent-muted)' : 'var(--bg-tertiary)'};
+                     border-color: ${isActive ? 'var(--accent-primary)' : 'var(--border-primary)'};
+                     color: ${isActive ? 'var(--accent-primary)' : 'var(--text-secondary)'};">
+        ${ind}
+      </button>
+    `;
   }).join('');
   
-  container.querySelectorAll('.mob-ind-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const ind = this.dataset.ind;
-      if (typeof IndicatorEngine !== 'undefined') IndicatorEngine.toggleIndicator(ind);
-      // Refresh indicator states after toggle
-      setTimeout(() => buildMobileIndicators(), 300);
+  // Add click handlers
+  container.querySelectorAll('.sheet-indicator-btn').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      
+      const ind = this.getAttribute('data-indicator');
+      
+      if (ind && typeof IndicatorEngine !== 'undefined') {
+        IndicatorEngine.toggleIndicator(ind);
+        
+        // Refresh the grid to update active states
+        setTimeout(function() {
+          buildMobileIndicators();
+        }, 300);
+      }
     });
   });
 }
 
-// ========== UPDATE MOBILE STATS ==========
+// ============================================
+// UPDATE MOBILE STATS
+// ============================================
 function updateMobileStats() {
-  const c = STATE.candles?.[STATE.candles.length - 1];
-  if (!c) return;
-  document.getElementById('ms-open') && (document.getElementById('ms-open').textContent = U.formatPrice(c.open));
-  document.getElementById('ms-high') && (document.getElementById('ms-high').textContent = U.formatPrice(c.high));
-  document.getElementById('ms-low') && (document.getElementById('ms-low').textContent = U.formatPrice(c.low));
-  document.getElementById('ms-volume') && (document.getElementById('ms-volume').textContent = U.formatVolume(c.volume));
-  document.getElementById('ms-change') && (document.getElementById('ms-change').textContent = (STATE.change24h!=null?(STATE.change24h>=0?'+':'')+U.formatNum(STATE.change24h,2)+'%':'--'));
+  const lastCandle = STATE.candles && STATE.candles.length > 0 
+    ? STATE.candles[STATE.candles.length - 1] 
+    : null;
+  
+  if (lastCandle) {
+    const setVal = function(id, val) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = val;
+    };
+    
+    setVal('ms-open', typeof U !== 'undefined' ? U.formatPrice(lastCandle.open) : lastCandle.open.toFixed(2));
+    setVal('ms-high', typeof U !== 'undefined' ? U.formatPrice(lastCandle.high) : lastCandle.high.toFixed(2));
+    setVal('ms-low', typeof U !== 'undefined' ? U.formatPrice(lastCandle.low) : lastCandle.low.toFixed(2));
+    setVal('ms-volume', typeof U !== 'undefined' ? U.formatVolume(lastCandle.volume) : lastCandle.volume.toFixed(2));
+    
+    const changeEl = document.getElementById('ms-change');
+    if (changeEl && STATE.change24h !== null) {
+      const change = STATE.change24h;
+      changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
+      changeEl.style.color = change >= 0 ? 'var(--up-color)' : 'var(--down-color)';
+    }
+  } else {
+    // No data yet
+    ['ms-open', 'ms-high', 'ms-low', 'ms-volume', 'ms-change'].forEach(function(id) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = '--';
+    });
+  }
 }
 
-// ========== UPDATE MOBILE PRICES ==========
+// ============================================
+// UPDATE MOBILE PRICES (LIVE)
+// ============================================
 function updateMobilePrices() {
-  setInterval(() => {
+  // Update every 2 seconds
+  setInterval(function() {
     if (!STATE.currentPrice) return;
+    
+    // Update header price
     const priceEl = document.getElementById('mobile-price');
     const symbolEl = document.getElementById('mobile-symbol-name');
+    const changeBadge = document.getElementById('mobile-change-badge');
+    
     if (priceEl) {
-      priceEl.textContent = U.formatPrice(STATE.currentPrice);
-      priceEl.style.color = STATE.change24h >= 0 ? 'var(--up-color)' : 'var(--down-color)';
+      priceEl.textContent = typeof U !== 'undefined' 
+        ? U.formatPrice(STATE.currentPrice) 
+        : STATE.currentPrice.toFixed(2);
+      priceEl.style.color = (STATE.change24h || 0) >= 0 
+        ? 'var(--up-color)' 
+        : 'var(--down-color)';
     }
-    if (symbolEl) symbolEl.textContent = STATE.symbol.replace('USDT', '/USDT');
+    
+    if (symbolEl) {
+      symbolEl.textContent = STATE.symbol.replace('USDT', '/USDT');
+    }
+    
+    if (changeBadge && STATE.change24h !== null) {
+      const change = STATE.change24h;
+      changeBadge.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
+      changeBadge.className = 'mobile-change-badge ' + (change >= 0 ? 'up' : 'down');
+    }
     
     // Update watchlist prices in sheet
-    document.querySelectorAll('.mob-wl').forEach(el => {
-      const sym = el.dataset.symbol;
+    document.querySelectorAll('#mobile-watchlist-list .mobile-wl-item').forEach(function(item) {
+      const sym = item.getAttribute('data-symbol');
       const data = STATE.marketData?.get(sym);
-      const pEl = document.getElementById('mwl-p-' + sym);
-      const cEl = document.getElementById('mwl-c-' + sym);
-      if (pEl && data?.price) pEl.textContent = '$' + U.formatPrice(data.price);
-      if (cEl && data?.change !== undefined) {
-        cEl.textContent = (data.change>=0?'+':'') + U.formatNum(data.change, 2) + '%';
-        cEl.style.color = data.change>=0 ? 'var(--up-color)' : 'var(--down-color)';
+      
+      const priceDisplay = document.getElementById('mwl-price-' + sym);
+      const changeDisplay = document.getElementById('mwl-change-' + sym);
+      
+      if (priceDisplay && data?.price) {
+        priceDisplay.textContent = '$' + (typeof U !== 'undefined' 
+          ? U.formatPrice(data.price) 
+          : data.price.toFixed(2));
+      }
+      
+      if (changeDisplay && data?.change !== undefined) {
+        changeDisplay.textContent = (data.change >= 0 ? '+' : '') + data.change.toFixed(2) + '%';
+        changeDisplay.style.color = data.change >= 0 ? 'var(--up-color)' : 'var(--down-color)';
+        changeDisplay.style.background = data.change >= 0 ? 'var(--up-muted)' : 'var(--down-muted)';
       }
     });
   }, 2000);
@@ -16595,1090 +17851,1156 @@ function initTVPanels() {
   initIVStructure();
   initVolCurve();
 }
-
-  // ============================================
-  // MAIN INITIALIZATION
-  // ============================================
-  async function main() {
-    console.log('🚀 TradeVision Pro v3.2 Starting...');
+// ============================================
+// MAIN INITIALIZATION
+// ============================================
+async function main() {
+    console.log('🚀 TradeVision Pro v4.0 Starting...');
     
-	  
     try {
-	
-	
-	
-	  
-      ChartEngine.init();
-
-      DrawingEngine.init();
-	  DrawingToolsModal.init();
-      setupUI();
-	  setupFooterTimeframes();
-      WatchlistManager.init();
-      AlertManager.init();
-      IndicatorsModal.init();
-	  PineEditor.init();
-	  TradeManager.init();
-      await DataManager.init();
-	  await MarketOverview.init();
-      TickerManager.init();
-	  StockDataManager.init();
-	  initTVPanels();
-      await NewsManager.init();
-	  EconomicCalendar.init();
-	  
-// ============================================
-// INITIALIZE MOBILE 
-// ============================================
-if (window.innerWidth <= 768) {
-  console.log('📱 Setting up mobile features...');
-  
-  // ============================================
-// FIX MOBILE CHART LAYOUT
-// ============================================
-function fixMobileChartLayout() {
-  if (window.innerWidth > 768) return;
-  
-  // Force volume pane to always be visible
-  const volumePane = document.getElementById('volume-chart-pane');
-  if (volumePane) {
-    volumePane.style.cssText = `
-      flex: 0 0 80px !important;
-      display: flex !important;
-      height: 80px !important;
-      min-height: 80px !important;
-      max-height: 80px !important;
-      width: 100% !important;
-      overflow: hidden;
-    `;
-  }
-  
-  // Fix main chart - fill remaining space
-  const mainPane = document.getElementById('main-chart-pane');
-  if (mainPane) {
-    mainPane.style.cssText = `
-      flex: 1 1 auto !important;
-      min-height: 200px !important;
-      max-height: none !important;
-    `;
-  }
-  
-  // Handle indicator container - only show when it has children
-  const indicatorContainer = document.getElementById('indicator-panes-container');
-  if (indicatorContainer) {
-    // Initial check
-    updateIndicatorContainerVisibility();
-    
-    // Watch for changes
-    const observer = new MutationObserver(() => {
-      updateIndicatorContainerVisibility();
-      // Resize charts after indicator changes
-      setTimeout(() => {
-        if (typeof ChartEngine !== 'undefined') {
-          ChartEngine.resizeAll();
-        }
-      }, 200);
-    });
-    observer.observe(indicatorContainer, { childList: true, subtree: false });
-  }
-  
-  function updateIndicatorContainerVisibility() {
-    const container = document.getElementById('indicator-panes-container');
-    if (!container) return;
-    
-    if (container.children.length === 0) {
-      container.style.display = 'none';
-      container.style.flex = '0 0 0';
-      container.style.maxHeight = '0';
-      container.style.overflow = 'hidden';
-    } else {
-      container.style.display = 'flex';
-      container.style.flex = '0 0 auto';
-      container.style.maxHeight = 'none';
-      container.style.overflow = 'visible';
-    }
-  }
-  
-  // Ensure chart container is scrollable
-  const chartContainer = document.querySelector('.chart-container');
-  if (chartContainer) {
-    chartContainer.style.overflowY = 'auto';
-    chartContainer.style.overflowX = 'hidden';
-  }
-  
-  // Resize all charts
-  setTimeout(() => {
-    if (typeof ChartEngine !== 'undefined') {
-      ChartEngine.resizeAll();
-    }
-  }, 500);
-}
-
-// Call on load and resize
-fixMobileChartLayout();
-window.addEventListener('resize', () => {
-  setTimeout(fixMobileChartLayout, 300);
-});
-  
-  // === SEARCH ===
-  const searchOverlay = document.getElementById('mobile-search-overlay');
-  const searchInput = document.getElementById('mobile-search-input');
-  const searchResults = document.getElementById('mobile-search-results');
-  
-  function openSearch() {
-    if (searchOverlay) {
-      searchOverlay.classList.add('visible');
-      setTimeout(() => searchInput?.focus(), 300);
-    }
-  }
-  
-  // Search trigger button
-  document.getElementById('mobile-search-trigger')?.addEventListener('click', openSearch);
-  document.getElementById('mobile-menu-btn')?.addEventListener('click', openSearch);
-  
-  // Also add search icon in header if it exists
-  document.querySelector('.mobile-icon-btn .fa-search')?.parentElement?.addEventListener('click', openSearch);
-  
-  // Back button
-  document.getElementById('mobile-search-back')?.addEventListener('click', () => {
-    searchOverlay?.classList.remove('visible');
-    if (searchInput) searchInput.value = '';
-    if (searchResults) searchResults.innerHTML = '';
-  });
-  
-  // Search input
-  searchInput?.addEventListener('input', function() {
-    const q = this.value.trim().toUpperCase();
-    if (!searchResults) return;
-    if (q.length < 1) { searchResults.innerHTML = ''; return; }
-    
-    const syms = (STATE.availableSymbols || [])
-      .filter(s => s.symbol.includes(q))
-      .slice(0, 15);
-    
-    searchResults.innerHTML = syms.length ? syms.map(s => 
-      `<div class="ms-item" data-sym="${s.symbol}" style="display:flex;justify-content:space-between;padding:12px;border-bottom:1px solid rgba(48,54,61,0.3);cursor:pointer;">
-        <div><strong>${s.symbol.replace('USDT','/USDT')}</strong><br><small style="color:var(--text-muted);">${s.baseAsset} · Binance</small></div>
-        <span style="color:var(--accent-primary);font-size:10px;">→</span>
-      </div>`
-    ).join('') : '<div style="padding:30px;text-align:center;color:var(--text-muted);">No results</div>';
-    
-    searchResults.querySelectorAll('.ms-item').forEach(el => {
-      el.addEventListener('click', () => {
-        const sym = el.dataset.sym;
-        if (sym && window.TV) window.TV.switchSymbol(sym);
-        searchOverlay?.classList.remove('visible');
-        if (searchInput) searchInput.value = '';
-        if (searchResults) searchResults.innerHTML = '';
-      });
-    });
-  });
-  
-  // Quick symbol pills
-  document.querySelectorAll('.symbol-pill[data-symbol]').forEach(pill => {
-    pill.addEventListener('click', function() {
-      const sym = this.dataset.symbol;
-      if (sym && window.TV) window.TV.switchSymbol(sym);
-      searchOverlay?.classList.remove('visible');
-    });
-  });
-  
-  // === BOTTOM SHEET ===
-  const sheet = document.getElementById('mobile-bottom-sheet');
-  const overlay = document.getElementById('mobile-overlay');
-  let expanded = false;
-  
-  document.getElementById('sheet-handle')?.addEventListener('click', function(e) {
-    if (e.target.closest('.sheet-tab')) return;
-    expanded = !expanded;
-    if (sheet) sheet.style.transform = expanded ? 'translateY(0)' : 'translateY(calc(100% - 48px))';
-    if (overlay) overlay.classList.toggle('visible', expanded);
-  });
-  
-  overlay?.addEventListener('click', () => {
-    expanded = false;
-    if (sheet) sheet.style.transform = 'translateY(calc(100% - 48px))';
-    if (overlay) overlay.classList.remove('visible');
-  });
-  
-  // === TABS ===
-  document.querySelectorAll('.sheet-tab').forEach(tab => {
-    tab.addEventListener('click', function(e) {
-      e.stopPropagation();
-      
-      document.querySelectorAll('.sheet-tab').forEach(t => {
-        t.classList.remove('active');
-        t.style.color = 'var(--text-muted)';
-        t.style.borderBottomColor = 'transparent';
-      });
-      this.classList.add('active');
-      this.style.color = 'var(--accent-primary)';
-      this.style.borderBottomColor = 'var(--accent-primary)';
-      
-      const tabName = this.dataset.tab;
-      document.querySelectorAll('.sheet-panel').forEach(p => p.style.display = 'none');
-      const panel = document.getElementById('sheet-' + tabName);
-      if (panel) panel.style.display = 'block';
-      
-      if (tabName === 'indicators') loadMobileIndicators();
-      if (tabName === 'watchlist') loadMobileWatchlist();
-      
-      if (!expanded) {
-        expanded = true;
-        if (sheet) sheet.style.transform = 'translateY(0)';
-        if (overlay) overlay.classList.add('visible');
-      }
-    });
-  });
-  
-  // === LOAD INDICATORS ===
-  function loadMobileIndicators() {
-    const c = document.getElementById('mobile-indicators-grid');
-    if (!c) return;
-    const inds = ['RSI','MACD','SMA','EMA','Bollinger','VWAP','Stochastic','ATR','Ichimoku','SuperTrend','PSAR','CCI','WilliamsR','Keltner','OBV','MFI'];
-    c.innerHTML = inds.map(ind => {
-      const a = STATE.activeIndicators?.has(ind);
-      return `<button class="m-ind-btn" data-ind="${ind}" style="padding:10px;background:${a?'var(--accent-muted)':'var(--bg-tertiary)'};border:1px solid ${a?'var(--accent-primary)':'var(--border-primary)'};border-radius:8px;color:${a?'var(--accent-primary)':'var(--text-secondary)'};font-size:10px;font-weight:600;cursor:pointer;">${ind}</button>`;
-    }).join('');
-    
-    c.querySelectorAll('.m-ind-btn').forEach(btn => {
-      btn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        const ind = this.dataset.ind;
-        if (typeof IndicatorEngine !== 'undefined') IndicatorEngine.toggleIndicator(ind);
-        setTimeout(() => loadMobileIndicators(), 300);
-      });
-    });
-  }
-  
-  // === LOAD WATCHLIST ===
-  function loadMobileWatchlist() {
-    const c = document.getElementById('mobile-watchlist-list');
-    if (!c) return;
-    const wl = STATE.watchlist || [{symbol:'BTCUSDT'},{symbol:'ETHUSDT'},{symbol:'BNBUSDT'},{symbol:'SOLUSDT'}];
-    c.innerHTML = wl.map(item => 
-      `<div class="m-wl-item" data-sym="${item.symbol}" style="display:flex;justify-content:space-between;padding:10px 8px;border-bottom:1px solid rgba(48,54,61,0.3);cursor:pointer;">
-        <div><strong>${item.symbol.replace('USDT','/USDT')}</strong><br><small style="color:var(--text-muted);">Binance</small></div>
-        <div style="text-align:right;font-weight:600;">--</div>
-      </div>`
-    ).join('');
-    
-    c.querySelectorAll('.m-wl-item').forEach(el => {
-      el.addEventListener('click', () => {
-        if (window.TV) window.TV.switchSymbol(el.dataset.sym);
-      });
-    });
-  }
-  
-  // === DRAWING TOOLS ===
-  document.querySelectorAll('.sheet-tool-btn[data-tool]').forEach(btn => {
-    btn.addEventListener('click', function(e) {
-      e.stopPropagation();
-      const tool = this.dataset.tool;
-      if (tool === 'clear' && typeof DrawingEngine !== 'undefined') DrawingEngine.clearAll();
-      else if (tool === 'undo' && typeof DrawingEngine !== 'undefined') DrawingEngine.undo();
-      else if (tool && typeof DrawingEngine !== 'undefined') DrawingEngine.setTool(tool);
-    });
-  });
-  
-  // === MORE BUTTONS ===
-  document.querySelectorAll('.mob-action-btn').forEach(btn => {
-    btn.addEventListener('click', function(e) {
-      e.stopPropagation();
-      const action = this.dataset.action;
-      if (action === 'search') openSearch();
-      else if (action === 'depth') document.getElementById('market-depth-modal')?.classList.add('visible');
-      else if (action === 'news') document.getElementById('news-modal')?.classList.add('visible');
-      else if (action === 'alerts') document.getElementById('alerts-modal')?.classList.add('visible');
-      else if (action === 'settings') document.getElementById('settings-modal')?.classList.add('visible');
-      else if (action === 'theme') {
-        const cur = document.body.getAttribute('data-theme') || 'dark';
-        document.body.setAttribute('data-theme', cur === 'dark' ? 'light' : 'dark');
-        if (typeof U !== 'undefined') U.storage.set('tvp_theme', cur === 'dark' ? 'light' : 'dark');
-      } else if (action === 'fullscreen') {
-        document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen();
-      }
-    });
-  });
-  
-  // === PRICE UPDATE ===
-  setInterval(() => {
-    const p = document.getElementById('mobile-price-display');
-    const s = document.getElementById('mobile-symbol-display');
-    if (p && STATE.currentPrice) {
-      p.textContent = typeof U !== 'undefined' ? U.formatPrice(STATE.currentPrice) : STATE.currentPrice.toFixed(2);
-      p.style.color = (STATE.change24h || 0) >= 0 ? 'var(--up-color)' : 'var(--down-color)';
-    }
-    if (s) s.textContent = STATE.symbol?.replace('USDT','/USDT') || '--';
-  }, 2000);
-  
-  console.log('✅ Mobile features ready!');
-}
-      
-      setInterval(() => AlertManager.check(), 1000);
-      setInterval(() => TradeManager.updatePrices(), 1000);
-      
-      console.log('✅ TradeVision Pro Ready');
-      //Toast.success('TradeVision Pro v3.2 Ready');
-	  // ============================================
-
-    } catch(e) {
-      console.error('❌ Init failed:', e);
-      Toast.error('Failed to initialize. Please refresh.');
-    }
-  }
-  
-  if(document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', main);
-  } else {
-    main();
-	// Setup mobile timeframe pills
-document.querySelectorAll('.mobile-tf-pill').forEach(pill => {
-  pill.addEventListener('click', function() {
-    const interval = this.getAttribute('data-interval');
-    if (interval && window.TV) {
-      window.TV.switchInterval(interval);
-      document.querySelectorAll('.mobile-tf-pill').forEach(p => p.classList.remove('active'));
-      this.classList.add('active');
-    }
-  });
-});
-
-
-
-
-  
-  // ============================================
-  // TAB SWITCHING
-  // ============================================
-  const tabs = document.querySelectorAll('.sheet-tab');
-  
-  tabs.forEach(function(tab) {
-    tab.addEventListener('click', function(e) {
-      e.stopPropagation(); // Don't trigger handle click
-      
-      // Update active tab
-      tabs.forEach(function(t) { t.classList.remove('active'); });
-      tab.classList.add('active');
-      
-      const tabName = tab.getAttribute('data-tab');
-      
-      // Show correct panel
-      const panels = document.querySelectorAll('.sheet-panel');
-      panels.forEach(function(p) { p.classList.remove('active'); });
-      
-      const targetPanel = document.getElementById('sheet-' + tabName);
-      if (targetPanel) {
-        targetPanel.classList.add('active');
-      }
-      
-      // Populate content based on tab
-      if (tabName === 'indicators') {
-        populateMobileIndicators();
-      }
-      
-      if (tabName === 'watchlist') {
-        populateMobileWatchlist();
-      }
-      
-      if (tabName === 'stats') {
-        updateMobileStats();
-      }
-      
-      // Expand sheet if collapsed
-      if (sheetState === 'collapsed') {
-        setSheetState('expanded');
-      }
-      
-      console.log('Tab clicked:', tabName);
-    });
-  });
-  
-  // ============================================
-  // INDICATORS - POPULATE & TOGGLE
-  // ============================================
-  function populateMobileIndicators() {
-    const container = document.getElementById('mobile-indicators-grid');
-    if (!container) return;
-    
-    // Only populate once
-    if (container.children.length > 0) {
-      // Update active states
-      updateIndicatorStates(container);
-      return;
-    }
-    
-    const indicators = [
-      'RSI', 'MACD', 'SMA', 'EMA', 'Bollinger', 'VWAP', 
-      'Stochastic', 'ATR', 'Ichimoku', 'SuperTrend', 'PSAR',
-      'CCI', 'WilliamsR', 'Keltner', 'OBV', 'MFI'
-    ];
-    
-    container.innerHTML = indicators.map(function(ind) {
-      const isActive = STATE.activeIndicators && STATE.activeIndicators.has(ind);
-      return '<button class="sheet-indicator-btn' + (isActive ? ' active' : '') + '" data-indicator="' + ind + '">' + ind + '</button>';
-    }).join('');
-    
-    // Add click handlers
-    container.querySelectorAll('.sheet-indicator-btn').forEach(function(btn) {
-      btn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        const ind = btn.getAttribute('data-indicator');
+        // Initialize core systems
+        ChartEngine.init();
+        DrawingEngine.init();
+        DrawingToolsModal.init();
+        setupUI();
+        setupFooterTimeframes();
+        WatchlistManager.init();
+        AlertManager.init();
+        IndicatorsModal.init();
+        PineEditor.init();
+        TradeManager.init();
         
-        if (ind && typeof IndicatorEngine !== 'undefined') {
-          IndicatorEngine.toggleIndicator(ind);
-          
-          // Update button state
-          if (STATE.activeIndicators.has(ind)) {
-            btn.classList.add('active');
-            btn.style.background = 'var(--accent-muted)';
-            btn.style.borderColor = 'var(--accent-primary)';
-            btn.style.color = 'var(--accent-primary)';
-            Toast.success(ind + ' added');
-          } else {
-            btn.classList.remove('active');
-            btn.style.background = 'var(--bg-tertiary)';
-            btn.style.borderColor = 'var(--border-primary)';
-            btn.style.color = 'var(--text-secondary)';
-            Toast.info(ind + ' removed');
-          }
+        // Initialize data (async)
+        await DataManager.init();
+        await MarketOverview.init();
+        
+        // Initialize display systems
+        TickerManager.init();
+        StockDataManager.init();
+        initTVPanels();
+        await NewsManager.init();
+        EconomicCalendar.init();
+        
+        // ============================================
+        // SINGLE MOBILE INITIALIZATION - v4.0
+        // ============================================
+        initAllMobileFeatures();
+        
+        // Start periodic checks
+        setInterval(function() {
+            if (typeof AlertManager !== 'undefined') AlertManager.check();
+        }, 1000);
+        
+        setInterval(function() {
+            if (typeof TradeManager !== 'undefined') TradeManager.updatePrices();
+        }, 1000);
+        
+        // Setup mobile timeframe pills
+        setupMobileTimeframePills();
+        
+        console.log('✅ TradeVision Pro v4.0 Ready');
+        
+    } catch(e) {
+        console.error('❌ Initialization failed:', e);
+        console.error('Error stack:', e.stack);
+        
+        // Show user-friendly error
+        if (typeof Toast !== 'undefined') {
+            Toast.error('Failed to initialize. Please refresh the page.', 10000);
         }
-      });
-    });
-  }
-  
-  function updateIndicatorStates(container) {
-    container.querySelectorAll('.sheet-indicator-btn').forEach(function(btn) {
-      const ind = btn.getAttribute('data-indicator');
-      if (STATE.activeIndicators && STATE.activeIndicators.has(ind)) {
-        btn.classList.add('active');
-        btn.style.background = 'var(--accent-muted)';
-        btn.style.borderColor = 'var(--accent-primary)';
-        btn.style.color = 'var(--accent-primary)';
-      } else {
-        btn.classList.remove('active');
-        btn.style.background = 'var(--bg-tertiary)';
-        btn.style.borderColor = 'var(--border-primary)';
-        btn.style.color = 'var(--text-secondary)';
-      }
-    });
-  }
-  
-  // ============================================
-  // WATCHLIST
-  // ============================================
-  function populateMobileWatchlist() {
-    const container = document.getElementById('mobile-watchlist-list');
-    if (!container) return;
+    }
+}
+
+// ============================================
+// MOBILE FEATURES - COMPLETE SETUP
+// ============================================
+
+// ============================================
+// 1. MOBILE SYMBOL SEARCH DROPDOWN
+// ============================================
+function setupMobileSymbolSearch() {
+    if (window.innerWidth > 768) return;
     
-    const watchlist = STATE.watchlist || [
-      { symbol: 'BTCUSDT' }, { symbol: 'ETHUSDT' }, 
-      { symbol: 'BNBUSDT' }, { symbol: 'SOLUSDT' }
+    var symbolArea = document.getElementById('mobile-symbol-area');
+    var searchDropdown = document.getElementById('mobile-search-overlay');
+    var searchInput = document.getElementById('mobile-search-input');
+    var searchClose = document.getElementById('mobile-search-close-btn');
+    var searchResults = document.getElementById('mobile-search-results');
+    var searchTabs = document.querySelectorAll('.mobile-search-tab');
+    
+    if (!symbolArea || !searchDropdown) {
+        console.warn('Mobile search elements not found');
+        return;
+    }
+    
+    // Default symbols to show when opening
+    var defaultSymbols = [
+        { symbol: 'BTCUSDT', name: 'Bitcoin', type: 'crypto' },
+        { symbol: 'ETHUSDT', name: 'Ethereum', type: 'crypto' },
+        { symbol: 'BNBUSDT', name: 'BNB', type: 'crypto' },
+        { symbol: 'SOLUSDT', name: 'Solana', type: 'crypto' },
+        { symbol: 'XRPUSDT', name: 'Ripple', type: 'crypto' },
+        { symbol: 'ADAUSDT', name: 'Cardano', type: 'crypto' },
+        { symbol: 'DOGEUSDT', name: 'Dogecoin', type: 'crypto' },
+        { symbol: 'AAPL', name: 'Apple Inc.', type: 'stocks' },
+        { symbol: 'TSLA', name: 'Tesla Inc.', type: 'stocks' },
+        { symbol: 'MSFT', name: 'Microsoft Corp.', type: 'stocks' },
+        { symbol: 'EURUSD', name: 'Euro/US Dollar', type: 'forex' },
+        { symbol: 'GBPUSD', name: 'Pound/US Dollar', type: 'forex' }
     ];
     
-    container.innerHTML = watchlist.map(function(item) {
-      const sym = item.symbol;
-      const ds = sym.replace('USDT', '/USDT');
-      return `
-        <div class="mobile-wl-item" data-symbol="${sym}" style="display:flex;justify-content:space-between;align-items:center;padding:10px 8px;border-bottom:1px solid rgba(48,54,61,0.3);cursor:pointer;font-size:12px;">
-          <div>
-            <div style="font-weight:700;">${ds}</div>
-            <div style="font-size:9px;color:var(--text-muted);">Binance</div>
-          </div>
-          <div style="text-align:right;">
-            <div style="font-weight:600;" id="mwl-price-${sym}">--</div>
-            <div style="font-size:10px;padding:2px 6px;border-radius:3px;" id="mwl-change-${sym}">--</div>
-          </div>
-        </div>
-      `;
-    }).join('');
+    var currentTab = 'all';
     
-    // Click to switch symbol
-    container.querySelectorAll('.mobile-wl-item').forEach(function(item) {
-      item.addEventListener('click', function() {
-        const sym = item.getAttribute('data-symbol');
-        if (sym && window.TV && window.TV.switchSymbol) {
-          window.TV.switchSymbol(sym);
-          Toast.info('Switched to ' + sym.replace('USDT', '/USDT'));
+    // Render search results
+    function renderResults(symbols) {
+        if (!searchResults) return;
+        
+        if (!symbols || symbols.length === 0) {
+            searchResults.innerHTML = '<div style="padding:30px;text-align:center;color:var(--text-muted);font-size:14px;">No results found</div>';
+            return;
         }
-      });
-    });
-  }
-  
-  // ============================================
-  // STATS
-  // ============================================
-  function updateMobileStats() {
-    const lastCandle = STATE.candles && STATE.candles[STATE.candles.length - 1];
-    if (lastCandle) {
-      const setVal = function(id, val) {
-        const el = document.getElementById(id);
-        if (el) el.textContent = val;
-      };
-      setVal('ms-open', U.formatPrice(lastCandle.open));
-      setVal('ms-high', U.formatPrice(lastCandle.high));
-      setVal('ms-low', U.formatPrice(lastCandle.low));
-      setVal('ms-prev', STATE.candles.length > 1 ? U.formatPrice(STATE.candles[STATE.candles.length - 2].close) : '--');
-      setVal('ms-volume', U.formatVolume(lastCandle.volume));
-    }
-    const mcapEl = document.getElementById('ms-mcap');
-    if (mcapEl) mcapEl.textContent = '--';
-  }
-  
-  // ============================================
-  // DRAWING TOOLS
-  // ============================================
-  document.querySelectorAll('.sheet-tool-btn[data-tool]').forEach(function(btn) {
-    btn.addEventListener('click', function(e) {
-      e.stopPropagation();
-      const tool = btn.getAttribute('data-tool');
-      
-      if (tool === 'clear' && typeof DrawingEngine !== 'undefined') {
-        DrawingEngine.clearAll();
-        Toast.info('All drawings cleared');
-      } else if (tool === 'undo' && typeof DrawingEngine !== 'undefined') {
-        DrawingEngine.undo();
-      } else if (tool && typeof DrawingEngine !== 'undefined') {
-        DrawingEngine.setTool(tool);
-      }
-      
-      setSheetState('collapsed');
-    });
-  });
-  
-  // ============================================
-  // MORE PANEL BUTTONS
-  // ============================================
-  function openModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) {
-      modal.classList.add('visible');
-      console.log('Opening modal:', modalId);
-    }
-    setSheetState('collapsed');
-  }
-  
-  const moreButtonMap = {
-    'mob-search-btn': function() {
-  const overlay = document.getElementById('mobile-search-overlay');
-  if (overlay) {
-    overlay.style.display = '';
-    overlay.classList.add('visible');
-    setTimeout(() => document.getElementById('m-search-input')?.focus(), 300);
-  }
-  setSheetState('collapsed');
-},
-    'mob-depth-btn': function() { openModal('market-depth-modal'); },
-    'mob-news-btn': function() { openModal('news-modal'); },
-    'mob-alerts-btn': function() { 
-      document.getElementById('alerts-modal')?.classList.add('visible');
-      setSheetState('collapsed');
-    },
-    'mob-settings-btn': function() { openModal('settings-modal'); },
-    'mob-theme-btn': function() {
-      const current = document.body.getAttribute('data-theme') || 'dark';
-      const next = current === 'dark' ? 'light' : 'dark';
-      document.body.setAttribute('data-theme', next);
-      if (typeof U !== 'undefined') U.storage.set('tvp_theme', next);
-      Toast.info('Theme: ' + next);
-    },
-    'mob-fullscreen-btn': function() {
-      if (!document.fullscreenElement) document.documentElement.requestFullscreen();
-      else document.exitFullscreen();
-    }
-  };
-  
-  Object.keys(moreButtonMap).forEach(function(btnId) {
-    const btn = document.getElementById(btnId);
-    if (btn) {
-      btn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        moreButtonMap[btnId]();
-      });
-    }
-  });
-  
-  // ============================================
-  // SEARCH OVERLAY
-  // ============================================
-  document.getElementById('m-search-close')?.addEventListener('click', function() {
-  const overlay = document.getElementById('mobile-search-overlay');
-  if (overlay) overlay.classList.remove('visible');
-});
-
-// Also close when clicking the overlay background
-document.getElementById('mobile-search-overlay')?.addEventListener('click', function(e) {
-  if (e.target === this) {
-    this.classList.remove('visible');
-    const input = document.getElementById('m-search-input');
-    if (input) input.value = '';
-  }
-});
-  
-  document.querySelectorAll('.mobile-quick-symbols .symbol-pill').forEach(function(pill) {
-    pill.addEventListener('click', function() {
-      const symbol = pill.getAttribute('data-symbol');
-      if (symbol && window.TV) window.TV.switchSymbol(symbol);
-      document.getElementById('mobile-search-overlay')?.classList.remove('visible');
-      Toast.info('Switched to ' + symbol.replace('USDT', '/USDT'));
-    });
-  });
-  
-  
-  
-  // ============================================
-  // PRICE UPDATE INTERVAL
-  // ============================================
-  setInterval(function() {
-    if (STATE.currentPrice) {
-      const priceEl = document.querySelector('.mobile-price');
-      if (priceEl) {
-        priceEl.textContent = U.formatPrice(STATE.currentPrice);
-        priceEl.className = 'mobile-price ' + (STATE.change24h >= 0 ? 'up' : 'down');
-      }
+        
+        var html = '';
+        for (var i = 0; i < symbols.length; i++) {
+            var s = symbols[i];
+            var displaySym = s.symbol.indexOf('USDT') > -1 ? s.symbol.replace('USDT', '/USDT') : s.symbol;
+            var typeLabel = s.type === 'crypto' ? 'Crypto' : s.type === 'stocks' ? 'Stock' : 'Forex';
+            var bgColor = s.type === 'crypto' ? 'rgba(88,166,255,0.1)' : s.type === 'stocks' ? 'rgba(38,166,154,0.1)' : 'rgba(255,152,0,0.1)';
+            var txtColor = s.type === 'crypto' ? '#58a6ff' : s.type === 'stocks' ? '#26a69a' : '#ff9800';
+            
+            html += '<div class="mobile-search-result-item" data-symbol="' + s.symbol + '" data-type="' + s.type + '">' +
+                '<div>' +
+                    '<div class="mobile-search-result-symbol">' + displaySym + '</div>' +
+                    '<div class="mobile-search-result-name">' + (s.name || s.symbol) + '</div>' +
+                '</div>' +
+                '<span style="font-size:10px;padding:3px 8px;border-radius:10px;font-weight:600;background:' + bgColor + ';color:' + txtColor + ';">' + typeLabel + '</span>' +
+            '</div>';
+        }
+        
+        searchResults.innerHTML = html;
+        
+        // Add click handlers to each result
+        var items = searchResults.querySelectorAll('.mobile-search-result-item');
+        for (var j = 0; j < items.length; j++) {
+            (function(item) {
+                item.addEventListener('click', function() {
+                    var symbol = this.getAttribute('data-symbol');
+                    var type = this.getAttribute('data-type');
+                    
+                    // Set asset type
+                    if (type) {
+                        STATE.assetType = type;
+                    }
+                    
+                    // Switch symbol
+                    if (typeof window.TV !== 'undefined' && window.TV.switchSymbol) {
+                        window.TV.switchSymbol(symbol);
+                    }
+                    
+                    // Update mobile header display
+                    var nameEl = document.getElementById('mobile-symbol-name');
+                    if (nameEl) {
+                        nameEl.textContent = symbol.indexOf('USDT') > -1 ? symbol.replace('USDT', '/USDT') : symbol;
+                    }
+                    
+                    // Close search
+                    closeSearch();
+                });
+            })(items[j]);
+        }
     }
     
-    // Update watchlist prices in sheet
-    document.querySelectorAll('#mobile-watchlist-list .mobile-wl-item').forEach(function(item) {
-      const sym = item.getAttribute('data-symbol');
-      const data = STATE.marketData?.get(sym);
-      const priceEl = document.getElementById('mwl-price-' + sym);
-      const changeEl = document.getElementById('mwl-change-' + sym);
-      
-      if (priceEl && data?.price) {
-        priceEl.textContent = '$' + U.formatPrice(data.price);
-      }
-      if (changeEl && data?.change !== undefined) {
-        changeEl.textContent = (data.change >= 0 ? '+' : '') + U.formatNum(data.change, 2) + '%';
-        changeEl.style.color = data.change >= 0 ? 'var(--up-color)' : 'var(--down-color)';
-        changeEl.style.background = data.change >= 0 ? 'var(--up-muted)' : 'var(--down-muted)';
-      }
+    function closeSearch() {
+        if (searchDropdown) {
+            searchDropdown.classList.remove('visible');
+        }
+        if (searchInput) {
+            searchInput.value = '';
+        }
+        if (searchResults) {
+            searchResults.innerHTML = '';
+        }
+    }
+    
+    // ============================================
+    // OPEN SEARCH - Click on symbol area
+    // ============================================
+    symbolArea.addEventListener('click', function() {
+        if (searchDropdown) {
+            searchDropdown.classList.add('visible');
+        }
+        if (searchInput) {
+            searchInput.value = '';
+            setTimeout(function() {
+                searchInput.focus();
+            }, 100);
+        }
+        renderResults(defaultSymbols);
     });
-  }, 2000);
-  
-  console.log('✅ Mobile sheet ready! Click tabs to use.');
-};
+    
+    // ============================================
+    // OPEN SEARCH - Click on search button
+    // ============================================
+    var searchBtn = document.getElementById('mobile-search-btn');
+    if (searchBtn) {
+        searchBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            if (searchDropdown) {
+                searchDropdown.classList.add('visible');
+            }
+            if (searchInput) {
+                searchInput.value = '';
+                setTimeout(function() {
+                    searchInput.focus();
+                }, 100);
+            }
+            renderResults(defaultSymbols);
+        });
+    }
+    
+    // ============================================
+    // CLOSE SEARCH
+    // ============================================
+    if (searchClose) {
+        searchClose.addEventListener('click', function() {
+            closeSearch();
+        });
+    }
+    
+    // Close on overlay click (click outside the search dropdown)
+    if (searchDropdown) {
+        searchDropdown.addEventListener('click', function(e) {
+            if (e.target === searchDropdown) {
+                closeSearch();
+            }
+        });
+    }
+    
+    // ============================================
+    // SEARCH INPUT HANDLER
+    // ============================================
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            var query = this.value.trim().toUpperCase();
+            
+            if (query.length < 1) {
+                renderResults(defaultSymbols);
+                return;
+            }
+            
+            var results = [];
+            
+            // Search crypto symbols from available symbols
+            if (typeof STATE !== 'undefined' && STATE.availableSymbols && STATE.availableSymbols.length) {
+                for (var k = 0; k < STATE.availableSymbols.length; k++) {
+                    var s = STATE.availableSymbols[k];
+                    if (s.symbol.indexOf(query) > -1 || (s.baseAsset && s.baseAsset.indexOf(query) > -1)) {
+                        results.push({ symbol: s.symbol, name: s.baseAsset, type: 'crypto' });
+                        if (results.length >= 10) break;
+                    }
+                }
+            }
+            
+            // Search stock symbols
+            if (typeof STATE !== 'undefined' && STATE.stockSymbols && STATE.stockSymbols.length) {
+                for (var m = 0; m < STATE.stockSymbols.length; m++) {
+                    var st = STATE.stockSymbols[m];
+                    if (st.symbol.indexOf(query) > -1 || (st.description && st.description.toUpperCase().indexOf(query) > -1)) {
+                        results.push({ symbol: st.symbol, name: st.description || st.symbol, type: 'stocks' });
+                        if (results.length >= 15) break;
+                    }
+                }
+            }
+            
+            // Fallback to default symbols
+            if (results.length === 0) {
+                for (var n = 0; n < defaultSymbols.length; n++) {
+                    var ds = defaultSymbols[n];
+                    if (ds.symbol.indexOf(query) > -1 || ds.name.toUpperCase().indexOf(query) > -1) {
+                        results.push(ds);
+                    }
+                }
+            }
+            
+            renderResults(results.slice(0, 15));
+        });
+        
+        // Handle Enter key
+        searchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeSearch();
+            }
+        });
+    }
+    
+    // ============================================
+    // SEARCH TABS
+    // ============================================
+    if (searchTabs && searchTabs.length) {
+        for (var t = 0; t < searchTabs.length; t++) {
+            (function(tab) {
+                tab.addEventListener('click', function() {
+                    // Remove active from all tabs
+                    for (var u = 0; u < searchTabs.length; u++) {
+                        searchTabs[u].classList.remove('active');
+                    }
+                    // Set active on clicked tab
+                    this.classList.add('active');
+                    
+                    currentTab = this.getAttribute('data-tab') || 'all';
+                    
+                    // Refilter results if there's a query
+                    if (searchInput && searchInput.value.trim().length > 0) {
+                        searchInput.dispatchEvent(new Event('input'));
+                    } else if (currentTab !== 'all') {
+                        // Filter default symbols by type
+                        var filtered = defaultSymbols.filter(function(s) {
+                            return s.type === currentTab;
+                        });
+                        renderResults(filtered);
+                    } else {
+                        renderResults(defaultSymbols);
+                    }
+                });
+            })(searchTabs[t]);
+        }
+    }
+    
+    console.log('✅ Mobile symbol search ready');
+}
 
 // ============================================
-// MOBILE RIGHT PANEL SLIDE-OUT
+// 2. MOBILE TIMEFRAME OVERLAY & MODAL
 // ============================================
+function setupMobileTimeframe() {
+    if (window.innerWidth > 768) return;
+    
+    var currentTfBtn = document.getElementById('mobile-current-tf');
+    var tfModal = document.getElementById('mobile-tf-modal');
+    var tfLabel = document.getElementById('mobile-tf-label');
+    
+    // Set initial label
+    if (tfLabel) {
+        tfLabel.textContent = (typeof STATE !== 'undefined' && STATE.interval) ? STATE.interval : '15m';
+    }
+    
+    // ============================================
+    // OPEN TIMEFRAME MODAL
+    // ============================================
+    if (currentTfBtn) {
+        currentTfBtn.addEventListener('click', function() {
+            if (!tfModal) return;
+            
+            // Update active state in modal based on current interval
+            var currentInterval = (typeof STATE !== 'undefined' && STATE.interval) ? STATE.interval : '15m';
+            var options = tfModal.querySelectorAll('.mobile-tf-option');
+            
+            for (var i = 0; i < options.length; i++) {
+                var opt = options[i];
+                var optInterval = opt.getAttribute('data-interval');
+                if (optInterval === currentInterval) {
+                    opt.classList.add('active');
+                    opt.style.background = 'var(--accent-muted)';
+                    opt.style.borderColor = 'var(--accent-primary)';
+                    opt.style.color = 'var(--accent-primary)';
+                } else {
+                    opt.classList.remove('active');
+                    opt.style.background = 'var(--bg-tertiary)';
+                    opt.style.borderColor = 'var(--border-primary)';
+                    opt.style.color = 'var(--text-primary)';
+                }
+            }
+            
+            tfModal.classList.add('open');
+        });
+    }
+    
+    // ============================================
+    // CLOSE TIMEFRAME MODAL
+    // ============================================
+    var modalCloseBtn = document.querySelector('.mobile-tf-modal-close');
+    if (modalCloseBtn && tfModal) {
+        modalCloseBtn.addEventListener('click', function() {
+            tfModal.classList.remove('open');
+        });
+    }
+    
+    // Close on overlay click
+    if (tfModal) {
+        tfModal.addEventListener('click', function(e) {
+            if (e.target === tfModal) {
+                tfModal.classList.remove('open');
+            }
+        });
+    }
+    
+    // ============================================
+    // TIMEFRAME OPTION CLICK - Switch interval
+    // ============================================
+    document.querySelectorAll('.mobile-tf-option').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var interval = this.getAttribute('data-interval');
+            
+            // Switch chart interval
+            if (typeof window.TV !== 'undefined' && window.TV.switchInterval) {
+                window.TV.switchInterval(interval);
+            }
+            
+            // Update label
+            if (tfLabel) {
+                tfLabel.textContent = interval;
+            }
+            
+            // Update active state in modal
+            document.querySelectorAll('.mobile-tf-option').forEach(function(b) {
+                b.classList.remove('active');
+                b.style.background = 'var(--bg-tertiary)';
+                b.style.borderColor = 'var(--border-primary)';
+                b.style.color = 'var(--text-primary)';
+            });
+            this.classList.add('active');
+            this.style.background = 'var(--accent-muted)';
+            this.style.borderColor = 'var(--accent-primary)';
+            this.style.color = 'var(--accent-primary)';
+            
+            // Update quick pills
+            document.querySelectorAll('.mobile-tf-pill').forEach(function(p) {
+                if (p.getAttribute('data-interval') === interval) {
+                    p.classList.add('active');
+                } else {
+                    p.classList.remove('active');
+                }
+            });
+            
+            // Close modal
+            if (tfModal) {
+                tfModal.classList.remove('open');
+            }
+        });
+    });
+    
+    // ============================================
+    // QUICK TIMEFRAME PILLS (on chart overlay)
+    // ============================================
+    document.querySelectorAll('.mobile-tf-pill').forEach(function(pill) {
+        pill.addEventListener('click', function() {
+            var interval = this.getAttribute('data-interval');
+            
+            // Switch interval
+            if (typeof window.TV !== 'undefined' && window.TV.switchInterval) {
+                window.TV.switchInterval(interval);
+            }
+            
+            // Update label
+            if (tfLabel) {
+                tfLabel.textContent = interval;
+            }
+            
+            // Update active pill
+            document.querySelectorAll('.mobile-tf-pill').forEach(function(p) {
+                p.classList.remove('active');
+            });
+            this.classList.add('active');
+        });
+    });
+    
+    console.log('✅ Mobile timeframe ready');
+}
+
 // ============================================
-// MOBILE RIGHT PANEL SLIDE-OUT - SINGLE WORKING VERSION
+// 3. MOBILE RIGHT PANEL SLIDE-OUT
 // ============================================
 function setupMobileRightPanel() {
-  if (window.innerWidth > 768) return;
-  
-  const panel = document.getElementById('mobile-right-panel');
-  const overlay = document.getElementById('mobile-panel-overlay');
-  const toggleBtn = document.getElementById('mobile-panel-toggle-btn');
-  const closeBtn = document.getElementById('mobile-panel-close');
-  const rightSidebar = document.getElementById('right-sidebar');
-  
-  if (!panel) {
-    console.warn('Mobile right panel element not found');
-    return;
-  }
-  
-  // Open panel
-  function openPanel() {
-    panel.classList.add('open');
-    if (overlay) overlay.classList.add('visible');
+    if (window.innerWidth > 768) return;
     
-    // Clone right sidebar content into panel
-    if (rightSidebar) {
-      const contentDiv = document.getElementById('mobile-panel-content');
-      if (contentDiv) {
-        contentDiv.innerHTML = rightSidebar.innerHTML;
-      }
+    var panel = document.getElementById('mobile-right-panel');
+    var overlay = document.getElementById('mobile-panel-overlay');
+    var toggleBtn = document.getElementById('mobile-panel-toggle-btn');
+    var closeBtn = document.getElementById('mobile-panel-close');
+    var rightSidebar = document.getElementById('right-sidebar');
+    var panelContent = document.getElementById('mobile-panel-content');
+    
+    if (!panel) {
+        console.warn('Mobile right panel element not found');
+        return;
     }
-  }
-  
-  // Close panel
-  function closePanel() {
-    panel.classList.remove('open');
-    if (overlay) overlay.classList.remove('visible');
-  }
-  
-  // Open panel via toggle button
-  if (toggleBtn) {
-    toggleBtn.addEventListener('click', function(e) {
-      e.preventDefault();
-      e.stopPropagation();
-      openPanel();
-    });
-  }
-  
-  // Close panel via close button
-  if (closeBtn) {
-    closeBtn.addEventListener('click', closePanel);
-  }
-  
-  // Close panel via overlay click
-  if (overlay) {
-    overlay.addEventListener('click', closePanel);
-  }
-  
-  // Swipe to close
-  let touchStartX = 0;
-  if (panel) {
+    
+    // ============================================
+    // OPEN PANEL
+    // ============================================
+    function openPanel() {
+        // Clone right sidebar content into the mobile panel
+        if (rightSidebar && panelContent) {
+            // Clear existing content
+            panelContent.innerHTML = '';
+            
+            // Clone the right sidebar's inner HTML
+            var clone = rightSidebar.cloneNode(true);
+            
+            // Remove any IDs to avoid duplicates
+            var elementsWithId = clone.querySelectorAll('[id]');
+            for (var i = 0; i < elementsWithId.length; i++) {
+                elementsWithId[i].removeAttribute('id');
+            }
+            
+            // Append cloned content
+            while (clone.firstChild) {
+                panelContent.appendChild(clone.firstChild);
+            }
+        }
+        
+        // Show panel
+        panel.classList.add('open');
+        
+        // Show overlay
+        if (overlay) {
+            overlay.classList.add('visible');
+        }
+        
+        // Prevent body scroll
+        document.body.style.overflow = 'hidden';
+    }
+    
+    // ============================================
+    // CLOSE PANEL
+    // ============================================
+    function closePanel() {
+        panel.classList.remove('open');
+        
+        if (overlay) {
+            overlay.classList.remove('visible');
+        }
+        
+        // Restore body scroll
+        document.body.style.overflow = '';
+    }
+    
+    // ============================================
+    // TOGGLE BUTTON CLICK
+    // ============================================
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            if (panel.classList.contains('open')) {
+                closePanel();
+            } else {
+                openPanel();
+            }
+        });
+    }
+    
+    // ============================================
+    // CLOSE BUTTON CLICK
+    // ============================================
+    if (closeBtn) {
+        closeBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            closePanel();
+        });
+    }
+    
+    // ============================================
+    // OVERLAY CLICK - Close panel
+    // ============================================
+    if (overlay) {
+        overlay.addEventListener('click', function() {
+            closePanel();
+        });
+    }
+    
+    // ============================================
+    // SWIPE RIGHT TO CLOSE
+    // ============================================
+    var touchStartX = 0;
+    
     panel.addEventListener('touchstart', function(e) {
-      touchStartX = e.touches[0].clientX;
+        touchStartX = e.touches[0].clientX;
     }, { passive: true });
     
     panel.addEventListener('touchmove', function(e) {
-      const diff = e.touches[0].clientX - touchStartX;
-      if (diff > 60) {
-        closePanel();
-      }
-    }, { passive: true });
-  }
-  
-  console.log('✅ Mobile right panel ready');
-}
-
-// ============================================
-// MOBILE SYMBOL SEARCH - WORKING VERSION
-// ============================================
-function setupMobileSymbolSearch() {
-  if (window.innerWidth > 768) return;
-  
-  const symbolArea = document.getElementById('mobile-symbol-area');
-  const searchDropdown = document.getElementById('mobile-symbol-search-dropdown');
-  const searchInput = document.getElementById('mobile-symbol-search-input');
-  const searchClose = document.getElementById('mobile-search-close-btn');
-  const searchResults = document.getElementById('mobile-search-results');
-  
-  if (!symbolArea || !searchDropdown) {
-    console.warn('Mobile search elements not found');
-    return;
-  }
-  
-  // Default symbols for initial display
-  const defaultSymbols = [
-    { symbol: 'BTCUSDT', name: 'Bitcoin', type: 'crypto' },
-    { symbol: 'ETHUSDT', name: 'Ethereum', type: 'crypto' },
-    { symbol: 'BNBUSDT', name: 'BNB', type: 'crypto' },
-    { symbol: 'SOLUSDT', name: 'Solana', type: 'crypto' },
-    { symbol: 'XRPUSDT', name: 'Ripple', type: 'crypto' },
-    { symbol: 'AAPL', name: 'Apple Inc.', type: 'stocks' },
-    { symbol: 'TSLA', name: 'Tesla Inc.', type: 'stocks' },
-    { symbol: 'MSFT', name: 'Microsoft Corp.', type: 'stocks' },
-    { symbol: 'EURUSD', name: 'Euro/US Dollar', type: 'forex' },
-    { symbol: 'GBPUSD', name: 'Pound/US Dollar', type: 'forex' },
-  ];
-  
-  // Render search results
-  function showResults(symbols) {
-    if (!searchResults) return;
-    
-    if (!symbols || symbols.length === 0) {
-      searchResults.innerHTML = '<div style="padding:30px;text-align:center;color:var(--text-muted);font-size:14px;">No results found</div>';
-      return;
-    }
-    
-    searchResults.innerHTML = symbols.map(function(s) {
-      var displaySym = s.symbol.indexOf('USDT') > -1 ? s.symbol.replace('USDT', '/USDT') : s.symbol;
-      var typeLabel = s.type === 'crypto' ? 'Crypto' : s.type === 'stocks' ? 'Stock' : 'Forex';
-      var bgColor = s.type === 'crypto' ? 'rgba(88,166,255,0.1)' : s.type === 'stocks' ? 'rgba(38,166,154,0.1)' : 'rgba(255,152,0,0.1)';
-      var txtColor = s.type === 'crypto' ? '#58a6ff' : s.type === 'stocks' ? '#26a69a' : '#ff9800';
-      
-      return '<div class="mobile-search-result-item" data-symbol="' + s.symbol + '" data-type="' + s.type + '" style="display:flex;justify-content:space-between;align-items:center;padding:14px 12px;border-bottom:1px solid var(--border-primary);cursor:pointer;">' +
-        '<div>' +
-          '<div style="font-weight:600;font-size:14px;color:var(--text-primary);">' + displaySym + '</div>' +
-          '<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">' + (s.name || s.symbol) + '</div>' +
-        '</div>' +
-        '<span style="font-size:10px;padding:3px 8px;border-radius:10px;font-weight:600;background:' + bgColor + ';color:' + txtColor + ';">' + typeLabel + '</span>' +
-      '</div>';
-    }).join('');
-    
-    // Add click handlers
-    searchResults.querySelectorAll('.mobile-search-result-item').forEach(function(item) {
-      item.addEventListener('click', function() {
-        var symbol = this.getAttribute('data-symbol');
-        var type = this.getAttribute('data-type');
-        
-        if (type) STATE.assetType = type;
-        if (window.TV && window.TV.switchSymbol) {
-          window.TV.switchSymbol(symbol);
+        var diff = e.touches[0].clientX - touchStartX;
+        // If swiping right (to close)
+        if (diff > 80) {
+            closePanel();
         }
-        
-        // Update mobile header display
-        var nameEl = document.getElementById('mobile-symbol-name');
-        if (nameEl) nameEl.textContent = symbol.indexOf('USDT') > -1 ? symbol.replace('USDT', '/USDT') : symbol;
-        
-        // Close search dropdown
-        searchDropdown.classList.remove('open');
-        if (searchInput) searchInput.value = '';
-      });
+    }, { passive: true });
+    
+    // ============================================
+    // CLOSE ON ESCAPE KEY
+    // ============================================
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && panel.classList.contains('open')) {
+            closePanel();
+        }
     });
-  }
-  
-  // Open search when tapping symbol area
-  symbolArea.addEventListener('click', function() {
-    searchDropdown.classList.add('open');
-    if (searchInput) {
-      searchInput.value = '';
-      searchInput.focus();
-    }
-    showResults(defaultSymbols);
-  });
-  
-  // Close search
-  if (searchClose) {
-    searchClose.addEventListener('click', function() {
-      searchDropdown.classList.remove('open');
-    });
-  }
-  
-  // Search on input
-  if (searchInput) {
-    searchInput.addEventListener('input', function() {
-      var query = this.value.trim().toUpperCase();
-      
-      if (query.length < 1) {
-        showResults(defaultSymbols);
+    
+    console.log('✅ Mobile right panel ready');
+}
+
+// ============================================
+// 4. MOBILE BOTTOM SHEET
+// ============================================
+function initMobileSheet() {
+    if (window.innerWidth > 768) return;
+    
+    var sheet = document.getElementById('mobile-bottom-sheet');
+    var overlay = document.getElementById('mobile-overlay');
+    var chartContainer = document.querySelector('.chart-container');
+    
+    if (!sheet) {
+        console.warn('Mobile bottom sheet not found');
         return;
-      }
-      
-      var results = [];
-      
-      // Search crypto symbols from Binance
-      if (STATE.availableSymbols && STATE.availableSymbols.length) {
-        var cryptoMatches = STATE.availableSymbols
-          .filter(function(s) { return s.symbol.indexOf(query) > -1 || s.baseAsset.indexOf(query) > -1; })
-          .slice(0, 8)
-          .map(function(s) { return { symbol: s.symbol, name: s.baseAsset, type: 'crypto' }; });
-        results = results.concat(cryptoMatches);
-      }
-      
-      // Search stock symbols
-      if (STATE.stockSymbols && STATE.stockSymbols.length) {
-        var stockMatches = STATE.stockSymbols
-          .filter(function(s) { return s.symbol.indexOf(query) > -1 || (s.description && s.description.toUpperCase().indexOf(query) > -1); })
-          .slice(0, 5)
-          .map(function(s) { return { symbol: s.symbol, name: s.description || s.symbol, type: 'stocks' }; });
-        results = results.concat(stockMatches);
-      }
-      
-      // Fallback to defaults
-      if (results.length === 0) {
-        results = defaultSymbols.filter(function(s) {
-          return s.symbol.indexOf(query) > -1 || s.name.toUpperCase().indexOf(query) > -1;
+    }
+    
+    var sheetState = 'collapsed'; // 'collapsed', 'expanded', 'full'
+    var touchStartY = 0;
+    var touchStartTime = 0;
+    
+    function setSheetState(state) {
+        sheetState = state;
+        
+        switch(state) {
+            case 'collapsed':
+                sheet.style.transform = 'translateY(calc(100% - 52px))';
+                sheet.classList.remove('expanded', 'full');
+                if (overlay) overlay.classList.remove('visible');
+                if (chartContainer) chartContainer.classList.remove('sheet-open');
+                break;
+                
+            case 'expanded':
+                sheet.style.transform = 'translateY(30%)';
+                sheet.classList.add('expanded');
+                sheet.classList.remove('full');
+                if (overlay) overlay.classList.remove('visible');
+                if (chartContainer) chartContainer.classList.remove('sheet-open');
+                break;
+                
+            case 'full':
+                sheet.style.transform = 'translateY(0)';
+                sheet.classList.add('expanded', 'full');
+                if (overlay) overlay.classList.add('visible');
+                if (chartContainer) chartContainer.classList.add('sheet-open');
+                break;
+        }
+    }
+    
+    // ============================================
+    // HANDLE BAR CLICK & SWIPE
+    // ============================================
+    var sheetHandle = document.getElementById('sheet-handle');
+    
+    if (sheetHandle) {
+        // Track touch start
+        sheetHandle.addEventListener('touchstart', function(e) {
+            touchStartY = e.touches[0].clientY;
+            touchStartTime = Date.now();
+        }, { passive: true });
+        
+        // Handle touch move for swipe
+        sheet.addEventListener('touchmove', function(e) {
+            var diff = e.touches[0].clientY - touchStartY;
+            var timeDiff = Date.now() - touchStartTime;
+            
+            // Quick swipe down (>50px in <300ms) = dismiss
+            if (diff > 50 && timeDiff < 300 && sheetState !== 'collapsed') {
+                setSheetState('collapsed');
+                return;
+            }
+            
+            // Quick swipe up (>30px in <300ms) = expand
+            if (diff < -30 && timeDiff < 300 && sheetState === 'collapsed') {
+                setSheetState('expanded');
+                return;
+            }
+            
+            // Long swipe down (>80px) = dismiss
+            if (diff > 80 && sheetState !== 'collapsed') {
+                setSheetState('collapsed');
+            }
+        }, { passive: true });
+        
+        // Click to cycle through states
+        sheetHandle.addEventListener('click', function(e) {
+            // Don't trigger when a tab button was clicked
+            if (e.target.closest('.sheet-tab')) return;
+            
+            // Cycle: collapsed -> expanded -> full -> collapsed
+            if (sheetState === 'collapsed') {
+                setSheetState('expanded');
+            } else if (sheetState === 'expanded') {
+                setSheetState('full');
+            } else {
+                setSheetState('collapsed');
+            }
         });
-      }
-      
-      showResults(results);
+    }
+    
+    // ============================================
+    // OVERLAY CLICK - Close sheet
+    // ============================================
+    if (overlay) {
+        overlay.addEventListener('click', function() {
+            setSheetState('collapsed');
+        });
+    }
+    
+    // ============================================
+    // TAB SWITCHING
+    // ============================================
+    document.querySelectorAll('.sheet-tab').forEach(function(tab) {
+        tab.addEventListener('click', function(e) {
+            e.stopPropagation(); // Don't trigger sheet handle click
+            
+            // Update active tab
+            document.querySelectorAll('.sheet-tab').forEach(function(t) {
+                t.classList.remove('active');
+            });
+            this.classList.add('active');
+            
+            // Show correct panel
+            var tabName = this.getAttribute('data-tab');
+            document.querySelectorAll('.sheet-panel').forEach(function(p) {
+                p.classList.remove('active');
+            });
+            
+            var targetPanel = document.getElementById('sheet-' + tabName);
+            if (targetPanel) {
+                targetPanel.classList.add('active');
+            }
+            
+            // Populate content
+            if (tabName === 'watchlist' && typeof buildMobileWatchlist === 'function') {
+                buildMobileWatchlist();
+            }
+            if (tabName === 'indicators' && typeof buildMobileIndicators === 'function') {
+                buildMobileIndicators();
+            }
+            if (tabName === 'stats' && typeof updateMobileStats === 'function') {
+                updateMobileStats();
+            }
+            
+            // Auto-expand if collapsed
+            if (sheetState === 'collapsed') {
+                setSheetState('expanded');
+            }
+        });
     });
-  }
-  
-  console.log('✅ Mobile symbol search ready');
+    
+    // ============================================
+    // DRAWING TOOLS IN SHEET
+    // ============================================
+    document.querySelectorAll('.sheet-tool-btn[data-tool]').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            
+            var tool = this.getAttribute('data-tool');
+            
+            if (tool === 'clear' && typeof DrawingEngine !== 'undefined') {
+                DrawingEngine.clearAll();
+                if (typeof Toast !== 'undefined') Toast.info('All drawings cleared');
+            } else if (tool === 'undo' && typeof DrawingEngine !== 'undefined') {
+                DrawingEngine.undo();
+            } else if (tool === 'eraser' && typeof DrawingEngine !== 'undefined') {
+                DrawingEngine.setTool('eraser');
+                if (typeof Toast !== 'undefined') Toast.info('Tap a drawing to delete it');
+            } else if (tool && typeof DrawingEngine !== 'undefined') {
+                DrawingEngine.setTool(tool);
+            }
+            
+            // Collapse sheet after selecting tool
+            setSheetState('collapsed');
+        });
+    });
+    
+    // ============================================
+    // MORE PANEL ACTIONS
+    // ============================================
+    document.querySelectorAll('.mob-action-btn[data-action]').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            
+            var action = this.getAttribute('data-action');
+            
+            switch(action) {
+                case 'search':
+                    // Trigger search dropdown
+                    var searchDropdown = document.getElementById('mobile-search-overlay');
+                    if (searchDropdown) {
+                        searchDropdown.classList.add('visible');
+                        var searchInput = document.getElementById('mobile-search-input');
+                        if (searchInput) {
+                            searchInput.value = '';
+                            setTimeout(function() { searchInput.focus(); }, 100);
+                        }
+                    }
+                    break;
+                    
+                case 'depth':
+                    document.getElementById('market-depth-modal')?.classList.add('visible');
+                    break;
+                    
+                case 'news':
+                    document.getElementById('news-modal')?.classList.add('visible');
+                    break;
+                    
+                case 'alerts':
+                    document.getElementById('alerts-modal')?.classList.add('visible');
+                    break;
+                    
+                case 'settings':
+                    document.getElementById('settings-modal')?.classList.add('visible');
+                    break;
+                    
+                case 'theme':
+                    var current = document.body.getAttribute('data-theme') || 'dark';
+                    var next = current === 'dark' ? 'light' : 'dark';
+                    document.body.setAttribute('data-theme', next);
+                    if (typeof U !== 'undefined') {
+                        U.storage.set('tvp_theme', next);
+                    }
+                    if (typeof Toast !== 'undefined') {
+                        Toast.info('Theme: ' + next.charAt(0).toUpperCase() + next.slice(1));
+                    }
+                    break;
+                    
+                case 'fullscreen':
+                    if (!document.fullscreenElement) {
+                        document.documentElement.requestFullscreen().catch(function(){});
+                    } else {
+                        document.exitFullscreen();
+                    }
+                    break;
+            }
+            
+            setSheetState('collapsed');
+        });
+    });
+    
+    // ============================================
+    // INITIAL STATE
+    // ============================================
+    setSheetState('collapsed');
+    
+    console.log('✅ Mobile bottom sheet ready');
 }
 
-
 // ============================================
-// MOBILE TIMEFRAME - WORKING VERSION
+// BUILD MOBILE WATCHLIST IN SHEET
 // ============================================
-function setupMobileTimeframe() {
-  if (window.innerWidth > 768) return;
-  
-  var currentTfBtn = document.getElementById('mobile-current-tf');
-  var tfModal = document.getElementById('mobile-tf-modal');
-  var tfLabel = document.getElementById('mobile-tf-label');
-  
-  // Open timeframe modal
-  if (currentTfBtn) {
-    currentTfBtn.addEventListener('click', function() {
-      var currentInterval = STATE.interval || '15m';
-      document.querySelectorAll('.mobile-tf-option').forEach(function(btn) {
-        btn.classList.toggle('active', btn.getAttribute('data-interval') === currentInterval);
-      });
-      if (tfModal) tfModal.classList.add('open');
-    });
-  }
-  
-  // Close modal
-  var modalClose = document.querySelector('.mobile-tf-modal-close');
-  if (modalClose) {
-    modalClose.addEventListener('click', function() {
-      if (tfModal) tfModal.classList.remove('open');
-    });
-  }
-  
-  // Close on overlay click
-  if (tfModal) {
-    tfModal.addEventListener('click', function(e) {
-      if (e.target === tfModal) tfModal.classList.remove('open');
-    });
-  }
-  
-  // Timeframe option click
-  document.querySelectorAll('.mobile-tf-option').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      var interval = this.getAttribute('data-interval');
-      if (window.TV) window.TV.switchInterval(interval);
-      if (tfLabel) tfLabel.textContent = interval;
-      
-      document.querySelectorAll('.mobile-tf-option').forEach(function(b) { b.classList.remove('active'); });
-      this.classList.add('active');
-      
-      document.querySelectorAll('.mobile-tf-pill').forEach(function(b) {
-        b.classList.toggle('active', b.getAttribute('data-interval') === interval);
-      });
-      
-      if (tfModal) tfModal.classList.remove('open');
-    });
-  });
-  
-  // Quick timeframe pill click
-  document.querySelectorAll('.mobile-tf-pill').forEach(function(pill) {
-    pill.addEventListener('click', function() {
-      var interval = this.getAttribute('data-interval');
-      if (window.TV) window.TV.switchInterval(interval);
-      if (tfLabel) tfLabel.textContent = interval;
-      
-      document.querySelectorAll('.mobile-tf-pill').forEach(function(p) { p.classList.remove('active'); });
-      this.classList.add('active');
-    });
-  });
-  
-  // Set initial state
-  if (tfLabel) tfLabel.textContent = STATE.interval || '15m';
-  
-  console.log('✅ Mobile timeframe ready');
-}
-// ============================================
-// UPDATE MOBILE SYMBOL DISPLAY
-// ============================================
-function updateMobileSymbolDisplay(symbol) {
-  const nameEl = document.getElementById('mobile-symbol-name');
-  if (nameEl) nameEl.textContent = symbol.replace('USDT', '/USDT');
-}
-
-setInterval(() => {
-  if (STATE.currentPrice) {
-    const priceEl = document.getElementById('mobile-price');
-    const changeEl = document.getElementById('mobile-change-badge');
-    if (priceEl) {
-      priceEl.textContent = U.formatPrice(STATE.currentPrice);
-      priceEl.style.color = (STATE.change24h || 0) >= 0 ? 'var(--up-color)' : 'var(--down-color)';
-    }
-    if (changeEl) {
-      const change = STATE.change24h || 0;
-      changeEl.textContent = (change >= 0 ? '+' : '') + U.formatNum(change, 2) + '%';
-      changeEl.className = 'mobile-change-badge ' + (change >= 0 ? 'up' : 'down');
-    }
-  }
-  if (STATE.symbol) {
-    updateMobileSymbolDisplay(STATE.symbol);
-  }
-}, 2000);
-
-
-// Call this in your mobile initialization
-if (window.innerWidth <= 768) {
-  setupMobileSymbolSearch();
-  setupMobileTimeframe();
-  setupMobileRightPanel();
-  fixMobileChartLayout();
-}
-
-})();
-</script>
-
-<script>
-(function() {
-  'use strict';
-
-  /* ---------- 1. Remove all old listeners by replacing the input ---------- */
-  const oldInput = document.getElementById('m-search-input');
-  if (!oldInput) return;
-  const newInput = oldInput.cloneNode(true);
-  oldInput.parentNode.replaceChild(newInput, oldInput);
-  /* Now newInput is completely clean */
-
-  const resultsDiv = document.getElementById('m-search-results');
-  const overlay = document.getElementById('mobile-search-overlay');
-
-  if (!resultsDiv || !overlay) return;
-
-  /* ---------- 2. Hard‑coded fallback list (always works) ---------- */
-  var FALLBACK_SYMBOLS = [
-    'BTCUSDT','ETHUSDT','BNBUSDT','SOLUSDT','XRPUSDT','ADAUSDT','DOGEUSDT',
-    'DOTUSDT','MATICUSDT','LINKUSDT','UNIUSDT','AVAXUSDT','LTCUSDT','ATOMUSDT',
-    'ETCUSDT','ALGOUSDT','VETUSDT','FILUSDT','ICPUSDT','SANDUSDT','AAVEUSDT',
-    'NEARUSDT','FTMUSDT','MANAUSDT','EGLDUSDT','THETAUSDT','AXSUSDT','GRTUSDT',
-    'HBARUSDT','XTZUSDT','EOSUSDT','FLOWUSDT','QNTUSDT','CHZUSDT','ENJUSDT',
-    'BATUSDT','ZRXUSDT','1INCHUSDT','COMPUSDT','SNXUSDT','CRVUSDT','KSMUSDT',
-    'RUNEUSDT','RENUSDT','LRCUSDT','COTIUSDT','CELOUSDT','ONEUSDT','IOTAUSDT'
-  ];
-
-  function getSymbolList() {
-    /* Use Binance list if it's populated, otherwise the hard‑coded list */
-    try {
-      if (typeof STATE !== 'undefined' && STATE.availableSymbols && STATE.availableSymbols.length > 0) {
-        return STATE.availableSymbols;
-      }
-    } catch(e) {}
-    return FALLBACK_SYMBOLS.map(function(s) {
-      return { symbol: s, baseAsset: s.replace('USDT','') };
-    });
-  }
-
-  /* ---------- 3. The real input handler ---------- */
-  newInput.addEventListener('input', function() {
-    var query = this.value.trim().toUpperCase();
-    console.log('[Mobile Search] Query:', query);   // <-- Check this in DevTools console
-
-    if (query.length < 1) {
-      resultsDiv.innerHTML = '';
-      return;
-    }
-
-    var symbols = getSymbolList();
-    console.log('[Mobile Search] Symbol count:', symbols.length);
-
-    var matches = symbols.filter(function(s) {
-      return s.symbol.indexOf(query) !== -1 || (s.baseAsset && s.baseAsset.indexOf(query) !== -1);
-    }).slice(0, 15);
-
-    console.log('[Mobile Search] Matches:', matches.length);
-
-    if (matches.length === 0) {
-      resultsDiv.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);">No results for "' + query + '"</div>';
-      return;
-    }
-
+function buildMobileWatchlist() {
+    var container = document.getElementById('mobile-watchlist-list');
+    if (!container) return;
+    
+    var watchlist = (typeof STATE !== 'undefined' && STATE.watchlist) 
+        ? STATE.watchlist 
+        : [{ symbol: 'BTCUSDT' }, { symbol: 'ETHUSDT' }, { symbol: 'BNBUSDT' }, { symbol: 'SOLUSDT' }];
+    
     var html = '';
-    for (var i = 0; i < matches.length; i++) {
-      var s = matches[i];
-      var display = s.symbol.replace('USDT', '/USDT');
-      html +=
-        '<div class="ms-item" data-symbol="' + s.symbol + '" style="display:flex;justify-content:space-between;padding:12px;border-bottom:1px solid var(--border-primary);cursor:pointer;">' +
-          '<div>' +
-            '<div style="font-weight:600;font-size:14px;">' + display + '</div>' +
-            '<div style="font-size:11px;color:var(--text-muted);">' + s.baseAsset + ' · Binance</div>' +
-          '</div>' +
-          '<span style="color:var(--accent-primary);font-size:18px;">→</span>' +
+    for (var i = 0; i < watchlist.length; i++) {
+        var item = watchlist[i];
+        var sym = item.symbol;
+        var display = sym.replace('USDT', '/USDT');
+        
+        html += '<div class="mobile-wl-item" data-symbol="' + sym + '">' +
+            '<div>' +
+                '<div style="font-weight:700;font-size:13px;">' + display + '</div>' +
+                '<div style="font-size:9px;color:var(--text-muted);">Binance</div>' +
+            '</div>' +
+            '<div style="text-align:right;">' +
+                '<div style="font-weight:600;font-size:13px;" id="mwl-price-' + sym + '">--</div>' +
+                '<div style="font-size:10px;padding:2px 6px;border-radius:3px;" id="mwl-change-' + sym + '">--</div>' +
+            '</div>' +
         '</div>';
     }
-    resultsDiv.innerHTML = html;
-
-    /* Add click handlers */
-    resultsDiv.querySelectorAll('.ms-item').forEach(function(item) {
-      item.addEventListener('click', function() {
-        var sym = this.getAttribute('data-symbol');
-        console.log('[Mobile Search] Selected:', sym);
-        if (sym && typeof window.TV !== 'undefined' && window.TV.switchSymbol) {
-          window.TV.switchSymbol(sym);
-        }
-        overlay.classList.remove('visible');
-        newInput.value = '';
-        resultsDiv.innerHTML = '';
-      });
+    
+    container.innerHTML = html;
+    
+    // Add click handlers to switch symbol
+    container.querySelectorAll('.mobile-wl-item').forEach(function(item) {
+        item.addEventListener('click', function() {
+            var sym = this.getAttribute('data-symbol');
+            if (sym && typeof window.TV !== 'undefined' && window.TV.switchSymbol) {
+                window.TV.switchSymbol(sym);
+                if (typeof Toast !== 'undefined') {
+                    Toast.info('Switched to ' + sym.replace('USDT', '/USDT'));
+                }
+            }
+        });
     });
-  });
+}
 
-  console.log('✅ Mobile search suggestions ready (hard‑coded fallback active until Binance symbols load)');
+// ============================================
+// BUILD MOBILE INDICATORS GRID IN SHEET
+// ============================================
+function buildMobileIndicators() {
+    var container = document.getElementById('mobile-indicators-grid');
+    if (!container) return;
+    
+    var indicators = [
+        'RSI', 'MACD', 'SMA', 'EMA', 'Bollinger', 'VWAP',
+        'Stochastic', 'ATR', 'Ichimoku', 'SuperTrend', 'PSAR',
+        'CCI', 'WilliamsR', 'Keltner', 'OBV', 'MFI'
+    ];
+    
+    var html = '';
+    for (var i = 0; i < indicators.length; i++) {
+        var ind = indicators[i];
+        var isActive = (typeof STATE !== 'undefined' && STATE.activeIndicators && STATE.activeIndicators.has(ind));
+        
+        html += '<button class="sheet-indicator-btn' + (isActive ? ' active' : '') + '" ' +
+            'data-indicator="' + ind + '" ' +
+            'style="background:' + (isActive ? 'var(--accent-muted)' : 'var(--bg-tertiary)') + ';' +
+            'border-color:' + (isActive ? 'var(--accent-primary)' : 'var(--border-primary)') + ';' +
+            'color:' + (isActive ? 'var(--accent-primary)' : 'var(--text-secondary)') + ';">' +
+            ind +
+        '</button>';
+    }
+    
+    container.innerHTML = html;
+    
+    // Add click handlers
+    container.querySelectorAll('.sheet-indicator-btn').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            
+            var ind = this.getAttribute('data-indicator');
+            
+            if (ind && typeof IndicatorEngine !== 'undefined') {
+                IndicatorEngine.toggleIndicator(ind);
+                
+                // Refresh grid after short delay
+                setTimeout(function() {
+                    buildMobileIndicators();
+                }, 300);
+            }
+        });
+    });
+}
+
+// ============================================
+// UPDATE MOBILE STATS PANEL
+// ============================================
+function updateMobileStats() {
+    var lastCandle = (typeof STATE !== 'undefined' && STATE.candles && STATE.candles.length > 0)
+        ? STATE.candles[STATE.candles.length - 1]
+        : null;
+    
+    function setIfExists(id, value) {
+        var el = document.getElementById(id);
+        if (el) el.textContent = value;
+    }
+    
+    if (lastCandle) {
+        setIfExists('ms-open', typeof U !== 'undefined' ? U.formatPrice(lastCandle.open) : lastCandle.open.toFixed(2));
+        setIfExists('ms-high', typeof U !== 'undefined' ? U.formatPrice(lastCandle.high) : lastCandle.high.toFixed(2));
+        setIfExists('ms-low', typeof U !== 'undefined' ? U.formatPrice(lastCandle.low) : lastCandle.low.toFixed(2));
+        setIfExists('ms-volume', typeof U !== 'undefined' ? U.formatVolume(lastCandle.volume) : lastCandle.volume.toFixed(2));
+        
+        var changeEl = document.getElementById('ms-change');
+        if (changeEl && typeof STATE !== 'undefined' && STATE.change24h !== null) {
+            var change = STATE.change24h;
+            changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
+            changeEl.style.color = change >= 0 ? 'var(--up-color)' : 'var(--down-color)';
+        }
+    } else {
+        ['ms-open', 'ms-high', 'ms-low', 'ms-volume'].forEach(function(id) {
+            setIfExists(id, '--');
+        });
+    }
+}
+
+// ============================================
+// LIVE MOBILE PRICE UPDATES
+// ============================================
+function updateMobilePrices() {
+    setInterval(function() {
+        if (typeof STATE === 'undefined' || !STATE.currentPrice) return;
+        
+        // Update header price display
+        var priceEl = document.getElementById('mobile-price');
+        var symbolEl = document.getElementById('mobile-symbol-name');
+        var changeBadge = document.getElementById('mobile-change-badge');
+        
+        if (priceEl) {
+            priceEl.textContent = typeof U !== 'undefined'
+                ? U.formatPrice(STATE.currentPrice)
+                : STATE.currentPrice.toFixed(2);
+            priceEl.style.color = (STATE.change24h || 0) >= 0 ? 'var(--up-color)' : 'var(--down-color)';
+        }
+        
+        if (symbolEl) {
+            symbolEl.textContent = STATE.symbol.replace('USDT', '/USDT');
+        }
+        
+        if (changeBadge && STATE.change24h !== null) {
+            var change = STATE.change24h;
+            changeBadge.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
+            changeBadge.className = 'mobile-change-badge ' + (change >= 0 ? 'up' : 'down');
+        }
+        
+        // Update watchlist prices in sheet
+        document.querySelectorAll('#mobile-watchlist-list .mobile-wl-item').forEach(function(item) {
+            var sym = item.getAttribute('data-symbol');
+            var data = STATE.marketData && STATE.marketData.get ? STATE.marketData.get(sym) : null;
+            
+            var priceDisplay = document.getElementById('mwl-price-' + sym);
+            var changeDisplay = document.getElementById('mwl-change-' + sym);
+            
+            if (priceDisplay && data && data.price) {
+                priceDisplay.textContent = '$' + (typeof U !== 'undefined'
+                    ? U.formatPrice(data.price)
+                    : data.price.toFixed(2));
+            }
+            
+            if (changeDisplay && data && data.change !== undefined) {
+                var itemChange = data.change;
+                changeDisplay.textContent = (itemChange >= 0 ? '+' : '') + itemChange.toFixed(2) + '%';
+                changeDisplay.style.color = itemChange >= 0 ? 'var(--up-color)' : 'var(--down-color)';
+                changeDisplay.style.background = itemChange >= 0 ? 'var(--up-muted)' : 'var(--down-muted)';
+            }
+        });
+    }, 2000);
+}
+
+
+// ============================================
+// MOBILE INITIALIZATION FUNCTION
+// ============================================
+// ============================================
+// MOBILE INITIALIZATION - CALLS ALL SETUP FUNCTIONS
+// ============================================
+function initAllMobileFeatures() {
+    if (window.innerWidth > 768) {
+        console.log('🖥️ Desktop mode - mobile features skipped');
+        return;
+    }
+    
+    console.log('📱 Initializing mobile features v4.0...');
+    
+    // 1. Setup bottom sheet (must be first - creates tab handlers)
+    initMobileSheet();
+    
+    // 2. Setup symbol search dropdown
+    setupMobileSymbolSearch();
+    
+    // 3. Setup timeframe overlay and modal
+    setupMobileTimeframe();
+    
+    // 4. Setup right panel slide-out
+    setupMobileRightPanel();
+    
+    // 5. Build initial content for the sheet
+    buildMobileWatchlist();
+    buildMobileIndicators();
+    
+    // 6. Start live price updates
+    updateMobilePrices();
+    
+    // 7. Handle orientation changes
+    var orientationTimeout;
+    window.addEventListener('orientationchange', function() {
+        clearTimeout(orientationTimeout);
+        orientationTimeout = setTimeout(function() {
+            console.log('📱 Orientation changed - resizing charts');
+            if (typeof ChartEngine !== 'undefined') {
+                ChartEngine.resizeAll();
+            }
+            if (typeof DrawingEngine !== 'undefined') {
+                DrawingEngine.resizeCanvas();
+                DrawingEngine.redraw();
+            }
+        }, 500);
+    });
+    
+    // 8. Handle window resize (debounced)
+    var resizeTimeout;
+    window.addEventListener('resize', function() {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(function() {
+            if (window.innerWidth > 768) return;
+            if (typeof ChartEngine !== 'undefined') {
+                ChartEngine.resizeAll();
+            }
+        }, 300);
+    });
+    
+    console.log('✅ All mobile features initialized successfully');
+}
+
+// ============================================
+// SETUP MOBILE TIMEFRAME PILLS
+// ============================================
+function setupMobileTimeframePills() {
+    document.querySelectorAll('.mobile-tf-pill').forEach(function(pill) {
+        pill.addEventListener('click', function() {
+            var interval = this.getAttribute('data-interval');
+            if (interval && window.TV && window.TV.switchInterval) {
+                window.TV.switchInterval(interval);
+                document.querySelectorAll('.mobile-tf-pill').forEach(function(p) {
+                    p.classList.remove('active');
+                });
+                this.classList.add('active');
+            }
+        });
+    });
+}
+
+// ============================================
+// START THE APPLICATION
+// ============================================
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+        main().catch(function(err) {
+            console.error('❌ Fatal initialization error:', err);
+        });
+    });
+} else {
+    main().catch(function(err) {
+        console.error('❌ Fatal initialization error:', err);
+    });
+}
+
+// ============================================
+// DEBUG HELPERS (for development)
+// ============================================
+window.debugIndicators = function() {
+    console.log('=== INDICATOR DEBUG ===');
+    console.log('Active indicators:', STATE.activeIndicators ? Array.from(STATE.activeIndicators) : 'N/A');
+    console.log('Candles count:', STATE.candles ? STATE.candles.length : 0);
+    console.log('Charts:', ChartEngine && ChartEngine.charts ? Object.keys(ChartEngine.charts) : 'N/A');
+    console.log('Series:', ChartEngine && ChartEngine.series ? Object.keys(ChartEngine.series) : 'N/A');
+    console.log('RSI Pane:', document.getElementById('rsi-pane'));
+    console.log('MACD Pane:', document.getElementById('macd-pane'));
+    console.log('Indicator Container:', document.getElementById('indicator-panes-container'));
+    console.log('Container children:', document.getElementById('indicator-panes-container')?.children.length || 0);
+};
+
+window.addRSI = function() {
+    if (STATE && STATE.activeIndicators) {
+        STATE.activeIndicators.add('RSI');
+        if (typeof IndicatorEngine !== 'undefined') {
+            IndicatorEngine.calculateAll();
+        }
+        console.log('RSI added');
+    }
+};
+
+window.addMACD = function() {
+    if (STATE && STATE.activeIndicators) {
+        STATE.activeIndicators.add('MACD');
+        if (typeof IndicatorEngine !== 'undefined') {
+            IndicatorEngine.calculateAll();
+        }
+        console.log('MACD added');
+    }
+};
+
+console.log('✅ TradeVision Pro v4.0 script loaded');
+console.log('💡 Debug commands: debugIndicators(), addRSI(), addMACD()');
 })();
 </script>
 
