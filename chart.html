@@ -6025,7 +6025,7 @@ kbd {
     display: block !important;
   }
   
-  /* ========== CHART LAYOUT ========== */
+    /* ========== CHART LAYOUT ========== */
   .main-layout {
     display: flex !important;
     flex-direction: column !important;
@@ -6053,30 +6053,71 @@ kbd {
     -webkit-overflow-scrolling: touch;
   }
   
+  /* Main price chart - fills remaining space */
   #main-chart-pane {
-    flex: 0 0 auto !important;
-    height: 38vh !important;
-    min-height: 230px !important;
-    max-height: 42vh !important;
+    flex: 1 1 auto !important;
+    min-height: 200px !important;
+    max-height: none !important;
     position: relative;
+    overflow: hidden;
   }
   
+  #price-chart {
+    width: 100% !important;
+    height: 100% !important;
+  }
+  
+  /* Volume chart - fixed height, only shown when volume exists */
   #volume-chart-pane {
-    flex: 0 0 70px !important;
+    flex: 0 0 80px !important;
     display: flex !important;
-    height: 70px !important;
-    min-height: 70px !important;
-    max-height: 70px !important;
+    height: 80px !important;
+    min-height: 80px !important;
+    max-height: 80px !important;
+    width: 100% !important;
+    overflow: hidden;
+    border-top: 1px solid var(--border-primary);
   }
   
-  .indicator-panes-container:empty {
-    display: none !important;
+  #volume-chart {
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  /* Indicator panes - HIDDEN when empty, VISIBLE when has content */
+  .indicator-panes-container {
+    flex: 0 0 auto !important;
+    display: none !important;  /* HIDDEN BY DEFAULT */
+    flex-direction: column !important;
+    max-height: none !important;
+    overflow-y: visible !important;
+    overflow-x: hidden !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border-top: 1px solid var(--border-primary);
+  }
+  
+  /* Show indicator container only when it has children */
+  .indicator-panes-container:not(:empty) {
+    display: flex !important;
   }
   
   .chart-pane-indicator {
     flex: 0 0 90px !important;
     min-height: 90px !important;
     max-height: 100px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    border-bottom: 1px solid var(--border-primary);
+    overflow: hidden;
+    width: 100% !important;
+  }
+  
+  .chart-pane-indicator:last-child {
+    border-bottom: none;
+    padding-bottom: 5px !important;
+    margin-bottom: 5px !important;
   }
   
   /* ========== FOOTER ========== */
@@ -6107,6 +6148,195 @@ kbd {
 @keyframes slideInUp {
   from { transform: translateY(100%); }
   to { transform: translateY(0); }
+}
+
+/* ============================================ */
+/* DRAWING TOOLS - PROFESSIONAL STYLES */
+/* ============================================ */
+
+/* Active tool indicator */
+.tool-btn.active {
+  background: var(--accent-primary) !important;
+  color: white !important;
+}
+
+.tool-btn.active i,
+.tool-btn.active span {
+  color: white !important;
+}
+
+/* Hover effect */
+.tool-btn:hover {
+  background: var(--bg-hover);
+}
+
+/* Drawing tools modal grid */
+.drawing-tools-full-grid-item {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+}
+
+.drawing-tools-full-grid-item:hover {
+  border-color: var(--accent-primary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  background: var(--bg-hover);
+}
+
+.drawing-tools-full-grid-item.active {
+  border-color: var(--accent-primary);
+  background: var(--accent-muted);
+  box-shadow: 0 0 0 1px var(--accent-primary);
+}
+
+.drawing-tools-full-grid-item i {
+  font-size: 24px;
+  color: var(--accent-primary);
+  margin-bottom: 8px;
+}
+
+.drawing-tools-full-grid-item .dt-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.drawing-tools-full-grid-item .dt-desc {
+  font-size: 10px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.drawing-tools-full-grid-item .dt-shortcut {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  font-size: 10px;
+  color: var(--text-muted);
+  font-family: 'SF Mono', monospace;
+}
+
+/* Drawing canvas */
+.drawing-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 15;
+  pointer-events: none;
+  cursor: default;
+}
+
+.drawing-canvas.drawing-active {
+  pointer-events: auto;
+}
+
+/* Drawing settings popup */
+.drawing-settings-popup {
+  position: absolute;
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  padding: 12px;
+  box-shadow: var(--shadow-xl);
+  z-index: 100;
+  display: none;
+  min-width: 200px;
+}
+
+.drawing-settings-popup.visible {
+  display: block;
+}
+
+.drawing-settings-popup .setting-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.drawing-settings-popup .setting-row:last-child {
+  border-bottom: none;
+}
+
+.drawing-settings-popup .setting-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.drawing-settings-popup .color-picker {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  border: 2px solid var(--border-primary);
+  cursor: pointer;
+  padding: 0;
+}
+
+.drawing-settings-popup .line-width-slider {
+  width: 80px;
+  accent-color: var(--accent-primary);
+}
+
+.drawing-settings-popup .style-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+.drawing-settings-popup .style-btn {
+  width: 28px;
+  height: 20px;
+  border: 1px solid var(--border-primary);
+  border-radius: 3px;
+  cursor: pointer;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.drawing-settings-popup .style-btn.active {
+  border-color: var(--accent-primary);
+  background: var(--accent-muted);
+}
+
+.drawing-settings-popup .style-btn hr {
+  width: 18px;
+  border: none;
+  height: 0;
+  margin: 0;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .left-sidebar {
+    display: none !important;
+  }
+  
+  .drawing-tools-full-grid-item {
+    padding: var(--spacing-md);
+  }
+  
+  .drawing-tools-full-grid-item i {
+    font-size: 20px;
+  }
+  
+  .drawing-tools-full-grid-item .dt-name {
+    font-size: 11px;
+  }
 }
 
 
@@ -6253,114 +6483,91 @@ kbd {
        ============================================ -->
   <div class="main-layout">
     
-    <!-- Left Sidebar - Drawing Tools -->
-    <aside class="left-sidebar" id="left-sidebar">
-      <div class="sidebar-section">
-        <div class="sidebar-label">DRAW</div>
-        <div class="tool-group">
-          <button class="tool-btn active" data-tool="cursor" data-tooltip="Cursor (Esc)">
-            <i class="fas fa-mouse-pointer"></i>
-            <span>Select</span>
-          </button>
-          <button class="tool-btn" data-tool="trendline" data-tooltip="Trend Line (Alt+T)">
-            <i class="fas fa-chart-line"></i>
-            <span>Trend</span>
-          </button>
-          <button class="tool-btn" data-tool="horizontal-line" data-tooltip="Horizontal Line (Alt+H)">
-            <i class="fas fa-grip-lines"></i>
-            <span>H Line</span>
-          </button>
-          <button class="tool-btn" data-tool="vertical-line" data-tooltip="Vertical Line (Alt+V)">
-            <i class="fas fa-grip-lines-vertical"></i>
-            <span>V Line</span>
-          </button>
-          <button class="tool-btn" data-tool="ray" data-tooltip="Ray (Alt+R)">
-            <i class="fas fa-arrow-trend-up"></i>
-            <span>Ray</span>
-          </button>
-          <button class="tool-btn" data-tool="rectangle" data-tooltip="Rectangle (Alt+Shift+R)">
-            <i class="fas fa-square"></i>
-            <span>Box</span>
-          </button>
-          <button class="tool-btn" data-tool="ellipse" data-tooltip="Ellipse">
-            <i class="fas fa-circle"></i>
-            <span>Ellipse</span>
-          </button>
-        </div>
-      </div>
+<!-- Left Sidebar - Professional Drawing Tools -->
+<aside class="left-sidebar" id="left-sidebar">
+  
+  <!-- Cursor -->
+  <div class="sidebar-section">
+    <button class="tool-btn active" data-tool="cursor" data-tooltip="Cursor (Esc)">
+      <i class="fas fa-mouse-pointer"></i>
+      <span>Pointer</span>
+    </button>
+  </div>
 
-      <div class="sidebar-section">
-        <div class="sidebar-label">FIB</div>
-        <div class="tool-group">
-          <button class="tool-btn" data-tool="fibonacci-retracement" data-tooltip="Fib Retracement">
-            <i class="fas fa-ruler"></i>
-            <span>Retrace</span>
-          </button>
-          <button class="tool-btn" data-tool="fibonacci-extension" data-tooltip="Fib Extension">
-            <i class="fas fa-ruler-combined"></i>
-            <span>Extend</span>
-          </button>
-          <button class="tool-btn" data-tool="fibonacci-fan" data-tooltip="Fib Fan">
-            <i class="fas fa-fan"></i>
-            <span>Fan</span>
-          </button>
-        </div>
-      </div>
+  <!-- Lines Category - OPENS MODAL -->
+  <div class="sidebar-section">
+    <div class="sidebar-label">LINES</div>
+    <button class="tool-btn" data-open-modal="drawing-tools-modal" data-draw-category="lines" data-tooltip="Lines Tools">
+      <i class="fas fa-chart-line"></i>
+      <span>Lines</span>
+    </button>
+  </div>
 
-      <div class="sidebar-section">
-        <div class="sidebar-label">CHANNELS</div>
-        <div class="tool-group">
-          <button class="tool-btn" data-tool="channel" data-tooltip="Parallel Channel">
-            <i class="fas fa-arrows-up-down"></i>
-            <span>Parallel</span>
-          </button>
-          <button class="tool-btn" data-tool="pitchfork" data-tooltip="Andrews Pitchfork">
-            <i class="fas fa-draw-polygon"></i>
-            <span>Pitchfork</span>
-          </button>
-          <button class="tool-btn" data-tool="regression-channel" data-tooltip="Regression Channel">
-            <i class="fas fa-chart-scatter"></i>
-            <span>Regress</span>
-          </button>
-        </div>
-      </div>
+  <!-- Shapes Category - OPENS MODAL -->
+  <div class="sidebar-section">
+    <div class="sidebar-label">SHAPES</div>
+    <button class="tool-btn" data-open-modal="drawing-tools-modal" data-draw-category="shapes" data-tooltip="Shapes Tools">
+      <i class="far fa-square"></i>
+      <span>Shapes</span>
+    </button>
+  </div>
 
-      <div class="sidebar-section">
-        <div class="sidebar-label">ANNOTATE</div>
-        <div class="tool-group">
-          <button class="tool-btn" data-tool="text" data-tooltip="Text (Alt+Z)">
-            <i class="fas fa-font"></i>
-            <span>Text</span>
-          </button>
-          <button class="tool-btn" data-tool="arrow" data-tooltip="Arrow (Alt+A)">
-            <i class="fas fa-arrow-up"></i>
-            <span>Arrow</span>
-          </button>
-          <button class="tool-btn" data-tool="brush" data-tooltip="Brush (Alt+B)">
-            <i class="fas fa-paint-brush"></i>
-            <span>Brush</span>
-          </button>
-          <button class="tool-btn" data-tool="measure" data-tooltip="Measure (Alt+M)">
-            <i class="fas fa-ruler-horizontal"></i>
-            <span>Measure</span>
-          </button>
-        </div>
-      </div>
+  <!-- Fibonacci Category - OPENS MODAL -->
+  <div class="sidebar-section">
+    <div class="sidebar-label">FIBONACCI</div>
+    <button class="tool-btn" data-open-modal="drawing-tools-modal" data-draw-category="fibonacci" data-tooltip="Fibonacci Tools">
+      <i class="fas fa-ruler"></i>
+      <span>Fibo</span>
+    </button>
+  </div>
 
-      <div class="sidebar-section sidebar-actions">
-        <button class="tool-btn tool-undo" data-tool="undo" data-tooltip="Undo (Ctrl+Z)">
-          <i class="fas fa-undo"></i>
-          <span>Undo</span>
-        </button>
-        <button class="tool-btn tool-redo" data-tool="redo" data-tooltip="Redo (Ctrl+Y)">
-          <i class="fas fa-redo"></i>
-          <span>Redo</span>
-        </button>
-        <button class="tool-btn tool-delete" data-tool="clear" data-tooltip="Clear All Drawings">
-          <i class="fas fa-trash-alt"></i>
-          <span>Clear</span>
-        </button>
-      </div>
+  <!-- Annotation Category - OPENS MODAL -->
+  <div class="sidebar-section">
+    <div class="sidebar-label">ANNOTATE</div>
+    <button class="tool-btn" data-open-modal="drawing-tools-modal" data-draw-category="annotations" data-tooltip="Annotation Tools">
+      <i class="fas fa-font"></i>
+      <span>Annotate</span>
+    </button>
+  </div>
+
+  <!-- Measurement Category - OPENS MODAL -->
+  <div class="sidebar-section">
+    <div class="sidebar-label">MEASURE</div>
+    <button class="tool-btn" data-open-modal="drawing-tools-modal" data-draw-category="measurements" data-tooltip="Measurement Tools">
+      <i class="fas fa-ruler-horizontal"></i>
+      <span>Measure</span>
+    </button>
+  </div>
+
+  <!-- Patterns Category - OPENS MODAL -->
+  <div class="sidebar-section">
+    <div class="sidebar-label">PATTERNS</div>
+    <button class="tool-btn" data-open-modal="drawing-tools-modal" data-draw-category="patterns" data-tooltip="Pattern Tools">
+      <i class="fas fa-project-diagram"></i>
+      <span>Patterns</span>
+    </button>
+  </div>
+
+  <!-- Actions -->
+  <div class="sidebar-section sidebar-actions">
+    <button class="tool-btn tool-undo" data-tool="undo" data-tooltip="Undo (Ctrl+Z)">
+      <i class="fas fa-undo"></i>
+      <span>Undo</span>
+    </button>
+    <button class="tool-btn tool-redo" data-tool="redo" data-tooltip="Redo (Ctrl+Y)">
+      <i class="fas fa-redo"></i>
+      <span>Redo</span>
+    </button>
+    <button class="tool-btn tool-delete" data-tool="clear" data-tooltip="Clear All">
+      <i class="fas fa-trash-alt"></i>
+      <span>Clear</span>
+    </button>
+  </div>
+  
+  <button class="sidebar-toggle" id="sidebar-toggle" data-tooltip="Collapse Sidebar">
+    <i class="fas fa-chevron-left"></i>
+  </button>
+</aside>
 
       <!-- Sidebar Toggle -->
       <button class="sidebar-toggle" id="sidebar-toggle" data-tooltip="Collapse Sidebar">
@@ -7317,47 +7524,36 @@ kbd {
   </div>
 
   <!-- Drawing Tools Modal -->
-<!-- Drawing Tools Modal (Redesigned) -->
+<!-- Drawing Tools Category Modal -->
 <div class="modal-overlay" id="drawing-tools-modal">
   <div class="modal-container modal-lg">
     <div class="modal-header">
       <div class="modal-title">
         <i class="fas fa-pencil-alt modal-icon"></i>
         <div>
-          <h3>Drawing Tools</h3>
-          <p class="modal-subtitle">30+ professional drawing tools</p>
+          <h3 id="drawing-modal-title">Drawing Tools</h3>
+          <p class="modal-subtitle" id="drawing-modal-subtitle">Select a tool to draw on chart</p>
         </div>
       </div>
-      <div class="modal-header-actions">
-        <button class="modal-action-btn" id="drawing-search-btn" data-tooltip="Search Tools">
-          <i class="fas fa-search"></i>
-        </button>
-        <button class="modal-close" data-modal="drawing-tools-modal">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
+      <button class="modal-close" data-modal="drawing-tools-modal">
+        <i class="fas fa-times"></i>
+      </button>
     </div>
     
     <div class="modal-body">
-      <!-- Search Bar -->
-      <div class="indicator-search">
-        <i class="fas fa-search"></i>
-        <input type="text" id="drawing-search-input" placeholder="Search drawing tools... (e.g., trendline, fib, text)" autocomplete="off">
-      </div>
-
       <!-- Category Tabs -->
-      <div class="category-tabs" id="drawing-categories">
-        <button class="cat-tab active" data-category="all">All</button>
-        <button class="cat-tab" data-category="lines">Lines</button>
-        <button class="cat-tab" data-category="shapes">Shapes</button>
-        <button class="cat-tab" data-category="fibonacci">Fibonacci</button>
-        <button class="cat-tab" data-category="annotation">Annotation</button>
-        <button class="cat-tab" data-category="utility">Utility</button>
+      <div class="category-tabs" id="drawing-category-tabs">
+        <button class="cat-tab active" data-draw-category="lines">Lines</button>
+        <button class="cat-tab" data-draw-category="shapes">Shapes</button>
+        <button class="cat-tab" data-draw-category="fibonacci">Fibonacci</button>
+        <button class="cat-tab" data-draw-category="annotations">Annotations</button>
+        <button class="cat-tab" data-draw-category="measurements">Measurements</button>
+        <button class="cat-tab" data-draw-category="patterns">Patterns</button>
       </div>
 
       <!-- Tools Grid -->
-      <div class="indicators-grid" id="drawing-tools-grid">
-        <!-- Cards will be generated by JavaScript (or you can hardcode them like indicators) -->
+      <div class="indicators-grid" id="drawing-tools-full-grid">
+        <!-- Dynamically populated -->
       </div>
     </div>
   </div>
@@ -8199,9 +8395,7 @@ createPriceChart() {
   this.series.main = this.mainSeries;
   
   chart.subscribeClick((param) => {
-    if(STATE.activeTool !== 'cursor' && param.point) {
-      DrawingEngine.handleChartClick(param);
-    }
+    // Chart click handled by drawing canvas directly
   });
   
  chart.subscribeCrosshairMove((param) => {
@@ -9610,37 +9804,132 @@ calculateAll() {
   // ============================================
   // DRAWING ENGINE - Complete Implementation
   // ============================================
-  const DrawingEngine = {
-  canvas: null, ctx: null,
-  drawings: [], tempDrawing: null,
-  isDrawing: false, startPoint: null, currentPoint: null,
+ const DrawingEngine = {
+  canvas: null,
+  ctx: null,
+  drawings: [],
+  tempDrawing: null,
+  isDrawing: false,
+  startPoint: null,
+  currentPoint: null,
   measurePoints: [],
-  dragging: null, dragOffset: null,
-  selectedDrawing: null, hoveredDrawing: null,
+  dragging: null,
+  dragOffset: null,
+  selectedDrawing: null,
+  hoveredDrawing: null,
   brushPoints: [],
   crosshairMode: 'normal',
-crosshairVisible: false,
-crosshairPosition: null,
+  crosshairVisible: false,
+  crosshairPosition: null,
+  
+  // Drawing settings
+  settings: {
+    color: '#58a6ff',
+    lineWidth: 2,
+    lineStyle: 'solid', // solid, dashed, dotted
+    fillColor: 'rgba(88,166,255,0.1)',
+    fontSize: 14,
+    showLabels: true
+  },
+  
+  // All available tools with their properties
+  tools: {
+    // Lines Category
+    'trendline': { name: 'Trend Line', icon: 'fa-chart-line', category: 'lines', desc: 'Draw a straight trend line', shortcut: 'Alt+T' },
+    'horizontal-line': { name: 'Horizontal Line', icon: 'fa-minus', category: 'lines', desc: 'Fixed horizontal price level', shortcut: 'Alt+H' },
+    'vertical-line': { name: 'Vertical Line', icon: 'fa-grip-lines-vertical', category: 'lines', desc: 'Fixed vertical time line', shortcut: 'Alt+V' },
+    'ray': { name: 'Ray', icon: 'fa-arrow-right-long', category: 'lines', desc: 'A line extending infinitely in one direction', shortcut: 'Alt+R' },
+    'extended-line': { name: 'Extended Line', icon: 'fa-arrows-left-right', category: 'lines', desc: 'Infinite line through two points' },
+    'parallel-channel': { name: 'Parallel Channel', icon: 'fa-arrows-up-down', category: 'lines', desc: 'Two parallel lines forming a channel' },
+    'pitchfork': { name: 'Andrews Pitchfork', icon: 'fa-draw-polygon', category: 'lines', desc: 'Median line with parallel lines' },
+    'speed-resistance': { name: 'Speed Resistance', icon: 'fa-tachometer-alt', category: 'lines', desc: 'Speed resistance lines' },
+    'ghost-feed': { name: 'Ghost Feed', icon: 'fa-ghost', category: 'lines', desc: 'Semi-transparent reference lines' },
+    
+    // Shapes Category
+    'rectangle': { name: 'Rectangle', icon: 'fa-square', category: 'shapes', desc: 'Draw a rectangle box' },
+    'ellipse': { name: 'Ellipse', icon: 'fa-circle', category: 'shapes', desc: 'Draw an ellipse or circle' },
+    'triangle': { name: 'Triangle', icon: 'fa-play', category: 'shapes', desc: 'Draw a triangle pattern' },
+    'polygon': { name: 'Polygon', icon: 'fa-draw-polygon', category: 'shapes', desc: 'Custom multi-point polygon' },
+    'wedge': { name: 'Wedge', icon: 'fa-chart-pie', category: 'shapes', desc: 'Draw a wedge pattern' },
+    'arc': { name: 'Arc', icon: 'fa-circle-notch', category: 'shapes', desc: 'Draw a circular arc' },
+    
+    // Fibonacci Category
+    'fib-retracement': { name: 'Fib Retracement', icon: 'fa-ruler', category: 'fibonacci', desc: 'Fibonacci retracement levels' },
+    'fib-extension': { name: 'Fib Extension', icon: 'fa-ruler-combined', category: 'fibonacci', desc: 'Fibonacci extension levels' },
+    'fib-fan': { name: 'Fib Fan', icon: 'fa-fan', category: 'fibonacci', desc: 'Fibonacci fan lines' },
+    'fib-arc': { name: 'Fib Arc', icon: 'fa-rainbow', category: 'fibonacci', desc: 'Fibonacci arc circles' },
+    'fib-timezone': { name: 'Fib Timezone', icon: 'fa-clock', category: 'fibonacci', desc: 'Fibonacci time zones' },
+    'fib-channel': { name: 'Fib Channel', icon: 'fa-grip-lines', category: 'fibonacci', desc: 'Fibonacci channel' },
+    
+    // Annotations Category
+    'text': { name: 'Text', icon: 'fa-font', category: 'annotations', desc: 'Add text annotation', shortcut: 'Alt+Z' },
+    'callout': { name: 'Callout', icon: 'fa-comment-dots', category: 'annotations', desc: 'Text with pointer callout' },
+    'arrow': { name: 'Arrow', icon: 'fa-arrow-up', category: 'annotations', desc: 'Directional arrow' },
+    'double-arrow': { name: 'Double Arrow', icon: 'fa-arrows-left-right', category: 'annotations', desc: 'Bidirectional arrow' },
+    'price-label': { name: 'Price Label', icon: 'fa-tag', category: 'annotations', desc: 'Price level label' },
+    'brush': { name: 'Brush', icon: 'fa-paint-brush', category: 'annotations', desc: 'Freehand drawing', shortcut: 'Alt+B' },
+    'highlight': { name: 'Highlight', icon: 'fa-highlighter', category: 'annotations', desc: 'Highlight area' },
+    'sticker': { name: 'Sticker', icon: 'fa-sticky-note', category: 'annotations', desc: 'Place an emoji sticker' },
+    
+    // Measurements Category
+    'measure': { name: 'Price Range', icon: 'fa-ruler-horizontal', category: 'measurements', desc: 'Measure price and bars', shortcut: 'Alt+M' },
+    'date-range': { name: 'Date Range', icon: 'fa-calendar-alt', category: 'measurements', desc: 'Measure time range' },
+    'price-level': { name: 'Price Level', icon: 'fa-dollar-sign', category: 'measurements', desc: 'Fixed price marker' },
+    'risk-reward': { name: 'Risk/Reward', icon: 'fa-balance-scale', category: 'measurements', desc: 'Risk reward ratio tool' },
+    
+    // Patterns Category
+    'xabcd-pattern': { name: 'ABCD Pattern', icon: 'fa-project-diagram', category: 'patterns', desc: 'Harmonic ABCD pattern' },
+    'head-shoulders': { name: 'Head & Shoulders', icon: 'fa-chart-bar', category: 'patterns', desc: 'Head and shoulders pattern' },
+    'triangle-pattern': { name: 'Triangle Pattern', icon: 'fa-caret-up', category: 'patterns', desc: 'Triangle continuation pattern' },
+    'flag-pattern': { name: 'Flag Pattern', icon: 'fa-flag', category: 'patterns', desc: 'Bull/Bear flag pattern' },
+  },
+  
+  redraw() {
+    if(!this.ctx || !this.canvas) return;
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    
+    this.drawings.forEach(d => {
+      this.ctx.save();
+      
+      if (d === this.selectedDrawing) {
+        this.ctx.shadowColor = '#58a6ff';
+        this.ctx.shadowBlur = 10;
+      } else if (d === this.hoveredDrawing && STATE.activeTool === 'cursor') {
+        this.ctx.shadowColor = 'rgba(88,166,255,0.5)';
+        this.ctx.shadowBlur = 5;
+      }
+      
+      this.ctx.strokeStyle = d.color || '#58a6ff';
+      this.ctx.fillStyle = 'rgba(88,166,255,0.1)';
+      this.ctx.lineWidth = 2;
+      
+      this.drawShape(d);
+      this.ctx.restore();
+    });
+    
+    if (this.measurePoints.length > 1) this.drawMeasureLines();
+  },
   
   init() {
-  this.canvas = document.getElementById('drawing-canvas');
-  if(!this.canvas) return;
-  this.ctx = this.canvas.getContext('2d');
-  
-  // Start with pointer-events disabled so chart can be interacted with
-  this.canvas.style.pointerEvents = 'none';
-  this.canvas.classList.remove('drawing-active');
-  
-  this.resizeCanvas();
-  this.setupEventListeners();
-  
-  const saved = U.storage.get(CONFIG.STORAGE_KEYS.DRAWINGS,[]);
-  this.drawings = saved;
-  STATE.drawings = saved;
-  this.redraw();
-  
-  console.log('✅ Drawing Engine initialized');
-},
+    this.canvas = document.getElementById('drawing-canvas');
+    if(!this.canvas) return;
+    this.ctx = this.canvas.getContext('2d');
+    
+    this.canvas.style.pointerEvents = 'none';
+    this.canvas.classList.remove('drawing-active');
+    
+    this.resizeCanvas();
+    this.setupEventListeners();
+    
+    const saved = U.storage.get(CONFIG.STORAGE_KEYS.DRAWINGS,[]);
+    this.drawings = saved;
+    STATE.drawings = saved;
+    this.redraw();
+    
+    this.initDrawingToolsModal();
+    
+    console.log('✅ Professional Drawing Engine initialized with ' + Object.keys(this.tools).length + ' tools');
+  },
   
   resizeCanvas() {
     const container = document.getElementById('main-chart-pane');
@@ -9870,6 +10159,83 @@ hideCrosshair() {
     return false;
   },
   
+   initDrawingToolsModal() {
+    const grid = document.getElementById('drawing-tools-full-grid');
+    if (!grid) return;
+    
+    const renderTools = (category) => {
+      const tools = Object.entries(this.tools)
+        .filter(([id, tool]) => category === 'all' || tool.category === category);
+      
+      grid.innerHTML = tools.map(([id, tool]) => `
+        <div class="drawing-tools-full-grid-item ${STATE.activeTool === id ? 'active' : ''}" data-tool="${id}">
+          <i class="fas ${tool.icon}"></i>
+          <span class="dt-name">${tool.name}</span>
+          <span class="dt-desc">${tool.desc}</span>
+          ${tool.shortcut ? `<span class="dt-shortcut">${tool.shortcut}</span>` : ''}
+        </div>
+      `).join('');
+      
+      // Click handlers
+      grid.querySelectorAll('.drawing-tools-full-grid-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const toolId = item.dataset.tool;
+          this.setTool(toolId);
+          document.getElementById('drawing-tools-modal').classList.remove('visible');
+          // Update active state
+          grid.querySelectorAll('.drawing-tools-full-grid-item').forEach(el => el.classList.remove('active'));
+          item.classList.add('active');
+        });
+      });
+    };
+    
+	
+  
+    // Category tab switching
+    document.querySelectorAll('#drawing-category-tabs .cat-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('#drawing-category-tabs .cat-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        
+        const category = tab.dataset.drawCategory;
+        document.getElementById('drawing-modal-title').textContent = tab.textContent.trim() + ' Tools';
+        document.getElementById('drawing-modal-subtitle').textContent = 'Select a ' + tab.textContent.trim().toLowerCase() + ' tool';
+        renderTools(category);
+      });
+    });
+    
+    // Initial render
+    renderTools('lines');
+  },
+  
+  
+   renderToolsByCategory(category) {
+    const grid = document.getElementById('drawing-tools-full-grid');
+    if (!grid) return;
+    
+    const tools = Object.entries(this.tools)
+      .filter(([id, tool]) => tool.category === category);
+    
+    grid.innerHTML = tools.map(([id, tool]) => `
+      <div class="drawing-tools-full-grid-item ${STATE.activeTool === id ? 'active' : ''}" data-tool="${id}">
+        <i class="fas ${tool.icon}"></i>
+        <span class="dt-name">${tool.name}</span>
+        <span class="dt-desc">${tool.desc}</span>
+        ${tool.shortcut ? `<span class="dt-shortcut">${tool.shortcut}</span>` : ''}
+      </div>
+    `).join('');
+    
+    grid.querySelectorAll('.drawing-tools-full-grid-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const toolId = item.dataset.tool;
+        DrawingEngine.setTool(toolId);
+        document.getElementById('drawing-tools-modal').classList.remove('visible');
+        grid.querySelectorAll('.drawing-tools-full-grid-item').forEach(el => el.classList.remove('active'));
+        item.classList.add('active');
+      });
+    });
+  },
+  
   onMouseDown(e) {
     const pos = this.getMousePos(e);
     
@@ -9900,25 +10266,98 @@ hideCrosshair() {
       return;
     }
     
-    // Text tool - create text at click position
-    if (STATE.activeTool === 'text') {
-      const text = prompt('Enter text:', '');
-      if (text) {
-        const drawing = {
-          id: U.genId(),
-          tool: 'text',
-          start: { x: pos.x, y: pos.y },
-          end: { x: pos.x, y: pos.y },
-          text: text,
-          color: '#58a6ff',
-          timestamp: Date.now()
-        };
-        this.drawings.push(drawing);
-        this.saveDrawings();
-        this.redraw();
-      }
-      return;
-    }
+    // Text tool - create text directly at click position
+if (STATE.activeTool === 'text') {
+    // Remove any existing text input first
+    const existingInput = document.querySelector('.drawing-text-input');
+    if (existingInput) existingInput.remove();
+    
+    // Create an inline text input at the click position
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'drawing-text-input';
+    input.placeholder = 'Type text here...';
+    input.style.cssText = `
+        position: absolute;
+        left: ${pos.x}px;
+        top: ${pos.y - 20}px;
+        background: var(--bg-card);
+        border: 2px solid var(--accent-primary);
+        color: var(--text-primary);
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-family: Inter, sans-serif;
+        z-index: 1000;
+        min-width: 180px;
+        outline: none;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        pointer-events: auto;
+    `;
+    
+    const pane = document.getElementById('main-chart-pane');
+    if (!pane) return;
+    
+    pane.appendChild(input);
+    
+    // Focus after a tiny delay to ensure it's in the DOM
+    setTimeout(() => {
+        input.focus();
+        input.select();
+    }, 10);
+    
+    // Handle Enter key - save text
+    input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            e.stopPropagation();
+            const text = input.value.trim();
+            input.remove();
+            if (text) {
+                const drawing = {
+                    id: U.genId(),
+                    tool: 'text',
+                    start: { x: pos.x, y: pos.y },
+                    end: { x: pos.x, y: pos.y },
+                    text: text,
+                    color: DrawingEngine.settings ? DrawingEngine.settings.color : '#58a6ff',
+                    fontSize: DrawingEngine.settings ? DrawingEngine.settings.fontSize : 14,
+                    timestamp: Date.now()
+                };
+                DrawingEngine.drawings.push(drawing);
+                DrawingEngine.saveDrawings();
+                DrawingEngine.redraw();
+                DrawingEngine.setTool('cursor'); // Switch back to cursor after placing text
+            }
+        }
+        
+        // Allow Escape to cancel without creating text
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            e.stopPropagation();
+            input.remove();
+        }
+    });
+    
+    // Remove on blur ONLY if the input is empty
+    input.addEventListener('blur', function() {
+        setTimeout(() => {
+            if (document.body.contains(input) && input.value.trim() === '') {
+                input.remove();
+            }
+        }, 200);
+    });
+    
+    // Prevent chart interactions while typing
+    input.addEventListener('mousedown', function(e) {
+        e.stopPropagation();
+    });
+    input.addEventListener('touchstart', function(e) {
+        e.stopPropagation();
+    });
+    
+    return;
+}
     
     // Measure tool
     if (STATE.activeTool === 'measure') {
@@ -10049,6 +10488,86 @@ hideCrosshair() {
     this.currentPoint = null;
   },
   
+   // ============================================
+  // ADD DRAWING - Creates and saves drawings
+  // ============================================
+  addDrawing() {
+    if(!this.startPoint || !this.currentPoint) return;
+    
+    const drawing = {
+      id: U.genId(),
+      tool: STATE.activeTool,
+      start: { x: this.startPoint.x, y: this.startPoint.y },
+      end: { x: this.currentPoint.x, y: this.currentPoint.y },
+      color: this.settings ? this.settings.color : '#58a6ff',
+      fillColor: this.settings ? this.settings.fillColor : 'rgba(88,166,255,0.1)',
+      lineWidth: this.settings ? this.settings.lineWidth : 2,
+      lineStyle: this.settings ? this.settings.lineStyle : 'solid',
+      timestamp: Date.now()
+    };
+    
+    // Special handling for polygon
+    if (STATE.activeTool === 'polygon' && this.polygonPoints) {
+      drawing.points = [...this.polygonPoints, this.currentPoint];
+      drawing.start = this.polygonPoints[0];
+      drawing.end = this.currentPoint;
+      this.polygonPoints = null;
+    }
+    
+    // Special handling for brush
+    if (STATE.activeTool === 'brush' && this.brushPoints && this.brushPoints.length > 1) {
+      drawing.points = [...this.brushPoints];
+      drawing.start = this.brushPoints[0];
+      drawing.end = this.brushPoints[this.brushPoints.length - 1];
+      this.brushPoints = [];
+    }
+    
+    // Special handling for text
+    if (STATE.activeTool === 'text') {
+      drawing.text = this.currentText || 'Text';
+      drawing.fontSize = this.settings ? this.settings.fontSize : 14;
+      drawing.start = { x: this.startPoint.x, y: this.startPoint.y };
+      drawing.end = { x: this.startPoint.x, y: this.startPoint.y };
+      this.currentText = null;
+    }
+    
+    // Special handling for callout
+    if (STATE.activeTool === 'callout') {
+      drawing.text = this.currentText || '!';
+      drawing.fontSize = this.settings ? this.settings.fontSize : 12;
+      this.currentText = null;
+    }
+    
+    // Special handling for sticker
+    if (STATE.activeTool === 'sticker') {
+      drawing.emoji = this.currentSticker || '📌';
+      drawing.start = { x: this.startPoint.x, y: this.startPoint.y };
+      drawing.end = { x: this.startPoint.x, y: this.startPoint.y };
+      this.currentSticker = null;
+    }
+    
+    // Special handling for price label
+    if (STATE.activeTool === 'price-label') {
+      drawing.label = this.currentPriceLabel || '';
+      drawing.priceValue = this.startPoint.y;
+      this.currentPriceLabel = null;
+    }
+    
+    // Special handling for risk/reward
+    if (STATE.activeTool === 'risk-reward') {
+      drawing.stopY = this.currentPoint.y;
+    }
+    
+    // Special handling for parallel channel
+    if (STATE.activeTool === 'parallel-channel') {
+      drawing.offset = this.channelOffset || 30;
+    }
+    
+    this.drawings.push(drawing);
+    this.saveDrawings();
+    this.redraw();
+  },
+  
   onDoubleClick(e) {
     if (STATE.activeTool === 'measure') {
       this.measurePoints = [];
@@ -10070,57 +10589,328 @@ hideCrosshair() {
     }
   },
   
-  drawTempShape() {
+  // ============================================
+// DRAW TEMP SHAPE - ALL 30+ TOOLS
+// ============================================
+drawTempShape() {
     const ctx = this.ctx;
     const s = this.startPoint, c = this.currentPoint;
     if(!s || !c) return;
     
     ctx.save();
-    ctx.strokeStyle = '#58a6ff';
-    ctx.fillStyle = 'rgba(88,166,255,0.1)';
-    ctx.lineWidth = 2;
-    ctx.setLineDash([5, 3]);
+    ctx.strokeStyle = this.settings.color;
+    ctx.fillStyle = this.settings.fillColor;
+    ctx.lineWidth = this.settings.lineWidth;
+    this.setLineStyle(ctx, this.settings.lineStyle);
     
     switch(STATE.activeTool) {
+      // === LINES CATEGORY ===
       case 'trendline':
-        ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(c.x, c.y); ctx.stroke(); break;
-      case 'extended-line':
-        this.drawExtendedLine(ctx, s, c); break;
-      case 'ray':
-        this.drawRay(ctx, s, c); break;
+        ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(c.x, c.y); ctx.stroke();
+        break;
       case 'horizontal-line':
-        ctx.beginPath(); ctx.moveTo(0, c.y); ctx.lineTo(this.canvas.width, c.y); ctx.stroke(); break;
+        ctx.beginPath(); ctx.moveTo(0, c.y); ctx.lineTo(this.canvas.width, c.y); ctx.stroke();
+        break;
       case 'vertical-line':
-        ctx.beginPath(); ctx.moveTo(c.x, 0); ctx.lineTo(c.x, this.canvas.height); ctx.stroke(); break;
+        ctx.beginPath(); ctx.moveTo(c.x, 0); ctx.lineTo(c.x, this.canvas.height); ctx.stroke();
+        break;
+      case 'ray':
+        this.drawRayLine(ctx, s, c);
+        break;
+      case 'extended-line':
+        this.drawExtendedLineFull(ctx, s, c);
+        break;
+      case 'parallel-channel':
+        this.drawParallelChannelTemp(ctx, s, c);
+        break;
+      case 'pitchfork':
+        this.drawPitchforkTemp(ctx, s, c);
+        break;
+      case 'speed-resistance':
+        this.drawSpeedResistanceTemp(ctx, s, c);
+        break;
+      case 'ghost-feed':
+        this.drawGhostFeedTemp(ctx, s, c);
+        break;
+        
+      // === SHAPES CATEGORY ===
       case 'rectangle':
         ctx.strokeRect(s.x, s.y, c.x - s.x, c.y - s.y);
-        ctx.fillRect(s.x, s.y, c.x - s.x, c.y - s.y); break;
+        ctx.fillRect(s.x, s.y, c.x - s.x, c.y - s.y);
+        break;
       case 'ellipse':
         ctx.beginPath();
         ctx.ellipse(s.x + (c.x-s.x)/2, s.y + (c.y-s.y)/2, Math.abs(c.x-s.x)/2, Math.abs(c.y-s.y)/2, 0, 0, Math.PI*2);
-        ctx.stroke(); ctx.fill(); break;
-      case 'arrow':
-        this.drawArrow(ctx, s, c); break;
-      case 'fibonacci-retracement':
-        this.drawFibonacciTemp(ctx, s, c, [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1]); break;
-      case 'fibonacci-extension':
-        this.drawFibonacciTemp(ctx, s, c, [-0.272, -0.618, 1, 1.272, 1.618, 2, 2.618]); break;
-      case 'fibonacci-fan':
-        this.drawFibonacciFanTemp(ctx, s, c); break;
-      case 'pitchfork':
-        this.drawPitchforkTemp(ctx, s, c); break;
-      case 'regression-channel':
-        this.drawRegressionTemp(ctx, s, c); break;
-      case 'channel':
-        this.drawChannelTemp(ctx, s, c); break;
+        ctx.stroke(); ctx.fill();
+        break;
+      case 'triangle':
+        this.drawTriangleTemp(ctx, s, c);
+        break;
       case 'polygon':
-        this.drawPolygonTemp(ctx, s, c); break;
+        this.drawPolygonTemp(ctx, s, c);
+        break;
+      case 'wedge':
+        this.drawWedgeTemp(ctx, s, c);
+        break;
+      case 'arc':
+        this.drawArcTemp(ctx, s, c);
+        break;
+        
+      // === FIBONACCI CATEGORY ===
+      case 'fib-retracement':
+        this.drawFibonacciRetracementTemp(ctx, s, c);
+        break;
+      case 'fib-extension':
+        this.drawFibonacciExtensionTemp(ctx, s, c);
+        break;
+      case 'fib-fan':
+        this.drawFibonacciFanTemp(ctx, s, c);
+        break;
+      case 'fib-arc':
+        this.drawFibonacciArcTemp(ctx, s, c);
+        break;
+      case 'fib-timezone':
+        this.drawFibonacciTimezoneTemp(ctx, s, c);
+        break;
+      case 'fib-channel':
+        this.drawFibonacciChannelTemp(ctx, s, c);
+        break;
+        
+      // === ANNOTATIONS CATEGORY ===
+      case 'text':
+        // Text is handled in onMouseDown with prompt
+        break;
+      case 'callout':
+        this.drawCalloutTemp(ctx, s, c);
+        break;
+      case 'arrow':
+        this.drawArrowTemp(ctx, s, c);
+        break;
+      case 'double-arrow':
+        this.drawDoubleArrowTemp(ctx, s, c);
+        break;
+      case 'price-label':
+        this.drawPriceLabelTemp(ctx, s, c);
+        break;
+      case 'brush':
+        this.drawTempBrush();
+        break;
+      case 'highlight':
+        this.drawHighlightTemp(ctx, s, c);
+        break;
+      case 'sticker':
+        this.drawStickerTemp(ctx, s, c);
+        break;
+        
+      // === MEASUREMENTS CATEGORY ===
+      case 'measure':
+        this.drawMeasureTemp(ctx, s, c);
+        break;
+      case 'date-range':
+        this.drawDateRangeTemp(ctx, s, c);
+        break;
+      case 'price-level':
+        this.drawPriceLevelTemp(ctx, s, c);
+        break;
+      case 'risk-reward':
+        this.drawRiskRewardTemp(ctx, s, c);
+        break;
+        
+      // === PATTERNS CATEGORY ===
+      case 'xabcd-pattern':
+        this.drawABCDPatternTemp(ctx, s, c);
+        break;
+      case 'head-shoulders':
+        this.drawHeadShouldersTemp(ctx, s, c);
+        break;
+      case 'triangle-pattern':
+        this.drawTrianglePatternTemp(ctx, s, c);
+        break;
+      case 'flag-pattern':
+        this.drawFlagPatternTemp(ctx, s, c);
+        break;
     }
     ctx.setLineDash([]);
     ctx.restore();
   },
   
-  drawExtendedLine(ctx, s, c) {
+  // ============================================
+  // DRAW SHAPE - ALL 30+ TOOLS (RENDER SAVED)
+  // ============================================
+  drawShape(d) {
+    const ctx = this.ctx;
+    ctx.save();
+    ctx.strokeStyle = d.color || this.settings.color;
+    ctx.fillStyle = d.fillColor || this.settings.fillColor;
+    ctx.lineWidth = d.lineWidth || this.settings.lineWidth;
+    
+    if (d.lineStyle && d.lineStyle !== 'solid') {
+      this.setLineStyle(ctx, d.lineStyle);
+    }
+    
+    switch(d.tool) {
+      // === LINES ===
+      case 'trendline':
+        ctx.beginPath(); ctx.moveTo(d.start.x, d.start.y); ctx.lineTo(d.end.x, d.end.y); ctx.stroke();
+        break;
+      case 'horizontal-line':
+        ctx.beginPath(); ctx.moveTo(0, d.end.y); ctx.lineTo(this.canvas.width, d.end.y); ctx.stroke();
+        break;
+      case 'vertical-line':
+        ctx.beginPath(); ctx.moveTo(d.end.x, 0); ctx.lineTo(d.end.x, this.canvas.height); ctx.stroke();
+        break;
+      case 'ray':
+        this.drawRayLine(ctx, d.start, d.end);
+        break;
+      case 'extended-line':
+        this.drawExtendedLineFull(ctx, d.start, d.end);
+        break;
+      case 'parallel-channel':
+        this.drawParallelChannel(ctx, d);
+        break;
+      case 'pitchfork':
+        this.drawPitchforkFull(ctx, d);
+        break;
+      case 'speed-resistance':
+        this.drawSpeedResistance(ctx, d);
+        break;
+      case 'ghost-feed':
+        this.drawGhostFeed(ctx, d);
+        break;
+        
+      // === SHAPES ===
+      case 'rectangle':
+        ctx.strokeRect(d.start.x, d.start.y, d.end.x-d.start.x, d.end.y-d.start.y);
+        ctx.fillRect(d.start.x, d.start.y, d.end.x-d.start.x, d.end.y-d.start.y);
+        break;
+      case 'ellipse':
+        ctx.beginPath();
+        ctx.ellipse(d.start.x+(d.end.x-d.start.x)/2, d.start.y+(d.end.y-d.start.y)/2, Math.abs(d.end.x-d.start.x)/2, Math.abs(d.end.y-d.start.y)/2, 0, 0, Math.PI*2);
+        ctx.stroke(); ctx.fill();
+        break;
+      case 'triangle':
+        this.drawTriangle(ctx, d);
+        break;
+      case 'polygon':
+        this.drawPolygon(ctx, d);
+        break;
+      case 'wedge':
+        this.drawWedge(ctx, d);
+        break;
+      case 'arc':
+        this.drawArc(ctx, d);
+        break;
+        
+      // === FIBONACCI ===
+      case 'fib-retracement':
+        this.drawFibonacciRetracement(ctx, d);
+        break;
+      case 'fib-extension':
+        this.drawFibonacciExtension(ctx, d);
+        break;
+      case 'fib-fan':
+        this.drawFibonacciFan(ctx, d);
+        break;
+      case 'fib-arc':
+        this.drawFibonacciArc(ctx, d);
+        break;
+      case 'fib-timezone':
+        this.drawFibonacciTimezone(ctx, d);
+        break;
+      case 'fib-channel':
+        this.drawFibonacciChannel(ctx, d);
+        break;
+        
+      // === ANNOTATIONS ===
+      case 'text':
+        ctx.font = 'bold ' + (d.fontSize || 14) + 'px Inter, sans-serif';
+        ctx.fillStyle = d.color || '#58a6ff';
+        ctx.fillText(d.text || 'Text', d.start.x, d.start.y);
+        break;
+      case 'callout':
+        this.drawCallout(ctx, d);
+        break;
+      case 'arrow':
+        this.drawArrow(ctx, d);
+        break;
+      case 'double-arrow':
+        this.drawDoubleArrow(ctx, d);
+        break;
+      case 'price-label':
+        this.drawPriceLabel(ctx, d);
+        break;
+      case 'brush':
+        this.drawBrushPath(ctx, d);
+        break;
+      case 'highlight':
+        this.drawHighlight(ctx, d);
+        break;
+      case 'sticker':
+        this.drawSticker(ctx, d);
+        break;
+        
+      // === MEASUREMENTS ===
+      case 'measure':
+        this.drawMeasure(ctx, d);
+        break;
+      case 'date-range':
+        this.drawDateRange(ctx, d);
+        break;
+      case 'price-level':
+        this.drawPriceLevel(ctx, d);
+        break;
+      case 'risk-reward':
+        this.drawRiskReward(ctx, d);
+        break;
+        
+      // === PATTERNS ===
+      case 'xabcd-pattern':
+        this.drawABCDPattern(ctx, d);
+        break;
+      case 'head-shoulders':
+        this.drawHeadShoulders(ctx, d);
+        break;
+      case 'triangle-pattern':
+        this.drawTrianglePattern(ctx, d);
+        break;
+      case 'flag-pattern':
+        this.drawFlagPattern(ctx, d);
+        break;
+    }
+    ctx.setLineDash([]);
+    ctx.restore();
+  },
+  
+    // ============================================
+  // LINE STYLE HELPER
+  // ============================================
+  setLineStyle(ctx, style) {
+    switch(style) {
+      case 'dashed': ctx.setLineDash([8, 4]); break;
+      case 'dotted': ctx.setLineDash([3, 3]); break;
+      case 'dash-dot': ctx.setLineDash([8, 4, 2, 4]); break;
+      default: ctx.setLineDash([]);
+    }
+  },
+  
+  // ============================================
+  // RAY LINE
+  // ============================================
+  drawRayLine(ctx, s, c) {
+    const dx = c.x - s.x, dy = c.y - s.y;
+    const mag = Math.sqrt(dx*dx + dy*dy);
+    if (mag === 0) return;
+    const maxLen = Math.max(this.canvas.width, this.canvas.height) * 2;
+    ctx.beginPath();
+    ctx.moveTo(s.x, s.y);
+    ctx.lineTo(s.x + dx * (maxLen/mag), s.y + dy * (maxLen/mag));
+    ctx.stroke();
+  },
+  
+  // ============================================
+  // EXTENDED LINE (INFINITE)
+  // ============================================
+  drawExtendedLineFull(ctx, s, c) {
     const dx = c.x - s.x, dy = c.y - s.y;
     const mag = Math.sqrt(dx*dx + dy*dy);
     if (mag === 0) return;
@@ -10132,286 +10922,738 @@ hideCrosshair() {
     ctx.stroke();
   },
   
-  drawRay(ctx, s, c) {
+  // ============================================
+  // PARALLEL CHANNEL
+  // ============================================
+  drawParallelChannelTemp(ctx, s, c) {
     const dx = c.x - s.x, dy = c.y - s.y;
     const mag = Math.sqrt(dx*dx + dy*dy);
     if (mag === 0) return;
-    const maxLen = Math.max(this.canvas.width, this.canvas.height) * 2;
-    ctx.beginPath();
-    ctx.moveTo(s.x, s.y);
-    ctx.lineTo(s.x + dx * (maxLen/mag), s.y + dy * (maxLen/mag));
-    ctx.stroke();
-  },
-  
-  drawChannelTemp(ctx, s, c) {
-    const dx = c.x - s.x, dy = c.y - s.y;
+    const nx = -dy / mag, ny = dx / mag;
+    const offset = 30;
+    
     ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(c.x, c.y); ctx.stroke();
-    ctx.setLineDash([3, 5]);
-    ctx.beginPath();
-    ctx.moveTo(s.x + dy * 0.3, s.y - dx * 0.3);
-    ctx.lineTo(c.x + dy * 0.3, c.y - dx * 0.3);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(s.x - dy * 0.3, s.y + dx * 0.3);
-    ctx.lineTo(c.x - dy * 0.3, c.y + dx * 0.3);
-    ctx.stroke();
-    ctx.setLineDash([5, 3]);
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.moveTo(s.x + nx * offset, s.y + ny * offset); ctx.lineTo(c.x + nx * offset, c.y + ny * offset); ctx.stroke();
+    ctx.setLineDash([]);
+  },
+  drawParallelChannel(ctx, d) {
+    const dx = d.end.x - d.start.x, dy = d.end.y - d.start.y;
+    const mag = Math.sqrt(dx*dx + dy*dy);
+    if (mag === 0) return;
+    const nx = -dy / mag, ny = dx / mag;
+    const offset = d.offset || 30;
+    ctx.beginPath(); ctx.moveTo(d.start.x, d.start.y); ctx.lineTo(d.end.x, d.end.y); ctx.stroke();
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.moveTo(d.start.x + nx * offset, d.start.y + ny * offset); ctx.lineTo(d.end.x + nx * offset, d.end.y + ny * offset); ctx.stroke();
+    ctx.setLineDash([]);
   },
   
-  drawPolygonTemp(ctx, s, c) {
+  // ============================================
+  // PITCHFORK
+  // ============================================
+  drawPitchforkTemp(ctx, s, c) {
+    const mx = (s.x + c.x) / 2, my = (s.y + c.y) / 2;
+    const dx = c.x - s.x, dy = c.y - s.y;
+    const mag = Math.sqrt(dx*dx + dy*dy);
+    if (mag === 0) return;
+    const spread = mag * 0.5;
+    const nx = -dy / mag, ny = dx / mag;
+    ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(c.x, c.y); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(mx, my); ctx.lineTo(mx + nx * spread, my + ny * spread); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(mx, my); ctx.lineTo(mx - nx * spread, my - ny * spread); ctx.stroke();
+  },
+  drawPitchforkFull(ctx, d) {
+    const mx = (d.start.x + d.end.x) / 2, my = (d.start.y + d.end.y) / 2;
+    const dx = d.end.x - d.start.x, dy = d.end.y - d.start.y;
+    const mag = Math.sqrt(dx*dx + dy*dy);
+    if (mag === 0) return;
+    const spread = (d.spread || mag * 0.5);
+    const nx = -dy / mag, ny = dx / mag;
+    ctx.beginPath(); ctx.moveTo(d.start.x, d.start.y); ctx.lineTo(d.end.x, d.end.y); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(mx, my); ctx.lineTo(mx + nx * spread, my + ny * spread); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(mx, my); ctx.lineTo(mx - nx * spread, my - ny * spread); ctx.stroke();
+  },
+  
+  // ============================================
+  // SPEED RESISTANCE LINES
+  // ============================================
+  drawSpeedResistanceTemp(ctx, s, c) {
+    const levels = [0.333, 0.667, 1.0];
+    const dx = c.x - s.x, dy = c.y - s.y;
+    levels.forEach(level => {
+      ctx.beginPath();
+      ctx.moveTo(s.x, s.y);
+      ctx.lineTo(s.x + dx, s.y + dy * level);
+      ctx.stroke();
+      ctx.fillStyle = this.settings.color;
+      ctx.font = '10px Inter';
+      ctx.fillText(Math.round(level * 100) + '%', s.x + dx + 5, s.y + dy * level);
+    });
+  },
+  drawSpeedResistance(ctx, d) {
+    const levels = [0.333, 0.667, 1.0];
+    const dx = d.end.x - d.start.x, dy = d.end.y - d.start.y;
+    levels.forEach(level => {
+      ctx.beginPath();
+      ctx.moveTo(d.start.x, d.start.y);
+      ctx.lineTo(d.start.x + dx, d.start.y + dy * level);
+      ctx.stroke();
+    });
+  },
+  
+  // ============================================
+  // GHOST FEED
+  // ============================================
+  drawGhostFeedTemp(ctx, s, c) {
+    ctx.globalAlpha = 0.3;
+    ctx.beginPath(); ctx.moveTo(0, s.y); ctx.lineTo(this.canvas.width, s.y); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, c.y); ctx.lineTo(this.canvas.width, c.y); ctx.stroke();
+    ctx.globalAlpha = 1.0;
+    const mid = (s.y + c.y) / 2;
+    ctx.beginPath(); ctx.moveTo(0, mid); ctx.lineTo(this.canvas.width, mid); ctx.stroke();
+  },
+  drawGhostFeed(ctx, d) {
+    ctx.globalAlpha = 0.2;
+    ctx.beginPath(); ctx.moveTo(0, d.start.y); ctx.lineTo(this.canvas.width, d.start.y); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, d.end.y); ctx.lineTo(this.canvas.width, d.end.y); ctx.stroke();
+    ctx.globalAlpha = 1.0;
+  },
+  
+  // ============================================
+  // TRIANGLE
+  // ============================================
+  drawTriangleTemp(ctx, s, c) {
     ctx.beginPath();
-    ctx.moveTo(s.x, s.y);
-    ctx.lineTo(c.x, s.y);
+    ctx.moveTo(s.x, c.y);
+    ctx.lineTo((s.x + c.x) / 2, s.y);
     ctx.lineTo(c.x, c.y);
-    ctx.lineTo(s.x, c.y);
+    ctx.closePath();
+    ctx.stroke(); ctx.fill();
+  },
+  drawTriangle(ctx, d) {
+    ctx.beginPath();
+    ctx.moveTo(d.start.x, d.end.y);
+    ctx.lineTo((d.start.x + d.end.x) / 2, d.start.y);
+    ctx.lineTo(d.end.x, d.end.y);
     ctx.closePath();
     ctx.stroke(); ctx.fill();
   },
   
-  drawTempBrush() {
-    if (this.brushPoints.length < 2) return;
-    const ctx = this.ctx;
-    ctx.save();
-    ctx.strokeStyle = '#58a6ff';
-    ctx.lineWidth = 3;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
+  // ============================================
+  // POLYGON (Multi-point)
+  // ============================================
+  drawPolygonTemp(ctx, s, c) {
+    if (!this.polygonPoints) this.polygonPoints = [s];
+    this.polygonPoints.push(c);
     ctx.beginPath();
-    ctx.moveTo(this.brushPoints[0].x, this.brushPoints[0].y);
-    for (let i = 1; i < this.brushPoints.length; i++) {
-      ctx.lineTo(this.brushPoints[i].x, this.brushPoints[i].y);
+    ctx.moveTo(this.polygonPoints[0].x, this.polygonPoints[0].y);
+    for (let i = 1; i < this.polygonPoints.length; i++) {
+      ctx.lineTo(this.polygonPoints[i].x, this.polygonPoints[i].y);
     }
-    ctx.stroke();
-    ctx.restore();
+    ctx.closePath();
+    ctx.stroke(); ctx.fill();
+  },
+  drawPolygon(ctx, d) {
+    if (!d.points || d.points.length < 3) return;
+    ctx.beginPath();
+    ctx.moveTo(d.points[0].x, d.points[0].y);
+    for (let i = 1; i < d.points.length; i++) {
+      ctx.lineTo(d.points[i].x, d.points[i].y);
+    }
+    ctx.closePath();
+    ctx.stroke(); ctx.fill();
   },
   
-  drawArrow(ctx, from, to) {
+  // ============================================
+  // WEDGE
+  // ============================================
+  drawWedgeTemp(ctx, s, c) {
+    ctx.beginPath();
+    ctx.moveTo(s.x, s.y);
+    ctx.lineTo(c.x, s.y);
+    ctx.lineTo(c.x, c.y);
+    ctx.closePath();
+    ctx.setLineDash([4, 4]);
+    ctx.lineTo(s.x, s.y);
+    ctx.stroke(); ctx.fill();
+  },
+  drawWedge(ctx, d) {
+    ctx.beginPath();
+    ctx.moveTo(d.start.x, d.start.y);
+    ctx.lineTo(d.end.x, d.start.y);
+    ctx.lineTo(d.end.x, d.end.y);
+    ctx.closePath();
+    ctx.setLineDash([4, 4]);
+    ctx.lineTo(d.start.x, d.start.y);
+    ctx.stroke(); ctx.fill();
+  },
+  
+  // ============================================
+  // ARC
+  // ============================================
+  drawArcTemp(ctx, s, c) {
+    const radius = Math.sqrt((c.x-s.x)**2 + (c.y-s.y)**2);
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, radius, 0, Math.PI * 2);
+    ctx.stroke();
+  },
+  drawArc(ctx, d) {
+    const radius = d.radius || Math.sqrt((d.end.x-d.start.x)**2 + (d.end.y-d.start.y)**2);
+    ctx.beginPath();
+    ctx.arc(d.start.x, d.start.y, radius, 0, Math.PI * 2);
+    ctx.stroke();
+  },
+  
+  // ============================================
+  // FIBONACCI RETRACEMENT
+  // ============================================
+  drawFibonacciRetracementTemp(ctx, s, c) {
+    const levels = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1];
+    const yRange = c.y - s.y;
+    levels.forEach(level => {
+      const y = s.y + yRange * level;
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(this.canvas.width, y); ctx.stroke();
+      ctx.fillStyle = this.settings.color;
+      ctx.font = '10px Inter';
+      ctx.fillText(level.toFixed(3) + ' (' + (level*100).toFixed(1) + '%)', 5, y - 3);
+    });
+  },
+  drawFibonacciRetracement(ctx, d) {
+    const levels = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1];
+    const yRange = d.end.y - d.start.y;
+    levels.forEach(level => {
+      const y = d.start.y + yRange * level;
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(this.canvas.width, y); ctx.stroke();
+      ctx.fillStyle = d.color || this.settings.color;
+      ctx.font = '10px Inter';
+      ctx.fillText(level.toFixed(3), 5, y - 3);
+    });
+  },
+  
+  // ============================================
+  // FIBONACCI EXTENSION
+  // ============================================
+  drawFibonacciExtensionTemp(ctx, s, c) {
+    const levels = [-0.272, -0.618, -1.0, 1.272, 1.618, 2.0, 2.618];
+    const yRange = c.y - s.y;
+    levels.forEach(level => {
+      const y = s.y + yRange * level;
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(this.canvas.width, y); ctx.stroke();
+      ctx.fillStyle = this.settings.color;
+      ctx.font = '10px Inter';
+      ctx.fillText(level.toFixed(3), 5, y - 3);
+    });
+  },
+  drawFibonacciExtension(ctx, d) {
+    const levels = [-0.272, -0.618, -1.0, 1.272, 1.618, 2.0, 2.618];
+    const yRange = d.end.y - d.start.y;
+    levels.forEach(level => {
+      const y = d.start.y + yRange * level;
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(this.canvas.width, y); ctx.stroke();
+      ctx.fillStyle = d.color || this.settings.color;
+      ctx.font = '10px Inter';
+      ctx.fillText(level.toFixed(3), 5, y - 3);
+    });
+  },
+  
+  // ============================================
+  // FIBONACCI FAN
+  // ============================================
+  drawFibonacciFanTemp(ctx, s, c) {
+    const levels = [0.236, 0.382, 0.5, 0.618, 0.786];
+    const dx = c.x - s.x, dy = c.y - s.y;
+    levels.forEach(level => {
+      ctx.beginPath();
+      ctx.moveTo(s.x, s.y);
+      ctx.lineTo(c.x, s.y + dy * level);
+      ctx.stroke();
+      ctx.fillStyle = this.settings.color;
+      ctx.font = '9px Inter';
+      ctx.fillText((level*100).toFixed(1)+'%', c.x + 5, s.y + dy * level);
+    });
+  },
+  drawFibonacciFan(ctx, d) {
+    const levels = [0.236, 0.382, 0.5, 0.618, 0.786];
+    const dx = d.end.x - d.start.x, dy = d.end.y - d.start.y;
+    levels.forEach(level => {
+      ctx.beginPath();
+      ctx.moveTo(d.start.x, d.start.y);
+      ctx.lineTo(d.end.x, d.start.y + dy * level);
+      ctx.stroke();
+    });
+  },
+  
+  // ============================================
+  // FIBONACCI ARC
+  // ============================================
+  drawFibonacciArcTemp(ctx, s, c) {
+    const levels = [0.236, 0.382, 0.5, 0.618, 0.786];
+    const dist = Math.sqrt((c.x-s.x)**2 + (c.y-s.y)**2);
+    levels.forEach(level => {
+      const r = dist * (1 - level);
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, r, 0, Math.PI * 2);
+      ctx.stroke();
+    });
+  },
+  drawFibonacciArc(ctx, d) {
+    const levels = [0.236, 0.382, 0.5, 0.618, 0.786];
+    const dist = Math.sqrt((d.end.x-d.start.x)**2 + (d.end.y-d.start.y)**2);
+    levels.forEach(level => {
+      const r = dist * (1 - level);
+      ctx.beginPath();
+      ctx.arc(d.start.x, d.start.y, r, 0, Math.PI * 2);
+      ctx.stroke();
+    });
+  },
+  
+  // ============================================
+  // FIBONACCI TIMEZONE
+  // ============================================
+  drawFibonacciTimezoneTemp(ctx, s, c) {
+    const fibs = [0, 1, 2, 3, 5, 8, 13, 21];
+    const dx = c.x - s.x;
+    fibs.forEach(fib => {
+      const x = s.x + dx * (fib / 8);
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, this.canvas.height); ctx.stroke();
+      ctx.fillStyle = this.settings.color;
+      ctx.font = '10px Inter';
+      ctx.fillText(fib, x + 3, 15);
+    });
+  },
+  drawFibonacciTimezone(ctx, d) {
+    const fibs = [0, 1, 2, 3, 5, 8, 13, 21];
+    const dx = d.end.x - d.start.x;
+    fibs.forEach(fib => {
+      const x = d.start.x + dx * (fib / 8);
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, this.canvas.height); ctx.stroke();
+    });
+  },
+  
+  // ============================================
+  // FIBONACCI CHANNEL
+  // ============================================
+  drawFibonacciChannelTemp(ctx, s, c) {
+    this.drawParallelChannelTemp(ctx, s, c);
+    const levels = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1];
+    const dy = c.y - s.y;
+    const nx = -(c.y - s.y), ny = (c.x - s.x);
+    const mag = Math.sqrt(nx*nx + ny*ny);
+    if (mag === 0) return;
+    const ux = nx / mag, uy = ny / mag;
+    const offset = 30;
+    levels.forEach(level => {
+      const baseX = s.x + ux * offset, baseY = s.y + uy * offset;
+      const y = baseY + dy * level;
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(this.canvas.width, y); ctx.stroke();
+    });
+  },
+  drawFibonacciChannel(ctx, d) {
+    this.drawParallelChannel(ctx, d);
+    const levels = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1];
+    const dy = d.end.y - d.start.y;
+    levels.forEach(level => {
+      const y = d.start.y + dy * level;
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(this.canvas.width, y); ctx.stroke();
+    });
+  },
+  
+  // ============================================
+  // CALLOUT
+  // ============================================
+  drawCalloutTemp(ctx, s, c) {
+    ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(c.x, c.y); ctx.stroke();
+    ctx.beginPath(); ctx.arc(c.x, c.y, 15, 0, Math.PI*2); ctx.stroke(); ctx.fill();
+    ctx.fillStyle = this.settings.color;
+    ctx.font = '12px Inter';
+    ctx.fillText('●', c.x - 5, c.y + 4);
+  },
+  drawCallout(ctx, d) {
+    ctx.beginPath(); ctx.moveTo(d.start.x, d.start.y); ctx.lineTo(d.end.x, d.end.y); ctx.stroke();
+    ctx.beginPath(); ctx.arc(d.end.x, d.end.y, 15, 0, Math.PI*2); ctx.stroke(); ctx.fill();
+    ctx.fillStyle = d.color || this.settings.color;
+    ctx.font = 'bold ' + (d.fontSize || 12) + 'px Inter';
+    ctx.fillText(d.text || '!', d.end.x - 5, d.end.y + 4);
+  },
+  
+  // ============================================
+  // ARROW
+  // ============================================
+  drawArrowTemp(ctx, s, c) {
+    this.drawArrowFull(ctx, s, c, false);
+  },
+  drawArrow(ctx, d) {
+    this.drawArrowFull(ctx, d.start, d.end, d.double || false);
+  },
+  drawArrowFull(ctx, from, to, double) {
     const angle = Math.atan2(to.y - from.y, to.x - from.x);
-    const arrowLen = 15;
+    const arrowLen = 12;
+    
     ctx.beginPath(); ctx.moveTo(from.x, from.y); ctx.lineTo(to.x, to.y); ctx.stroke();
-    ctx.fillStyle = '#58a6ff';
+    
+    // Head arrow
+    ctx.fillStyle = ctx.strokeStyle;
     ctx.beginPath();
     ctx.moveTo(to.x, to.y);
     ctx.lineTo(to.x - arrowLen * Math.cos(angle - Math.PI/6), to.y - arrowLen * Math.sin(angle - Math.PI/6));
     ctx.lineTo(to.x - arrowLen * Math.cos(angle + Math.PI/6), to.y - arrowLen * Math.sin(angle + Math.PI/6));
     ctx.closePath();
     ctx.fill();
-  },
-  
-  drawFibonacciTemp(ctx, start, end, levels) {
-    const yRange = end.y - start.y;
-    levels.forEach(level => {
-      const y = start.y + yRange * level;
-      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(this.canvas.width, y); ctx.stroke();
-      ctx.fillStyle = '#58a6ff'; ctx.font = '10px Inter';
-      ctx.fillText(level.toFixed(3), 5, y - 3);
-    });
-  },
-  
-  drawFibonacciFanTemp(ctx, start, end) {
-    const levels = [0.236, 0.382, 0.5, 0.618, 0.786];
-    const dx = end.x - start.x, dy = end.y - start.y;
-    levels.forEach(level => {
+    
+    if (double) {
       ctx.beginPath();
-      ctx.moveTo(start.x, start.y);
-      ctx.lineTo(end.x, start.y + dy * level);
-      ctx.stroke();
-      ctx.fillStyle = '#58a6ff'; ctx.font = '9px Inter';
-      ctx.fillText((level*100).toFixed(1)+'%', end.x + 5, start.y + dy * level);
+      ctx.moveTo(from.x, from.y);
+      ctx.lineTo(from.x + arrowLen * Math.cos(angle - Math.PI/6), from.y + arrowLen * Math.sin(angle - Math.PI/6));
+      ctx.lineTo(from.x + arrowLen * Math.cos(angle + Math.PI/6), from.y + arrowLen * Math.sin(angle + Math.PI/6));
+      ctx.closePath();
+      ctx.fill();
+    }
+  },
+  
+  // ============================================
+  // DOUBLE ARROW
+  // ============================================
+  drawDoubleArrowTemp(ctx, s, c) {
+    this.drawArrowFull(ctx, s, c, true);
+  },
+  drawDoubleArrow(ctx, d) {
+    this.drawArrowFull(ctx, d.start, d.end, true);
+  },
+  
+  // ============================================
+  // PRICE LABEL
+  // ============================================
+  drawPriceLabelTemp(ctx, s, c) {
+    ctx.beginPath(); ctx.moveTo(this.canvas.width - 60, s.y); ctx.lineTo(this.canvas.width, s.y); ctx.stroke();
+    ctx.fillStyle = this.settings.color;
+    ctx.font = 'bold 11px Inter';
+    ctx.fillText('$' + s.y.toFixed(4), this.canvas.width - 55, s.y - 5);
+  },
+  drawPriceLabel(ctx, d) {
+    ctx.beginPath(); ctx.moveTo(this.canvas.width - 60, d.start.y); ctx.lineTo(this.canvas.width, d.start.y); ctx.stroke();
+    ctx.fillStyle = d.color || this.settings.color;
+    ctx.font = 'bold 11px Inter';
+    const label = d.label || '$' + d.priceValue || d.start.y.toFixed(4);
+    ctx.fillText(label, this.canvas.width - 55, d.start.y - 5);
+  },
+  
+  // ============================================
+  // BRUSH PATH
+  // ============================================
+  drawBrushPath(ctx, d) {
+    if (!d.points || d.points.length < 2) return;
+    ctx.lineWidth = (d.lineWidth || 3);
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.beginPath();
+    ctx.moveTo(d.points[0].x, d.points[0].y);
+    for (let i = 1; i < d.points.length; i++) {
+      ctx.lineTo(d.points[i].x, d.points[i].y);
+    }
+    ctx.stroke();
+  },
+  
+  // ============================================
+  // HIGHLIGHT
+  // ============================================
+  drawHighlightTemp(ctx, s, c) {
+    ctx.globalAlpha = 0.3;
+    ctx.fillStyle = '#ffff00';
+    ctx.fillRect(s.x, s.y, c.x - s.x, c.y - s.y);
+    ctx.globalAlpha = 1.0;
+  },
+  drawHighlight(ctx, d) {
+    ctx.globalAlpha = 0.25;
+    ctx.fillStyle = d.color || '#ffff00';
+    ctx.fillRect(d.start.x, d.start.y, d.end.x - d.start.x, d.end.y - d.start.y);
+    ctx.globalAlpha = 1.0;
+  },
+  
+  // ============================================
+  // STICKER
+  // ============================================
+  drawStickerTemp(ctx, s, c) {
+    ctx.font = '30px serif';
+    ctx.fillText('📌', s.x - 15, s.y + 10);
+  },
+  drawSticker(ctx, d) {
+    ctx.font = (d.fontSize || 30) + 'px serif';
+    ctx.fillText(d.emoji || '📌', d.start.x - 15, d.start.y + 10);
+  },
+  
+  // ============================================
+  // MEASURE RANGE
+  // ============================================
+  drawMeasureTemp(ctx, s, c) {
+    ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(c.x, s.y); ctx.lineTo(c.x, c.y); ctx.stroke();
+    const priceDiff = Math.abs(c.y - s.y);
+    const barDiff = Math.abs(c.x - s.x);
+    ctx.fillStyle = this.settings.color;
+    ctx.font = '10px Inter';
+    ctx.fillText(barDiff.toFixed(0) + ' bars', (s.x + c.x) / 2, s.y - 8);
+    ctx.fillText(priceDiff.toFixed(2) + ' px', c.x + 5, (s.y + c.y) / 2);
+  },
+  drawMeasure(ctx, d) {
+    ctx.beginPath(); ctx.moveTo(d.start.x, d.start.y); ctx.lineTo(d.end.x, d.start.y); ctx.lineTo(d.end.x, d.end.y); ctx.stroke();
+    const priceDiff = Math.abs(d.end.y - d.start.y);
+    const barDiff = Math.abs(d.end.x - d.start.x);
+    ctx.fillStyle = d.color || this.settings.color;
+    ctx.font = '10px Inter';
+    ctx.fillText(barDiff.toFixed(0) + ' bars', (d.start.x + d.end.x) / 2, d.start.y - 8);
+    ctx.fillText(priceDiff.toFixed(2) + ' px', d.end.x + 5, (d.start.y + d.end.y) / 2);
+  },
+  
+  // ============================================
+  // DATE RANGE
+  // ============================================
+  drawDateRangeTemp(ctx, s, c) {
+    ctx.beginPath(); ctx.moveTo(s.x, 0); ctx.lineTo(s.x, 20); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(c.x, 0); ctx.lineTo(c.x, 20); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(s.x, 10); ctx.lineTo(c.x, 10); ctx.stroke();
+    const bars = Math.abs(c.x - s.x);
+    ctx.fillStyle = this.settings.color;
+    ctx.font = '10px Inter';
+    ctx.fillText(bars.toFixed(0) + ' bars', (s.x + c.x) / 2, 8);
+  },
+  drawDateRange(ctx, d) {
+    ctx.beginPath(); ctx.moveTo(d.start.x, 0); ctx.lineTo(d.start.x, 20); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(d.end.x, 0); ctx.lineTo(d.end.x, 20); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(d.start.x, 10); ctx.lineTo(d.end.x, 10); ctx.stroke();
+    const bars = Math.abs(d.end.x - d.start.x);
+    ctx.fillStyle = d.color || this.settings.color;
+    ctx.font = '10px Inter';
+    ctx.fillText(bars.toFixed(0) + ' bars', (d.start.x + d.end.x) / 2, 8);
+  },
+  
+  // ============================================
+  // PRICE LEVEL MARKER
+  // ============================================
+  drawPriceLevelTemp(ctx, s, c) {
+    ctx.beginPath(); ctx.moveTo(0, s.y); ctx.lineTo(this.canvas.width, s.y); ctx.stroke();
+    ctx.fillStyle = this.settings.color;
+    ctx.font = 'bold 11px Inter';
+    ctx.fillText('← ', 5, s.y - 4);
+  },
+  drawPriceLevel(ctx, d) {
+    ctx.beginPath(); ctx.moveTo(0, d.start.y); ctx.lineTo(this.canvas.width, d.start.y); ctx.stroke();
+    ctx.fillStyle = d.color || this.settings.color;
+    ctx.font = 'bold 11px Inter';
+    ctx.fillText('← ', 5, d.start.y - 4);
+  },
+  
+  // ============================================
+  // RISK/REWARD TOOL
+  // ============================================
+  drawRiskRewardTemp(ctx, s, c) {
+    const entry = s;
+    const target = { x: c.x, y: Math.min(s.y, c.y) };
+    const stop = { x: c.x, y: Math.max(s.y, c.y) };
+    const reward = Math.abs(entry.y - target.y);
+    const risk = Math.abs(stop.y - entry.y);
+    const rr = risk > 0 ? (reward / risk).toFixed(2) : '∞';
+    
+    ctx.beginPath(); ctx.moveTo(entry.x, entry.y); ctx.lineTo(this.canvas.width, entry.y); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(target.x, target.y); ctx.lineTo(this.canvas.width, target.y); ctx.setLineDash([4,4]); ctx.stroke(); ctx.setLineDash([]);
+    ctx.beginPath(); ctx.moveTo(stop.x, stop.y); ctx.lineTo(this.canvas.width, stop.y); ctx.setLineDash([4,4]); ctx.stroke(); ctx.setLineDash([]);
+    
+    ctx.fillStyle = '#26a69a';
+    ctx.font = '10px Inter';
+    ctx.fillText('Target (+' + reward.toFixed(1) + ')', target.x + 5, target.y - 4);
+    ctx.fillText('Entry', entry.x + 5, entry.y - 4);
+    ctx.fillStyle = '#ef5350';
+    ctx.fillText('Stop (-' + risk.toFixed(1) + ')', stop.x + 5, stop.y + 12);
+    ctx.fillStyle = '#ff9800';
+    ctx.fillText('R:R = 1:' + rr, entry.x + 5, entry.y + 10);
+  },
+  drawRiskReward(ctx, d) {
+    const entry = d.start;
+    const target = d.end;
+    const reward = Math.abs(entry.y - target.y);
+    const risk = Math.abs(d.stopY ? d.stopY - entry.y : reward);
+    const rr = risk > 0 ? (reward / risk).toFixed(2) : '∞';
+    
+    ctx.beginPath(); ctx.moveTo(entry.x, entry.y); ctx.lineTo(this.canvas.width, entry.y); ctx.stroke();
+    ctx.setLineDash([4,4]);
+    ctx.beginPath(); ctx.moveTo(target.x, target.y); ctx.lineTo(this.canvas.width, target.y); ctx.stroke();
+    if (d.stopY) { ctx.beginPath(); ctx.moveTo(target.x, d.stopY); ctx.lineTo(this.canvas.width, d.stopY); ctx.stroke(); }
+    ctx.setLineDash([]);
+    
+    ctx.fillStyle = '#26a69a'; ctx.font = '10px Inter';
+    ctx.fillText('TP ' + reward.toFixed(1) + ' (1:' + rr + ')', target.x + 5, target.y - 4);
+    ctx.fillText('Entry', entry.x + 5, entry.y - 4);
+    if (d.stopY) { ctx.fillStyle = '#ef5350'; ctx.fillText('SL ' + risk.toFixed(1), target.x + 5, d.stopY + 12); }
+  },
+  
+  // ============================================
+  // ABCD HARMONIC PATTERN
+  // ============================================
+  drawABCDPatternTemp(ctx, s, c) {
+    const dx = (c.x - s.x) / 3;
+    const dy = (c.y - s.y) / 3;
+    const a = s;
+    const b = { x: s.x + dx, y: s.y + dy * 0.618 };
+    const c2 = { x: s.x + dx * 2, y: s.y + dy * 0.382 };
+    const d2 = { x: c.x, y: c.y };
+    
+    ctx.beginPath(); ctx.moveTo(a.x, a.y);
+    ctx.lineTo(b.x, b.y); ctx.lineTo(c2.x, c2.y); ctx.lineTo(d2.x, d2.y); ctx.stroke();
+    
+    [a, b, c2, d2].forEach((pt, i) => {
+      ctx.beginPath(); ctx.arc(pt.x, pt.y, 4, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 10px Inter';
+      ctx.fillText('ABCD'[i], pt.x + 6, pt.y - 6);
+      ctx.fillStyle = this.settings.color;
+    });
+  },
+  drawABCDPattern(ctx, d) {
+    const pts = d.points || [d.start, d.end];
+    if (pts.length < 4) return;
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, pts[0].y);
+    for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+    ctx.stroke();
+    pts.forEach((pt, i) => {
+      ctx.beginPath(); ctx.arc(pt.x, pt.y, 4, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 10px Inter';
+      ctx.fillText('ABCD'[i] || '', pt.x + 6, pt.y - 6);
+      ctx.fillStyle = d.color || this.settings.color;
     });
   },
   
-  drawPitchforkTemp(ctx, start, end) {
-    const midX = (start.x + end.x) / 2, midY = (start.y + end.y) / 2;
-    const dx = end.x - start.x, dy = end.y - start.y;
-    ctx.beginPath(); ctx.moveTo(start.x, start.y); ctx.lineTo(end.x, end.y); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(midX, midY); ctx.lineTo(midX - dy, midY + dx); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(midX, midY); ctx.lineTo(midX + dy, midY - dx); ctx.stroke();
+  // ============================================
+  // HEAD & SHOULDERS
+  // ============================================
+  drawHeadShouldersTemp(ctx, s, c) {
+    const w = (c.x - s.x) / 4;
+    const points = [
+      s,
+      { x: s.x + w, y: s.y - 40 },
+      { x: s.x + w * 2, y: s.y + 10 },
+      { x: s.x + w * 2.5, y: s.y - 60 },
+      { x: s.x + w * 3, y: s.y + 10 },
+      { x: s.x + w * 3.5, y: s.y - 40 },
+      c
+    ];
+    ctx.beginPath(); ctx.moveTo(points[0].x, points[0].y);
+    for (let i = 1; i < points.length; i++) ctx.lineTo(points[i].x, points[i].y);
+    ctx.stroke();
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.moveTo(s.x + w, s.y + 10); ctx.lineTo(s.x + w * 3, s.y + 10); ctx.stroke();
+    ctx.setLineDash([]);
+  },
+  drawHeadShoulders(ctx, d) {
+    const pts = d.points || this.generateHSPoints(d);
+    ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y);
+    for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+    ctx.stroke();
+    ctx.setLineDash([4, 4]);
+    const neckY = (pts[2].y + pts[4].y) / 2;
+    ctx.beginPath(); ctx.moveTo(pts[1].x, neckY); ctx.lineTo(pts[5].x, neckY); ctx.stroke();
+    ctx.setLineDash([]);
+  },
+  generateHSPoints(d) {
+    const w = (d.end.x - d.start.x) / 6;
+    return [
+      d.start,
+      { x: d.start.x + w, y: d.start.y - 30 },
+      { x: d.start.x + w * 2, y: d.start.y + 5 },
+      { x: d.start.x + w * 3, y: d.start.y - 50 },
+      { x: d.start.x + w * 4, y: d.start.y + 5 },
+      { x: d.start.x + w * 5, y: d.start.y - 30 },
+      d.end
+    ];
   },
   
-  drawRegressionTemp(ctx, start, end) {
-    const dx = end.x - start.x, dy = end.y - start.y;
-    ctx.beginPath(); ctx.moveTo(start.x, start.y); ctx.lineTo(end.x, end.y); ctx.stroke();
-    ctx.setLineDash([3, 5]);
+  // ============================================
+  // TRIANGLE PATTERN
+  // ============================================
+  drawTrianglePatternTemp(ctx, s, c) {
     ctx.beginPath();
-    ctx.moveTo(start.x, start.y + 30); ctx.lineTo(end.x, end.y + 30); ctx.stroke();
+    ctx.moveTo(s.x, s.y);
+    ctx.lineTo((s.x + c.x) / 2, c.y);
+    ctx.lineTo(c.x, s.y);
+    ctx.setLineDash([4, 4]);
+    ctx.lineTo(s.x, s.y);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  },
+  drawTrianglePattern(ctx, d) {
     ctx.beginPath();
-    ctx.moveTo(start.x, start.y - 30); ctx.lineTo(end.x, end.y - 30); ctx.stroke();
-    ctx.setLineDash([5, 3]);
+    ctx.moveTo(d.start.x, d.start.y);
+    ctx.lineTo((d.start.x + d.end.x) / 2, d.end.y);
+    ctx.lineTo(d.end.x, d.start.y);
+    ctx.setLineDash([4, 4]);
+    ctx.lineTo(d.start.x, d.start.y);
+    ctx.stroke();
+    ctx.setLineDash([]);
   },
   
+  // ============================================
+  // FLAG PATTERN
+  // ============================================
+  drawFlagPatternTemp(ctx, s, c) {
+    const dx = c.x - s.x, dy = c.y - s.y;
+    // Pole
+    ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(s.x, c.y); ctx.stroke();
+    // Flag
+    const flagW = dx * 0.6, flagH = Math.abs(dy) * 0.3;
+    const flagX = s.x, flagY = c.y;
+    ctx.beginPath();
+    ctx.moveTo(flagX, flagY);
+    ctx.lineTo(flagX + flagW, flagY + flagH / 2);
+    ctx.lineTo(flagX + flagW * 0.8, flagY);
+    ctx.lineTo(flagX, flagY - flagH / 2);
+    ctx.closePath();
+    ctx.stroke(); ctx.fill();
+  },
+  drawFlagPattern(ctx, d) {
+    ctx.beginPath(); ctx.moveTo(d.start.x, d.start.y); ctx.lineTo(d.start.x, d.end.y); ctx.stroke();
+    const flagW = (d.end.x - d.start.x) * 0.6;
+    const flagH = Math.abs(d.end.y - d.start.y) * 0.3;
+    ctx.beginPath();
+    ctx.moveTo(d.start.x, d.end.y);
+    ctx.lineTo(d.start.x + flagW, d.end.y + flagH / 2);
+    ctx.lineTo(d.start.x + flagW * 0.8, d.end.y);
+    ctx.lineTo(d.start.x, d.end.y - flagH / 2);
+    ctx.closePath();
+    ctx.stroke(); ctx.fill();
+  },
+  
+  
+  // ============================================
+  // DRAW MEASURE LINES (was missing!)
+  // ============================================
   drawMeasureLines() {
     if(this.measurePoints.length < 2) return;
     const ctx = this.ctx;
     ctx.save();
-    ctx.strokeStyle = '#ff9800'; ctx.fillStyle = '#ff9800';
-    ctx.lineWidth = 1; ctx.setLineDash([5, 5]);
+    ctx.strokeStyle = '#ff9800'; 
+    ctx.fillStyle = '#ff9800';
+    ctx.lineWidth = 1; 
+    ctx.setLineDash([5, 5]);
     
     for(let i = 0; i < this.measurePoints.length - 1; i++) {
       const p1 = this.measurePoints[i], p2 = this.measurePoints[i+1];
-      ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+      ctx.beginPath(); 
+      ctx.moveTo(p1.x, p1.y); 
+      ctx.lineTo(p2.x, p2.y); 
+      ctx.stroke();
       
       const dist = Math.sqrt((p2.x-p1.x)**2 + (p2.y-p1.y)**2);
-      ctx.font = '11px Inter'; ctx.fillText(Math.round(dist) + 'px', (p1.x+p2.x)/2, (p1.y+p2.y)/2 - 5);
+      ctx.font = '11px Inter'; 
+      ctx.fillText(Math.round(dist) + 'px', (p1.x+p2.x)/2, (p1.y+p2.y)/2 - 5);
       
-      // Draw point markers
-      ctx.beginPath(); ctx.arc(p1.x, p1.y, 4, 0, Math.PI*2); ctx.fill();
-      ctx.beginPath(); ctx.arc(p2.x, p2.y, 4, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); 
+      ctx.arc(p1.x, p1.y, 4, 0, Math.PI*2); 
+      ctx.fill();
+      ctx.beginPath(); 
+      ctx.arc(p2.x, p2.y, 4, 0, Math.PI*2); 
+      ctx.fill();
     }
     ctx.setLineDash([]);
     ctx.restore();
-  },
-  
-  addDrawing() {
-    if(!this.startPoint || !this.currentPoint) return;
-    
-    const drawing = {
-      id: U.genId(),
-      tool: STATE.activeTool,
-      start: { x: this.startPoint.x, y: this.startPoint.y },
-      end: { x: this.currentPoint.x, y: this.currentPoint.y },
-      color: '#58a6ff',
-      timestamp: Date.now()
-    };
-    
-    this.drawings.push(drawing);
-    this.saveDrawings();
-    this.redraw();
-  },
-  
-  redraw() {
-    if(!this.ctx || !this.canvas) return;
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    
-    this.drawings.forEach(d => {
-      this.ctx.save();
-      
-      // Highlight selected/hovered
-      if (d === this.selectedDrawing) {
-        this.ctx.shadowColor = '#58a6ff';
-        this.ctx.shadowBlur = 10;
-      } else if (d === this.hoveredDrawing && STATE.activeTool === 'cursor') {
-        this.ctx.shadowColor = 'rgba(88,166,255,0.5)';
-        this.ctx.shadowBlur = 5;
-      }
-      
-      this.ctx.strokeStyle = d.color || '#58a6ff';
-      this.ctx.fillStyle = 'rgba(88,166,255,0.1)';
-      this.ctx.lineWidth = 2;
-      
-      this.drawShape(d);
-      this.ctx.restore();
-    });
-    
-    // Draw measure points
-    if (this.measurePoints.length > 1) this.drawMeasureLines();
-  },
-  
-  drawShape(d) {
-    const ctx = this.ctx;
-    
-    switch(d.tool) {
-      case 'trendline':
-        ctx.beginPath(); ctx.moveTo(d.start.x, d.start.y); ctx.lineTo(d.end.x, d.end.y); ctx.stroke(); break;
-      case 'extended-line':
-        this.drawExtendedLine(ctx, d.start, d.end); break;
-      case 'ray':
-        this.drawRay(ctx, d.start, d.end); break;
-      case 'horizontal-line':
-        ctx.beginPath(); ctx.moveTo(0, d.end.y); ctx.lineTo(this.canvas.width, d.end.y); ctx.stroke(); break;
-      case 'vertical-line':
-        ctx.beginPath(); ctx.moveTo(d.end.x, 0); ctx.lineTo(d.end.x, this.canvas.height); ctx.stroke(); break;
-      case 'rectangle':
-        ctx.strokeRect(d.start.x, d.start.y, d.end.x-d.start.x, d.end.y-d.start.y);
-        ctx.fillRect(d.start.x, d.start.y, d.end.x-d.start.x, d.end.y-d.start.y); break;
-      case 'ellipse':
-        ctx.beginPath();
-        ctx.ellipse(d.start.x+(d.end.x-d.start.x)/2, d.start.y+(d.end.y-d.start.y)/2, Math.abs(d.end.x-d.start.x)/2, Math.abs(d.end.y-d.start.y)/2, 0, 0, Math.PI*2);
-        ctx.stroke(); ctx.fill(); break;
-      case 'arrow':
-        this.drawArrow(ctx, d.start, d.end); break;
-      case 'text':
-        ctx.font = 'bold 14px Inter, sans-serif';
-        ctx.fillStyle = d.color || '#58a6ff';
-        ctx.fillText(d.text || 'Text', d.start.x, d.start.y); break;
-      case 'fibonacci-retracement':
-        this.drawFibonacci(ctx, d, [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1]); break;
-      case 'fibonacci-extension':
-        this.drawFibonacci(ctx, d, [-0.272, -0.618, 1, 1.272, 1.618, 2, 2.618]); break;
-      case 'fibonacci-fan':
-        this.drawFibonacciFan(ctx, d); break;
-      case 'pitchfork':
-        this.drawPitchfork(ctx, d); break;
-      case 'regression-channel':
-        this.drawRegressionChannel(ctx, d); break;
-      case 'channel':
-        this.drawChannel(ctx, d); break;
-      case 'polygon':
-        ctx.strokeRect(d.start.x, d.start.y, d.end.x-d.start.x, d.end.y-d.start.y);
-        ctx.fillRect(d.start.x, d.start.y, d.end.x-d.start.x, d.end.y-d.start.y); break;
-      case 'brush':
-        if (d.points && d.points.length > 1) {
-          ctx.lineWidth = 3;
-          ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-          ctx.beginPath();
-          ctx.moveTo(d.points[0].x, d.points[0].y);
-          for (let i = 1; i < d.points.length; i++) {
-            ctx.lineTo(d.points[i].x, d.points[i].y);
-          }
-          ctx.stroke();
-        }
-        break;
-    }
-  },
-  
-  drawFibonacci(ctx, d, levels) {
-    const yRange = d.end.y - d.start.y;
-    levels.forEach(level => {
-      const y = d.start.y + yRange * level;
-      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(this.canvas.width, y); ctx.stroke();
-      ctx.fillStyle = '#58a6ff'; ctx.font = '10px Inter';
-      ctx.fillText(level.toFixed(3), 5, y - 3);
-    });
-  },
-  
-  drawFibonacciFan(ctx, d) {
-    const levels = [0.236, 0.382, 0.5, 0.618, 0.786];
-    const dx = d.end.x - d.start.x, dy = d.end.y - d.start.y;
-    levels.forEach(level => {
-      ctx.beginPath(); ctx.moveTo(d.start.x, d.start.y);
-      ctx.lineTo(d.end.x, d.start.y + dy * level); ctx.stroke();
-      ctx.fillStyle = '#58a6ff'; ctx.font = '9px Inter';
-      ctx.fillText((level*100).toFixed(1)+'%', d.end.x + 5, d.start.y + dy * level);
-    });
-  },
-  
-  drawPitchfork(ctx, d) {
-    const midX = (d.start.x + d.end.x) / 2, midY = (d.start.y + d.end.y) / 2;
-    const dx = d.end.x - d.start.x, dy = d.end.y - d.start.y;
-    ctx.beginPath(); ctx.moveTo(d.start.x, d.start.y); ctx.lineTo(d.end.x, d.end.y); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(midX, midY); ctx.lineTo(midX - dy, midY + dx); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(midX, midY); ctx.lineTo(midX + dy, midY - dx); ctx.stroke();
-  },
-  
-  drawRegressionChannel(ctx, d) {
-    ctx.beginPath(); ctx.moveTo(d.start.x, d.start.y); ctx.lineTo(d.end.x, d.end.y); ctx.stroke();
-    ctx.setLineDash([3, 5]);
-    ctx.beginPath(); ctx.moveTo(d.start.x, d.start.y + 30); ctx.lineTo(d.end.x, d.end.y + 30); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(d.start.x, d.start.y - 30); ctx.lineTo(d.end.x, d.end.y - 30); ctx.stroke();
-    ctx.setLineDash([]);
-  },
-  
-  drawChannel(ctx, d) {
-    const dx = d.end.x - d.start.x, dy = d.end.y - d.start.y;
-    ctx.beginPath(); ctx.moveTo(d.start.x, d.start.y); ctx.lineTo(d.end.x, d.end.y); ctx.stroke();
-    ctx.setLineDash([3, 5]);
-    ctx.beginPath();
-    ctx.moveTo(d.start.x + dy * 0.3, d.start.y - dx * 0.3);
-    ctx.lineTo(d.end.x + dy * 0.3, d.end.y - dx * 0.3); ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(d.start.x - dy * 0.3, d.start.y + dx * 0.3);
-    ctx.lineTo(d.end.x - dy * 0.3, d.end.y + dx * 0.3); ctx.stroke();
-    ctx.setLineDash([]);
   },
   
   undo() {
@@ -10450,40 +11692,43 @@ hideCrosshair() {
     STATE.drawings = this.drawings;
   },
   
-  setTool(tool) {
-  STATE.activeTool = tool;
-  this.selectedDrawing = null;
-  this.dragging = null;
-  
-  if(this.canvas) {
-    if (tool === 'cursor') {
-      this.canvas.classList.remove('drawing-active');
-      this.canvas.style.pointerEvents = 'none';
-    } else if (tool === 'text') {
-      this.canvas.classList.add('drawing-active');
-      this.canvas.style.pointerEvents = 'auto';
-      this.canvas.style.cursor = 'text';
-    } else if (tool === 'eraser') {
-      this.canvas.classList.add('drawing-active');
-      this.canvas.style.pointerEvents = 'auto';
-      this.canvas.style.cursor = 'not-allowed';
-    } else {
-      this.canvas.classList.add('drawing-active');
-      this.canvas.style.pointerEvents = 'auto';
-      this.canvas.style.cursor = 'crosshair';
+setTool(tool) {
+    STATE.activeTool = tool;
+    this.selectedDrawing = null;
+    this.dragging = null;
+    
+    if(this.canvas) {
+      if (tool === 'cursor') {
+        this.canvas.classList.remove('drawing-active');
+        this.canvas.style.pointerEvents = 'none';
+        this.canvas.style.cursor = 'default';
+      } else {
+        this.canvas.classList.add('drawing-active');
+        this.canvas.style.pointerEvents = 'auto';
+        this.canvas.style.cursor = 'crosshair';
+      }
     }
-  }
-  
-  $$('.tool-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tool === tool));
-  if(tool === 'measure') this.measurePoints = [];
-  
-  // Also update mobile sheet tools
-  document.querySelectorAll('.sheet-tool-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.tool === tool);
-  });
-  
-  Toast.info(`Tool: ${tool.replace(/-/g, ' ')}`);
-},
+    
+    // Update sidebar buttons
+    $$('.tool-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tool === tool));
+    
+    // Update mobile sheet tools
+    document.querySelectorAll('.sheet-tool-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.tool === tool);
+    });
+    
+    // Update modal grid
+    document.querySelectorAll('.drawing-tools-full-grid-item').forEach(item => {
+      item.classList.toggle('active', item.dataset.tool === tool);
+    });
+    
+    if(tool === 'measure') this.measurePoints = [];
+    
+    const toolInfo = this.tools[tool];
+    if (toolInfo) {
+      Toast.info(`${toolInfo.name} selected`);
+    }
+  },
 };
 
 // ============================================
@@ -13323,6 +14568,34 @@ function setupUI() {
         });
     });
     
+	// Sidebar category buttons - open drawing modal with specific category
+document.querySelectorAll('[data-open-modal="drawing-tools-modal"]').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const modal = document.getElementById('drawing-tools-modal');
+        const category = this.dataset.drawCategory;
+        
+        if (modal && category) {
+            // Show the modal
+            modal.classList.add('visible');
+            
+            // Activate the correct category tab
+            document.querySelectorAll('#drawing-category-tabs .cat-tab').forEach(t => t.classList.remove('active'));
+            const targetTab = document.querySelector(`#drawing-category-tabs .cat-tab[data-draw-category="${category}"]`);
+            if (targetTab) {
+                targetTab.classList.add('active');
+                document.getElementById('drawing-modal-title').textContent = targetTab.textContent.trim() + ' Tools';
+                document.getElementById('drawing-modal-subtitle').textContent = 'Select a ' + targetTab.textContent.trim().toLowerCase() + ' tool';
+            }
+            
+            // Render tools for this category
+            if (DrawingEngine && DrawingEngine.renderToolsByCategory) {
+                DrawingEngine.renderToolsByCategory(category);
+            }
+        }
+    });
+});
+
+	
     // Drawing tools
     $$('.tool-btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -15360,33 +16633,25 @@ function fixMobileChartLayout() {
     `;
   }
   
-  // Fix main chart height
+  // Fix main chart - fill remaining space
   const mainPane = document.getElementById('main-chart-pane');
   if (mainPane) {
     mainPane.style.cssText = `
-      flex: 0 0 auto !important;
-      min-height: 280px !important;
-      height: 42vh !important;
-      max-height: 45vh !important;
+      flex: 1 1 auto !important;
+      min-height: 200px !important;
+      max-height: none !important;
     `;
   }
   
-  // Hide empty indicator container
+  // Handle indicator container - only show when it has children
   const indicatorContainer = document.getElementById('indicator-panes-container');
   if (indicatorContainer) {
-    if (indicatorContainer.children.length === 0) {
-      indicatorContainer.style.display = 'none';
-    } else {
-      indicatorContainer.style.display = 'flex';
-    }
+    // Initial check
+    updateIndicatorContainerVisibility();
     
     // Watch for changes
     const observer = new MutationObserver(() => {
-      if (indicatorContainer.children.length === 0) {
-        indicatorContainer.style.display = 'none';
-      } else {
-        indicatorContainer.style.display = 'flex';
-      }
+      updateIndicatorContainerVisibility();
       // Resize charts after indicator changes
       setTimeout(() => {
         if (typeof ChartEngine !== 'undefined') {
@@ -15394,7 +16659,24 @@ function fixMobileChartLayout() {
         }
       }, 200);
     });
-    observer.observe(indicatorContainer, { childList: true });
+    observer.observe(indicatorContainer, { childList: true, subtree: false });
+  }
+  
+  function updateIndicatorContainerVisibility() {
+    const container = document.getElementById('indicator-panes-container');
+    if (!container) return;
+    
+    if (container.children.length === 0) {
+      container.style.display = 'none';
+      container.style.flex = '0 0 0';
+      container.style.maxHeight = '0';
+      container.style.overflow = 'hidden';
+    } else {
+      container.style.display = 'flex';
+      container.style.flex = '0 0 auto';
+      container.style.maxHeight = 'none';
+      container.style.overflow = 'visible';
+    }
   }
   
   // Ensure chart container is scrollable
