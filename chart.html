@@ -1591,8 +1591,14 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 15; /* Was 10, increase */
+  z-index: 15;
+  pointer-events: none; /* DEFAULT: let events pass through */
+}
+
+/* When a drawing tool is active, capture pointer events */
+.drawing-canvas.drawing-active {
   pointer-events: auto;
+  cursor: crosshair;
 }
 
     .chart-watermark {
@@ -1609,15 +1615,23 @@ body {
     }
 
     .crosshair-tooltip {
-      position: absolute;
-      background: var(--bg-card);
-      border: 1px solid var(--border-primary);
-      border-radius: var(--radius-lg);
-      padding: var(--spacing-md);
-      box-shadow: var(--shadow-lg);
-      pointer-events: none;
-      z-index: 20;
-    }
+  position: absolute;
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  padding: 10px 14px;
+  box-shadow: var(--shadow-lg);
+  pointer-events: none;
+  z-index: 20;
+  min-width: 170px;
+  backdrop-filter: blur(8px);
+}
+
+.crosshair-tooltip.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
 
     .floating-toolbar {
       position: absolute;
@@ -3773,109 +3787,136 @@ kbd {
 
 
 /* ========== MAIN LAYOUT ========== */
+/* ============================================ */
+/* MOBILE CHART LAYOUT - COMPLETE FIX */
+/* ============================================ */
 @media (max-width: 768px) {
   .main-layout {
-  display: flex;
-  flex-direction: column;
-  height: calc(100vh - var(--header-height) - 40px);  /* subtract footer height */
-  position: relative;
-  overflow: hidden;
-  padding: 0 !important;
-  margin: 0 !important;
-}
+    display: flex !important;
+    flex-direction: column !important;
+    height: calc(100vh - var(--header-height) - 40px) !important;
+    position: relative;
+    overflow: hidden;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
   
   .center-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
+    flex: 1 1 auto;
+    display: flex !important;
+    flex-direction: column !important;
     min-height: 0;
     overflow: hidden;
-	padding: 0 !important;
+    padding: 0 !important;
     margin: 0 !important;
   }
   
-  /* Chart area - takes remaining space */
+  /* ========== CHART CONTAINER ========== */
   .chart-container {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  overflow-y: auto;                    /* allow scrolling for all panes */
-  -webkit-overflow-scrolling: touch;
-  padding: 0 !important;
-    margin: 0 !important;
-    width: 100vw !important;
-    left: 0 !important;
-    right: 0 !important;
-}
-
-.chart-container.sheet-open {
-  max-height: calc(40vh - 40px);       /* leave room for footer */
-}
-
-#main-chart-pane {
-  flex: 1 1 auto;
-  min-height: 250px;
-  height: auto !important;
-  max-height: none !important;
-  padding: 0 !important;
-    margin: 0 !important;
-    width: 100% !important;
-}
-#price-chart {
-    width: 100% !important;
-    margin: 0 !important;
+    flex: 1 1 auto;
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 0;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch;
     padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
   }
   
-#volume-chart-pane {
-  flex: 0 0 100px !important;
-  min-height: 60px !important;
-  max-height: 100px !important;
-  height: 100px !important;
-  display: flex !important;
-  width: 100% !important;
-    margin: 0 !important;
+  .chart-container.sheet-open {
+    max-height: calc(40vh - 40px);
+  }
+  
+  /* ========== MAIN PRICE CHART ========== */
+  #main-chart-pane {
+    flex: 0 0 auto !important;
+    min-height: 280px !important;
+    height: 42vh !important;
+    max-height: 45vh !important;
+    position: relative;
+    overflow: hidden;
     padding: 0 !important;
-}
-
-/* Ensure price scale is visible on right */
-  .chart-container .chart-pane {
-    padding-right: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+  }
+  
+  #price-chart {
+    width: 100% !important;
+    height: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  
+  /* ========== VOLUME CHART - ALWAYS VISIBLE ========== */
+  #volume-chart-pane {
+    flex: 0 0 80px !important;
+    display: flex !important;
+    height: 80px !important;
+    min-height: 80px !important;
+    max-height: 80px !important;
+    width: 100% !important;
+    overflow: hidden;
+    border-top: 1px solid var(--border-primary);
+    border-bottom: 1px solid var(--border-primary);
+    padding: 0 !important;
+    margin: 0 !important;
   }
   
   #volume-chart {
     width: 100% !important;
+    height: 100% !important;
+  }
+
+  /* ========== INDICATOR PANES ========== */
+  .indicator-panes-container {
+    flex: 0 0 auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    max-height: none !important;
+    overflow-y: visible !important;
+    overflow-x: hidden !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border-top: 1px solid var(--border-primary);
   }
   
-/* Hide indicator panes container when empty */
-.indicator-panes-container:empty {
-  display: none !important;
-  max-height: 0 !important;
-  flex: 0 0 0 !important;
-  overflow: hidden !important;
-  border: none !important;
-}
-
-/* Also hide if only contains whitespace/comments */
-.indicator-panes-container[style*="display: none"] {
-  display: none !important;
-} 
-
-.indicator-panes-container {
-  flex: 0 0 auto;
-  max-height: none;
-  overflow-y: visible;
-}
-
-.chart-pane-indicator {
-  flex: 0 0 100px;
-  min-height: 80px;
-}
+  .indicator-panes-container:empty {
+    display: none !important;
+    max-height: 0 !important;
+    flex: 0 0 0 !important;
+    border: none !important;
+  }
   
-  /* Chart header - minimal */
+  .chart-pane-indicator {
+    flex: 0 0 100px !important;
+    min-height: 100px !important;
+    max-height: 120px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    border-bottom: 1px solid var(--border-primary);
+    overflow: hidden;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  
+  .chart-pane-indicator:last-child {
+    border-bottom: none;
+    padding-bottom: 10px !important;
+  }
+  
+  .chart-pane-indicator .chart-canvas {
+    flex: 1 1 auto;
+    min-height: 80px !important;
+    width: 100% !important;
+  }
+  
+  /* ========== CHART HEADER - HIDDEN ON MOBILE ========== */
   .chart-header {
-    display: none; /* Hidden on mobile, info in top header */
+    display: none !important;
   }
   
   .mobile-chart-header {
@@ -3904,7 +3945,6 @@ kbd {
     color: var(--text-primary);
   }
 }
-
 /* ========== BOTTOM SHEET (TradingView Style) ========== */
 @media (max-width: 768px) {
   .mobile-bottom-sheet {
@@ -5417,53 +5457,16 @@ kbd {
 /* MOBILE RIGHT PANEL SLIDE-OUT */
 /* ============================================ */
 
-/* Show only on mobile */
+/* Hide on desktop */
 @media (min-width: 769px) {
   .mobile-right-panel,
-  .mobile-panel-overlay,
-  .mobile-panel-toggle {
+  .mobile-panel-overlay {
     display: none !important;
   }
 }
 
+/* Show on mobile */
 @media (max-width: 768px) {
-  /* Floating toggle button */
-  .mobile-panel-toggle {
-    display: flex !important;
-    position: fixed;
-    top: 50%;
-    right: 0;
-    transform: translateY(-50%);
-    width: 36px;
-    height: 80px;
-    background: var(--accent-primary);
-    color: white;
-    border: none;
-    border-radius: 8px 0 0 8px;
-    cursor: pointer;
-    z-index: 150;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-    box-shadow: -2px 0 10px rgba(0,0,0,0.3);
-    transition: right 0.3s ease;
-    writing-mode: vertical-rl;
-    letter-spacing: 2px;
-    font-weight: 700;
-    font-size: 11px;
-    gap: 6px;
-  }
-  
-  .mobile-panel-toggle i {
-    writing-mode: horizontal-tb;
-    font-size: 14px;
-  }
-  
-  .mobile-panel-toggle.hidden {
-    right: -50px;
-  }
-  
-  /* Slide-out panel */
   .mobile-right-panel {
     display: flex !important;
     flex-direction: column;
@@ -5476,13 +5479,13 @@ kbd {
     height: 100dvh;
     background: var(--bg-secondary);
     border-left: 1px solid var(--border-primary);
-    z-index: 200;
+    z-index: 9998;
     transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: -4px 0 20px rgba(0,0,0,0.4);
   }
   
   .mobile-right-panel.open {
-    right: 0;
+    right: 0 !important;
   }
   
   .mobile-panel-header {
@@ -5521,7 +5524,6 @@ kbd {
     color: var(--text-muted);
     font-size: 16px;
     cursor: pointer;
-    transition: all 0.15s;
   }
   
   .mobile-panel-close:active {
@@ -5534,10 +5536,8 @@ kbd {
     overflow-y: auto;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
-    padding: 0;
   }
   
-  /* Overlay */
   .mobile-panel-overlay {
     display: none;
     position: fixed;
@@ -5546,38 +5546,567 @@ kbd {
     right: 0;
     bottom: 0;
     background: rgba(0,0,0,0.6);
-    z-index: 199;
-    transition: opacity 0.3s ease;
+    z-index: 9997;
   }
   
   .mobile-panel-overlay.visible {
-    display: block;
+    display: block !important;
+  }
+}
+
+/* ============================================ */
+/* DESKTOP PROTECTION - Hide all mobile elements */
+/* ============================================ */
+@media (min-width: 769px) {
+  .mobile-top-bar,
+  .mobile-symbol-area,
+  .mobile-symbol-search-dropdown,
+  .mobile-search-input-wrapper,
+  .mobile-search-tabs,
+  .mobile-search-results,
+  .mobile-timeframe-overlay,
+  .mobile-current-tf,
+  .mobile-tf-quick,
+  .mobile-tf-modal,
+  .mobile-tf-modal-content,
+  .mobile-tf-grid,
+  .mobile-header-actions,
+  .mobile-icon-btn,
+  .mobile-right-panel,
+  .mobile-panel-overlay,
+  .mobile-bottom-sheet,
+  .sheet-handle,
+  .sheet-tabs,
+  .sheet-content,
+  .sheet-panel,
+  #mobile-symbol-search-dropdown,
+  #mobile-tf-modal,
+  #mobile-right-panel,
+  #mobile-panel-overlay {
+    display: none !important;
+  }
+}
+
+/* ============================================ */
+/* MOBILE STYLES - Only apply below 768px */
+/* ============================================ */
+@media (max-width: 768px) {
+  /* Hide all desktop elements */
+  .header-left,
+  .header-center,
+  .header-right,
+  .ticker-tape-wrapper,
+  .left-sidebar,
+  .right-sidebar,
+  .chart-header,
+  .footer-left,
+  .footer-right,
+  .desktop-only,
+  .chart-type-selector,
+  .floating-toolbar,
+  .timeframe-selector,
+  #footer-timeframes,
+  #timeframe-selector { 
+    display: none !important; 
   }
   
-  /* Make right sidebar content fit mobile panel */
-  .mobile-right-panel .right-section {
+  /* Show header */
+  .header {
+    display: flex !important;
+    height: 48px;
+    min-height: 48px;
+    padding: 0 8px;
+    background: var(--bg-secondary);
     border-bottom: 1px solid var(--border-primary);
+    z-index: 100;
+    align-items: center;
   }
   
-  .mobile-right-panel .right-section-header {
+  .mobile-top-bar {
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 8px;
+  }
+  
+  /* Symbol + Price area */
+  .mobile-symbol-area {
+    display: flex !important;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: var(--bg-tertiary);
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .mobile-symbol-area:active {
+    background: var(--bg-hover);
+  }
+  
+  .mobile-symbol-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-primary);
+    white-space: nowrap;
+  }
+  
+  .mobile-price-change {
+    display: flex !important;
+    align-items: center;
+    gap: 6px;
+    margin-left: auto;
+  }
+  
+  .mobile-price {
+    font-size: 12px;
+    font-weight: 600;
+    font-family: 'SF Mono', 'Monaco', monospace;
+    color: var(--text-primary);
+  }
+  
+  .mobile-change-badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+  
+  .mobile-change-badge.up {
+    color: var(--up-color);
+    background: var(--up-muted);
+  }
+  
+  .mobile-change-badge.down {
+    color: var(--down-color);
+    background: var(--down-muted);
+  }
+  
+  /* Header buttons */
+  .mobile-header-actions {
+    display: flex !important;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  
+  .mobile-icon-btn {
+    width: 34px;
+    height: 34px;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    font-size: 15px;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .mobile-icon-btn:active {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+  }
+  
+  /* ========== SEARCH DROPDOWN ========== */
+  #mobile-symbol-search-dropdown {
+    display: none !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--bg-primary);
+    z-index: 9999;
+    flex-direction: column;
+  }
+  
+  #mobile-symbol-search-dropdown.open {
+    display: flex !important;
+  }
+  
+  .mobile-search-input-wrapper {
+    display: flex;
+    align-items: center;
     padding: 10px 14px;
-  }
-  
-  .mobile-right-panel .tv-panel-section {
-    padding: 10px 14px;
-  }
-  
-  .mobile-right-panel .trade-panel {
+    gap: 10px;
     border-bottom: 1px solid var(--border-primary);
+    background: var(--bg-secondary);
+    flex-shrink: 0;
   }
   
-  .mobile-right-panel .trade-form {
-    padding: 10px 14px;
+  .mobile-search-input-wrapper .fa-search {
+    color: var(--text-muted);
+    font-size: 16px;
   }
   
-  .mobile-right-panel .watchlist-container {
-    padding: 4px;
+  #mobile-symbol-search-input {
+    flex: 1;
+    padding: 10px 0;
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-size: 16px;
+    outline: none;
   }
+  
+  #mobile-symbol-search-input::placeholder {
+    color: var(--text-muted);
+  }
+  
+  .mobile-search-close-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--bg-tertiary);
+    border: none;
+    color: var(--text-muted);
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .mobile-search-tabs {
+    display: flex;
+    padding: 8px 12px;
+    gap: 6px;
+    border-bottom: 1px solid var(--border-primary);
+    overflow-x: auto;
+    flex-shrink: 0;
+  }
+  
+  .mobile-search-tab {
+    padding: 6px 14px;
+    border-radius: 16px;
+    border: 1px solid var(--border-primary);
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  
+  .mobile-search-tab.active {
+    background: var(--accent-primary);
+    border-color: var(--accent-primary);
+    color: white;
+  }
+  
+  #mobile-search-results {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px;
+  }
+  
+  .mobile-search-result-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 12px;
+    border-bottom: 1px solid var(--border-primary);
+    cursor: pointer;
+    border-radius: 8px;
+    transition: background 0.15s;
+  }
+  
+  .mobile-search-result-item:active {
+    background: var(--bg-hover);
+  }
+  
+  .mobile-result-symbol {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text-primary);
+  }
+  
+  .mobile-result-name {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+  
+  .mobile-result-type {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 600;
+  }
+  
+  .mobile-result-type.crypto {
+    background: rgba(88,166,255,0.1);
+    color: #58a6ff;
+  }
+  
+  .mobile-result-type.stocks {
+    background: rgba(38,166,154,0.1);
+    color: #26a69a;
+  }
+  
+  .mobile-result-type.forex {
+    background: rgba(255,152,0,0.1);
+    color: #ff9800;
+  }
+  
+  /* ========== TIMEFRAME OVERLAY ========== */
+  .mobile-timeframe-overlay {
+    display: flex !important;
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    z-index: 20;
+    align-items: center;
+    gap: 4px;
+  }
+  
+  .mobile-current-tf {
+    display: flex !important;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 10px;
+    background: rgba(13, 17, 23, 0.9);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--border-primary);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  
+  .mobile-current-tf i {
+    font-size: 8px;
+    color: var(--text-muted);
+  }
+  
+  .mobile-tf-quick {
+    display: flex !important;
+    gap: 2px;
+    background: rgba(13, 17, 23, 0.9);
+    backdrop-filter: blur(8px);
+    border-radius: 6px;
+    padding: 2px;
+    border: 1px solid var(--border-primary);
+  }
+  
+  .mobile-tf-pill {
+    padding: 3px 6px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 9px;
+    font-weight: 600;
+    border-radius: 4px;
+    cursor: pointer;
+    white-space: nowrap;
+    min-width: 26px;
+    text-align: center;
+  }
+  
+  .mobile-tf-pill.active {
+    background: var(--accent-primary);
+    color: white;
+  }
+  
+  /* Timeframe Modal */
+  #mobile-tf-modal {
+    display: none !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 10000;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  
+  #mobile-tf-modal.open {
+    display: flex !important;
+  }
+  
+  .mobile-tf-modal-content {
+    background: var(--bg-secondary);
+    border-radius: 16px 16px 0 0;
+    width: 100%;
+    padding: 16px;
+    animation: slideInUp 0.3s ease;
+  }
+  
+  .mobile-tf-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  
+  .mobile-tf-modal-header h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  
+  .mobile-tf-modal-close {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--bg-tertiary);
+    border: none;
+    color: var(--text-muted);
+    font-size: 16px;
+    cursor: pointer;
+  }
+  
+  .mobile-tf-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+  
+  .mobile-tf-option {
+    padding: 12px;
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+  }
+  
+  .mobile-tf-option:active,
+  .mobile-tf-option.active {
+    background: var(--accent-muted);
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
+  }
+  
+  /* ========== RIGHT PANEL ========== */
+  #mobile-right-panel {
+    display: flex !important;
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 320px;
+    max-width: 85vw;
+    height: 100vh;
+    height: 100dvh;
+    background: var(--bg-secondary);
+    z-index: 9998;
+    transition: right 0.3s ease;
+    box-shadow: -4px 0 20px rgba(0,0,0,0.4);
+    overflow-y: auto;
+  }
+  
+  #mobile-right-panel.open {
+    right: 0;
+  }
+  
+  #mobile-panel-overlay {
+    display: none !important;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 9997;
+  }
+  
+  #mobile-panel-overlay.visible {
+    display: block !important;
+  }
+  
+  /* ========== CHART LAYOUT ========== */
+  .main-layout {
+    display: flex !important;
+    flex-direction: column !important;
+    height: calc(100vh - 48px - 40px) !important;
+    overflow: hidden;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  
+  .center-content {
+    flex: 1 1 auto;
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 0;
+    overflow: hidden;
+  }
+  
+  .chart-container {
+    flex: 1 1 auto;
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 0;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  #main-chart-pane {
+    flex: 0 0 auto !important;
+    height: 38vh !important;
+    min-height: 230px !important;
+    max-height: 42vh !important;
+    position: relative;
+  }
+  
+  #volume-chart-pane {
+    flex: 0 0 70px !important;
+    display: flex !important;
+    height: 70px !important;
+    min-height: 70px !important;
+    max-height: 70px !important;
+  }
+  
+  .indicator-panes-container:empty {
+    display: none !important;
+  }
+  
+  .chart-pane-indicator {
+    flex: 0 0 90px !important;
+    min-height: 90px !important;
+    max-height: 100px !important;
+  }
+  
+  /* ========== FOOTER ========== */
+  .footer {
+    height: 40px !important;
+    min-height: 40px !important;
+    position: fixed !important;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 95;
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border-primary);
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    padding: 0 12px;
+  }
+  
+  .footer-center {
+    font-size: 10px;
+  }
+}
+
+/* ============================================ */
+/* ANIMATION */
+/* ============================================ */
+@keyframes slideInUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
 }
 
 
@@ -5604,31 +6133,44 @@ kbd {
        ============================================ -->
   <header class="header" id="main-header">
   <!-- Mobile-only top bar -->
-  <div class="mobile-top-bar">
-   <button id="m-search-btn" onclick="document.getElementById('mobile-search-overlay').classList.add('visible')" style="..."><i class="fas fa-search"></i></button>
-  <div style="display:flex;align-items:center;gap:6px; flex:1; min-width:0;">
-    <!-- logo SVG -->
-    <span style="font-size:13px;font-weight:700;">TradeVision <span style="font-size:8px;background:var(--accent-muted);color:var(--accent-primary);padding:1px 4px;border-radius:3px;">PRO</span></span>
+<div class="mobile-top-bar">
+  <!-- Left: Symbol with search -->
+  <div class="mobile-symbol-area" id="mobile-symbol-area">
+    <span class="mobile-symbol-name" id="mobile-symbol-name">BTC/USDT</span>
+    <span class="mobile-price-change" id="mobile-price-change">
+      <span class="mobile-price" id="mobile-price">--</span>
+      <span class="mobile-change-badge" id="mobile-change-badge">--</span>
+    </span>
+    <i class="fas fa-chevron-down mobile-symbol-arrow"></i>
   </div>
-  <div style="display:flex;align-items:center;gap:8px; cursor:pointer;" id="mobile-symbol-display" onclick="toggleMobileSymbolSearch()">
-    <span id="mobile-symbol-display" style="font-size:12px;font-weight:700;">BTC/USDT</span>
-    <span id="mobile-price-display" style="font-size:12px;font-weight:700;color:var(--up-color);">--</span>
-    <i class="fas fa-chevron-down" style="font-size:8px;color:var(--text-muted);"></i>
+  
+  <!-- Right: Actions -->
+  <div class="mobile-header-actions">
+    <button class="mobile-icon-btn" id="mobile-search-btn" title="Search">
+      <i class="fas fa-search"></i>
+    </button>
+    <button class="mobile-icon-btn" id="mobile-panel-toggle-btn" title="Tools">
+      <i class="fas fa-chart-bar"></i>
+    </button>
   </div>
 </div>
 
-<!-- Mobile Symbol Search Dropdown -->
-<div id="mobile-symbol-dropdown" style="display:none; position:fixed; top:44px; left:0; right:0; bottom:0; background:var(--bg-primary); z-index:9999; overflow-y:auto;">
-  <div style="padding:8px 10px; border-bottom:1px solid var(--border-primary);">
-    <div style="display:flex; gap:2px; background:var(--bg-tertiary); border-radius:6px; padding:2px; margin-bottom:8px;">
-      <button class="mobile-asset-btn active" data-asset="crypto" onclick="switchMobileAsset('crypto')" style="flex:1; padding:6px; border:none; background:var(--accent-primary); color:white; border-radius:4px; font-size:10px; cursor:pointer;">Crypto</button>
-      <button class="mobile-asset-btn" data-asset="stocks" onclick="switchMobileAsset('stocks')" style="flex:1; padding:6px; border:none; background:transparent; color:var(--text-secondary); border-radius:4px; font-size:10px; cursor:pointer;">Stocks</button>
-      <button class="mobile-asset-btn" data-asset="forex" onclick="switchMobileAsset('forex')" style="flex:1; padding:6px; border:none; background:transparent; color:var(--text-secondary); border-radius:4px; font-size:10px; cursor:pointer;">Forex</button>
-    </div>
-    <input type="text" id="mobile-symbol-input" placeholder="Search markets..." autocomplete="off" style="width:100%; padding:10px; background:var(--bg-tertiary); border:1px solid var(--border-primary); border-radius:8px; color:var(--text-primary); font-size:14px; outline:none;">
-    <button onclick="document.getElementById('mobile-symbol-dropdown').style.display='none'" style="position:absolute; top:60px; right:16px; width:28px; height:28px; display:flex; align-items:center; justify-content:center; border-radius:6px; background:transparent; border:none; color:var(--text-muted); font-size:16px; cursor:pointer;">✕</button>
+<!-- Mobile Symbol Search Dropdown (hidden by default) -->
+<div class="mobile-symbol-search-dropdown" id="mobile-symbol-search-dropdown">
+  <div class="mobile-search-input-wrapper">
+    <i class="fas fa-search mobile-search-icon"></i>
+    <input type="text" id="mobile-symbol-search-input" placeholder="Search markets..." autocomplete="off">
+    <button class="mobile-search-close-btn" id="mobile-search-close-btn">✕</button>
   </div>
-  <div id="mobile-symbol-results" style="padding:8px;"></div>
+  <div class="mobile-search-tabs">
+    <button class="mobile-search-tab active" data-tab="all">All</button>
+    <button class="mobile-search-tab" data-tab="crypto">Crypto</button>
+    <button class="mobile-search-tab" data-tab="stocks">Stocks</button>
+    <button class="mobile-search-tab" data-tab="forex">Forex</button>
+  </div>
+  <div class="mobile-search-results" id="mobile-search-results">
+    <!-- Results appear here -->
+  </div>
 </div>
 
   <!-- Desktop header (unchanged) -->
@@ -5829,18 +6371,44 @@ kbd {
     <!-- Center Content -->
     <main class="center-content">
       
-	  <!-- Mobile Timeframe Bar (visible on mobile, hidden on desktop) -->
-      <div class="mobile-timeframe-bar">
-        <button class="tf-btn" data-interval="1m">1m</button>
-        <button class="tf-btn" data-interval="5m">5m</button>
-        <button class="tf-btn active" data-interval="15m">15m</button>
-        <button class="tf-btn" data-interval="30m">30m</button>
-        <button class="tf-btn" data-interval="1h">1h</button>
-        <button class="tf-btn" data-interval="4h">4h</button>
-        <button class="tf-btn" data-interval="1d">1D</button>
-        <button class="tf-btn" data-interval="1w">1W</button>
-        <button class="tf-btn" data-interval="1M">1M</button>
-      </div>
+	  <!-- Mobile Timeframe Bar - Overlay on chart -->
+<div class="mobile-timeframe-overlay">
+  <button class="mobile-current-tf" id="mobile-current-tf">
+    <span id="mobile-tf-label">15m</span>
+    <i class="fas fa-chevron-down"></i>
+  </button>
+  <div class="mobile-tf-quick">
+    <button class="mobile-tf-pill" data-interval="1m">1m</button>
+    <button class="mobile-tf-pill" data-interval="5m">5m</button>
+    <button class="mobile-tf-pill active" data-interval="15m">15m</button>
+    <button class="mobile-tf-pill" data-interval="1h">1h</button>
+    <button class="mobile-tf-pill" data-interval="4h">4h</button>
+    <button class="mobile-tf-pill" data-interval="1d">1D</button>
+  </div>
+</div>
+
+<!-- Mobile Timeframe Modal -->
+<div class="mobile-tf-modal" id="mobile-tf-modal">
+  <div class="mobile-tf-modal-content">
+    <div class="mobile-tf-modal-header">
+      <h3>Timeframe</h3>
+      <button class="mobile-tf-modal-close">✕</button>
+    </div>
+    <div class="mobile-tf-grid">
+      <button class="mobile-tf-option" data-interval="1m">1m</button>
+      <button class="mobile-tf-option" data-interval="3m">3m</button>
+      <button class="mobile-tf-option" data-interval="5m">5m</button>
+      <button class="mobile-tf-option" data-interval="15m">15m</button>
+      <button class="mobile-tf-option" data-interval="30m">30m</button>
+      <button class="mobile-tf-option" data-interval="1h">1h</button>
+      <button class="mobile-tf-option" data-interval="2h">2h</button>
+      <button class="mobile-tf-option" data-interval="4h">4h</button>
+      <button class="mobile-tf-option" data-interval="1d">1D</button>
+      <button class="mobile-tf-option" data-interval="1w">1W</button>
+      <button class="mobile-tf-option" data-interval="1M">1M</button>
+    </div>
+  </div>
+</div>
 	  
       <!-- Chart Header -->
       <div class="chart-header">
@@ -7277,30 +7845,20 @@ kbd {
 
 <!-- Mobile Overlay -->
 <div class="mobile-overlay" id="mobile-overlay"></div>
-  
-  <!-- ============================================ -->
+
+<!-- ============================================ -->
 <!-- MOBILE RIGHT PANEL SLIDE-OUT -->
 <!-- ============================================ -->
 <div class="mobile-right-panel" id="mobile-right-panel">
   <div class="mobile-panel-header">
-    <span class="mobile-panel-title">Tools & Analytics</span>
-    <button class="mobile-panel-close" id="mobile-panel-close">
-      <i class="fas fa-times"></i>
-    </button>
+    <span class="mobile-panel-title"><i class="fas fa-chart-bar"></i> Tools & Analytics</span>
+    <button class="mobile-panel-close" id="mobile-panel-close">✕</button>
   </div>
-  <div class="mobile-panel-content" id="mobile-panel-content">
-    <!-- Content will be cloned from right sidebar -->
-  </div>
+  <div class="mobile-panel-content" id="mobile-panel-content"></div>
 </div>
 
-<!-- Mobile Right Panel Overlay -->
+<!-- Mobile Panel Overlay -->
 <div class="mobile-panel-overlay" id="mobile-panel-overlay"></div>
-
-<!-- Mobile Panel Toggle Button (floating) -->
-<button class="mobile-panel-toggle" id="mobile-panel-toggle">
-  <i class="fas fa-chart-bar"></i>
-</button>
-
   
 <script>
 // ============================================
@@ -7646,9 +8204,11 @@ createPriceChart() {
     }
   });
   
-  chart.subscribeCrosshairMove((param) => {
-    DrawingEngine.handleCrosshairMove(param);
-  });
+ chart.subscribeCrosshairMove((param) => {
+    if (DrawingEngine && typeof DrawingEngine.handleCrosshairMove === 'function') {
+        DrawingEngine.handleCrosshairMove(param);
+    }
+});
 },
 
 changeChartType(type) {
@@ -8039,39 +8599,41 @@ const chart = LightweightCharts.createChart(el, {
 },
 	
     
-  setupCrosshair() {
-  const tooltip = document.getElementById('crosshair-tooltip');
+setupCrosshair() {
   const chart = this.charts.price;
-  if(!chart || !tooltip) return;    
- chart.subscribeCrosshairMove((param) => {
-  if(!param.point || !param.time || !param.seriesData.get(this.mainSeries)) {
-    tooltip.classList.add('hidden');
-    return;
-  }
-  const data = param.seriesData.get(this.mainSeries);
-  if(!data) {
-    tooltip.classList.add('hidden');
-    return;
-  }
-  tooltip.classList.remove('hidden');
-  const timeEl = tooltip.querySelector('.crosshair-time');
-  const openEl = tooltip.querySelector('.crosshair-open');
-  const highEl = tooltip.querySelector('.crosshair-high');
-  const lowEl = tooltip.querySelector('.crosshair-low');
-  const closeEl = tooltip.querySelector('.crosshair-close');
+  if (!chart) return;
   
-  if(timeEl) timeEl.textContent = new Date(param.time*1000).toLocaleString();
-  if(openEl) openEl.textContent = data && data.open ? U.formatPrice(data.open) : '--';
-  if(highEl) highEl.textContent = data && data.high ? U.formatPrice(data.high) : '--';
-  if(lowEl) lowEl.textContent = data && data.low ? U.formatPrice(data.low) : '--';
-  if(closeEl) closeEl.textContent = data && data.close ? U.formatPrice(data.close) : '--';
+  chart.applyOptions({
+    crosshair: {
+      mode: 1,
+      vertLine: {
+        color: '#8b949e',
+        width: 1,
+        style: 2,
+        labelBackgroundColor: '#1c2128',
+        labelVisible: true
+      },
+      horzLine: {
+        color: '#8b949e',
+        width: 1,
+        style: 2,
+        labelBackgroundColor: '#1c2128',
+        labelVisible: true
+      }
+    }
+  });
   
-  const rect = document.getElementById('main-chart-pane')?.getBoundingClientRect();
-  if(rect) {
-    tooltip.style.left = Math.min(param.point.x+15, rect.width-200)+'px';
-    tooltip.style.top = Math.min(param.point.y-70, rect.height-150)+'px';
-  }
-});
+  chart.subscribeCrosshairMove((param) => {
+    if (param.point && param.time) {
+      if (DrawingEngine && typeof DrawingEngine.handleCrosshairMove === 'function') {
+        DrawingEngine.handleCrosshairMove(param);
+      }
+    } else {
+      if (DrawingEngine && typeof DrawingEngine.hideCrosshair === 'function') {
+        DrawingEngine.hideCrosshair();
+      }
+    }
+  });
 },
     
     
@@ -9056,21 +9618,29 @@ calculateAll() {
   dragging: null, dragOffset: null,
   selectedDrawing: null, hoveredDrawing: null,
   brushPoints: [],
+  crosshairMode: 'normal',
+crosshairVisible: false,
+crosshairPosition: null,
   
   init() {
-    this.canvas = document.getElementById('drawing-canvas');
-    if(!this.canvas) return;
-    this.ctx = this.canvas.getContext('2d');
-    this.resizeCanvas();
-    this.setupEventListeners();
-    
-    const saved = U.storage.get(CONFIG.STORAGE_KEYS.DRAWINGS,[]);
-    this.drawings = saved;
-    STATE.drawings = saved;
-    this.redraw();
-    
-    console.log('✅ Drawing Engine initialized');
-  },
+  this.canvas = document.getElementById('drawing-canvas');
+  if(!this.canvas) return;
+  this.ctx = this.canvas.getContext('2d');
+  
+  // Start with pointer-events disabled so chart can be interacted with
+  this.canvas.style.pointerEvents = 'none';
+  this.canvas.classList.remove('drawing-active');
+  
+  this.resizeCanvas();
+  this.setupEventListeners();
+  
+  const saved = U.storage.get(CONFIG.STORAGE_KEYS.DRAWINGS,[]);
+  this.drawings = saved;
+  STATE.drawings = saved;
+  this.redraw();
+  
+  console.log('✅ Drawing Engine initialized');
+},
   
   resizeCanvas() {
     const container = document.getElementById('main-chart-pane');
@@ -9081,17 +9651,166 @@ calculateAll() {
     this.canvas.style.height = container.clientHeight + 'px';
   },
   
-  setupEventListeners() {
-    this.canvas.addEventListener('mousedown', (e) => this.onMouseDown(e));
-    this.canvas.addEventListener('mousemove', (e) => this.onMouseMove(e));
-    this.canvas.addEventListener('mouseup', (e) => this.onMouseUp(e));
-    this.canvas.addEventListener('mouseleave', () => this.onMouseUp());
-    this.canvas.addEventListener('dblclick', (e) => this.onDoubleClick(e));
+setupEventListeners() {
+  this.canvas.addEventListener('mousedown', (e) => {
+    if (STATE.activeTool !== 'cursor') {
+      this.onMouseDown(e);
+    }
+  });
+  
+  this.canvas.addEventListener('mousemove', (e) => {
+    this.crosshairPosition = this.getMousePos(e);
     
-    this.canvas.addEventListener('touchstart', (e) => { e.preventDefault(); this.onMouseDown(e.touches[0]); });
-    this.canvas.addEventListener('touchmove', (e) => { e.preventDefault(); this.onMouseMove(e.touches[0]); });
-    this.canvas.addEventListener('touchend', (e) => { e.preventDefault(); this.onMouseUp(); });
-  },
+    if (STATE.activeTool !== 'cursor' || this.dragging) {
+      this.onMouseMove(e);
+    }
+    
+    if (STATE.activeTool === 'cursor') {
+      const hovered = this.findDrawingAt(this.crosshairPosition);
+      if (hovered !== this.hoveredDrawing) {
+        this.hoveredDrawing = hovered;
+        this.redraw();
+      }
+    }
+  });
+  
+  this.canvas.addEventListener('mouseup', (e) => {
+    if (STATE.activeTool !== 'cursor' || this.dragging) {
+      this.onMouseUp(e);
+    }
+  });
+  
+  this.canvas.addEventListener('mouseleave', () => {
+    this.crosshairPosition = null;
+    if (STATE.activeTool !== 'cursor') {
+      this.onMouseUp();
+    }
+    this.hoveredDrawing = null;
+    this.redraw();
+  });
+  
+  this.canvas.addEventListener('dblclick', (e) => {
+    if (STATE.activeTool !== 'cursor') {
+      this.onDoubleClick(e);
+    }
+  });
+  
+  this.canvas.addEventListener('touchstart', (e) => {
+    if (STATE.activeTool !== 'cursor') {
+      e.preventDefault();
+      this.onMouseDown(e.touches[0]);
+    }
+  }, { passive: false });
+  
+  this.canvas.addEventListener('touchmove', (e) => {
+    if (STATE.activeTool !== 'cursor') {
+      e.preventDefault();
+      this.onMouseMove(e.touches[0]);
+    }
+  }, { passive: false });
+  
+  this.canvas.addEventListener('touchend', (e) => {
+    if (STATE.activeTool !== 'cursor') {
+      e.preventDefault();
+      this.onMouseUp();
+    }
+  }, { passive: false });
+},
+  
+  handleCrosshairMove(param) {
+  if (!param || !param.point || !param.time) {
+    this.hideCrosshair();
+    return;
+  }
+  
+  this.crosshairVisible = true;
+  this.crosshairPosition = param.point;
+  
+  const data = param.seriesData.get(ChartEngine.mainSeries);
+  
+  if (data) {
+    this.updateCrosshairTooltip(param.point, data, param.time);
+  }
+  
+  if (STATE.activeTool === 'cursor') {
+    const hovered = this.findDrawingAt({
+      x: param.point.x,
+      y: param.point.y
+    });
+    
+    if (hovered !== this.hoveredDrawing) {
+      this.hoveredDrawing = hovered;
+      this.redraw();
+    }
+  }
+},
+
+updateCrosshairTooltip(point, data, time) {
+  const tooltip = document.getElementById('crosshair-tooltip');
+  if (!tooltip) return;
+  
+  const date = new Date(time * 1000);
+  const timeStr = date.toLocaleString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  });
+  
+  const formatPrice = typeof U !== 'undefined' && U.formatPrice ? U.formatPrice : (p) => {
+    if (p == null || isNaN(p)) return '--';
+    if (p >= 1000) return p.toFixed(2);
+    if (p >= 1) return p.toFixed(5);
+    return p.toFixed(8);
+  };
+  
+  const change = data.close - data.open;
+  const isPositive = change >= 0;
+  const o = formatPrice(data.open);
+  const h = formatPrice(data.high);
+  const l = formatPrice(data.low);
+  const c = formatPrice(data.close);
+  const changeStr = formatPrice(change);
+  const changePct = data.open !== 0 ? ((change / data.open) * 100).toFixed(2) : '0.00';
+  
+  tooltip.innerHTML = [
+    '<div style="font-size:11px;color:var(--text-muted);margin-bottom:6px;border-bottom:1px solid var(--border-primary);padding-bottom:4px;">' + timeStr + '</div>',
+    '<div style="display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:12px;font-family:\'SF Mono\',\'Monaco\',\'Menlo\',monospace;">',
+    '<span style="color:var(--text-muted);">O</span><span style="color:var(--text-primary);text-align:right;">' + o + '</span>',
+    '<span style="color:var(--text-muted);">H</span><span style="color:' + (isPositive ? 'var(--up-color)' : 'var(--text-primary)') + ';text-align:right;">' + h + '</span>',
+    '<span style="color:var(--text-muted);">L</span><span style="color:' + (!isPositive ? 'var(--down-color)' : 'var(--text-primary)') + ';text-align:right;">' + l + '</span>',
+    '<span style="color:var(--text-muted);">C</span><span style="color:' + (isPositive ? 'var(--up-color)' : 'var(--down-color)') + ';text-align:right;font-weight:700;">' + c + '</span>',
+    '</div>',
+    '<div style="margin-top:4px;font-size:10px;color:' + (isPositive ? 'var(--up-color)' : 'var(--down-color)') + ';text-align:right;border-top:1px solid var(--border-primary);padding-top:4px;">' + (isPositive ? '+' : '') + changeStr + ' (' + (isPositive ? '+' : '') + changePct + '%)</div>'
+  ].join('');
+  
+  tooltip.classList.remove('hidden');
+  const rect = document.getElementById('main-chart-pane')?.getBoundingClientRect();
+  if (rect) {
+    let left = point.x + 20;
+    let top = point.y - 80;
+    
+    if (left + 180 > rect.width) left = point.x - 190;
+    if (top < 10) top = 10;
+    if (top + 150 > rect.height) top = rect.height - 160;
+    
+    tooltip.style.left = left + 'px';
+    tooltip.style.top = top + 'px';
+  }
+},
+
+hideCrosshair() {
+  this.crosshairVisible = false;
+  const tooltip = document.getElementById('crosshair-tooltip');
+  if (tooltip) {
+    tooltip.classList.add('hidden');
+  }
+},
+
+  
   
   getMousePos(e) {
     const rect = this.canvas.getBoundingClientRect();
@@ -9732,21 +10451,39 @@ calculateAll() {
   },
   
   setTool(tool) {
-    STATE.activeTool = tool;
-    this.selectedDrawing = null;
-    this.dragging = null;
-    
-    if(this.canvas) {
-      if (tool === 'cursor') this.canvas.style.cursor = 'default';
-      else if (tool === 'text') this.canvas.style.cursor = 'text';
-      else if (tool === 'eraser') this.canvas.style.cursor = 'not-allowed';
-      else this.canvas.style.cursor = 'crosshair';
+  STATE.activeTool = tool;
+  this.selectedDrawing = null;
+  this.dragging = null;
+  
+  if(this.canvas) {
+    if (tool === 'cursor') {
+      this.canvas.classList.remove('drawing-active');
+      this.canvas.style.pointerEvents = 'none';
+    } else if (tool === 'text') {
+      this.canvas.classList.add('drawing-active');
+      this.canvas.style.pointerEvents = 'auto';
+      this.canvas.style.cursor = 'text';
+    } else if (tool === 'eraser') {
+      this.canvas.classList.add('drawing-active');
+      this.canvas.style.pointerEvents = 'auto';
+      this.canvas.style.cursor = 'not-allowed';
+    } else {
+      this.canvas.classList.add('drawing-active');
+      this.canvas.style.pointerEvents = 'auto';
+      this.canvas.style.cursor = 'crosshair';
     }
-    
-    $$('.tool-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tool === tool));
-    if(tool === 'measure') this.measurePoints = [];
-    Toast.info(`Tool: ${tool.replace(/-/g, ' ')}`);
   }
+  
+  $$('.tool-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tool === tool));
+  if(tool === 'measure') this.measurePoints = [];
+  
+  // Also update mobile sheet tools
+  document.querySelectorAll('.sheet-tool-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tool === tool);
+  });
+  
+  Toast.info(`Tool: ${tool.replace(/-/g, ' ')}`);
+},
 };
 
 // ============================================
@@ -12677,16 +13414,21 @@ function setupUI() {
     }
     
     // Toggle drawings
-    const toggleDrawings = document.getElementById('toggle-drawings-btn');
-    if(toggleDrawings) {
-        toggleDrawings.addEventListener('click', function() {
-            STATE.drawingsVisible = !STATE.drawingsVisible;
-            this.classList.toggle('active', STATE.drawingsVisible);
-            if(DrawingEngine.canvas) {
-                DrawingEngine.canvas.style.display = STATE.drawingsVisible ? 'block' : 'none';
+    // Find the toggle drawings handler and update:
+const toggleDrawings = document.getElementById('toggle-drawings-btn');
+if(toggleDrawings) {
+    toggleDrawings.addEventListener('click', function() {
+        STATE.drawingsVisible = !STATE.drawingsVisible;
+        this.classList.toggle('active', STATE.drawingsVisible);
+        if(DrawingEngine.canvas) {
+            DrawingEngine.canvas.style.display = STATE.drawingsVisible ? 'block' : 'none';
+            // Also disable pointer events when hidden
+            if (!STATE.drawingsVisible) {
+                DrawingEngine.canvas.style.pointerEvents = 'none';
             }
-        });
-    }
+        }
+    });
+}
     
     // Toggle grid
     const toggleGrid = document.getElementById('toggle-grid-btn');
@@ -14598,6 +15340,84 @@ function initTVPanels() {
 if (window.innerWidth <= 768) {
   console.log('📱 Setting up mobile features...');
   
+  // ============================================
+// FIX MOBILE CHART LAYOUT
+// ============================================
+function fixMobileChartLayout() {
+  if (window.innerWidth > 768) return;
+  
+  // Force volume pane to always be visible
+  const volumePane = document.getElementById('volume-chart-pane');
+  if (volumePane) {
+    volumePane.style.cssText = `
+      flex: 0 0 80px !important;
+      display: flex !important;
+      height: 80px !important;
+      min-height: 80px !important;
+      max-height: 80px !important;
+      width: 100% !important;
+      overflow: hidden;
+    `;
+  }
+  
+  // Fix main chart height
+  const mainPane = document.getElementById('main-chart-pane');
+  if (mainPane) {
+    mainPane.style.cssText = `
+      flex: 0 0 auto !important;
+      min-height: 280px !important;
+      height: 42vh !important;
+      max-height: 45vh !important;
+    `;
+  }
+  
+  // Hide empty indicator container
+  const indicatorContainer = document.getElementById('indicator-panes-container');
+  if (indicatorContainer) {
+    if (indicatorContainer.children.length === 0) {
+      indicatorContainer.style.display = 'none';
+    } else {
+      indicatorContainer.style.display = 'flex';
+    }
+    
+    // Watch for changes
+    const observer = new MutationObserver(() => {
+      if (indicatorContainer.children.length === 0) {
+        indicatorContainer.style.display = 'none';
+      } else {
+        indicatorContainer.style.display = 'flex';
+      }
+      // Resize charts after indicator changes
+      setTimeout(() => {
+        if (typeof ChartEngine !== 'undefined') {
+          ChartEngine.resizeAll();
+        }
+      }, 200);
+    });
+    observer.observe(indicatorContainer, { childList: true });
+  }
+  
+  // Ensure chart container is scrollable
+  const chartContainer = document.querySelector('.chart-container');
+  if (chartContainer) {
+    chartContainer.style.overflowY = 'auto';
+    chartContainer.style.overflowX = 'hidden';
+  }
+  
+  // Resize all charts
+  setTimeout(() => {
+    if (typeof ChartEngine !== 'undefined') {
+      ChartEngine.resizeAll();
+    }
+  }, 500);
+}
+
+// Call on load and resize
+fixMobileChartLayout();
+window.addEventListener('resize', () => {
+  setTimeout(fixMobileChartLayout, 300);
+});
+  
   // === SEARCH ===
   const searchOverlay = document.getElementById('mobile-search-overlay');
   const searchInput = document.getElementById('mobile-search-input');
@@ -14822,242 +15642,9 @@ document.querySelectorAll('.mobile-tf-pill').forEach(pill => {
   });
 });
 
-// Setup mobile search button in header
-// ============================================
-// MOBILE SEARCH - COMPLETE WORKING VERSION
-// ============================================
-(function setupMobileSearch() {
-  const searchBtn = document.getElementById('m-search-btn');
-  const searchOverlay = document.getElementById('mobile-search-overlay');
-  const searchClose = document.getElementById('m-search-close');
-  const searchInput = document.getElementById('m-search-input');
-  const searchResults = document.getElementById('m-search-results');
-  
-  if (!searchOverlay) return;
-  
-  // OPEN SEARCH
-  function openSearch() {
-    searchOverlay.classList.add('visible');
-    setTimeout(() => searchInput?.focus(), 300);
-  }
-  
-  // CLOSE SEARCH
-  function closeSearch() {
-    searchOverlay.classList.remove('visible');
-    if (searchInput) searchInput.value = '';
-    if (searchResults) searchResults.innerHTML = '';
-  }
-  
-  // Search button click
-  if (searchBtn) {
-    searchBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      openSearch();
-    });
-  }
-  
-  // Close button
-  if (searchClose) {
-    searchClose.addEventListener('click', closeSearch);
-  }
-  
-  // Close on overlay background click
-  searchOverlay.addEventListener('click', function(e) {
-    if (e.target === searchOverlay) closeSearch();
-  });
-  
-  // Close on Escape key
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape' && searchOverlay.classList.contains('visible')) {
-      closeSearch();
-    }
-  });
-  
-  // Keyboard shortcut "/" to open search
-  document.addEventListener('keydown', function(e) {
-    if (e.key === '/' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
-      e.preventDefault();
-      openSearch();
-    }
-  });
-  
-  
-  
-  console.log('✅ Mobile search ready');
-})();
-(function() {
-  const input = document.getElementById('m-search-input');
-  const resultsDiv = document.getElementById('m-search-results');
-  if (!input || !resultsDiv) return;
 
-  input.addEventListener('input', function() {
-    const query = this.value.trim().toUpperCase();
-    if (query.length < 1) {
-      resultsDiv.innerHTML = '';
-      return;
-    }
 
-    // Get symbols from Binance list (populated by DataManager) or fallback to config
-    const symbols = (typeof STATE !== 'undefined' && STATE.availableSymbols && STATE.availableSymbols.length > 0)
-      ? STATE.availableSymbols
-      : (typeof CONFIG !== 'undefined' ? CONFIG.TICKER_SYMBOLS.map(s => ({ symbol: s, baseAsset: s.replace('USDT', '') })) : []);
 
-    const matches = symbols
-      .filter(s => s.symbol.includes(query) || (s.baseAsset && s.baseAsset.includes(query)))
-      .slice(0, 15);
-
-    if (matches.length === 0) {
-      resultsDiv.innerHTML = '<div style="padding:30px;text-align:center;color:var(--text-muted);">No results</div>';
-      return;
-    }
-
-    resultsDiv.innerHTML = matches.map(s => {
-      const displaySymbol = s.symbol.replace('USDT', '/USDT');
-      return `
-        <div class="m-search-result-item" data-symbol="${s.symbol}" style="display:flex;justify-content:space-between;padding:12px;border-bottom:1px solid var(--border-primary);cursor:pointer;">
-          <div>
-            <div style="font-weight:600;font-size:14px;">${displaySymbol}</div>
-            <div style="font-size:11px;color:var(--text-muted);">${s.baseAsset} · Binance</div>
-          </div>
-          <span style="color:var(--accent-primary);">→</span>
-        </div>
-      `;
-    }).join('');
-
-    // Add click handlers to each result
-    resultsDiv.querySelectorAll('.m-search-result-item').forEach(item => {
-      item.addEventListener('click', function() {
-        const symbol = this.getAttribute('data-symbol');
-        if (symbol && typeof window.TV !== 'undefined' && window.TV.switchSymbol) {
-          window.TV.switchSymbol(symbol);
-        }
-        // Close the overlay
-        const overlay = document.getElementById('mobile-search-overlay');
-        if (overlay) overlay.classList.remove('visible');
-        input.value = '';
-        resultsDiv.innerHTML = '';
-      });
-    });
-  });
-})();
-  }
-
-// ============================================
-// MOBILE BOTTOM SHEET 
-// ============================================
-// ============================================
-// MOBILE BOTTOM SHEET - WORKING VERSION
-// ============================================
-(function initMobile() {
-  // Only run on mobile
-  if (window.innerWidth > 768) return;
-  
-  console.log('📱 Initializing mobile view...');
-  
-  const sheet = document.getElementById('mobile-bottom-sheet');
-  const handle = document.getElementById('sheet-handle');
-  const overlay = document.getElementById('mobile-overlay');
-  const chartContainer = document.querySelector('.chart-container');
-  const sheetContent = document.getElementById('sheet-content');
-  
-  if (!sheet) {
-    console.error('Mobile sheet not found!');
-    return;
-  }
-  
-  // Sheet state management
-  let sheetState = 'collapsed';
-  let startY = 0;
-  let currentY = 0;
-  let isDragging = false;
-  
-  function setSheetState(state) {
-    sheetState = state;
-    
-    switch(state) {
-      case 'collapsed':
-        sheet.style.transform = 'translateY(calc(100% - 52px))';
-        sheet.style.height = '55vh';
-        if (overlay) overlay.classList.remove('visible');
-        if (chartContainer) chartContainer.classList.remove('sheet-open');
-        break;
-      case 'expanded':
-        sheet.style.transform = 'translateY(30%)';
-        sheet.style.height = '55vh';
-        if (overlay) overlay.classList.remove('visible');
-        if (chartContainer) chartContainer.classList.remove('sheet-open');
-        break;
-      case 'full':
-        sheet.style.transform = 'translateY(0)';
-        sheet.style.height = '75vh';
-        if (overlay) overlay.classList.add('visible');
-        if (chartContainer) chartContainer.classList.add('sheet-open');
-        break;
-    }
-  }
-  
-  // Touch events for dragging
-  handle.addEventListener('touchstart', function(e) {
-    startY = e.touches[0].clientY;
-    isDragging = true;
-    sheet.style.transition = 'none';
-  }, { passive: true });
-  
-  handle.addEventListener('touchmove', function(e) {
-    if (!isDragging) return;
-    currentY = e.touches[0].clientY;
-    const diff = currentY - startY;
-    const windowHeight = window.innerHeight;
-    
-    let baseTranslate;
-    if (sheetState === 'collapsed') baseTranslate = windowHeight - 100;
-    else if (sheetState === 'expanded') baseTranslate = windowHeight * 0.3;
-    else baseTranslate = 0;
-    
-    let newTranslate = baseTranslate + diff;
-    newTranslate = Math.max(0, Math.min(newTranslate, windowHeight - 100));
-    sheet.style.transform = `translateY(${newTranslate}px)`;
-  }, { passive: true });
-  
-  handle.addEventListener('touchend', function() {
-    isDragging = false;
-    sheet.style.transition = 'transform 0.35s cubic-bezier(0.4, 0, 0.2, 1)';
-    
-    const diff = currentY - startY;
-    
-    if (Math.abs(diff) < 10) {
-      // Tap detected - cycle states
-      if (sheetState === 'collapsed') setSheetState('expanded');
-      else if (sheetState === 'expanded') setSheetState('full');
-      else setSheetState('collapsed');
-    } else if (diff < -30) {
-      // Swipe up
-      if (sheetState === 'collapsed') setSheetState('expanded');
-      else setSheetState('full');
-    } else if (diff > 30) {
-      // Swipe down
-      if (sheetState === 'full') setSheetState('expanded');
-      else setSheetState('collapsed');
-    } else {
-      setSheetState(sheetState);
-    }
-  });
-  
-  // Click on handle also cycles
-  handle.addEventListener('click', function(e) {
-    if (isDragging) { isDragging = false; return; }
-    if (sheetState === 'collapsed') setSheetState('expanded');
-    else if (sheetState === 'expanded') setSheetState('full');
-    else setSheetState('collapsed');
-  });
-  
-  // Overlay click = collapse
-  if (overlay) {
-    overlay.addEventListener('click', function() {
-      setSheetState('collapsed');
-    });
-  }
   
   // ============================================
   // TAB SWITCHING
@@ -15368,58 +15955,63 @@ document.getElementById('mobile-search-overlay')?.addEventListener('click', func
   }, 2000);
   
   console.log('✅ Mobile sheet ready! Click tabs to use.');
-})();
+};
 
 // ============================================
 // MOBILE RIGHT PANEL SLIDE-OUT
+// ============================================
+// ============================================
+// MOBILE RIGHT PANEL SLIDE-OUT - SINGLE WORKING VERSION
 // ============================================
 function setupMobileRightPanel() {
   if (window.innerWidth > 768) return;
   
   const panel = document.getElementById('mobile-right-panel');
   const overlay = document.getElementById('mobile-panel-overlay');
-  const toggleBtn = document.getElementById('mobile-panel-toggle');
+  const toggleBtn = document.getElementById('mobile-panel-toggle-btn');
   const closeBtn = document.getElementById('mobile-panel-close');
-  const panelContent = document.getElementById('mobile-panel-content');
   const rightSidebar = document.getElementById('right-sidebar');
   
-  if (!panel || !rightSidebar) return;
-  
-  // Clone right sidebar content into mobile panel
-  function cloneContent() {
-    if (panelContent && rightSidebar) {
-      panelContent.innerHTML = rightSidebar.innerHTML;
-    }
+  if (!panel) {
+    console.warn('Mobile right panel element not found');
+    return;
   }
   
   // Open panel
   function openPanel() {
     panel.classList.add('open');
-    overlay.classList.add('visible');
-    toggleBtn.classList.add('hidden');
-    document.body.style.overflow = 'hidden';
-    cloneContent(); // Refresh content
+    if (overlay) overlay.classList.add('visible');
+    
+    // Clone right sidebar content into panel
+    if (rightSidebar) {
+      const contentDiv = document.getElementById('mobile-panel-content');
+      if (contentDiv) {
+        contentDiv.innerHTML = rightSidebar.innerHTML;
+      }
+    }
   }
   
   // Close panel
   function closePanel() {
     panel.classList.remove('open');
-    overlay.classList.remove('visible');
-    toggleBtn.classList.remove('hidden');
-    document.body.style.overflow = '';
+    if (overlay) overlay.classList.remove('visible');
   }
   
-  // Toggle button
+  // Open panel via toggle button
   if (toggleBtn) {
-    toggleBtn.addEventListener('click', openPanel);
+    toggleBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      openPanel();
+    });
   }
   
-  // Close button
+  // Close panel via close button
   if (closeBtn) {
     closeBtn.addEventListener('click', closePanel);
   }
   
-  // Overlay click to close
+  // Close panel via overlay click
   if (overlay) {
     overlay.addEventListener('click', closePanel);
   }
@@ -15427,37 +16019,265 @@ function setupMobileRightPanel() {
   // Swipe to close
   let touchStartX = 0;
   if (panel) {
-    panel.addEventListener('touchstart', (e) => {
+    panel.addEventListener('touchstart', function(e) {
       touchStartX = e.touches[0].clientX;
     }, { passive: true });
     
-    panel.addEventListener('touchmove', (e) => {
+    panel.addEventListener('touchmove', function(e) {
       const diff = e.touches[0].clientX - touchStartX;
-      if (diff > 50) {
+      if (diff > 60) {
         closePanel();
       }
     }, { passive: true });
   }
   
-  // Close on Escape key
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && panel.classList.contains('open')) {
-      closePanel();
-    }
-  });
-  
-  // Initial clone
-  cloneContent();
-  
-  // Refresh content periodically
-  setInterval(cloneContent, 5000);
-  
   console.log('✅ Mobile right panel ready');
 }
 
+// ============================================
+// MOBILE SYMBOL SEARCH - WORKING VERSION
+// ============================================
+function setupMobileSymbolSearch() {
+  if (window.innerWidth > 768) return;
+  
+  const symbolArea = document.getElementById('mobile-symbol-area');
+  const searchDropdown = document.getElementById('mobile-symbol-search-dropdown');
+  const searchInput = document.getElementById('mobile-symbol-search-input');
+  const searchClose = document.getElementById('mobile-search-close-btn');
+  const searchResults = document.getElementById('mobile-search-results');
+  
+  if (!symbolArea || !searchDropdown) {
+    console.warn('Mobile search elements not found');
+    return;
+  }
+  
+  // Default symbols for initial display
+  const defaultSymbols = [
+    { symbol: 'BTCUSDT', name: 'Bitcoin', type: 'crypto' },
+    { symbol: 'ETHUSDT', name: 'Ethereum', type: 'crypto' },
+    { symbol: 'BNBUSDT', name: 'BNB', type: 'crypto' },
+    { symbol: 'SOLUSDT', name: 'Solana', type: 'crypto' },
+    { symbol: 'XRPUSDT', name: 'Ripple', type: 'crypto' },
+    { symbol: 'AAPL', name: 'Apple Inc.', type: 'stocks' },
+    { symbol: 'TSLA', name: 'Tesla Inc.', type: 'stocks' },
+    { symbol: 'MSFT', name: 'Microsoft Corp.', type: 'stocks' },
+    { symbol: 'EURUSD', name: 'Euro/US Dollar', type: 'forex' },
+    { symbol: 'GBPUSD', name: 'Pound/US Dollar', type: 'forex' },
+  ];
+  
+  // Render search results
+  function showResults(symbols) {
+    if (!searchResults) return;
+    
+    if (!symbols || symbols.length === 0) {
+      searchResults.innerHTML = '<div style="padding:30px;text-align:center;color:var(--text-muted);font-size:14px;">No results found</div>';
+      return;
+    }
+    
+    searchResults.innerHTML = symbols.map(function(s) {
+      var displaySym = s.symbol.indexOf('USDT') > -1 ? s.symbol.replace('USDT', '/USDT') : s.symbol;
+      var typeLabel = s.type === 'crypto' ? 'Crypto' : s.type === 'stocks' ? 'Stock' : 'Forex';
+      var bgColor = s.type === 'crypto' ? 'rgba(88,166,255,0.1)' : s.type === 'stocks' ? 'rgba(38,166,154,0.1)' : 'rgba(255,152,0,0.1)';
+      var txtColor = s.type === 'crypto' ? '#58a6ff' : s.type === 'stocks' ? '#26a69a' : '#ff9800';
+      
+      return '<div class="mobile-search-result-item" data-symbol="' + s.symbol + '" data-type="' + s.type + '" style="display:flex;justify-content:space-between;align-items:center;padding:14px 12px;border-bottom:1px solid var(--border-primary);cursor:pointer;">' +
+        '<div>' +
+          '<div style="font-weight:600;font-size:14px;color:var(--text-primary);">' + displaySym + '</div>' +
+          '<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">' + (s.name || s.symbol) + '</div>' +
+        '</div>' +
+        '<span style="font-size:10px;padding:3px 8px;border-radius:10px;font-weight:600;background:' + bgColor + ';color:' + txtColor + ';">' + typeLabel + '</span>' +
+      '</div>';
+    }).join('');
+    
+    // Add click handlers
+    searchResults.querySelectorAll('.mobile-search-result-item').forEach(function(item) {
+      item.addEventListener('click', function() {
+        var symbol = this.getAttribute('data-symbol');
+        var type = this.getAttribute('data-type');
+        
+        if (type) STATE.assetType = type;
+        if (window.TV && window.TV.switchSymbol) {
+          window.TV.switchSymbol(symbol);
+        }
+        
+        // Update mobile header display
+        var nameEl = document.getElementById('mobile-symbol-name');
+        if (nameEl) nameEl.textContent = symbol.indexOf('USDT') > -1 ? symbol.replace('USDT', '/USDT') : symbol;
+        
+        // Close search dropdown
+        searchDropdown.classList.remove('open');
+        if (searchInput) searchInput.value = '';
+      });
+    });
+  }
+  
+  // Open search when tapping symbol area
+  symbolArea.addEventListener('click', function() {
+    searchDropdown.classList.add('open');
+    if (searchInput) {
+      searchInput.value = '';
+      searchInput.focus();
+    }
+    showResults(defaultSymbols);
+  });
+  
+  // Close search
+  if (searchClose) {
+    searchClose.addEventListener('click', function() {
+      searchDropdown.classList.remove('open');
+    });
+  }
+  
+  // Search on input
+  if (searchInput) {
+    searchInput.addEventListener('input', function() {
+      var query = this.value.trim().toUpperCase();
+      
+      if (query.length < 1) {
+        showResults(defaultSymbols);
+        return;
+      }
+      
+      var results = [];
+      
+      // Search crypto symbols from Binance
+      if (STATE.availableSymbols && STATE.availableSymbols.length) {
+        var cryptoMatches = STATE.availableSymbols
+          .filter(function(s) { return s.symbol.indexOf(query) > -1 || s.baseAsset.indexOf(query) > -1; })
+          .slice(0, 8)
+          .map(function(s) { return { symbol: s.symbol, name: s.baseAsset, type: 'crypto' }; });
+        results = results.concat(cryptoMatches);
+      }
+      
+      // Search stock symbols
+      if (STATE.stockSymbols && STATE.stockSymbols.length) {
+        var stockMatches = STATE.stockSymbols
+          .filter(function(s) { return s.symbol.indexOf(query) > -1 || (s.description && s.description.toUpperCase().indexOf(query) > -1); })
+          .slice(0, 5)
+          .map(function(s) { return { symbol: s.symbol, name: s.description || s.symbol, type: 'stocks' }; });
+        results = results.concat(stockMatches);
+      }
+      
+      // Fallback to defaults
+      if (results.length === 0) {
+        results = defaultSymbols.filter(function(s) {
+          return s.symbol.indexOf(query) > -1 || s.name.toUpperCase().indexOf(query) > -1;
+        });
+      }
+      
+      showResults(results);
+    });
+  }
+  
+  console.log('✅ Mobile symbol search ready');
+}
+
+
+// ============================================
+// MOBILE TIMEFRAME - WORKING VERSION
+// ============================================
+function setupMobileTimeframe() {
+  if (window.innerWidth > 768) return;
+  
+  var currentTfBtn = document.getElementById('mobile-current-tf');
+  var tfModal = document.getElementById('mobile-tf-modal');
+  var tfLabel = document.getElementById('mobile-tf-label');
+  
+  // Open timeframe modal
+  if (currentTfBtn) {
+    currentTfBtn.addEventListener('click', function() {
+      var currentInterval = STATE.interval || '15m';
+      document.querySelectorAll('.mobile-tf-option').forEach(function(btn) {
+        btn.classList.toggle('active', btn.getAttribute('data-interval') === currentInterval);
+      });
+      if (tfModal) tfModal.classList.add('open');
+    });
+  }
+  
+  // Close modal
+  var modalClose = document.querySelector('.mobile-tf-modal-close');
+  if (modalClose) {
+    modalClose.addEventListener('click', function() {
+      if (tfModal) tfModal.classList.remove('open');
+    });
+  }
+  
+  // Close on overlay click
+  if (tfModal) {
+    tfModal.addEventListener('click', function(e) {
+      if (e.target === tfModal) tfModal.classList.remove('open');
+    });
+  }
+  
+  // Timeframe option click
+  document.querySelectorAll('.mobile-tf-option').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var interval = this.getAttribute('data-interval');
+      if (window.TV) window.TV.switchInterval(interval);
+      if (tfLabel) tfLabel.textContent = interval;
+      
+      document.querySelectorAll('.mobile-tf-option').forEach(function(b) { b.classList.remove('active'); });
+      this.classList.add('active');
+      
+      document.querySelectorAll('.mobile-tf-pill').forEach(function(b) {
+        b.classList.toggle('active', b.getAttribute('data-interval') === interval);
+      });
+      
+      if (tfModal) tfModal.classList.remove('open');
+    });
+  });
+  
+  // Quick timeframe pill click
+  document.querySelectorAll('.mobile-tf-pill').forEach(function(pill) {
+    pill.addEventListener('click', function() {
+      var interval = this.getAttribute('data-interval');
+      if (window.TV) window.TV.switchInterval(interval);
+      if (tfLabel) tfLabel.textContent = interval;
+      
+      document.querySelectorAll('.mobile-tf-pill').forEach(function(p) { p.classList.remove('active'); });
+      this.classList.add('active');
+    });
+  });
+  
+  // Set initial state
+  if (tfLabel) tfLabel.textContent = STATE.interval || '15m';
+  
+  console.log('✅ Mobile timeframe ready');
+}
+// ============================================
+// UPDATE MOBILE SYMBOL DISPLAY
+// ============================================
+function updateMobileSymbolDisplay(symbol) {
+  const nameEl = document.getElementById('mobile-symbol-name');
+  if (nameEl) nameEl.textContent = symbol.replace('USDT', '/USDT');
+}
+
+setInterval(() => {
+  if (STATE.currentPrice) {
+    const priceEl = document.getElementById('mobile-price');
+    const changeEl = document.getElementById('mobile-change-badge');
+    if (priceEl) {
+      priceEl.textContent = U.formatPrice(STATE.currentPrice);
+      priceEl.style.color = (STATE.change24h || 0) >= 0 ? 'var(--up-color)' : 'var(--down-color)';
+    }
+    if (changeEl) {
+      const change = STATE.change24h || 0;
+      changeEl.textContent = (change >= 0 ? '+' : '') + U.formatNum(change, 2) + '%';
+      changeEl.className = 'mobile-change-badge ' + (change >= 0 ? 'up' : 'down');
+    }
+  }
+  if (STATE.symbol) {
+    updateMobileSymbolDisplay(STATE.symbol);
+  }
+}, 2000);
+
+
 // Call this in your mobile initialization
 if (window.innerWidth <= 768) {
+  setupMobileSymbolSearch();
+  setupMobileTimeframe();
   setupMobileRightPanel();
+  fixMobileChartLayout();
 }
 
 })();
