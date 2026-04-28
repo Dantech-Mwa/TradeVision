@@ -6025,7 +6025,10 @@ kbd {
     display: block !important;
   }
   
-    /* ========== CHART LAYOUT ========== */
+   /* ============================================ */
+/* MOBILE CHART LAYOUT - PROFESSIONAL FIX V4.0  */
+/* ============================================ */
+@media (max-width: 768px) {
   .main-layout {
     display: flex !important;
     flex-direction: column !important;
@@ -6051,23 +6054,29 @@ kbd {
     overflow-y: auto !important;
     overflow-x: hidden !important;
     -webkit-overflow-scrolling: touch;
+    /* KEY FIX: Allow vertical scroll, but let chart handle pinch zoom */
+    touch-action: pan-y pinch-zoom;
+    overscroll-behavior-y: contain;
   }
   
-  /* Main price chart - fills remaining space */
+  /* Main price chart - uses flex proportions, not fixed vh */
   #main-chart-pane {
-    flex: 1 1 auto !important;
+    flex: 1 1 55%;  /* Takes 55% of available space */
     min-height: 200px !important;
     max-height: none !important;
     position: relative;
     overflow: hidden;
+    /* Chart canvas inside should only handle horizontal pan + pinch */
+    touch-action: pinch-zoom pan-x;
   }
   
   #price-chart {
     width: 100% !important;
     height: 100% !important;
+    touch-action: pinch-zoom pan-x;  /* Allow only horizontal pan + zoom */
   }
   
-  /* Volume chart - fixed height, only shown when volume exists */
+  /* Volume chart - consistent fixed height */
   #volume-chart-pane {
     flex: 0 0 80px !important;
     display: flex !important;
@@ -6077,6 +6086,7 @@ kbd {
     width: 100% !important;
     overflow: hidden;
     border-top: 1px solid var(--border-primary);
+    touch-action: pinch-zoom pan-x;
   }
   
   #volume-chart {
@@ -6084,41 +6094,51 @@ kbd {
     height: 100% !important;
   }
 
-  /* Indicator panes - HIDDEN when empty, VISIBLE when has content */
+  /* Indicator panes - flex space sharing */
   .indicator-panes-container {
-    flex: 0 0 auto !important;
-    display: none !important;  /* HIDDEN BY DEFAULT */
+    flex: 0 1 auto !important;
+    display: none !important;  /* Hidden when empty */
     flex-direction: column !important;
-    max-height: none !important;
-    overflow-y: visible !important;
+    max-height: 45% !important;  /* Maximum 45% of container */
+    overflow-y: auto !important;
     overflow-x: hidden !important;
     width: 100% !important;
     padding: 0 !important;
     margin: 0 !important;
-    border-top: 1px solid var(--border-primary);
+    border-top: 2px solid var(--border-primary);
+    /* Allow scrolling within indicator panes */
+    touch-action: pan-y pinch-zoom;
+    -webkit-overflow-scrolling: touch;
   }
   
-  /* Show indicator container only when it has children */
   .indicator-panes-container:not(:empty) {
     display: flex !important;
   }
   
   .chart-pane-indicator {
-    flex: 0 0 90px !important;
+    flex: 0 0 100px !important;
     min-height: 90px !important;
-    max-height: 100px !important;
+    max-height: 130px !important;
     display: flex !important;
     flex-direction: column !important;
     border-bottom: 1px solid var(--border-primary);
     overflow: hidden;
     width: 100% !important;
+    touch-action: pinch-zoom pan-x;  /* Each indicator pane handles own horizontal */
   }
   
   .chart-pane-indicator:last-child {
     border-bottom: none;
-    padding-bottom: 5px !important;
+    padding-bottom: 10px !important;
     margin-bottom: 5px !important;
   }
+  
+  .chart-pane-indicator .chart-canvas {
+    flex: 1 1 auto;
+    min-height: 70px !important;
+    width: 100% !important;
+  }
+}
   
   /* ========== FOOTER ========== */
   .footer {
