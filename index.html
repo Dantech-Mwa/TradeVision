@@ -9860,160 +9860,313 @@ kbd {
 <div class="mobile-panel-overlay" id="mobile-panel-overlay"></div>
   
 
-  <!-- Load engine from PRIVATE Vercel backend -->
-  <script src="https://tradevision-backend.vercel.app/engine.js"></script>
-  
-  <!-- UI Event Handlers (Minimal - just binds to engine) -->
-  <script>
+  <!-- ============================================ -->
+<!-- LOAD ENGINE FROM VERCEL (PRIVATE BACKEND)    -->
+<!-- ============================================ -->
+<script src="https://tradevision-backend.vercel.app/engine.js"></script>
+
+<!-- ============================================ -->
+<!-- UI EVENT HANDLERS (Only UI binding)          -->
+<!-- ============================================ -->
+<script>
+  (function() {
+    'use strict';
+    
+    // Wait for DOM to be ready
     document.addEventListener('DOMContentLoaded', function() {
-      // Wait for engine to load
+      console.log('📱 DOM ready, waiting for engine...');
+      
+      // Wait for engine to load from Vercel
       const checkEngine = setInterval(function() {
         if (window.TradeVisionEngine) {
           clearInterval(checkEngine);
+          console.log('✅ Engine loaded from Vercel, initializing...');
           
           // Initialize engine with config
           window.TradeVisionEngine.init({
-            symbol: 'BTCUSDT',
-            interval: '15m'
+            symbol: window.TRADEVISION_CONFIG.DEFAULT_SYMBOL || 'BTCUSDT',
+            interval: window.TRADEVISION_CONFIG.DEFAULT_INTERVAL || '15m'
           });
           
-          console.log('✅ TradeVision Engine initialized');
+          // Bind all UI events
+          bindUIEvents();
         }
       }, 100);
       
-      // Bind UI Events
-      function bindEvents() {
-        // Symbol search
-        const symbolSearch = document.getElementById('symbol-search');
-        if (symbolSearch) {
-          symbolSearch.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter' && window.TradeVisionEngine) {
-              window.TradeVisionEngine.changeSymbol(this.value);
-            }
-          });
+      // Timeout after 10 seconds
+      setTimeout(function() {
+        if (!window.TradeVisionEngine) {
+          console.error('❌ Engine failed to load from Vercel');
+          showErrorMessage('Failed to load trading engine. Please refresh the page.');
         }
-        
-        // Symbol display click
-        const symbolDisplay = document.getElementById('symbol-display');
-        if (symbolDisplay) {
-          symbolDisplay.addEventListener('click', function() {
-            document.getElementById('symbol-dropdown')?.classList.toggle('active');
-          });
-        }
-        
-        // Timeframe buttons
-        document.querySelectorAll('.tf-btn').forEach(function(btn) {
-          btn.addEventListener('click', function() {
-            if (window.TradeVisionEngine) {
-              window.TradeVisionEngine.changeInterval(this.dataset.interval);
-            }
-          });
-        });
-        
-        // Indicators button
-        const indicatorsBtn = document.getElementById('indicators-btn');
-        if (indicatorsBtn) {
-          indicatorsBtn.addEventListener('click', function() {
-            if (window.TradeVisionEngine) {
-              window.TradeVisionEngine.showIndicatorsModal();
-            }
-          });
-        }
-        
-        // Drawing tools button
-        const drawingBtn = document.getElementById('drawing-tools-btn');
-        if (drawingBtn) {
-          drawingBtn.addEventListener('click', function() {
-            if (window.TradeVisionEngine) {
-              window.TradeVisionEngine.showDrawingTools();
-            }
-          });
-        }
-        
-        // Market depth button
-        const depthBtn = document.getElementById('market-depth-btn');
-        if (depthBtn) {
-          depthBtn.addEventListener('click', function() {
-            const modal = document.getElementById('market-depth-modal');
-            if (modal) modal.classList.add('visible');
-          });
-        }
-        
-        // News button
-        const newsBtn = document.getElementById('news-btn');
-        if (newsBtn) {
-          newsBtn.addEventListener('click', function() {
-            const modal = document.getElementById('news-modal');
-            if (modal) modal.classList.add('visible');
-          });
-        }
-        
-        // Settings button
-        const settingsBtn = document.getElementById('settings-btn');
-        if (settingsBtn) {
-          settingsBtn.addEventListener('click', function() {
-            const modal = document.getElementById('settings-modal');
-            if (modal) modal.classList.add('visible');
-          });
-        }
-        
-        // Theme toggle
-        const themeBtn = document.getElementById('theme-toggle-btn');
-        if (themeBtn) {
-          themeBtn.addEventListener('click', function() {
-            if (window.TradeVisionEngine) {
-              window.TradeVisionEngine.toggleTheme();
-            }
-          });
-        }
-        
-        // Fullscreen
-        const fullscreenBtn = document.getElementById('fullscreen-btn');
-        if (fullscreenBtn) {
-          fullscreenBtn.addEventListener('click', function() {
-            if (!document.fullscreenElement) {
-              document.documentElement.requestFullscreen();
-            } else {
-              document.exitFullscreen();
-            }
-          });
-        }
-        
-        // Screenshot
-        const screenshotBtn = document.getElementById('screenshot-btn');
-        if (screenshotBtn) {
-          screenshotBtn.addEventListener('click', function() {
-            if (window.TradeVisionEngine && window.TradeVisionEngine.takeScreenshot) {
-              window.TradeVisionEngine.takeScreenshot();
-            }
-          });
-        }
-        
-        // Quick trade buttons
-        const buyBtn = document.getElementById('quick-trade-btn');
-        if (buyBtn) {
-          buyBtn.addEventListener('click', function() {
-            const price = document.getElementById('trade-price-input')?.value;
-            const amount = document.getElementById('trade-amount-input')?.value;
-            if (window.TradeVisionEngine && price && amount) {
-              window.TradeVisionEngine.placeOrder('buy', parseFloat(price), parseFloat(amount));
-            }
-          });
-        }
-        
-        // Watchlist items
-        document.querySelectorAll('.watchlist-item').forEach(function(item) {
-          item.addEventListener('click', function() {
-            const symbol = this.dataset.symbol;
-            if (symbol && window.TradeVisionEngine) {
-              window.TradeVisionEngine.changeSymbol(symbol);
-            }
-          });
+      }, 10000);
+    });
+    
+    function bindUIEvents() {
+      const engine = window.TradeVisionEngine;
+      if (!engine) return;
+      
+      // === SYMBOL SEARCH ===
+      const searchInput = document.getElementById('symbol-search');
+      const symbolDisplay = document.getElementById('symbol-display');
+      const symbolDropdown = document.getElementById('symbol-dropdown');
+      
+      if (searchInput) {
+        searchInput.addEventListener('keypress', function(e) {
+          if (e.key === 'Enter' && this.value.trim()) {
+            engine.changeSymbol(this.value.trim().toUpperCase());
+            if (symbolDropdown) symbolDropdown.classList.remove('active');
+          }
         });
       }
       
-      bindEvents();
-    });
-  </script>
+      if (symbolDisplay) {
+        symbolDisplay.addEventListener('click', function() {
+          if (symbolDropdown) symbolDropdown.classList.toggle('active');
+        });
+      }
+      
+      // === TIMEFRAME BUTTONS ===
+      document.querySelectorAll('.tf-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          const interval = this.dataset.interval;
+          if (interval && interval !== 'more') {
+            // Update active state
+            document.querySelectorAll('.tf-btn').forEach(function(b) {
+              b.classList.remove('active');
+            });
+            this.classList.add('active');
+            
+            // Change interval
+            engine.changeInterval(interval);
+          }
+        });
+      });
+      
+      // === CHART TYPE BUTTONS ===
+      document.querySelectorAll('.ct-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          const type = this.dataset.type;
+          if (type && engine.chart && engine.chart.changeChartType) {
+            document.querySelectorAll('.ct-btn').forEach(function(b) {
+              b.classList.remove('active');
+            });
+            this.classList.add('active');
+            engine.chart.changeChartType(type);
+          }
+        });
+      });
+      
+      // === MODAL BUTTONS ===
+      const indicatorsBtn = document.getElementById('indicators-btn');
+      if (indicatorsBtn) {
+        indicatorsBtn.addEventListener('click', function() {
+          engine.showIndicatorsModal();
+        });
+      }
+      
+      const drawingBtn = document.getElementById('drawing-tools-btn');
+      if (drawingBtn) {
+        drawingBtn.addEventListener('click', function() {
+          engine.showDrawingTools();
+        });
+      }
+      
+      const depthBtn = document.getElementById('market-depth-btn');
+      if (depthBtn) {
+        depthBtn.addEventListener('click', function() {
+          const modal = document.getElementById('market-depth-modal');
+          if (modal) modal.classList.add('visible');
+        });
+      }
+      
+      const newsBtn = document.getElementById('news-btn');
+      if (newsBtn) {
+        newsBtn.addEventListener('click', function() {
+          const modal = document.getElementById('news-modal');
+          if (modal) modal.classList.add('visible');
+        });
+      }
+      
+      const settingsBtn = document.getElementById('settings-btn');
+      if (settingsBtn) {
+        settingsBtn.addEventListener('click', function() {
+          const modal = document.getElementById('settings-modal');
+          if (modal) modal.classList.add('visible');
+        });
+      }
+      
+      const alertsBtn = document.getElementById('alerts-btn');
+      if (alertsBtn) {
+        alertsBtn.addEventListener('click', function() {
+          const modal = document.getElementById('alerts-modal');
+          if (modal) modal.classList.add('visible');
+        });
+      }
+      
+      // === THEME TOGGLE ===
+      const themeBtn = document.getElementById('theme-toggle-btn');
+      if (themeBtn) {
+        themeBtn.addEventListener('click', function() {
+          if (engine.toggleTheme) {
+            engine.toggleTheme();
+          } else {
+            // Fallback theme toggle
+            const body = document.body;
+            const current = body.getAttribute('data-theme');
+            const next = current === 'dark' ? 'light' : 'dark';
+            body.setAttribute('data-theme', next);
+          }
+        });
+      }
+      
+      // === FULLSCREEN ===
+      const fullscreenBtn = document.getElementById('fullscreen-btn');
+      if (fullscreenBtn) {
+        fullscreenBtn.addEventListener('click', function() {
+          if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen();
+          } else {
+            document.exitFullscreen();
+          }
+        });
+      }
+      
+      // === SCREENSHOT ===
+      const screenshotBtn = document.getElementById('screenshot-btn');
+      if (screenshotBtn) {
+        screenshotBtn.addEventListener('click', function() {
+          if (engine.takeScreenshot) {
+            engine.takeScreenshot();
+          } else {
+            alert('Screenshot feature: Press Ctrl+S or use browser tools');
+          }
+        });
+      }
+      
+      // === WATCHLIST ITEMS ===
+      document.querySelectorAll('.watchlist-item').forEach(function(item) {
+        item.addEventListener('click', function(e) {
+          // Don't trigger if clicking remove button
+          if (e.target.closest('.wl-remove')) return;
+          
+          const symbol = this.dataset.symbol;
+          if (symbol) {
+            engine.changeSymbol(symbol);
+            
+            // Update active state
+            document.querySelectorAll('.watchlist-item').forEach(function(w) {
+              w.classList.remove('active');
+            });
+            this.classList.add('active');
+          }
+        });
+      });
+      
+      // === QUICK TRADE BUTTON ===
+      const tradeBtn = document.getElementById('quick-trade-btn');
+      if (tradeBtn) {
+        tradeBtn.addEventListener('click', function() {
+          const type = document.querySelector('.trade-type.active')?.dataset.tradeType || 'buy';
+          const priceInput = document.getElementById('trade-price-input');
+          const amountInput = document.getElementById('trade-amount-input');
+          
+          const price = parseFloat(priceInput?.value);
+          const amount = parseFloat(amountInput?.value);
+          
+          if (price && amount && engine.placeOrder) {
+            engine.placeOrder(type, price, amount);
+          } else if (price && amount && engine.trading && engine.trading.placeOrder) {
+            engine.trading.placeOrder(type, price, amount);
+          } else {
+            alert('Please enter valid price and amount');
+          }
+        });
+      }
+      
+      // === TRADE TYPE SELECTOR ===
+      document.querySelectorAll('.trade-type').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          document.querySelectorAll('.trade-type').forEach(function(b) {
+            b.classList.remove('active');
+          });
+          this.classList.add('active');
+          
+          // Update button color
+          const tradeBtn = document.getElementById('quick-trade-btn');
+          if (tradeBtn) {
+            const isBuy = this.dataset.tradeType === 'buy';
+            tradeBtn.className = `place-order-btn ${isBuy ? 'buy' : 'sell'}`;
+            tradeBtn.textContent = isBuy ? 'Place Buy Order' : 'Place Sell Order';
+          }
+        });
+      });
+      
+      // === QUICK AMOUNT BUTTONS ===
+      document.querySelectorAll('.quick-amount-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          const pct = parseInt(this.dataset.pct) / 100;
+          const balance = window.TradeVisionEngine?.trading?.balance || 10000;
+          const price = parseFloat(document.getElementById('trade-price-input')?.value) || 50000;
+          const maxAmount = balance / price;
+          const amountInput = document.getElementById('trade-amount-input');
+          if (amountInput) {
+            amountInput.value = (maxAmount * pct).toFixed(6);
+            // Trigger total calculation
+            amountInput.dispatchEvent(new Event('input'));
+          }
+        });
+      });
+      
+      // === PRICE/AMOUNT INPUTS ===
+      const priceInput = document.getElementById('trade-price-input');
+      const amountInput = document.getElementById('trade-amount-input');
+      const totalInput = document.getElementById('trade-total-input');
+      
+      function updateTotal() {
+        const price = parseFloat(priceInput?.value) || 0;
+        const amount = parseFloat(amountInput?.value) || 0;
+        if (totalInput) {
+          totalInput.value = (price * amount).toFixed(2);
+        }
+      }
+      
+      if (priceInput) priceInput.addEventListener('input', updateTotal);
+      if (amountInput) amountInput.addEventListener('input', updateTotal);
+      
+      // === ZOOM CONTROLS ===
+      const zoomIn = document.getElementById('zoom-in-btn');
+      const zoomOut = document.getElementById('zoom-out-btn');
+      const autoFit = document.getElementById('auto-fit-btn');
+      
+      if (zoomIn && engine.chart && engine.chart.zoomIn) {
+        zoomIn.addEventListener('click', () => engine.chart.zoomIn());
+      }
+      if (zoomOut && engine.chart && engine.chart.zoomOut) {
+        zoomOut.addEventListener('click', () => engine.chart.zoomOut());
+      }
+      if (autoFit && engine.chart && engine.chart.fitContent) {
+        autoFit.addEventListener('click', () => engine.chart.fitContent());
+      }
+      
+      console.log('✅ UI events bound successfully');
+    }
+    
+    function showErrorMessage(message) {
+      const container = document.getElementById('chart-container');
+      if (container) {
+        const errorDiv = document.createElement('div');
+        errorDiv.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg-card);border:1px solid var(--danger);border-radius:8px;padding:20px;text-align:center;z-index:1000;';
+        errorDiv.innerHTML = `
+          <i class="fas fa-exclamation-triangle" style="font-size:32px;color:var(--danger);margin-bottom:12px;display:block;"></i>
+          <h3 style="margin-bottom:8px;">Engine Load Error</h3>
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">${message}</p>
+          <button onclick="location.reload()" style="padding:8px 16px;background:var(--accent-primary);color:white;border:none;border-radius:4px;cursor:pointer;">Refresh Page</button>
+        `;
+        container.appendChild(errorDiv);
+      }
+    }
+  })();
+</script>
 </body>
 </html>
