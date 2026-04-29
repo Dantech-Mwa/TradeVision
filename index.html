@@ -10166,5 +10166,53 @@ kbd {
     }
   })();
 </script>
+	<!-- ============================================ -->
+<!-- FIREBASE SDK -->
+<!-- ============================================ -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, updateProfile, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getDatabase, ref, push, onValue, set, onDisconnect } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDbpC4YUsnM1rbdB4adutnCaJX8OblexS4",
+    authDomain: "tradevisionpro-25888.firebaseapp.com",
+    databaseURL: "https://tradevisionpro-25888-default-rtdb.firebaseio.com",
+    projectId: "tradevisionpro-25888",
+    storageBucket: "tradevisionpro-25888.firebasestorage.app",
+    messagingSenderId: "542979547209",
+    appId: "1:542979547209:web:629a2773daba203c771f98"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  window.FB = {
+    app,
+    auth: getAuth(app),
+    db: getFirestore(app),
+    rtdb: getDatabase(app)
+  };
+  
+  // Set persistence to LOCAL so user stays logged in
+  setPersistence(window.FB.auth, browserLocalPersistence)
+    .then(function() { console.log('✅ Firebase persistence set to LOCAL'); })
+    .catch(function(err) { console.warn('Persistence setup failed:', err); });
+  
+  console.log('✅ Firebase Ready');
+  
+  // ⬇️⬇️⬇️ ADD THIS: Immediate auth state check ⬇️⬇️⬇️
+  setTimeout(function() {
+    if (window.FB && window.FB.auth) {
+      var currentUser = window.FB.auth.currentUser;
+      console.log('🔍 Initial currentUser check:', currentUser ? currentUser.email : 'none');
+      if (currentUser && typeof UserSystem !== 'undefined') {
+        console.log('Found existing Firebase user, syncing...');
+        UserSystem.handleFirebaseUser(currentUser);
+      } else if (typeof UserSystem !== 'undefined') {
+        UserSystem.updateUI();
+      }
+    }
+  }, 800);
+</script>
 </body>
 </html>
