@@ -9862,6 +9862,7 @@ kbd {
 <!-- LOAD ENGINE FROM VERCEL (PRIVATE BACKEND)    -->
 <!-- ============================================ -->
 <script src="https://tradevision-backend.vercel.app/engine.js"></script>
+	
 
 <!-- ============================================ -->
 <!-- UI EVENT HANDLERS (Only UI binding)          -->
@@ -9940,6 +9941,8 @@ kbd {
           }
         });
       });
+
+		
       
       // === CHART TYPE BUTTONS ===
       document.querySelectorAll('.ct-btn').forEach(function(btn) {
@@ -10166,6 +10169,38 @@ kbd {
     }
   })();
 </script>
+
+	<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const checkEngine = setInterval(function() {
+      if (window.TradeVisionEngine) {
+        clearInterval(checkEngine);
+        
+        // Initialize engine
+        window.TradeVisionEngine.init({
+          symbol: 'BTCUSDT',
+          interval: '15m',
+          chartType: 'candlestick'  // ADD THIS
+        });
+        
+        // Force chart type to candlestick
+        setTimeout(function() {
+          if (window.TradeVisionEngine && window.TradeVisionEngine.chart) {
+            // Set chart type explicitly
+            const chartTypeBtns = document.querySelectorAll('.ct-btn');
+            chartTypeBtns.forEach(btn => {
+              btn.classList.remove('active');
+              if (btn.dataset.type === 'candlestick') {
+                btn.classList.add('active');
+              }
+            });
+          }
+        }, 1000);
+      }
+    }, 100);
+  });
+</script>
+	
 	<!-- ============================================ -->
 <!-- FIREBASE SDK -->
 <!-- ============================================ -->
