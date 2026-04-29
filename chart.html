@@ -709,6 +709,30 @@ body {
   overflow: visible; /* ADD THIS - prevents tooltip clipping */
 }
 
+/* === USER PROFILE DROPDOWN VISIBILITY FIX === */
+#user-profile-dropdown {
+  display: none;
+  position: fixed !important;
+  top: 56px !important;
+  right: 16px !important;
+  z-index: 100000 !important;
+  background: var(--bg-card) !important;
+  border: 2px solid var(--accent-primary) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.8) !important;
+  min-width: 260px !important;
+  animation: fadeIn 0.2s ease;
+}
+
+#user-profile-dropdown .profile-menu-item {
+  cursor: pointer !important;
+  transition: background 0.15s ease;
+}
+
+#user-profile-dropdown .profile-menu-item:hover {
+  background: var(--bg-hover) !important;
+}
+
 .header-spacer {
   flex: 1 1 auto;
   display: none; /* hidden by default, shown when header-center is removed */
@@ -7024,10 +7048,9 @@ kbd {
     touch-action: pinch-zoom pan-x;  /* Allow only horizontal pan + zoom */
   }
   
-  /* Volume chart - consistent fixed height */
-  #volume-chart-pane {
+#volume-chart-pane {
     flex: 0 0 80px !important;
-    display: flex !important;
+    display: flex !important;    /* ← FORCE DISPLAY */
     height: 80px !important;
     min-height: 80px !important;
     max-height: 80px !important;
@@ -7405,11 +7428,57 @@ kbd {
       <div class="header-divider"></div>
       <button class="action-btn" id="screenshot-btn" data-tooltip="Screenshot (Ctrl+S)"><i class="fas fa-camera"></i></button>
       <button class="action-btn" id="fullscreen-btn" data-tooltip="Fullscreen (F)"><i class="fas fa-expand"></i></button>
-      <button class="action-btn" id="settings-btn" data-tooltip="Settings"><i class="fas fa-cog"></i></button>
-      <button class="action-btn" id="theme-toggle-btn" data-tooltip="Toggle Theme"><i class="fas fa-moon"></i></button>
+      <!-- NEW: Community Chat Button -->
+<button class="action-btn" id="community-btn" data-tooltip="Community Chat" style="display:none;">
+  <i class="fas fa-comments"></i>
+  <span class="news-dot" id="community-notification" style="display:none;"></span>
+</button>
+
+<!-- NEW: User Profile Button (shown when logged in) -->
+<button class="action-btn" id="user-profile-btn" data-tooltip="Profile" style="display:none;position:relative;">
+  <div style="width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#58a6ff,#9b6cff);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white;">U</div>
+</button>
+
+<!-- NEW: Auth Button (shown when logged out) -->
+<button class="action-btn" id="auth-btn" data-tooltip="Sign In">
+  <i class="fas fa-user-circle"></i>
+</button>
+
+<button class="action-btn" id="settings-btn" data-tooltip="Settings"><i class="fas fa-cog"></i></button>
+<button class="action-btn" id="theme-toggle-btn" data-tooltip="Toggle Theme"><i class="fas fa-moon"></i></button>
     </div>
   </div>
 </header>
+
+<!-- ============================================ -->
+<!-- USER PROFILE DROPDOWN -->
+<!-- ============================================ -->
+<div id="user-profile-dropdown" style="display:none;position:fixed;top:60px;right:20px;background:var(--bg-card);border:2px solid var(--accent-primary);border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.8);z-index:99999;min-width:260px;overflow:hidden;">
+  <div style="padding:14px;border-bottom:1px solid var(--border-primary);">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div id="user-avatar" style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#58a6ff,#9b6cff);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;">U</div>
+      <div>
+        <div id="user-display-name" style="font-weight:600;font-size:13px;color:var(--text-primary);">Trader</div>
+        <div id="user-display-email" style="font-size:10px;color:var(--text-muted);">trader@email.com</div>
+      </div>
+    </div>
+    <div style="margin-top:8px;">
+      <span id="user-badge" style="background:var(--accent-muted);color:var(--accent-primary);padding:2px 8px;border-radius:10px;font-size:9px;font-weight:600;">FREE</span>
+    </div>
+  </div>
+  <div style="padding:6px;">
+    <button class="profile-menu-item" data-action="settings" style="width:100%;padding:10px 12px;border:none;background:transparent;color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;gap:8px;font-size:13px;border-radius:6px;text-align:left;" onmouseenter="this.style.background='var(--bg-hover)'" onmouseleave="this.style.background='transparent'">
+      <i class="fas fa-cog" style="width:16px;"></i> Settings
+    </button>
+    <button class="profile-menu-item" data-action="subscription" style="width:100%;padding:10px 12px;border:none;background:transparent;color:var(--text-secondary);cursor:pointer;display:flex;align-items:center;gap:8px;font-size:13px;border-radius:6px;text-align:left;" onmouseenter="this.style.background='var(--bg-hover)'" onmouseleave="this.style.background='transparent'">
+      <i class="fas fa-crown" style="width:16px;color:#ffd700;"></i> Upgrade to PRO
+    </button>
+    <div style="height:1px;background:var(--border-primary);margin:4px 0;"></div>
+    <button class="profile-menu-item" data-action="logout" id="logout-btn-direct" style="width:100%;padding:10px 12px;border:none;background:transparent;color:var(--danger);cursor:pointer;display:flex;align-items:center;gap:8px;font-size:13px;border-radius:6px;text-align:left;" onmouseenter="this.style.background='rgba(248,81,73,0.1)'" onmouseleave="this.style.background='transparent'">
+  <i class="fas fa-sign-out-alt" style="width:16px;"></i> Sign Out
+</button>
+  </div>
+</div>
 
 <!-- ============================================ -->
 <!-- MOBILE SEARCH OVERLAY (Single Clean Version) -->
@@ -8072,6 +8141,7 @@ kbd {
  <!-- ============================================ -->
 <!-- MARKET SCREENER -->
 <!-- ============================================ -->
+<!-- REPLACE the screener section with this -->
 <div class="right-section">
   <div class="right-section-header">
     <span class="section-title">Screener</span>
@@ -9089,6 +9159,158 @@ kbd {
   </div>
 </div>
 
+  <!-- ============================================ -->
+  <!-- AUTHENTICATION MODAL -->
+  <!-- ============================================ -->
+  <div class="modal-overlay" id="auth-modal">
+    <div class="modal-container modal-md" style="max-width:420px;">
+      <div class="modal-header" style="border-bottom:1px solid var(--border-primary);">
+        <div class="modal-title">
+          <i class="fas fa-user-shield" style="color:#58a6ff;"></i>
+          <div>
+            <h3 id="auth-title">Sign In</h3>
+            <p class="modal-subtitle" id="auth-subtitle">Access all features</p>
+          </div>
+        </div>
+        <button class="modal-close" onclick="document.getElementById('auth-modal').classList.remove('visible')"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body" style="padding:20px;">
+        <div style="display:flex;gap:4px;background:var(--bg-tertiary);border-radius:8px;padding:4px;margin-bottom:18px;">
+          <button class="tvp-auth-tab active" data-tab="login" style="flex:1;padding:10px;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:13px;background:var(--accent-primary);color:#fff;transition:all 0.2s;">Login</button>
+          <button class="tvp-auth-tab" data-tab="register" style="flex:1;padding:10px;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:13px;background:transparent;color:var(--text-muted);transition:all 0.2s;">Register</button>
+        </div>
+        <button id="google-auth-btn" style="width:100%;padding:11px;background:#fff;border:1px solid #dadce0;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;font-size:13px;font-weight:500;color:#3c4043;margin-bottom:14px;">
+          <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          Continue with Google
+        </button>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+          <div style="flex:1;height:1px;background:var(--border-primary);"></div>
+          <span style="font-size:10px;color:var(--text-muted);">OR</span>
+          <div style="flex:1;height:1px;background:var(--border-primary);"></div>
+        </div>
+        <div id="login-form">
+          <div style="margin-bottom:10px;">
+            <label style="font-size:10px;font-weight:600;color:var(--text-muted);display:block;margin-bottom:4px;">Email</label>
+            <input type="email" id="login-email" placeholder="you@email.com" style="width:100%;padding:10px;background:var(--bg-primary);border:1px solid var(--border-primary);border-radius:6px;color:var(--text-primary);font-size:13px;outline:none;">
+          </div>
+          <div style="margin-bottom:10px;">
+            <label style="font-size:10px;font-weight:600;color:var(--text-muted);display:block;margin-bottom:4px;">Password</label>
+            <input type="password" id="login-password" placeholder="••••••••" style="width:100%;padding:10px;background:var(--bg-primary);border:1px solid var(--border-primary);border-radius:6px;color:var(--text-primary);font-size:13px;outline:none;">
+          </div>
+          <button id="login-submit" style="width:100%;padding:11px;background:var(--accent-primary);color:#fff;border:none;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;">Sign In</button>
+          <div id="login-error" style="color:var(--danger);font-size:10px;margin-top:8px;text-align:center;display:none;"></div>
+        </div>
+        <div id="register-form" style="display:none;">
+          <div style="margin-bottom:10px;">
+            <label style="font-size:10px;font-weight:600;color:var(--text-muted);display:block;margin-bottom:4px;">Username</label>
+            <input type="text" id="register-name" placeholder="TraderJoe" style="width:100%;padding:10px;background:var(--bg-primary);border:1px solid var(--border-primary);border-radius:6px;color:var(--text-primary);font-size:13px;outline:none;">
+          </div>
+          <div style="margin-bottom:10px;">
+            <label style="font-size:10px;font-weight:600;color:var(--text-muted);display:block;margin-bottom:4px;">Email</label>
+            <input type="email" id="register-email" placeholder="you@email.com" style="width:100%;padding:10px;background:var(--bg-primary);border:1px solid var(--border-primary);border-radius:6px;color:var(--text-primary);font-size:13px;outline:none;">
+          </div>
+          <div style="margin-bottom:10px;">
+            <label style="font-size:10px;font-weight:600;color:var(--text-muted);display:block;margin-bottom:4px;">Password</label>
+            <input type="password" id="register-password" placeholder="Min 6 characters" style="width:100%;padding:10px;background:var(--bg-primary);border:1px solid var(--border-primary);border-radius:6px;color:var(--text-primary);font-size:13px;outline:none;">
+          </div>
+          <button id="register-submit" style="width:100%;padding:11px;background:var(--success);color:#fff;border:none;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;">Create Account</button>
+          <div id="register-error" style="color:var(--danger);font-size:10px;margin-top:8px;text-align:center;display:none;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- COMMUNITY CHAT MODAL -->
+  <!-- ============================================ -->
+  <div class="modal-overlay" id="community-modal">
+    <div class="modal-container modal-lg" style="max-width:800px;height:80vh;">
+      <div class="modal-header" style="border-bottom:1px solid var(--border-primary);">
+        <div class="modal-title">
+          <i class="fas fa-comments" style="color:#58a6ff;"></i>
+          <div>
+            <h3>Community Chat</h3>
+            <p class="modal-subtitle"><span id="chat-online-count">0</span> online</p>
+          </div>
+        </div>
+        <button class="modal-close" onclick="document.getElementById('community-modal').classList.remove('visible')"><i class="fas fa-times"></i></button>
+      </div>
+      <div style="display:flex;height:calc(100% - 56px);">
+        <div style="flex:1;display:flex;flex-direction:column;">
+          <div id="chat-channels" style="display:flex;background:var(--bg-tertiary);border-bottom:1px solid var(--border-primary);overflow-x:auto;scrollbar-width:none;flex-shrink:0;">
+            <button class="tvp-channel active" data-channel="general" style="padding:8px 14px;border:none;background:transparent;color:var(--accent-primary);font-weight:600;font-size:11px;cursor:pointer;border-bottom:2px solid var(--accent-primary);white-space:nowrap;"># general</button>
+            <button class="tvp-channel" data-channel="btc" style="padding:8px 14px;border:none;background:transparent;color:var(--text-muted);font-weight:600;font-size:11px;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;"># bitcoin</button>
+            <button class="tvp-channel" data-channel="eth" style="padding:8px 14px;border:none;background:transparent;color:var(--text-muted);font-weight:600;font-size:11px;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;"># ethereum</button>
+            <button class="tvp-channel" data-channel="alts" style="padding:8px 14px;border:none;background:transparent;color:var(--text-muted);font-weight:600;font-size:11px;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;"># altcoins</button>
+            <button class="tvp-channel" data-channel="ta" style="padding:8px 14px;border:none;background:transparent;color:var(--text-muted);font-weight:600;font-size:11px;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;"># analysis</button>
+            <button class="tvp-channel" data-channel="signals" style="padding:8px 14px;border:none;background:transparent;color:var(--text-muted);font-weight:600;font-size:11px;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;"># signals</button>
+          </div>
+          <div id="chat-messages" style="flex:1;overflow-y:auto;padding:12px;"></div>
+          <div style="padding:10px;border-top:1px solid var(--border-primary);display:flex;gap:8px;flex-shrink:0;">
+            <input type="text" id="chat-input" placeholder="Type a message..." style="flex:1;padding:10px;background:var(--bg-primary);border:1px solid var(--border-primary);border-radius:8px;color:var(--text-primary);font-size:12px;outline:none;">
+            <button id="chat-send" style="padding:10px 18px;background:var(--accent-primary);color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:12px;">Send</button>
+          </div>
+        </div>
+        <div style="width:170px;background:var(--bg-secondary);border-left:1px solid var(--border-primary);padding:10px;overflow-y:auto;flex-shrink:0;">
+          <div style="font-size:9px;color:var(--text-muted);font-weight:600;margin-bottom:8px;text-transform:uppercase;">Online Users</div>
+          <div id="chat-users"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- PRO UPGRADE MODAL -->
+  <!-- ============================================ -->
+  <div class="modal-overlay" id="upgrade-modal">
+    <div class="modal-container modal-md" style="max-width:400px;text-align:center;">
+      <div class="modal-body" style="padding:30px 20px;">
+        <div style="font-size:48px;">👑</div>
+        <h3 id="upgrade-feature" style="margin:8px 0;">Unlock Feature</h3>
+        <p id="upgrade-msg" style="color:var(--text-muted);font-size:12px;margin:6px 0 16px;"></p>
+        <div style="background:linear-gradient(135deg,rgba(255,215,0,0.1),rgba(255,215,0,0.05));border:1px solid rgba(255,215,0,0.2);border-radius:12px;padding:14px;margin-bottom:14px;">
+          <div style="font-size:30px;font-weight:800;color:#ffd700;">$5<span style="font-size:12px;">/mo</span></div>
+        </div>
+        <button id="upgrade-btn" style="width:100%;padding:12px;background:linear-gradient(135deg,#ffd700,#ffaa00);color:#000;border:none;border-radius:8px;font-weight:700;cursor:pointer;">Upgrade Now</button>
+        <button onclick="document.getElementById('upgrade-modal').classList.remove('visible');" style="width:100%;padding:8px;background:transparent;color:var(--text-muted);border:none;cursor:pointer;font-size:11px;margin-top:4px;">Maybe Later</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- PAYMENT MODAL (Crypto) -->
+  <!-- ============================================ -->
+  <div class="modal-overlay" id="payment-modal">
+    <div class="modal-container modal-md" style="max-width:440px;">
+      <div class="modal-header">
+        <h3>Complete Payment - $5/mo</h3>
+        <button class="modal-close" onclick="document.getElementById('payment-modal').classList.remove('visible')"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body" style="padding:16px;">
+        <h4 style="font-size:11px;color:var(--text-muted);margin-bottom:10px;">Pay with Cryptocurrency (No Fees)</h4>
+        <div style="display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap;">
+          <button class="tvp-crypto-net active" data-net="POLYGON" style="padding:5px 12px;border:1px solid #26a69a;background:rgba(38,166,154,0.1);color:#26a69a;border-radius:14px;font-size:10px;cursor:pointer;font-weight:600;">Polygon · $0.01</button>
+          <button class="tvp-crypto-net" data-net="BSC" style="padding:5px 12px;border:1px solid var(--border-primary);background:transparent;color:var(--text-muted);border-radius:14px;font-size:10px;cursor:pointer;">BSC · $0.10</button>
+          <button class="tvp-crypto-net" data-net="TRC20" style="padding:5px 12px;border:1px solid var(--border-primary);background:transparent;color:var(--text-muted);border-radius:14px;font-size:10px;cursor:pointer;">TRC20 · $1</button>
+        </div>
+        <div style="font-size:10px;color:var(--text-muted);margin-bottom:6px;">Send <strong>5 USDT</strong> on <strong id="crypto-net-name">Polygon</strong></div>
+        <div style="background:var(--bg-tertiary);padding:10px;border-radius:6px;font-family:monospace;font-size:10px;word-break:break-all;color:var(--up-color);margin-bottom:8px;" id="crypto-address">0x8990787D3483A1035Bc460DdA5c75AB6e23BC1b6</div>
+        <button onclick="navigator.clipboard.writeText(document.getElementById('crypto-address').textContent);alert('Address copied!')" style="width:100%;padding:8px;background:var(--accent-muted);color:var(--accent-primary);border:none;border-radius:6px;cursor:pointer;font-size:11px;">📋 Copy Address</button>
+        <p style="font-size:9px;color:var(--text-muted);text-align:center;margin-top:8px;">PRO activates 5-10 minutes after payment</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- NOTIFICATION BANNER -->
+  <!-- ============================================ -->
+  <div id="notif-banner" style="display:none;position:fixed;top:60px;left:50%;transform:translateX(-50%);background:var(--bg-card);border:1px solid var(--accent-primary);border-radius:12px;padding:14px 18px;z-index:9999;box-shadow:0 8px 30px rgba(0,0,0,0.5);text-align:center;width:90%;max-width:350px;">
+    <div style="font-size:24px;">🔔</div>
+    <p style="font-size:11px;margin:4px 0 10px;color:var(--text-primary);">Get instant price alerts!</p>
+    <button id="notif-enable" style="padding:7px 16px;background:var(--accent-primary);color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:11px;">Enable Notifications</button>
+    <button onclick="this.parentElement.style.display='none';" style="padding:7px 16px;background:transparent;color:var(--text-muted);border:none;cursor:pointer;font-size:10px;margin-left:4px;">Not Now</button>
+  </div>
+
   <!-- Settings Modal -->
   <div class="modal-overlay" id="settings-modal">
     <div class="modal-container modal-lg">
@@ -9515,27 +9737,68 @@ kbd {
     </div>
   </div>
   <div class="sheet-content" id="sheet-content">
-    <div class="sheet-panel active" id="sheet-watchlist">
+           <div class="sheet-panel active" id="sheet-watchlist">
+      <!-- Search & Add Bar -->
+      <div style="padding: 6px 8px; border-bottom: 1px solid var(--border-primary); display: flex; gap: 6px; align-items: center;">
+        <div style="flex: 1; position: relative;">
+          <i class="fas fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 12px; z-index: 1;"></i>
+          <input type="text" id="mobile-watchlist-search" placeholder="Search & add symbol..." autocomplete="off" style="width: 100%; padding: 9px 10px 9px 32px; background: var(--bg-primary); border: 1px solid var(--border-primary); border-radius: 8px; color: var(--text-primary); font-size: 12px; outline: none;" />
+          <div id="mobile-watchlist-suggestions" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: var(--bg-card); border: 1px solid var(--border-primary); border-radius: 8px; max-height: 200px; overflow-y: auto; z-index: 9999; margin-top: 4px; box-shadow: 0 8px 24px rgba(0,0,0,0.5);"></div>
+        </div>
+        <button id="mobile-watchlist-add-btn" style="padding: 9px 14px; background: var(--accent-primary); color: white; border: none; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; flex-shrink: 0;">
+          <i class="fas fa-plus"></i> Add
+        </button>
+      </div>
       <div id="mobile-watchlist-list"></div>
     </div>
     <div class="sheet-panel" id="sheet-indicators">
       <div class="sheet-indicators-grid" id="mobile-indicators-grid"></div>
     </div>
-    <div class="sheet-panel" id="sheet-draw">
-      <div class="sheet-tools-grid">
-        <button class="sheet-tool-btn" data-tool="cursor"><i class="fas fa-mouse-pointer"></i><span>Select</span></button>
-        <button class="sheet-tool-btn" data-tool="trendline"><i class="fas fa-chart-line"></i><span>Trend</span></button>
-        <button class="sheet-tool-btn" data-tool="horizontal-line"><i class="fas fa-minus"></i><span>H Line</span></button>
-        <button class="sheet-tool-btn" data-tool="vertical-line"><i class="fas fa-grip-lines-vertical"></i><span>V Line</span></button>
-        <button class="sheet-tool-btn" data-tool="rectangle"><i class="fas fa-square"></i><span>Box</span></button>
-        <button class="sheet-tool-btn" data-tool="fibonacci-retracement"><i class="fas fa-ruler"></i><span>Fib</span></button>
-        <button class="sheet-tool-btn" data-tool="text"><i class="fas fa-font"></i><span>Text</span></button>
-        <button class="sheet-tool-btn" data-tool="arrow"><i class="fas fa-arrow-up"></i><span>Arrow</span></button>
-        <button class="sheet-tool-btn" data-tool="eraser"><i class="fas fa-eraser"></i><span>Erase</span></button>
-        <button class="sheet-tool-btn" data-tool="undo"><i class="fas fa-undo"></i><span>Undo</span></button>
-        <button class="sheet-tool-btn" data-tool="clear" style="color:var(--danger);"><i class="fas fa-trash"></i><span>Clear</span></button>
-      </div>
-    </div>
+    <!-- REPLACE the entire sheet-draw panel with this: -->
+<div class="sheet-panel" id="sheet-draw">
+  <div class="sheet-tools-grid">
+    <!-- Cursor/Selection -->
+    <button class="sheet-tool-btn" data-tool="cursor"><i class="fas fa-mouse-pointer"></i><span>Select</span></button>
+    
+    <!-- Lines -->
+    <button class="sheet-tool-btn" data-tool="trendline"><i class="fas fa-chart-line"></i><span>Trend</span></button>
+    <button class="sheet-tool-btn" data-tool="horizontal-line"><i class="fas fa-minus"></i><span>H Line</span></button>
+    <button class="sheet-tool-btn" data-tool="vertical-line"><i class="fas fa-grip-lines-vertical"></i><span>V Line</span></button>
+    <button class="sheet-tool-btn" data-tool="ray"><i class="fas fa-arrow-right-long"></i><span>Ray</span></button>
+    <button class="sheet-tool-btn" data-tool="extended-line"><i class="fas fa-arrows-left-right"></i><span>Extend</span></button>
+    
+    <!-- Shapes -->
+    <button class="sheet-tool-btn" data-tool="rectangle"><i class="fas fa-square"></i><span>Box</span></button>
+    <button class="sheet-tool-btn" data-tool="ellipse"><i class="fas fa-circle"></i><span>Circle</span></button>
+    <button class="sheet-tool-btn" data-tool="triangle"><i class="fas fa-play"></i><span>Triangle</span></button>
+    
+    <!-- Fibonacci -->
+    <button class="sheet-tool-btn" data-tool="fibonacci-retracement"><i class="fas fa-ruler"></i><span>Fib Retr</span></button>
+    <button class="sheet-tool-btn" data-tool="fibonacci-extension"><i class="fas fa-ruler-combined"></i><span>Fib Ext</span></button>
+    <button class="sheet-tool-btn" data-tool="fibonacci-fan"><i class="fas fa-fan"></i><span>Fib Fan</span></button>
+    <button class="sheet-tool-btn" data-tool="pitchfork"><i class="fas fa-draw-polygon"></i><span>Pitchfork</span></button>
+    
+    <!-- Annotations -->
+    <button class="sheet-tool-btn" data-tool="text"><i class="fas fa-font"></i><span>Text</span></button>
+    <button class="sheet-tool-btn" data-tool="arrow"><i class="fas fa-arrow-up"></i><span>Arrow</span></button>
+    <button class="sheet-tool-btn" data-tool="brush"><i class="fas fa-paint-brush"></i><span>Brush</span></button>
+    <button class="sheet-tool-btn" data-tool="callout"><i class="fas fa-comment-dots"></i><span>Callout</span></button>
+    
+    <!-- Measurements -->
+    <button class="sheet-tool-btn" data-tool="measure"><i class="fas fa-ruler-horizontal"></i><span>Measure</span></button>
+    <button class="sheet-tool-btn" data-tool="price-label"><i class="fas fa-tag"></i><span>Price</span></button>
+    <button class="sheet-tool-btn" data-tool="risk-reward"><i class="fas fa-balance-scale"></i><span>Risk/Rew</span></button>
+    
+    <!-- Patterns -->
+    <button class="sheet-tool-btn" data-tool="xabcd-pattern"><i class="fas fa-project-diagram"></i><span>ABCD</span></button>
+    <button class="sheet-tool-btn" data-tool="head-shoulders"><i class="fas fa-chart-bar"></i><span>H&S</span></button>
+    
+    <!-- Actions -->
+    <button class="sheet-tool-btn" data-tool="eraser"><i class="fas fa-eraser"></i><span>Erase</span></button>
+    <button class="sheet-tool-btn" data-tool="undo"><i class="fas fa-undo"></i><span>Undo</span></button>
+    <button class="sheet-tool-btn" data-tool="clear" style="color:var(--danger);"><i class="fas fa-trash"></i><span>Clear</span></button>
+  </div>
+</div>
     <div class="sheet-panel" id="sheet-stats">
       <table style="width:100%;font-size:11px;border-collapse:collapse;">
         <tr><td style="padding:6px 0;color:var(--text-muted);">Open</td><td style="text-align:right;font-weight:600;" id="ms-open">--</td></tr>
@@ -9545,17 +9808,33 @@ kbd {
         <tr><td style="padding:6px 0;color:var(--text-muted);">Change</td><td style="text-align:right;font-weight:600;" id="ms-change">--</td></tr>
       </table>
     </div>
-    <div class="sheet-panel" id="sheet-more">
-      <div style="display:flex;flex-direction:column;gap:2px;">
-        <button class="mob-action-btn" data-action="search"><i class="fas fa-search"></i> Search Markets</button>
-        <button class="mob-action-btn" data-action="depth"><i class="fas fa-layer-group"></i> Market Depth</button>
-        <button class="mob-action-btn" data-action="news"><i class="fas fa-newspaper"></i> Crypto News</button>
-        <button class="mob-action-btn" data-action="alerts"><i class="fas fa-bell"></i> Price Alerts</button>
-        <button class="mob-action-btn" data-action="settings"><i class="fas fa-cog"></i> Settings</button>
-        <button class="mob-action-btn" data-action="theme"><i class="fas fa-moon"></i> Toggle Theme</button>
-        <button class="mob-action-btn" data-action="fullscreen"><i class="fas fa-expand"></i> Fullscreen</button>
-      </div>
-    </div>
+    <!-- REPLACE the sheet-more panel with this complete version -->
+<div class="sheet-panel" id="sheet-more">
+  <div style="display:flex;flex-direction:column;gap:2px;">
+  
+   <button class="mob-action-btn" data-action="profile" id="mobile-profile-btn" style="background: var(--accent-muted); border-radius: 8px; margin-bottom: 4px;">
+      <i class="fas fa-user-circle" style="color: var(--accent-primary);"></i> 
+      <span id="mobile-profile-text">Sign In / Register</span>
+    </button>
+    <div style="height: 1px; background: var(--border-primary); margin: 4px 0;"></div>
+    <!-- ⬆️⬆️⬆️ END ADDITION ⬆️⬆️⬆️ -->
+    <button class="mob-action-btn" data-action="search"><i class="fas fa-search"></i> Search Markets</button>
+    <button class="mob-action-btn" data-action="depth"><i class="fas fa-layer-group"></i> Market Depth</button>
+    <button class="mob-action-btn" data-action="trades"><i class="fas fa-exchange-alt"></i> Recent Trades</button>
+    <button class="mob-action-btn" data-action="orderbook"><i class="fas fa-book"></i> Order Book</button>
+    <button class="mob-action-btn" data-action="news"><i class="fas fa-newspaper"></i> Crypto News</button>
+    <button class="mob-action-btn" data-action="screener"><i class="fas fa-filter"></i> Market Screener</button>
+    <button class="mob-action-btn" data-action="alerts"><i class="fas fa-bell"></i> Price Alerts</button>
+    <button class="mob-action-btn" data-action="indicators"><i class="fas fa-wave-square"></i> Indicators</button>
+    <button class="mob-action-btn" data-action="drawings"><i class="fas fa-pencil-alt"></i> Drawing Tools</button>
+    <button class="mob-action-btn" data-action="journal"><i class="fas fa-book"></i> Trade Journal</button>
+    <button class="mob-action-btn" data-action="backtest"><i class="fas fa-flask"></i> Backtest</button>
+    <button class="mob-action-btn" data-action="pine"><i class="fas fa-code"></i> Pine Editor</button>
+    <button class="mob-action-btn" data-action="settings"><i class="fas fa-cog"></i> Settings</button>
+    <button class="mob-action-btn" data-action="theme"><i class="fas fa-moon"></i> Toggle Theme</button>
+    <button class="mob-action-btn" data-action="fullscreen"><i class="fas fa-expand"></i> Fullscreen</button>
+  </div>
+</div>
   </div>
 </div>
 
@@ -17998,118 +18277,180 @@ function initVolCurve() {
 // MARKET SCREENER
 // ============================================
 function initScreener() {
-  const container = document.getElementById('screener-container');
-  if (!container) return;
+  var container = document.getElementById('screener-container');
+  if (!container) {
+    console.warn('Screener container not found');
+    return;
+  }
   
-  let currentFilter = 'top_gainers';
-  let screenerData = [];
+  var currentFilter = 'top_gainers';
+  var screenerData = [];
   
-  // Setup tab switching
-  document.querySelectorAll('.screener-tab').forEach(tab => {
-    tab.addEventListener('click', function() {
-      document.querySelectorAll('.screener-tab').forEach(t => {
-        t.style.background = 'transparent';
-        t.style.color = 'var(--text-secondary)';
+  // ============================================
+  // FIX: Setup tab switching with direct click handlers
+  // ============================================
+  function setupTabs() {
+    var tabs = document.querySelectorAll('.screener-tab');
+    console.log('Setting up ' + tabs.length + ' screener tabs');
+    
+    tabs.forEach(function(tab) {
+      // Remove any existing listeners
+      var newTab = tab.cloneNode(true);
+      tab.parentNode.replaceChild(newTab, tab);
+      
+      newTab.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        var filter = this.getAttribute('data-filter');
+        console.log('Screener tab clicked: ' + filter);
+        
+        if (!filter || !['top_gainers', 'top_losers', 'top_volume'].includes(filter)) {
+          console.warn('Invalid screener filter: ' + filter);
+          return;
+        }
+        
+        // Update active state
+        document.querySelectorAll('.screener-tab').forEach(function(t) {
+          t.style.background = 'transparent';
+          t.style.color = 'var(--text-secondary)';
+          t.classList.remove('active');
+        });
+        
+        this.style.background = 'var(--accent-primary)';
+        this.style.color = 'white';
+        this.classList.add('active');
+        
+        currentFilter = filter;
+        renderScreener();
       });
-      this.style.background = 'var(--accent-primary)';
-      this.style.color = 'white';
-      currentFilter = this.dataset.filter;
-      fetchScreenerData();
     });
-  });
+    
+    console.log('Screener tabs setup complete');
+  }
   
   async function fetchScreenerData() {
-    container.innerHTML = '<div style="padding:15px;text-align:center;color:var(--text-muted);"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
+    container.innerHTML = '<div style="padding:15px;text-align:center;color:var(--text-muted);"><i class="fas fa-spinner fa-spin"></i> Loading screener...</div>';
     
     try {
-      // Fetch 24hr ticker data from Binance for top USDT pairs
-      const res = await fetch('https://api.binance.com/api/v3/ticker/24hr');
-      if (!res.ok) throw new Error('API failed');
+      var res = await fetch('https://api.binance.com/api/v3/ticker/24hr');
+      if (!res.ok) throw new Error('API failed with status ' + res.status);
       
-      const data = await res.json();
+      var data = await res.json();
       
-      // Filter only USDT pairs and sort
       screenerData = data
-        .filter(d => d.symbol.endsWith('USDT') && parseFloat(d.volume) > 0)
-        .map(d => ({
-          symbol: d.symbol,
-          price: parseFloat(d.lastPrice),
-          change: parseFloat(d.priceChangePercent),
-          volume: parseFloat(d.volume),
-          high: parseFloat(d.highPrice),
-          low: parseFloat(d.lowPrice)
-        }));
+        .filter(function(d) { 
+          return d.symbol.endsWith('USDT') && parseFloat(d.volume) > 0; 
+        })
+        .map(function(d) {
+          return {
+            symbol: d.symbol,
+            price: parseFloat(d.lastPrice),
+            change: parseFloat(d.priceChangePercent),
+            volume: parseFloat(d.volume),
+            high: parseFloat(d.highPrice),
+            low: parseFloat(d.lowPrice)
+          };
+        });
       
+      console.log('Loaded ' + screenerData.length + ' screener items');
       renderScreener();
+      
     } catch(e) {
-      // Fallback to ticker symbols
+      console.error('Screener fetch error:', e);
       container.innerHTML = '<div style="padding:10px;text-align:center;color:var(--text-muted);font-size:10px;">Unable to load screener data</div>';
     }
   }
   
   function renderScreener() {
-    let sorted = [...screenerData];
-    
-    if (currentFilter === 'top_gainers') {
-      sorted.sort((a, b) => b.change - a.change);
-      sorted = sorted.slice(0, 10);
-    } else if (currentFilter === 'top_losers') {
-      sorted.sort((a, b) => a.change - b.change);
-      sorted = sorted.slice(0, 10);
-    } else if (currentFilter === 'top_volume') {
-      sorted.sort((a, b) => b.volume - a.volume);
-      sorted = sorted.slice(0, 10);
+    if (!screenerData || screenerData.length === 0) {
+      container.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);">No data available</div>';
+      return;
     }
     
-    container.innerHTML = sorted.map((item, i) => {
-      const isPositive = item.change >= 0;
-      const changeColor = isPositive ? 'var(--up-color)' : 'var(--down-color)';
-      const volumeFormatted = item.volume >= 1e9 ? (item.volume/1e9).toFixed(1)+'B' :
-                              item.volume >= 1e6 ? (item.volume/1e6).toFixed(1)+'M' :
-                              (item.volume/1e3).toFixed(0)+'K';
-      
-      return `
-        <div class="screener-item" data-symbol="${item.symbol}" style="
-          display:flex;justify-content:space-between;align-items:center;
-          padding:8px 10px;cursor:pointer;border-bottom:1px solid rgba(48,54,61,0.3);
-          transition:background 0.15s;
-        " onmouseenter="this.style.background='var(--bg-hover)'" onmouseleave="this.style.background='transparent'">
-          <div style="display:flex;align-items:center;gap:8px;flex:1;">
-            <span style="font-size:10px;color:var(--text-muted);min-width:16px;">#${i+1}</span>
-            <div>
-              <div style="font-weight:600;font-size:11px;color:var(--text-primary);">${item.symbol.replace('USDT','/USDT')}</div>
-              <div style="font-size:9px;color:var(--text-muted);">Vol: ${volumeFormatted}</div>
-            </div>
-          </div>
-          <div style="text-align:right;">
-            <div style="font-size:12px;font-weight:600;">$${U.formatPrice(item.price)}</div>
-            <div style="font-size:10px;font-weight:600;color:${changeColor};">
-              ${isPositive ? '+' : ''}${item.change.toFixed(2)}%
-            </div>
-          </div>
-        </div>
-      `;
-    }).join('');
+    var sorted = screenerData.slice();
     
-    // Add click handlers
-    container.querySelectorAll('.screener-item').forEach(item => {
+    console.log('Rendering screener: ' + currentFilter);
+    
+    // Sort based on filter
+    if (currentFilter === 'top_gainers') {
+      sorted.sort(function(a, b) { return b.change - a.change; });
+    } else if (currentFilter === 'top_losers') {
+      sorted.sort(function(a, b) { return a.change - b.change; });
+    } else if (currentFilter === 'top_volume') {
+      sorted.sort(function(a, b) { return b.volume - a.volume; });
+    }
+    
+    // Take top 10
+    sorted = sorted.slice(0, 10);
+    
+    var html = '';
+    for (var i = 0; i < sorted.length; i++) {
+      var item = sorted[i];
+      var isPositive = item.change >= 0;
+      var changeColor = isPositive ? 'var(--up-color)' : 'var(--down-color)';
+      
+      var volumeFormatted;
+      if (item.volume >= 1e9) {
+        volumeFormatted = (item.volume / 1e9).toFixed(1) + 'B';
+      } else if (item.volume >= 1e6) {
+        volumeFormatted = (item.volume / 1e6).toFixed(1) + 'M';
+      } else if (item.volume >= 1e3) {
+        volumeFormatted = (item.volume / 1e3).toFixed(0) + 'K';
+      } else {
+        volumeFormatted = item.volume.toFixed(0);
+      }
+      
+      html += '<div class="screener-item" data-symbol="' + item.symbol + '" style="' +
+        'display:flex;justify-content:space-between;align-items:center;' +
+        'padding:8px 10px;cursor:pointer;' +
+        'border-bottom:1px solid rgba(48,54,61,0.3);' +
+        'transition:background 0.15s;"' +
+        ' onmouseenter="this.style.background=\'var(--bg-hover)\'"' +
+        ' onmouseleave="this.style.background=\'transparent\'">' +
+        '<div style="display:flex;align-items:center;gap:8px;flex:1;">' +
+          '<span style="font-size:10px;color:var(--text-muted);min-width:16px;">#' + (i + 1) + '</span>' +
+          '<div>' +
+            '<div style="font-weight:600;font-size:11px;color:var(--text-primary);">' + 
+              item.symbol.replace('USDT', '/USDT') + '</div>' +
+            '<div style="font-size:9px;color:var(--text-muted);">Vol: ' + volumeFormatted + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div style="text-align:right;">' +
+          '<div style="font-size:12px;font-weight:600;font-family:monospace;">$' + 
+            (typeof U !== 'undefined' ? U.formatPrice(item.price) : item.price.toFixed(2)) + '</div>' +
+          '<div style="font-size:10px;font-weight:600;color:' + changeColor + ';font-family:monospace;">' +
+            (isPositive ? '+' : '') + item.change.toFixed(2) + '%' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }
+    
+    container.innerHTML = html;
+    
+    // Add click handlers to switch symbol
+    container.querySelectorAll('.screener-item').forEach(function(item) {
       item.addEventListener('click', function() {
-        const symbol = this.dataset.symbol;
-        if (symbol && window.TV) {
+        var symbol = this.getAttribute('data-symbol');
+        if (symbol && window.TV && window.TV.switchSymbol) {
           window.TV.switchSymbol(symbol);
-          Toast.success('Loaded: ' + symbol.replace('USDT', '/USDT'));
+          if (typeof Toast !== 'undefined') {
+            Toast.success('Loaded: ' + symbol.replace('USDT', '/USDT'));
+          }
         }
       });
     });
   }
   
-  // Initial fetch
+  // Initialize
+  setupTabs();
   fetchScreenerData();
   
   // Refresh every 30 seconds
   setInterval(fetchScreenerData, 30000);
+  
+  console.log('✅ Screener initialized with tab switching');
 }
-
 // ============================================
 // EQUITY CURVE CHART
 // ============================================
@@ -20160,6 +20501,9 @@ function initMobileSheet() {
         sheet.classList.remove('expanded', 'full');
         if (overlay) overlay.classList.remove('visible');
         if (chartContainer) chartContainer.classList.remove('sheet-open');
+		if (typeof DrawingEngine !== 'undefined' && typeof STATE !== 'undefined' && STATE.activeTool !== 'cursor') {
+		DrawingEngine.setTool('cursor');
+		}
         break;
         
       case 'expanded':
@@ -20302,67 +20646,108 @@ function initMobileSheet() {
   // ============================================
   // MORE PANEL ACTIONS
   // ============================================
-  document.querySelectorAll('.mob-action-btn[data-action]').forEach(function(btn) {
+  // REPLACE the existing mob-action-btn handler with this:
+document.querySelectorAll('.mob-action-btn[data-action]').forEach(function(btn) {
     btn.addEventListener('click', function(e) {
-      e.stopPropagation();
-      
-      const action = this.getAttribute('data-action');
-      
-      switch(action) {
-        case 'search':
-          // Open mobile search overlay
-          const searchOverlay = document.getElementById('mobile-search-overlay');
-          if (searchOverlay) {
-            searchOverlay.classList.add('visible');
-            setTimeout(function() {
-              const searchInput = document.getElementById('m-search-input') || 
-                                  document.getElementById('mobile-symbol-search-input');
-              if (searchInput) searchInput.focus();
-            }, 300);
-          }
-          break;
-          
-        case 'depth':
-          document.getElementById('market-depth-modal')?.classList.add('visible');
-          break;
-          
-        case 'news':
-          document.getElementById('news-modal')?.classList.add('visible');
-          break;
-          
-        case 'alerts':
-          document.getElementById('alerts-modal')?.classList.add('visible');
-          break;
-          
-        case 'settings':
-          document.getElementById('settings-modal')?.classList.add('visible');
-          break;
-          
-        case 'theme':
-          const current = document.body.getAttribute('data-theme') || 'dark';
-          const next = current === 'dark' ? 'light' : 'dark';
-          document.body.setAttribute('data-theme', next);
-          if (typeof U !== 'undefined') {
-            U.storage.set('tvp_theme', next);
-          }
-          if (typeof Toast !== 'undefined') {
-            Toast.info('Theme: ' + next.charAt(0).toUpperCase() + next.slice(1));
-          }
-          break;
-          
-        case 'fullscreen':
-          if (!document.fullscreenElement) {
-            document.documentElement.requestFullscreen().catch(function(){});
-          } else {
-            document.exitFullscreen();
-          }
-          break;
-      }
-      
-      // Collapse sheet after action
-      setSheetState('collapsed');
+        e.stopPropagation();
+        
+        var action = this.getAttribute('data-action');
+        
+        switch(action) {
+            case 'search':
+                var searchDropdown = document.getElementById('mobile-search-overlay');
+                if (searchDropdown) {
+                    searchDropdown.classList.add('visible');
+                    var searchInput = document.getElementById('mobile-search-input');
+                    if (searchInput) {
+                        searchInput.value = '';
+                        setTimeout(function() { searchInput.focus(); }, 100);
+                    }
+                }
+                break;
+                
+            case 'depth':
+            case 'orderbook':
+                document.getElementById('market-depth-modal')?.classList.add('visible');
+                break;
+                
+            case 'trades':
+                document.getElementById('market-depth-modal')?.classList.add('visible');
+                // Switch to trades tab
+                setTimeout(function() {
+                    var tradeTab = document.querySelector('.depth-tab[data-tab="trades"]');
+                    if (tradeTab) tradeTab.click();
+                }, 300);
+                break;
+                
+            case 'news':
+                document.getElementById('news-modal')?.classList.add('visible');
+                break;
+                
+            case 'screener':
+                // Open right panel with screener content
+                if (typeof setupMobileRightPanel !== 'undefined') {
+                    var panel = document.getElementById('mobile-right-panel');
+                    if (panel) panel.classList.add('open');
+                }
+                break;
+                
+            case 'alerts':
+                document.getElementById('alerts-modal')?.classList.add('visible');
+                break;
+                
+            case 'indicators':
+                document.getElementById('indicators-modal')?.classList.add('visible');
+                break;
+                
+            case 'drawings':
+                document.getElementById('drawing-tools-modal')?.classList.add('visible');
+                break;
+                
+            case 'journal':
+                document.getElementById('trade-journal-modal')?.classList.add('visible');
+                break;
+                
+            case 'backtest':
+                document.getElementById('backtest-modal')?.classList.add('visible');
+                break;
+                
+            case 'pine':
+                document.getElementById('indicators-modal')?.classList.add('visible');
+                setTimeout(function() {
+                    var customTab = document.querySelector('.cat-tab[data-category="custom"]');
+                    if (customTab) customTab.click();
+                }, 300);
+                break;
+                
+            case 'settings':
+                document.getElementById('settings-modal')?.classList.add('visible');
+                break;
+                
+            case 'theme':
+                var current = document.body.getAttribute('data-theme') || 'dark';
+                var next = current === 'dark' ? 'light' : 'dark';
+                document.body.setAttribute('data-theme', next);
+                if (typeof U !== 'undefined') {
+                    U.storage.set('tvp_theme', next);
+                }
+                if (typeof Toast !== 'undefined') {
+                    Toast.info('Theme: ' + next.charAt(0).toUpperCase() + next.slice(1));
+                }
+                break;
+                
+            case 'fullscreen':
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen().catch(function(){});
+                } else {
+                    document.exitFullscreen();
+                }
+                break;
+        }
+        
+        setSheetState('collapsed');
     });
-  });
+});
   
   // ============================================
   // INITIAL STATE
@@ -21222,36 +21607,64 @@ function setupMobileRightPanel() {
     // ============================================
     // OPEN PANEL
     // ============================================
-    function openPanel() {
-        // Clone right sidebar content into the mobile panel
+        function openPanel() {
         if (rightSidebar && panelContent) {
-            // Clear existing content
             panelContent.innerHTML = '';
             
-            // Clone the right sidebar's inner HTML
             var clone = rightSidebar.cloneNode(true);
             
-            // Remove any IDs to avoid duplicates
             var elementsWithId = clone.querySelectorAll('[id]');
             for (var i = 0; i < elementsWithId.length; i++) {
                 elementsWithId[i].removeAttribute('id');
             }
             
-            // Append cloned content
             while (clone.firstChild) {
                 panelContent.appendChild(clone.firstChild);
             }
+            
+            // Re-initialize screener tabs for mobile
+            setTimeout(function() {
+                var mobileTabs = panelContent.querySelectorAll('.screener-tab');
+                if (mobileTabs.length > 0) {
+                    mobileTabs.forEach(function(tab) {
+                        var newTab = tab.cloneNode(true);
+                        tab.parentNode.replaceChild(newTab, tab);
+                        
+                        newTab.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            
+                            var filter = this.getAttribute('data-filter');
+                            console.log('📱 Mobile screener tab: ' + filter);
+                            
+                            mobileTabs.forEach(function(t) {
+                                t.style.background = 'transparent';
+                                t.style.color = 'var(--text-secondary)';
+                                t.classList.remove('active');
+                            });
+                            
+                            this.style.background = 'var(--accent-primary)';
+                            this.style.color = 'white';
+                            this.classList.add('active');
+                            
+                            // Click the corresponding desktop tab to trigger data reload
+                            var desktopTab = document.querySelector('#right-sidebar .screener-tab[data-filter="' + filter + '"]');
+                            if (desktopTab) {
+                                desktopTab.click();
+                            }
+                        });
+                    });
+                }
+                console.log('✅ Mobile screener tabs re-initialized');
+            }, 300);
         }
         
-        // Show panel
         panel.classList.add('open');
         
-        // Show overlay
         if (overlay) {
             overlay.classList.add('visible');
         }
         
-        // Prevent body scroll
         document.body.style.overflow = 'hidden';
     }
     
@@ -21485,6 +21898,9 @@ function initMobileSheet() {
     // ============================================
     // DRAWING TOOLS IN SHEET
     // ============================================
+        // ============================================
+    // DRAWING TOOLS IN SHEET (WITH AUTO-RESET)
+    // ============================================
     document.querySelectorAll('.sheet-tool-btn[data-tool]').forEach(function(btn) {
         btn.addEventListener('click', function(e) {
             e.stopPropagation();
@@ -21493,12 +21909,14 @@ function initMobileSheet() {
             
             if (tool === 'clear' && typeof DrawingEngine !== 'undefined') {
                 DrawingEngine.clearAll();
+                DrawingEngine.setTool('cursor');  // ← RESET TO CURSOR
                 if (typeof Toast !== 'undefined') Toast.info('All drawings cleared');
             } else if (tool === 'undo' && typeof DrawingEngine !== 'undefined') {
                 DrawingEngine.undo();
+                DrawingEngine.setTool('cursor');  // ← RESET TO CURSOR
             } else if (tool === 'eraser' && typeof DrawingEngine !== 'undefined') {
                 DrawingEngine.setTool('eraser');
-                if (typeof Toast !== 'undefined') Toast.info('Tap a drawing to delete it');
+                if (typeof Toast !== 'undefined') Toast.info('Eraser mode - tap a drawing to delete');
             } else if (tool && typeof DrawingEngine !== 'undefined') {
                 DrawingEngine.setTool(tool);
             }
@@ -21508,69 +21926,176 @@ function initMobileSheet() {
         });
     });
     
+    // ⬇️⬇️⬇️ ADD THIS: Reset drawing tool when touching chart ⬇️⬇️⬇️
+    // After placing a drawing, reset to cursor
+    var originalAddDrawing = null;
+    if (typeof DrawingEngine !== 'undefined' && DrawingEngine.addDrawing) {
+        originalAddDrawing = DrawingEngine.addDrawing;
+        DrawingEngine.addDrawing = function() {
+            originalAddDrawing.apply(this, arguments);
+            // Auto-reset to cursor after placing a drawing on mobile
+            if (window.innerWidth <= 768) {
+                setTimeout(function() {
+                    DrawingEngine.setTool('cursor');
+                    console.log('🖊️ Auto-reset drawing tool to cursor');
+                }, 500);
+            }
+        };
+    }
+    
+    // Also reset on mouseup/touchend for mobile
+    if (typeof DrawingEngine !== 'undefined' && DrawingEngine.onMouseUp) {
+        var originalOnMouseUp = DrawingEngine.onMouseUp;
+        DrawingEngine.onMouseUp = function() {
+            originalOnMouseUp.apply(this, arguments);
+            // Reset to cursor after drawing is complete
+            if (window.innerWidth <= 768 && DrawingEngine.drawings && DrawingEngine.drawings.length > 0) {
+                setTimeout(function() {
+                    if (typeof STATE !== 'undefined' && STATE.activeTool !== 'cursor') {
+                        DrawingEngine.setTool('cursor');
+                        console.log('🖊️ Drawing complete, reset to cursor');
+                    }
+                }, 300);
+            }
+        };
+    }
+    // ⬆️⬆️⬆️ END ADDITION ⬆️⬆️⬆️
+    
+    // ============================================
+    // INITIAL STATE
+    // ============================================
+    
     // ============================================
     // MORE PANEL ACTIONS
     // ============================================
-    document.querySelectorAll('.mob-action-btn[data-action]').forEach(function(btn) {
-        btn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            
-            var action = this.getAttribute('data-action');
-            
-            switch(action) {
-                case 'search':
-                    // Trigger search dropdown
-                    var searchDropdown = document.getElementById('mobile-search-overlay');
-                    if (searchDropdown) {
-                        searchDropdown.classList.add('visible');
-                        var searchInput = document.getElementById('mobile-search-input');
-                        if (searchInput) {
-                            searchInput.value = '';
-                            setTimeout(function() { searchInput.focus(); }, 100);
+ // REPLACE the existing mob-action-btn handler with this:
+document.querySelectorAll('.mob-action-btn[data-action]').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        
+        var action = this.getAttribute('data-action');
+        
+        switch(action) {
+		case 'profile':
+                    // Check if user is logged in
+                    if (typeof UserSystem !== 'undefined' && UserSystem.currentUser) {
+                        // Show profile dropdown
+                        var dropdown = document.getElementById('user-profile-dropdown');
+                        if (dropdown) {
+                            UserSystem.updateDropdownContent();
+                            // Position it for mobile
+                            dropdown.style.position = 'fixed';
+                            dropdown.style.top = '80px';
+                            dropdown.style.right = '10px';
+                            dropdown.style.left = '10px';
+                            dropdown.style.width = 'auto';
+                            dropdown.style.display = 'block';
+                            dropdown.style.zIndex = '99999';
+                        }
+                    } else {
+                        // Show auth modal
+                        var authModal = document.getElementById('auth-modal');
+                        if (authModal) {
+                            authModal.classList.add('visible');
                         }
                     }
+                    setSheetState('collapsed');
                     break;
-                    
-                case 'depth':
-                    document.getElementById('market-depth-modal')?.classList.add('visible');
-                    break;
-                    
-                case 'news':
-                    document.getElementById('news-modal')?.classList.add('visible');
-                    break;
-                    
-                case 'alerts':
-                    document.getElementById('alerts-modal')?.classList.add('visible');
-                    break;
-                    
-                case 'settings':
-                    document.getElementById('settings-modal')?.classList.add('visible');
-                    break;
-                    
-                case 'theme':
-                    var current = document.body.getAttribute('data-theme') || 'dark';
-                    var next = current === 'dark' ? 'light' : 'dark';
-                    document.body.setAttribute('data-theme', next);
-                    if (typeof U !== 'undefined') {
-                        U.storage.set('tvp_theme', next);
+                // ⬆️⬆️⬆️ END ADDITION ⬆️⬆️⬆️
+            case 'search':
+                var searchDropdown = document.getElementById('mobile-search-overlay');
+                if (searchDropdown) {
+                    searchDropdown.classList.add('visible');
+                    var searchInput = document.getElementById('mobile-search-input');
+                    if (searchInput) {
+                        searchInput.value = '';
+                        setTimeout(function() { searchInput.focus(); }, 100);
                     }
-                    if (typeof Toast !== 'undefined') {
-                        Toast.info('Theme: ' + next.charAt(0).toUpperCase() + next.slice(1));
-                    }
-                    break;
-                    
-                case 'fullscreen':
-                    if (!document.fullscreenElement) {
-                        document.documentElement.requestFullscreen().catch(function(){});
-                    } else {
-                        document.exitFullscreen();
-                    }
-                    break;
-            }
-            
-            setSheetState('collapsed');
-        });
+                }
+                break;
+                
+            case 'depth':
+            case 'orderbook':
+                document.getElementById('market-depth-modal')?.classList.add('visible');
+                break;
+                
+            case 'trades':
+                document.getElementById('market-depth-modal')?.classList.add('visible');
+                // Switch to trades tab
+                setTimeout(function() {
+                    var tradeTab = document.querySelector('.depth-tab[data-tab="trades"]');
+                    if (tradeTab) tradeTab.click();
+                }, 300);
+                break;
+                
+            case 'news':
+                document.getElementById('news-modal')?.classList.add('visible');
+                break;
+                
+            case 'screener':
+                // Open right panel with screener content
+                if (typeof setupMobileRightPanel !== 'undefined') {
+                    var panel = document.getElementById('mobile-right-panel');
+                    if (panel) panel.classList.add('open');
+                }
+                break;
+                
+            case 'alerts':
+                document.getElementById('alerts-modal')?.classList.add('visible');
+                break;
+                
+            case 'indicators':
+                document.getElementById('indicators-modal')?.classList.add('visible');
+                break;
+                
+            case 'drawings':
+                document.getElementById('drawing-tools-modal')?.classList.add('visible');
+                break;
+                
+            case 'journal':
+                document.getElementById('trade-journal-modal')?.classList.add('visible');
+                break;
+                
+            case 'backtest':
+                document.getElementById('backtest-modal')?.classList.add('visible');
+                break;
+                
+            case 'pine':
+                document.getElementById('indicators-modal')?.classList.add('visible');
+                setTimeout(function() {
+                    var customTab = document.querySelector('.cat-tab[data-category="custom"]');
+                    if (customTab) customTab.click();
+                }, 300);
+                break;
+                
+            case 'settings':
+                document.getElementById('settings-modal')?.classList.add('visible');
+                break;
+                
+            case 'theme':
+                var current = document.body.getAttribute('data-theme') || 'dark';
+                var next = current === 'dark' ? 'light' : 'dark';
+                document.body.setAttribute('data-theme', next);
+                if (typeof U !== 'undefined') {
+                    U.storage.set('tvp_theme', next);
+                }
+                if (typeof Toast !== 'undefined') {
+                    Toast.info('Theme: ' + next.charAt(0).toUpperCase() + next.slice(1));
+                }
+                break;
+                
+            case 'fullscreen':
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen().catch(function(){});
+                } else {
+                    document.exitFullscreen();
+                }
+                break;
+        }
+        
+        setSheetState('collapsed');
     });
+});
     
     // ============================================
     // INITIAL STATE
@@ -21597,23 +22122,27 @@ function buildMobileWatchlist() {
         var sym = item.symbol;
         var display = sym.replace('USDT', '/USDT');
         
-        html += '<div class="mobile-wl-item" data-symbol="' + sym + '">' +
-            '<div>' +
+                html += '<div class="mobile-wl-item" data-symbol="' + sym + '">' +
+            '<div style="flex:1;min-width:0;">' +
                 '<div style="font-weight:700;font-size:13px;">' + display + '</div>' +
                 '<div style="font-size:9px;color:var(--text-muted);">Binance</div>' +
             '</div>' +
-            '<div style="text-align:right;">' +
+            '<div style="text-align:right;margin-right:4px;">' +
                 '<div style="font-weight:600;font-size:13px;" id="mwl-price-' + sym + '">--</div>' +
                 '<div style="font-size:10px;padding:2px 6px;border-radius:3px;" id="mwl-change-' + sym + '">--</div>' +
             '</div>' +
+            '<button class="mwl-remove-btn" data-symbol="' + sym + '" style="background:none;border:none;color:var(--text-muted);cursor:pointer;padding:4px 6px;font-size:12px;flex-shrink:0;opacity:0.5;" title="Remove from watchlist">✕</button>' +
         '</div>';
     }
     
     container.innerHTML = html;
     
-    // Add click handlers to switch symbol
+        // Add click handlers to switch symbol
     container.querySelectorAll('.mobile-wl-item').forEach(function(item) {
-        item.addEventListener('click', function() {
+        item.addEventListener('click', function(e) {
+            // Ignore clicks on the remove button
+            if (e.target.closest('.mwl-remove-btn')) return;
+            
             var sym = this.getAttribute('data-symbol');
             if (sym && typeof window.TV !== 'undefined' && window.TV.switchSymbol) {
                 window.TV.switchSymbol(sym);
@@ -21623,19 +22152,338 @@ function buildMobileWatchlist() {
             }
         });
     });
+    
+    // Add click handlers for remove buttons
+    container.querySelectorAll('.mwl-remove-btn').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            e.preventDefault();
+            
+            var sym = this.getAttribute('data-symbol');
+            if (sym) {
+                if (typeof window.TV !== 'undefined' && window.TV.removeFromWatchlist) {
+                    window.TV.removeFromWatchlist(sym);
+                } else if (typeof STATE !== 'undefined' && STATE.watchlist) {
+                    STATE.watchlist = STATE.watchlist.filter(function(item) {
+                        return item.symbol !== sym;
+                    });
+                    localStorage.setItem('tvp_watchlist', JSON.stringify(STATE.watchlist));
+                    if (typeof WatchlistManager !== 'undefined' && WatchlistManager.render) {
+                        WatchlistManager.render();
+                    }
+                }
+                
+                // Refresh mobile watchlist
+                if (typeof buildMobileWatchlist === 'function') {
+                    buildMobileWatchlist();
+                }
+                
+                if (typeof Toast !== 'undefined') {
+                    Toast.info(sym.replace('USDT', '/USDT') + ' removed from watchlist');
+                }
+            }
+        });
+    });
 }
+
+// ============================================
+// MOBILE WATCHLIST ADD BUTTON HANDLER
+// ============================================
+// ============================================
+// MOBILE WATCHLIST SEARCH & ADD SYSTEM
+// ============================================
+(function setupMobileWatchlistSearch() {
+    setTimeout(function() {
+        var searchInput = document.getElementById('mobile-watchlist-search');
+        var addBtn = document.getElementById('mobile-watchlist-add-btn');
+        var suggestionsDiv = document.getElementById('mobile-watchlist-suggestions');
+        
+        if (!searchInput || !suggestionsDiv) {
+            console.warn('Mobile watchlist search elements not found');
+            return;
+        }
+        
+        var selectedSymbol = null;
+        var selectedType = 'crypto';
+        var allSuggestions = [];
+        
+        // ============================================
+        // BUILD SUGGESTIONS LIST
+        // ============================================
+        function getDefaultSuggestions() {
+            var suggestions = [];
+            
+            // Add crypto symbols from available symbols
+            if (typeof STATE !== 'undefined' && STATE.availableSymbols && STATE.availableSymbols.length) {
+                var cryptos = STATE.availableSymbols.slice(0, 10).map(function(s) {
+                    return { symbol: s.symbol, name: s.baseAsset || s.symbol.replace('USDT', ''), type: 'crypto', exchange: 'Binance' };
+                });
+                suggestions = suggestions.concat(cryptos);
+            } else {
+                // Fallback cryptos
+                suggestions.push(
+                    { symbol: 'BTCUSDT', name: 'Bitcoin', type: 'crypto', exchange: 'Binance' },
+                    { symbol: 'ETHUSDT', name: 'Ethereum', type: 'crypto', exchange: 'Binance' },
+                    { symbol: 'BNBUSDT', name: 'BNB', type: 'crypto', exchange: 'Binance' },
+                    { symbol: 'SOLUSDT', name: 'Solana', type: 'crypto', exchange: 'Binance' },
+                    { symbol: 'XRPUSDT', name: 'Ripple', type: 'crypto', exchange: 'Binance' },
+                    { symbol: 'ADAUSDT', name: 'Cardano', type: 'crypto', exchange: 'Binance' }
+                );
+            }
+            
+            // Add stock symbols
+            if (typeof STATE !== 'undefined' && STATE.stockSymbols && STATE.stockSymbols.length) {
+                var stocks = STATE.stockSymbols.slice(0, 6).map(function(s) {
+                    return { symbol: s.symbol, name: s.description || s.symbol, type: 'stocks', exchange: 'NASDAQ/NYSE' };
+                });
+                suggestions = suggestions.concat(stocks);
+            } else {
+                suggestions.push(
+                    { symbol: 'AAPL', name: 'Apple Inc.', type: 'stocks', exchange: 'NASDAQ' },
+                    { symbol: 'TSLA', name: 'Tesla Inc.', type: 'stocks', exchange: 'NASDAQ' },
+                    { symbol: 'MSFT', name: 'Microsoft', type: 'stocks', exchange: 'NASDAQ' }
+                );
+            }
+            
+            // Add forex symbols
+            suggestions.push(
+                { symbol: 'EURUSD', name: 'Euro / USD', type: 'forex', exchange: 'FX' },
+                { symbol: 'GBPUSD', name: 'Pound / USD', type: 'forex', exchange: 'FX' },
+                { symbol: 'USDJPY', name: 'Dollar / Yen', type: 'forex', exchange: 'FX' }
+            );
+            
+            return suggestions;
+        }
+        
+        // ============================================
+        // RENDER SUGGESTIONS
+        // ============================================
+        function renderSuggestions(suggestions) {
+            if (!suggestions || suggestions.length === 0) {
+                suggestionsDiv.innerHTML = '<div style="padding: 16px; text-align: center; color: var(--text-muted); font-size: 12px;">No results found</div>';
+                suggestionsDiv.style.display = 'block';
+                return;
+            }
+            
+            var html = '';
+            for (var i = 0; i < suggestions.length; i++) {
+                var s = suggestions[i];
+                var displaySymbol = s.symbol.includes('USDT') ? s.symbol.replace('USDT', '/USDT') : s.symbol;
+                var typeIcon = s.type === 'crypto' ? '₿' : s.type === 'stocks' ? '📈' : '💱';
+                var typeColor = s.type === 'crypto' ? '#58a6ff' : s.type === 'stocks' ? '#26a69a' : '#ff9800';
+                var typeBg = s.type === 'crypto' ? 'rgba(88,166,255,0.1)' : s.type === 'stocks' ? 'rgba(38,166,154,0.1)' : 'rgba(255,152,0,0.1)';
+                
+                html += '<div class="mwl-suggestion-item" data-symbol="' + s.symbol + '" data-type="' + s.type + '" data-name="' + (s.name || '') + '" style="' +
+                    'display: flex; justify-content: space-between; align-items: center; ' +
+                    'padding: 10px 12px; cursor: pointer; border-bottom: 1px solid rgba(48,54,61,0.2); ' +
+                    'transition: background 0.15s;' +
+                    '" onmouseenter="this.style.background=\'var(--bg-hover)\'" onmouseleave="this.style.background=\'transparent\'">' +
+                    '<div style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">' +
+                        '<span style="font-size: 16px; flex-shrink: 0;">' + typeIcon + '</span>' +
+                        '<div style="min-width: 0;">' +
+                            '<div style="font-weight: 600; font-size: 12px; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">' + displaySymbol + '</div>' +
+                            '<div style="font-size: 10px; color: var(--text-muted);">' + (s.name || s.symbol) + ' · ' + (s.exchange || '') + '</div>' +
+                        '</div>' +
+                    '</div>' +
+                    '<span style="font-size: 9px; padding: 2px 8px; border-radius: 10px; font-weight: 600; background: ' + typeBg + '; color: ' + typeColor + '; flex-shrink: 0; margin-left: 8px;">' + s.type.toUpperCase() + '</span>' +
+                '</div>';
+            }
+            
+            suggestionsDiv.innerHTML = html;
+            suggestionsDiv.style.display = 'block';
+            
+            // Add click handlers
+            var items = suggestionsDiv.querySelectorAll('.mwl-suggestion-item');
+            for (var j = 0; j < items.length; j++) {
+                (function(item) {
+                    item.addEventListener('click', function() {
+                        selectedSymbol = this.getAttribute('data-symbol');
+                        selectedType = this.getAttribute('data-type');
+                        searchInput.value = this.getAttribute('data-symbol').replace('USDT', '/USDT');
+                        suggestionsDiv.style.display = 'none';
+                        console.log('Selected:', selectedSymbol, selectedType);
+                    });
+                })(items[j]);
+            }
+        }
+        
+        // ============================================
+        // SEARCH INPUT HANDLER
+        // ============================================
+        searchInput.addEventListener('input', function() {
+            var query = this.value.trim().toUpperCase();
+            
+            if (query.length === 0) {
+                allSuggestions = getDefaultSuggestions();
+                renderSuggestions(allSuggestions.slice(0, 12));
+                return;
+            }
+            
+            // Filter suggestions
+            var filtered = allSuggestions.filter(function(s) {
+                return s.symbol.toUpperCase().includes(query) || 
+                       (s.name && s.name.toUpperCase().includes(query));
+            });
+            
+            if (filtered.length === 0 && query.length >= 2) {
+                // Try searching available symbols
+                if (typeof STATE !== 'undefined' && STATE.availableSymbols) {
+                    var cryptoMatches = STATE.availableSymbols.filter(function(s) {
+                        return s.symbol.includes(query) || (s.baseAsset && s.baseAsset.includes(query));
+                    }).slice(0, 8).map(function(s) {
+                        return { symbol: s.symbol, name: s.baseAsset, type: 'crypto', exchange: 'Binance' };
+                    });
+                    filtered = filtered.concat(cryptoMatches);
+                }
+                
+                if (typeof STATE !== 'undefined' && STATE.stockSymbols) {
+                    var stockMatches = STATE.stockSymbols.filter(function(s) {
+                        return s.symbol.toUpperCase().includes(query) || 
+                               (s.description && s.description.toUpperCase().includes(query));
+                    }).slice(0, 5).map(function(s) {
+                        return { symbol: s.symbol, name: s.description || s.symbol, type: 'stocks', exchange: 'NASDAQ' };
+                    });
+                    filtered = filtered.concat(stockMatches);
+                }
+            }
+            
+            renderSuggestions(filtered.slice(0, 12));
+        });
+        
+        // Show suggestions on focus
+        searchInput.addEventListener('focus', function() {
+            if (allSuggestions.length === 0) {
+                allSuggestions = getDefaultSuggestions();
+            }
+            if (suggestionsDiv.innerHTML === '') {
+                renderSuggestions(allSuggestions.slice(0, 12));
+            } else {
+                suggestionsDiv.style.display = 'block';
+            }
+        });
+        
+        // Hide suggestions when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!searchInput.contains(e.target) && !suggestionsDiv.contains(e.target) && !addBtn.contains(e.target)) {
+                suggestionsDiv.style.display = 'none';
+            }
+        });
+        
+        // Keyboard navigation
+        searchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                suggestionsDiv.style.display = 'none';
+                this.blur();
+            }
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addBtn.click();
+            }
+        });
+        
+        // ============================================
+        // ADD BUTTON HANDLER
+        // ============================================
+        if (addBtn) {
+            var newAddBtn = addBtn.cloneNode(true);
+            addBtn.parentNode.replaceChild(newAddBtn, addBtn);
+            
+            newAddBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                var symbol = selectedSymbol;
+                
+                // If no suggestion selected, try the input text
+                if (!symbol) {
+                    var inputVal = searchInput.value.trim().toUpperCase();
+                    if (!inputVal) {
+                        if (typeof Toast !== 'undefined') {
+                            Toast.warning('Please search and select a symbol');
+                        }
+                        return;
+                    }
+                    symbol = inputVal.replace('/', '');
+                    
+                    // Auto-add USDT suffix for crypto
+                    if (!symbol.includes('USDT') && symbol.length <= 6 && !symbol.match(/^[A-Z]{6}$/)) {
+                        symbol = symbol + 'USDT';
+                    }
+                }
+                
+                if (!symbol) return;
+                
+                // Check if already in watchlist
+                if (typeof STATE !== 'undefined' && STATE.watchlist) {
+                    var exists = STATE.watchlist.find(function(item) {
+                        return item.symbol === symbol;
+                    });
+                    if (exists) {
+                        if (typeof Toast !== 'undefined') {
+                            Toast.warning(symbol.replace('USDT', '/USDT') + ' is already in your watchlist');
+                        }
+                        searchInput.value = '';
+                        selectedSymbol = null;
+                        suggestionsDiv.style.display = 'none';
+                        return;
+                    }
+                }
+                
+                // Add to watchlist
+                if (typeof window.TV !== 'undefined' && window.TV.addToWatchlist) {
+                    window.TV.addToWatchlist(symbol);
+                } else if (typeof STATE !== 'undefined' && STATE.watchlist) {
+                    STATE.watchlist.push({ symbol: symbol });
+                    localStorage.setItem('tvp_watchlist', JSON.stringify(STATE.watchlist));
+                    if (typeof WatchlistManager !== 'undefined' && WatchlistManager.render) {
+                        WatchlistManager.render();
+                    }
+                }
+                
+                // Switch to the new symbol
+                if (typeof window.TV !== 'undefined' && window.TV.switchSymbol) {
+                    window.TV.switchSymbol(symbol);
+                }
+                
+                // Refresh mobile watchlist
+                if (typeof buildMobileWatchlist === 'function') {
+                    buildMobileWatchlist();
+                }
+                
+                // Clear input
+                searchInput.value = '';
+                selectedSymbol = null;
+                suggestionsDiv.style.display = 'none';
+                
+                if (typeof Toast !== 'undefined') {
+                    Toast.success(symbol.replace('USDT', '/USDT') + ' added to watchlist');
+                }
+            });
+        }
+        
+        // Initialize suggestions
+        allSuggestions = getDefaultSuggestions();
+        
+        console.log('✅ Mobile watchlist search & add system ready');
+    }, 600);
+})();
 
 // ============================================
 // BUILD MOBILE INDICATORS GRID IN SHEET
 // ============================================
+// REPLACE the existing buildMobileIndicators function with this:
 function buildMobileIndicators() {
     var container = document.getElementById('mobile-indicators-grid');
     if (!container) return;
     
+    // ADDED MISSING INDICATORS
     var indicators = [
         'RSI', 'MACD', 'SMA', 'EMA', 'Bollinger', 'VWAP',
         'Stochastic', 'ATR', 'Ichimoku', 'SuperTrend', 'PSAR',
-        'CCI', 'WilliamsR', 'Keltner', 'OBV', 'MFI'
+        'CCI', 'WilliamsR', 'Keltner', 'OBV', 'MFI',
+        // ADD THESE MISSING ONES ↓
+        'Donchian', 'PivotPoints', 'VWMA', 'ZigZag',
+        'AD', 'CMF', 'Momentum', 'ROC', 'TSI', 'UO'
     ];
     
     var html = '';
@@ -21711,6 +22559,15 @@ function updateMobileStats() {
 function updateMobilePrices() {
     setInterval(function() {
         if (typeof STATE === 'undefined' || !STATE.currentPrice) return;
+		
+		 var mobileProfileText = document.getElementById('mobile-profile-text');
+        if (mobileProfileText) {
+            if (typeof UserSystem !== 'undefined' && UserSystem.currentUser) {
+                mobileProfileText.textContent = UserSystem.currentUser.displayName || 'My Profile';
+            } else {
+                mobileProfileText.textContent = 'Sign In / Register';
+            }
+        }
         
         // Update header price display
         var priceEl = document.getElementById('mobile-price');
@@ -21961,7 +22818,8 @@ console.log('💡 Debug commands: debugIndicators(), addRSI(), addMACD()');
   // ============================================
   // FIX 3: Volume Chart Visibility
   // ============================================
-  function fixVolumeChart() {
+  
+    function fixVolumeChart() {
     const volumePane = document.getElementById('volume-chart-pane');
     const volumeChart = document.getElementById('volume-chart');
     
@@ -21973,18 +22831,23 @@ console.log('💡 Debug commands: debugIndicators(), addRSI(), addMACD()');
         volumePane.style.flex = '0 0 80px';
         volumePane.style.minHeight = '80px';
         volumePane.style.height = '80px';
+        volumePane.style.maxHeight = '80px';
         volumePane.style.overflow = 'hidden';
+        volumePane.style.borderTop = '1px solid var(--border-primary)';
+        volumePane.style.borderBottom = '1px solid var(--border-primary)';
+        volumePane.style.width = '100%';
       }
     }
     
     if (volumeChart) {
       volumeChart.style.width = '100%';
       volumeChart.style.height = '100%';
+      volumeChart.style.display = 'block';
     }
     
     // Force chart resize if engine is available
     if (typeof ChartEngine !== 'undefined' && ChartEngine.resizeAll) {
-      setTimeout(() => ChartEngine.resizeAll(), 500);
+      setTimeout(function() { ChartEngine.resizeAll(); }, 500);
     }
     
     console.log('✅ Volume chart fix applied');
@@ -22011,7 +22874,1259 @@ console.log('💡 Debug commands: debugIndicators(), addRSI(), addMACD()');
   
   console.log('✅ Critical fixes module loaded');
 })();
+
+    // ============================================
+  // PHASE 6+7: AUTH, CHAT, PRO SYSTEM
+  // ============================================
+  
+  var cryptoConfig = {
+    POLYGON: { name: 'Polygon', address: '0x8990787D3483A1035Bc460DdA5c75AB6e23BC1b6', fee: '$0.01' },
+    BSC: { name: 'BSC', address: '0x8990787D3483A1035Bc460DdA5c75AB6e23BC1b6', fee: '$0.10' },
+    TRC20: { name: 'Tron (TRC20)', address: 'TYOURTRONADDRESS', fee: '$1' }
+  };
+
+  var UserSystem = {
+    currentUser: null,
+    subscription: 'free',
+    chatCount: 0,
+
+        async init() {
+      console.log('UserSystem.init() starting...');
+      
+      // Load cached session FIRST
+      this.loadSession();
+      
+      // Update UI immediately if we have a cached user
+      if (this.currentUser) {
+        console.log('Found cached user, updating UI');
+        this.updateUI();
+      }
+      
+      // Setup UI elements
+      this.setupAuthModal();
+      this.setupHeaderButtons();
+      this.setupCryptoSwitcher();
+      this.setupNotificationBanner();
+
+      // Listen for Firebase auth state changes
+      if (window.FB && window.FB.auth) {
+        var self = this;
+        console.log('Firebase available, setting up auth listener...');
+        
+        // Use the global onAuthStateChanged directly (no dynamic import needed)
+                window.FB.auth.onAuthStateChanged(async function(user) {
+          console.log('🔥 Firebase auth state changed:', user ? user.email : 'No user');
+          
+          if (user) {
+            console.log('✅ User authenticated, creating session...');
+            
+            // Create user data directly (don't rely on Firestore)
+            var userData = {
+              uid: user.uid,
+              email: user.email,
+              displayName: user.displayName || (user.email ? user.email.split('@')[0] : 'Trader'),
+              photoURL: user.photoURL || null,
+              subscription: 'free'
+            };
+            
+            // Try Firestore, but don't block on it
+            if (window.FB && window.FB.db) {
+              try {
+                var fsMod = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+                var userRef = fsMod.doc(window.FB.db, 'users', user.uid);
+                var snap = await fsMod.getDoc(userRef);
+                
+                if (snap.exists()) {
+                  var data = snap.data();
+                  userData.subscription = data.subscription || 'free';
+                } else {
+                  await fsMod.setDoc(userRef, {
+                    uid: user.uid,
+                    email: user.email,
+                    displayName: userData.displayName,
+                    photoURL: userData.photoURL,
+                    subscription: 'free',
+                    createdAt: new Date().toISOString()
+                  });
+                }
+              } catch(e) {
+                console.warn('Firestore operation failed (non-critical):', e.message);
+              }
+            }
+            
+            // SET THE USER IMMEDIATELY
+            self.currentUser = userData;
+            self.subscription = userData.subscription;
+            
+            // Save to localStorage
+            try {
+              var session = {
+                user: self.currentUser,
+                subscription: self.subscription,
+                expires: Date.now() + (30 * 24 * 60 * 60 * 1000)
+              };
+              localStorage.setItem('tvp_session', JSON.stringify(session));
+              console.log('💾 Session saved to localStorage');
+            } catch(e) {
+              console.error('Failed to save session:', e);
+            }
+            
+            // ⬇️⬇️⬇️ ADD THIS EXPLICIT CALL ⬇️⬇️⬇️
+            self.updateUI();
+            // Also schedule another update in case DOM wasn't ready
+            setTimeout(function() { self.updateUI(); }, 500);
+            // ⬆️⬆️⬆️ END ADDITION ⬆️⬆️⬆️
+            
+            console.log('✅ UI updated - user should see profile icon');
+            
+          } else {
+            console.log('👋 User signed out, clearing session');
+            self.currentUser = null;
+            self.subscription = 'free';
+            localStorage.removeItem('tvp_session');
+            self.updateUI();
+            // Also schedule another update
+            setTimeout(function() { self.updateUI(); }, 500);
+          }
+        });
+        
+        console.log('Auth listener attached successfully');
+      } else {
+        console.warn('Firebase not available, cannot set up auth listener');
+      }
+      
+      console.log('UserSystem.init() complete');
+    },
+
+       loadSession() {
+      console.log('🔍 Loading session from localStorage...');
+      try {
+        var saved = localStorage.getItem('tvp_session');
+        console.log('Saved session exists:', !!saved);
+        
+        if (saved) {
+          var s = JSON.parse(saved);
+          console.log('Session parsed:', s);
+          
+          if (s.expires && s.expires > Date.now()) {
+            this.currentUser = s.user;
+            this.subscription = s.subscription || 'free';
+            console.log('✅ Session loaded for:', this.currentUser.displayName);
+            console.log('Session expires:', new Date(s.expires).toLocaleString());
+          } else {
+            console.log('⚠️ Session expired, removing');
+            localStorage.removeItem('tvp_session');
+            this.currentUser = null;
+          }
+        } else {
+          console.log('No saved session found');
+        }
+      } catch(e) {
+        console.error('❌ Error loading session:', e);
+        localStorage.removeItem('tvp_session');
+        this.currentUser = null;
+      }
+      
+      // Reset chat count if new day
+      var today = new Date().toDateString();
+      var cd = localStorage.getItem('tvp_chat_date');
+      if (cd !== today) { 
+        this.chatCount = 0; 
+        localStorage.setItem('tvp_chat_date', today); 
+      } else {
+        this.chatCount = parseInt(localStorage.getItem('tvp_chat_count') || '0');
+      }
+    },
+	
+	    // ============================================
+    // SAVE SESSION TO LOCAL STORAGE (helper)
+    // ============================================
+    saveSessionToLocal: function() {
+      if (!this.currentUser) return;
+      try {
+        var session = {
+          user: this.currentUser,
+          subscription: this.subscription || 'free',
+          expires: Date.now() + (30 * 24 * 60 * 60 * 1000)
+        };
+        localStorage.setItem('tvp_session', JSON.stringify(session));
+        console.log('💾 Session saved to localStorage for:', this.currentUser.displayName);
+      } catch(e) {
+        console.error('Failed to save session:', e);
+      }
+    },
+
+    async handleFirebaseUser(fbUser) {
+      console.log('Handling Firebase user:', fbUser.email);
+      
+      var userData = {
+        uid: fbUser.uid,
+        email: fbUser.email,
+        displayName: fbUser.displayName || fbUser.email.split('@')[0],
+        photoURL: fbUser.photoURL || null,
+        subscription: 'free'
+      };
+      
+      // Try to get/save Firestore profile
+      if (window.FB && window.FB.db) {
+        try {
+          var fsMod = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+          var userRef = fsMod.doc(window.FB.db, 'users', fbUser.uid);
+          var snap = await fsMod.getDoc(userRef);
+          
+          if (!snap.exists()) {
+            await fsMod.setDoc(userRef, {
+              uid: fbUser.uid,
+              email: fbUser.email,
+              displayName: userData.displayName,
+              photoURL: userData.photoURL,
+              subscription: 'free',
+              createdAt: new Date().toISOString()
+            });
+          } else {
+            var data = snap.data();
+            userData.subscription = data.subscription || 'free';
+          }
+        } catch(e) {
+          console.warn('Firestore operation failed, using basic profile:', e.message);
+        }
+      }
+      
+      this.currentUser = userData;
+      this.subscription = userData.subscription;
+      
+      // SAVE TO LOCAL STORAGE
+      try {
+        var session = {
+          user: this.currentUser,
+          subscription: this.subscription,
+          expires: Date.now() + (30 * 24 * 60 * 60 * 1000)
+        };
+        localStorage.setItem('tvp_session', JSON.stringify(session));
+        console.log('Session saved to localStorage');
+      } catch(e) {
+        console.error('Failed to save session:', e);
+      }
+      
+      this.updateUI();
+      
+      // Set presence
+      if (window.FB && window.FB.rtdb) {
+        try {
+          var dbMod = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js");
+          var pr = dbMod.ref(window.FB.rtdb, 'presence/' + fbUser.uid);
+          await dbMod.set(pr, { 
+            uid: fbUser.uid, 
+            name: userData.displayName, 
+            online: true, 
+            lastSeen: Date.now() 
+          });
+          dbMod.onDisconnect(pr).update({ online: false, lastSeen: Date.now() });
+        } catch(e) {
+          console.warn('Presence setup failed:', e.message);
+        }
+      }
+      
+      console.log('User fully loaded:', userData.displayName);
+    },
+
+    setupAuthModal() {
+      var tabs = document.querySelectorAll('.tvp-auth-tab');
+      for (var i = 0; i < tabs.length; i++) {
+        tabs[i].addEventListener('click', function() {
+          for (var j = 0; j < tabs.length; j++) { 
+            tabs[j].style.background = 'transparent'; 
+            tabs[j].style.color = 'var(--text-muted)'; 
+          }
+          this.style.background = 'var(--accent-primary)'; 
+          this.style.color = '#fff';
+          
+          var isLogin = this.dataset.tab === 'login';
+          document.getElementById('login-form').style.display = isLogin ? 'block' : 'none';
+          document.getElementById('register-form').style.display = isLogin ? 'none' : 'block';
+          document.getElementById('auth-title').textContent = isLogin ? 'Sign In' : 'Create Account';
+          document.getElementById('auth-subtitle').textContent = isLogin ? 'Access all features' : 'Join the community';
+        });
+      }
+
+      // Google Sign-In
+      var googleBtn = document.getElementById('google-auth-btn');
+      if (googleBtn) {
+        googleBtn.addEventListener('click', async function() {
+          if (!window.FB || !window.FB.auth) { 
+            Toast.error('Authentication not ready.');
+            return; 
+          }
+          
+          this.disabled = true;
+          this.textContent = 'Connecting...';
+          
+          try {
+            var authMod = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
+            var provider = new authMod.GoogleAuthProvider();
+                        await authMod.signInWithPopup(window.FB.auth, provider);
+            document.getElementById('auth-modal').classList.remove('visible');
+            
+            // ============================================
+            // Save session directly after Google sign-in
+            // ============================================
+            setTimeout(function() {
+              if (window.FB && window.FB.auth && window.FB.auth.currentUser) {
+                var fbUser = window.FB.auth.currentUser;
+                var userData = {
+                  uid: fbUser.uid,
+                  email: fbUser.email,
+                  displayName: fbUser.displayName || fbUser.email.split('@')[0],
+                  photoURL: fbUser.photoURL || null,
+                  subscription: 'free'
+                };
+                
+                if (typeof UserSystem !== 'undefined') {
+                  UserSystem.currentUser = userData;
+                  UserSystem.subscription = 'free';
+                }
+                
+                try {
+                  var session = {
+                    user: userData,
+                    subscription: 'free',
+                    expires: Date.now() + (30 * 24 * 60 * 60 * 1000)
+                  };
+                  localStorage.setItem('tvp_session', JSON.stringify(session));
+                  console.log('✅ Session saved from Google sign-in');
+                } catch(e) {}
+                
+                if (typeof UserSystem !== 'undefined') {
+                  UserSystem.updateUI();
+                }
+              }
+            }, 800);
+            // ============================================
+            
+            Toast.success('Signed in with Google!');
+          } catch (error) {
+            this.disabled = false;
+            this.textContent = 'Continue with Google';
+            console.error('Google sign-in error:', error);
+            if (error.code === 'auth/popup-blocked') {
+              Toast.warning('Please allow popups for this site.', 5000);
+            } else {
+              Toast.error('Sign-in failed. Try email/password.');
+            }
+          }
+        });
+      }
+
+      // Login button
+            var loginBtn = document.getElementById('login-submit');
+      if (loginBtn) {
+        var newLoginBtn = loginBtn.cloneNode(true);
+        loginBtn.parentNode.replaceChild(newLoginBtn, loginBtn);
+        
+        newLoginBtn.addEventListener('click', async function() {
+          var email = document.getElementById('login-email').value.trim();
+          var password = document.getElementById('login-password').value;
+          var errEl = document.getElementById('login-error');
+          
+          if (errEl) { errEl.textContent = ''; errEl.style.display = 'none'; }
+          
+          if (!email || !password) {
+            if (errEl) { errEl.textContent = 'Please fill in all fields'; errEl.style.display = 'block'; }
+            return;
+          }
+          
+          // Disable button to prevent double click
+          this.disabled = true;
+          this.textContent = 'Signing in...';
+          
+          try {
+            var authMod = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
+            await authMod.signInWithEmailAndPassword(window.FB.auth, email, password);
+            
+            console.log('✅ Login successful');
+            
+            // Don't close modal immediately - let onAuthStateChanged handle it
+            // The auth state listener will call handleFirebaseUser -> updateUI
+            // Wait a moment for the auth state to propagate
+                         setTimeout(function() {
+              document.getElementById('auth-modal').classList.remove('visible');
+              
+              // ============================================
+              // DIRECT SESSION SAVE - bypasses onAuthStateChanged
+              // ============================================
+              if (window.FB && window.FB.auth && window.FB.auth.currentUser) {
+                var fbUser = window.FB.auth.currentUser;
+                console.log('💾 Saving session directly from Firebase user:', fbUser.email);
+                
+                // Build user data
+                var userData = {
+                  uid: fbUser.uid,
+                  email: fbUser.email,
+                  displayName: fbUser.displayName || fbUser.email.split('@')[0],
+                  photoURL: fbUser.photoURL || null,
+                  subscription: 'free'
+                };
+                
+                // Save to UserSystem
+                if (typeof UserSystem !== 'undefined') {
+                  UserSystem.currentUser = userData;
+                  UserSystem.subscription = 'free';
+                }
+                
+                // Save to localStorage directly
+                try {
+                  var session = {
+                    user: userData,
+                    subscription: 'free',
+                    expires: Date.now() + (30 * 24 * 60 * 60 * 1000)
+                  };
+                  localStorage.setItem('tvp_session', JSON.stringify(session));
+                  console.log('✅ Session saved directly to localStorage');
+                } catch(e) {
+                  console.error('Failed to save session:', e);
+                }
+                
+                // Update UI now
+                if (typeof UserSystem !== 'undefined') {
+                  UserSystem.updateUI();
+                }
+              } else {
+                console.warn('No Firebase user available for session save');
+              }
+              // ============================================
+              
+              if (typeof Toast !== 'undefined') {
+                Toast.success('Welcome back!');
+              }
+              document.getElementById('login-email').value = '';
+              document.getElementById('login-password').value = '';
+              
+              // Secondary refresh to be safe
+              setTimeout(function() {
+                if (typeof UserSystem !== 'undefined') {
+                  UserSystem.updateUI();
+                }
+              }, 1000);
+            }, 600);
+            
+          } catch (error) {
+            console.error('Login error:', error);
+            this.disabled = false;
+            this.textContent = 'Sign In';
+            
+            if (errEl) {
+              if (error.code === 'auth/invalid-credential') {
+                errEl.textContent = 'Invalid email or password.';
+              } else if (error.code === 'auth/user-not-found') {
+                errEl.textContent = 'No account found with this email.';
+              } else if (error.code === 'auth/wrong-password') {
+                errEl.textContent = 'Incorrect password.';
+              } else if (error.code === 'auth/too-many-requests') {
+                errEl.textContent = 'Too many attempts. Try again later.';
+              } else if (error.code === 'auth/invalid-email') {
+                errEl.textContent = 'Please enter a valid email.';
+              } else {
+                errEl.textContent = 'Login failed: ' + (error.message || 'Try again.');
+              }
+              errEl.style.display = 'block';
+            }
+          }
+        });
+      }
+
+      // Register button
+            var registerBtn = document.getElementById('register-submit');
+      if (registerBtn) {
+        var newRegisterBtn = registerBtn.cloneNode(true);
+        registerBtn.parentNode.replaceChild(newRegisterBtn, registerBtn);
+        
+        newRegisterBtn.addEventListener('click', async function() {
+          var name = document.getElementById('register-name').value.trim();
+          var email = document.getElementById('register-email').value.trim();
+          var password = document.getElementById('register-password').value;
+          var errEl = document.getElementById('register-error');
+          
+          if (errEl) { errEl.textContent = ''; errEl.style.display = 'none'; }
+          
+          if (!name || !email || !password) {
+            if (errEl) { errEl.textContent = 'Please fill in all fields'; errEl.style.display = 'block'; }
+            return;
+          }
+          
+          if (password.length < 6) {
+            if (errEl) { errEl.textContent = 'Password must be at least 6 characters'; errEl.style.display = 'block'; }
+            return;
+          }
+          
+          // Disable button
+          this.disabled = true;
+          this.textContent = 'Creating account...';
+          
+          try {
+            var authMod = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
+            var userCredential = await authMod.createUserWithEmailAndPassword(window.FB.auth, email, password);
+            await authMod.updateProfile(userCredential.user, { displayName: name });
+            
+            console.log('✅ Registration successful');
+            
+                        setTimeout(function() {
+              document.getElementById('auth-modal').classList.remove('visible');
+              
+              // ============================================
+              // DIRECT SESSION SAVE after registration
+              // ============================================
+              if (window.FB && window.FB.auth && window.FB.auth.currentUser) {
+                var fbUser = window.FB.auth.currentUser;
+                console.log('💾 Saving session directly from Firebase user:', fbUser.email);
+                
+                var userData = {
+                  uid: fbUser.uid,
+                  email: fbUser.email,
+                  displayName: name || fbUser.displayName || fbUser.email.split('@')[0],
+                  photoURL: fbUser.photoURL || null,
+                  subscription: 'free'
+                };
+                
+                if (typeof UserSystem !== 'undefined') {
+                  UserSystem.currentUser = userData;
+                  UserSystem.subscription = 'free';
+                }
+                
+                try {
+                  var session = {
+                    user: userData,
+                    subscription: 'free',
+                    expires: Date.now() + (30 * 24 * 60 * 60 * 1000)
+                  };
+                  localStorage.setItem('tvp_session', JSON.stringify(session));
+                  console.log('✅ Session saved directly to localStorage');
+                } catch(e) {
+                  console.error('Failed to save session:', e);
+                }
+                
+                if (typeof UserSystem !== 'undefined') {
+                  UserSystem.updateUI();
+                }
+              }
+              // ============================================
+              
+              if (typeof Toast !== 'undefined') {
+                Toast.success('Account created! Welcome ' + name + '!');
+              }
+              document.getElementById('register-name').value = '';
+              document.getElementById('register-email').value = '';
+              document.getElementById('register-password').value = '';
+              
+              setTimeout(function() {
+                if (typeof UserSystem !== 'undefined') {
+                  UserSystem.updateUI();
+                }
+              }, 1000);
+            }, 600);
+            
+          } catch (error) {
+            console.error('Registration error:', error);
+            this.disabled = false;
+            this.textContent = 'Create Account';
+            
+            if (errEl) {
+              if (error.code === 'auth/email-already-in-use') {
+                errEl.textContent = 'Email already registered. Try logging in.';
+              } else if (error.code === 'auth/invalid-email') {
+                errEl.textContent = 'Please enter a valid email.';
+              } else if (error.code === 'auth/weak-password') {
+                errEl.textContent = 'Password is too weak. Use at least 6 characters.';
+              } else {
+                errEl.textContent = 'Registration failed. Try again.';
+              }
+              errEl.style.display = 'block';
+            }
+          }
+        });
+      }
+    },
+    setupHeaderButtons() {
+      var self = this;
+      
+      // ============================================
+      // AUTH BUTTON
+      // ============================================
+      var authBtn = document.getElementById('auth-btn');
+      if (authBtn) {
+        var newAuthBtn = authBtn.cloneNode(true);
+        authBtn.parentNode.replaceChild(newAuthBtn, authBtn);
+        newAuthBtn.addEventListener('click', function() {
+          document.getElementById('auth-modal').classList.add('visible');
+        });
+      }
+      
+      // ============================================
+      // COMMUNITY BUTTON
+      // ============================================
+      var commBtn = document.getElementById('community-btn');
+      if (commBtn) {
+        var newCommBtn = commBtn.cloneNode(true);
+        commBtn.parentNode.replaceChild(newCommBtn, commBtn);
+        newCommBtn.addEventListener('click', function() {
+          if (!UserSystem.currentUser) {
+            document.getElementById('auth-modal').classList.add('visible');
+            if (typeof Toast !== 'undefined') {
+              Toast.warning('Please sign in to access community chat');
+            }
+            return;
+          }
+          document.getElementById('community-modal').classList.add('visible');
+          ChatSystem.subscribe(ChatSystem.currentChannel);
+          setTimeout(function() {
+            var input = document.getElementById('chat-input');
+            if (input) input.focus();
+          }, 300);
+        });
+      }
+
+      // ============================================
+      // USER PROFILE BUTTON & DROPDOWN
+      // ============================================
+      var userBtn = document.getElementById('user-profile-btn');
+      var dropdown = document.getElementById('user-profile-dropdown');
+      
+      if (userBtn && dropdown) {
+        var newUserBtn = userBtn.cloneNode(true);
+        userBtn.parentNode.replaceChild(newUserBtn, userBtn);
+        userBtn = newUserBtn;
+        
+        // Make sure the button is clickable
+        userBtn.style.pointerEvents = 'auto';
+        userBtn.style.cursor = 'pointer';
+        userBtn.style.zIndex = '100';
+        
+                userBtn.addEventListener('click', function(e) { 
+          e.stopPropagation();
+          e.preventDefault();
+          
+          console.log('👤 Profile button clicked');
+          
+          // Check Firebase auth state directly (most reliable)
+          if (window.FB && window.FB.auth && window.FB.auth.currentUser) {
+            console.log('Firebase has current user:', window.FB.auth.currentUser.email);
+            
+            // If UserSystem doesn't have the user, rebuild it
+            if (!UserSystem.currentUser) {
+              console.log('Rebuilding user from Firebase...');
+              var fbUser = window.FB.auth.currentUser;
+              UserSystem.currentUser = {
+                uid: fbUser.uid,
+                email: fbUser.email,
+                displayName: fbUser.displayName || fbUser.email.split('@')[0],
+                photoURL: fbUser.photoURL || null,
+                subscription: 'free'
+              };
+              UserSystem.subscription = 'free';
+              
+              // Save to localStorage
+              try {
+                var session = {
+                  user: UserSystem.currentUser,
+                  subscription: 'free',
+                  expires: Date.now() + (30 * 24 * 60 * 60 * 1000)
+                };
+                localStorage.setItem('tvp_session', JSON.stringify(session));
+                console.log('Session rebuilt from Firebase');
+              } catch(e) {}
+              
+              UserSystem.updateUI();
+            }
+          }
+          
+          // Force reload session from localStorage as backup
+          UserSystem.loadSession();
+          
+          if (!UserSystem.currentUser) {
+            console.log('No user found, showing auth modal');
+            document.getElementById('auth-modal')?.classList.add('visible');
+            if (typeof Toast !== 'undefined') {
+              Toast.warning('Please sign in first');
+            }
+            return;
+          }
+          
+          console.log('User found:', UserSystem.currentUser.displayName);
+          
+          // Toggle dropdown
+          var isVisible = dropdown.style.display === 'block';
+          
+          if (isVisible) {
+            dropdown.style.display = 'none';
+          } else {
+            UserSystem.updateDropdownContent();
+            dropdown.style.display = 'block';
+          }
+        });
+        
+        // Close dropdown when clicking outside (SINGLE listener)
+        document.addEventListener('click', function(e) {
+          if (dropdown.style.display === 'block' && 
+              !userBtn.contains(e.target) && 
+              !dropdown.contains(e.target)) {
+            dropdown.style.display = 'none';
+          }
+        });
+        
+        // ============================================
+        // DROPDOWN MENU ITEMS (Logout, Settings, etc.)
+        // ============================================
+        var menuItems = dropdown.querySelectorAll('.profile-menu-item');
+        for (var i = 0; i < menuItems.length; i++) {
+          var newMenuItem = menuItems[i].cloneNode(true);
+          menuItems[i].parentNode.replaceChild(newMenuItem, menuItems[i]);
+          menuItems[i] = newMenuItem;
+          
+          menuItems[i].addEventListener('click', function(e) {
+            e.stopPropagation();
+            var action = this.getAttribute('data-action');
+            
+            if (action === 'logout') {
+              // Clear local session
+              UserSystem.currentUser = null;
+              UserSystem.subscription = 'free';
+              localStorage.removeItem('tvp_session');
+              
+              // Sign out from Firebase if available
+              if (window.FB && window.FB.auth && window.FB.auth.currentUser) {
+                (async function() {
+                  try {
+                    var authMod = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
+                    await authMod.signOut(window.FB.auth);
+                    console.log('Firebase signOut complete');
+                  } catch(e) {
+                    console.warn('Firebase signOut error:', e.message);
+                  }
+                })();
+              }
+              
+              // Update UI immediately
+              UserSystem.updateUI();
+              
+              if (typeof Toast !== 'undefined') {
+                Toast.info('Signed out successfully');
+              }
+            }
+            
+            if (action === 'subscription') {
+              document.getElementById('payment-modal')?.classList.add('visible');
+            }
+            
+            if (action === 'settings') {
+              document.getElementById('settings-modal')?.classList.add('visible');
+            }
+            
+            dropdown.style.display = 'none';
+          });
+        }
+      } // ← END of if (userBtn && dropdown)
+
+      // ============================================
+      // UPGRADE BUTTON (separate from dropdown)
+      // ============================================
+      var upgradeBtn = document.getElementById('upgrade-btn');
+      if (upgradeBtn) {
+        var newUpgradeBtn = upgradeBtn.cloneNode(true);
+        upgradeBtn.parentNode.replaceChild(newUpgradeBtn, upgradeBtn);
+        newUpgradeBtn.addEventListener('click', function() {
+          document.getElementById('upgrade-modal')?.classList.remove('visible');
+          document.getElementById('payment-modal')?.classList.add('visible');
+        });
+      }
+    },  // ← END of setupHeaderButtons()
+
+    // ============================================
+    // LOGOUT FUNCTION
+    // ============================================
+    async logout() {
+      if (window.FB && window.FB.auth && window.FB.auth.currentUser) {
+        try {
+          var authMod = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
+          await authMod.signOut(window.FB.auth);
+        } catch(e) {
+          console.warn('Logout error:', e.message);
+        }
+      }
+      this.currentUser = null;
+      this.subscription = 'free';
+      localStorage.removeItem('tvp_session');
+      this.updateUI();
+      if (typeof Toast !== 'undefined') {
+        Toast.info('Signed out');
+      }
+    },
+
+    // ============================================
+    // UPDATE UI (SHOW/HIDE AUTH VS USER BUTTONS)
+    // ============================================
+      updateUI() {
+      var authBtn = document.getElementById('auth-btn');
+      var userBtn = document.getElementById('user-profile-btn');
+      var commBtn = document.getElementById('community-btn');
+      
+      console.log('🔄 updateUI called. Current user:', this.currentUser ? this.currentUser.displayName : 'null');
+
+      if (!authBtn || !userBtn) {
+        console.warn('updateUI: Buttons not ready, retrying in 300ms...');
+        var self = this;
+        setTimeout(function() { self.updateUI(); }, 300);
+        return;
+      }
+
+      if (this.currentUser) {
+        authBtn.style.display = 'none';
+        userBtn.style.display = 'flex';
+        userBtn.style.pointerEvents = 'auto';
+        userBtn.style.cursor = 'pointer';
+        if (commBtn) commBtn.style.display = 'flex';
+
+        // Force avatar update
+        var btnAvatar = userBtn.querySelector('div');
+        if (btnAvatar) {
+          btnAvatar.textContent = (this.currentUser.displayName || 'U')[0].toUpperCase();
+        }
+
+        this.updateDropdownContent();
+        console.log('✅ Profile UI shown for', this.currentUser.displayName);
+      } else {
+        authBtn.style.display = 'flex';
+        userBtn.style.display = 'none';
+        if (commBtn) commBtn.style.display = 'none';
+        var dropdown = document.getElementById('user-profile-dropdown');
+        if (dropdown) dropdown.style.display = 'none';
+      }
+    },
+
+    // ============================================
+    // CRYPTO PAYMENT SWITCHER
+    // ============================================
+    setupCryptoSwitcher() {
+      var btns = document.querySelectorAll('.tvp-crypto-net');
+      for (var i = 0; i < btns.length; i++) {
+        var newBtn = btns[i].cloneNode(true);
+        btns[i].parentNode.replaceChild(newBtn, btns[i]);
+        btns[i] = newBtn;
+        
+        btns[i].addEventListener('click', function() {
+          for (var j = 0; j < btns.length; j++) { 
+            btns[j].style.border = '1px solid var(--border-primary)'; 
+            btns[j].style.background = 'transparent'; 
+            btns[j].style.color = 'var(--text-muted)'; 
+          }
+          this.style.border = '1px solid #26a69a'; 
+          this.style.background = 'rgba(38,166,154,0.1)'; 
+          this.style.color = '#26a69a';
+          
+          var net = this.getAttribute('data-net');
+          var cfg = cryptoConfig[net];
+          if (cfg) {
+            var netName = document.getElementById('crypto-net-name');
+            var addr = document.getElementById('crypto-address');
+            if (netName) netName.textContent = cfg.name;
+            if (addr) addr.textContent = cfg.address;
+          }
+        });
+      }
+    },
+
+    // ============================================
+    // NOTIFICATION BANNER
+    // ============================================
+    setupNotificationBanner() {
+      if ('Notification' in window && Notification.permission === 'default') {
+        setTimeout(function() {
+          var banner = document.getElementById('notif-banner');
+          if (banner) banner.style.display = 'block';
+        }, 8000);
+      }
+      var enableBtn = document.getElementById('notif-enable');
+      if (enableBtn) {
+        var newEnableBtn = enableBtn.cloneNode(true);
+        enableBtn.parentNode.replaceChild(newEnableBtn, enableBtn);
+        newEnableBtn.addEventListener('click', async function() {
+          var p = await Notification.requestPermission();
+          if (p === 'granted') {
+            document.getElementById('notif-banner').style.display = 'none';
+            if (typeof Toast !== 'undefined') {
+              Toast.success('Notifications enabled!');
+            }
+          }
+        });
+      }
+    },
+
+    // ============================================
+    // UPDATE DROPDOWN CONTENT
+    // ============================================
+    updateDropdownContent: function() {
+      if (!this.currentUser) return;
+      
+      var avatar = document.getElementById('user-avatar');
+      var nameEl = document.getElementById('user-display-name');
+      var emailEl = document.getElementById('user-display-email');
+      var badge = document.getElementById('user-badge');
+      
+      if (avatar) {
+        avatar.textContent = (this.currentUser.displayName || 'U')[0].toUpperCase();
+      }
+      if (nameEl) {
+        nameEl.textContent = this.currentUser.displayName || 'Trader';
+      }
+      if (emailEl) {
+        emailEl.textContent = this.currentUser.email || '';
+      }
+      if (badge) {
+        if (this.subscription === 'pro') {
+          badge.textContent = 'PRO';
+          badge.style.background = 'linear-gradient(135deg, #ffd700, #ffaa00)';
+          badge.style.color = '#000';
+        } else {
+          badge.textContent = 'FREE';
+          badge.style.background = 'var(--accent-muted)';
+          badge.style.color = 'var(--accent-primary)';
+        }
+      }
+    },
+
+    // ============================================
+    // CHAT LIMITS
+    // ============================================
+    incrementChat: function() { 
+      this.chatCount++; 
+      localStorage.setItem('tvp_chat_count', this.chatCount.toString()); 
+    },
+    
+    canChat: function() { 
+      return this.subscription === 'pro' || this.chatCount < 10; 
+    },
+
+    // ============================================
+    // PRO FEATURE CHECK
+    // ============================================
+    checkPro: function(feature) {
+      if (this.subscription === 'pro') return true;
+      var trial = U.storage.get('tvp_trial');
+      if (trial && trial.expires > Date.now()) return true;
+      var limits = { indicators: '5 indicators', alerts: '3 alerts', chat: '10 messages/day' };
+      var msg = limits[feature] || 'this feature';
+      var featEl = document.getElementById('upgrade-feature');
+      var msgEl = document.getElementById('upgrade-msg');
+      if (featEl) featEl.textContent = feature;
+      if (msgEl) msgEl.textContent = 'Free: ' + msg + '. Upgrade for unlimited!';
+      document.getElementById('upgrade-modal').classList.add('visible');
+      return false;
+    }
+};
+// ⬆️ THIS IS THE FINAL CLOSING OF UserSystem OBJECT - NO COMMA HERE
+	 
+
+
+  // ============================================
+  // CHAT SYSTEM
+  // ============================================
+    var ChatSystem = {
+    currentChannel: 'general',
+    msgSub: null,
+
+    subscribe: async function(channel) {
+      this.currentChannel = channel;
+      if (this.msgSub) {
+        try { this.msgSub(); } catch(e) {}
+        this.msgSub = null;
+      }
+      
+      if (!window.FB || !window.FB.rtdb) { 
+        this.renderLocal(); 
+        return; 
+      }
+      
+      try {
+        var dbMod = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js");
+        var msgsRef = dbMod.ref(window.FB.rtdb, 'chat/' + channel);
+        var self = this;
+        
+        this.msgSub = dbMod.onValue(msgsRef, function(snap) {
+          var msgs = [];
+          snap.forEach(function(c) { 
+            var val = c.val();
+            if (val) msgs.push(val);
+          });
+          msgs.sort(function(a, b) { return (a.timestamp || 0) - (b.timestamp || 0); });
+          self.renderMessages(msgs.slice(-100));
+          self.updatePresence();
+        });
+      } catch(e) {
+        console.warn('Chat subscription failed, using local:', e.message);
+        this.renderLocal();
+      }
+    },
+
+    renderLocal: function() {
+      var key = 'tvp_chat_' + this.currentChannel;
+      var msgs = [];
+      try { msgs = JSON.parse(localStorage.getItem(key)) || []; } catch(e) {}
+      this.renderMessages(msgs);
+    },
+
+    renderMessages: function(msgs) {
+      var container = document.getElementById('chat-messages');
+      if (!container) return;
+      var uid = UserSystem.currentUser ? UserSystem.currentUser.uid : null;
+      
+      var html = '';
+      for (var i = 0; i < msgs.length; i++) {
+        var m = msgs[i];
+        var isOwn = m.uid === uid;
+        var dir = isOwn ? 'flex-direction:row-reverse;' : '';
+        var align = isOwn ? 'right' : 'left';
+        var bgGrad = isOwn ? '#58a6ff,#9b6cff' : '#ff6b6b,#ee5a24';
+        var msgBg = isOwn ? 'var(--accent-muted)' : 'var(--bg-tertiary)';
+        
+        html += '<div style="display:flex;gap:8px;padding:6px;' + dir + '">' +
+          '<div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,' + bgGrad + ');display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:700;flex-shrink:0;">' + (m.name || 'U')[0].toUpperCase() + '</div>' +
+          '<div style="max-width:70%;">' +
+            '<div style="font-size:9px;color:#58a6ff;font-weight:600;">' + (m.name || 'User') + '</div>' +
+            '<div style="background:' + msgBg + ';padding:6px 10px;border-radius:10px;font-size:12px;color:var(--text-primary);">' + m.text + '</div>' +
+            '<div style="font-size:8px;color:var(--text-muted);margin-top:2px;text-align:' + align + ';">' + U.timeAgo(m.timestamp) + '</div>' +
+          '</div>' +
+        '</div>';
+      }
+      
+      container.innerHTML = html || '<div style="text-align:center;padding:20px;color:var(--text-muted);">No messages yet. Start the conversation!</div>';
+      container.scrollTop = container.scrollHeight;
+    },
+
+    updatePresence: async function() {
+      if (!window.FB || !window.FB.rtdb) { 
+        var countEl = document.getElementById('chat-online-count');
+        if (countEl) countEl.textContent = '0'; 
+        return; 
+      }
+      
+      try {
+        var dbMod = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js");
+        dbMod.onValue(dbMod.ref(window.FB.rtdb, 'presence'), function(snap) {
+          var users = [];
+          snap.forEach(function(c) { 
+            var d = c.val(); 
+            if (d && d.online) users.push(d); 
+          });
+          
+          var countEl = document.getElementById('chat-online-count');
+          if (countEl) countEl.textContent = users.length;
+          
+          var usersEl = document.getElementById('chat-users');
+          if (usersEl) {
+            var html = '';
+            for (var i = 0; i < users.length; i++) {
+              var u = users[i];
+              html += '<div style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:10px;">' +
+                '<div style="position:relative;"><div style="width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#58a6ff,#9b6cff);display:flex;align-items:center;justify-content:center;color:#fff;font-size:9px;font-weight:700;">' + (u.name || 'U')[0] + '</div><div style="position:absolute;bottom:0;right:0;width:6px;height:6px;background:#26a69a;border-radius:50%;border:2px solid var(--bg-secondary);"></div></div>' +
+                '<span style="color:var(--text-secondary);">' + u.name + '</span>' +
+              '</div>';
+            }
+            usersEl.innerHTML = html;
+          }
+        }, { onlyOnce: false });
+      } catch(e) {}
+    },
+
+    sendMessage: async function() {
+      var input = document.getElementById('chat-input');
+      var text = input ? input.value.trim() : '';
+      if (!text) return;
+      if (!UserSystem.currentUser) { Toast.warning('Sign in to chat'); return; }
+      if (!UserSystem.canChat()) { UserSystem.checkPro('chat'); return; }
+      
+      if (window.FB && window.FB.rtdb) {
+        try {
+          var dbMod = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js");
+          await dbMod.push(dbMod.ref(window.FB.rtdb, 'chat/' + this.currentChannel), { 
+            text: text, 
+            uid: UserSystem.currentUser.uid, 
+            name: UserSystem.currentUser.displayName, 
+            timestamp: Date.now() 
+          });
+        } catch(e) {
+          this.saveLocal(text);
+        }
+      } else {
+        this.saveLocal(text);
+      }
+      
+      UserSystem.incrementChat();
+      if (input) { input.value = ''; input.focus(); }
+    },
+    
+    saveLocal: function(text) {
+      var key = 'tvp_chat_' + this.currentChannel;
+      var msgs = [];
+      try { msgs = JSON.parse(localStorage.getItem(key)) || []; } catch(e) {}
+      msgs.push({ text: text, uid: UserSystem.currentUser.uid, name: UserSystem.currentUser.displayName, timestamp: Date.now() });
+      if (msgs.length > 100) msgs = msgs.slice(-100);
+      localStorage.setItem(key, JSON.stringify(msgs));
+      this.renderMessages(msgs);
+    }
+  };
+
+  // Setup channel clicks
+  var channelBtns = document.querySelectorAll('.tvp-channel');
+  for (var ci = 0; ci < channelBtns.length; ci++) {
+    channelBtns[ci].addEventListener('click', function() {
+      for (var cj = 0; cj < channelBtns.length; cj++) { 
+        channelBtns[cj].style.color = 'var(--text-muted)'; 
+        channelBtns[cj].style.borderBottomColor = 'transparent'; 
+      }
+      this.style.color = 'var(--accent-primary)'; 
+      this.style.borderBottomColor = 'var(--accent-primary)';
+      ChatSystem.subscribe(this.dataset.channel);
+    });
+  }
+
+  // Setup chat input
+  var chatInput = document.getElementById('chat-input');
+  if (chatInput) {
+    chatInput.addEventListener('keypress', function(e) { 
+      if (e.key === 'Enter') ChatSystem.sendMessage(); 
+    });
+  }
+  var chatSend = document.getElementById('chat-send');
+  if (chatSend) {
+    chatSend.addEventListener('click', function() { ChatSystem.sendMessage(); });
+  }
+
+      // ============================================
+  // INITIALIZE PHASE 6+7
+  // ============================================
+  console.log('Starting Phase 6+7 initialization...');
+  
+  // ============================================
+  // DIRECT LOGOUT BUTTON LISTENER (works regardless of closure)
+  // ============================================
+  document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+      var logoutBtn = document.getElementById('logout-btn-direct');
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log('🔴 Logout clicked (direct handler)');
+          
+          // Clear everything
+          if (typeof UserSystem !== 'undefined') {
+            UserSystem.currentUser = null;
+            UserSystem.subscription = 'free';
+          }
+          
+          // Clear localStorage
+          localStorage.removeItem('tvp_session');
+          localStorage.removeItem('tvp_chat_count');
+          
+          // Hide dropdown
+          var dropdown = document.getElementById('user-profile-dropdown');
+          if (dropdown) dropdown.style.display = 'none';
+          
+          // Sign out from Firebase if available
+          if (window.FB && window.FB.auth && window.FB.auth.currentUser) {
+            window.FB.auth.signOut().catch(function(e) {
+              console.warn('Firebase signOut error:', e.message);
+            });
+          }
+          
+          // Update UI
+          var authBtn = document.getElementById('auth-btn');
+          var userBtn = document.getElementById('user-profile-btn');
+          var commBtn = document.getElementById('community-btn');
+          if (authBtn) authBtn.style.display = 'flex';
+          if (userBtn) userBtn.style.display = 'none';
+          if (commBtn) commBtn.style.display = 'none';
+          
+          if (typeof UserSystem !== 'undefined' && UserSystem.updateUI) {
+            UserSystem.updateUI();
+          }
+          
+          if (typeof Toast !== 'undefined') {
+            Toast.info('Signed out successfully');
+          }
+          
+          console.log('✅ Logout complete');
+        });
+        console.log('✅ Logout button listener attached');
+      } else {
+        console.warn('⚠️ Logout button not found in DOM');
+      }
+    }, 1000);
+  });
+  
+  // Wait for Firebase to be ready, then initialize
+  var firebaseCheckCount = 0;
+  var firebaseCheckInterval = setInterval(function() {
+    firebaseCheckCount++;
+    if (window.FB && window.FB.auth) {
+      clearInterval(firebaseCheckInterval);
+      console.log('Firebase ready, initializing UserSystem...');
+      UserSystem.init();
+      console.log('Phase 6+7 integrated successfully');
+    } else if (firebaseCheckCount > 50) {
+      clearInterval(firebaseCheckInterval);
+      console.warn('Firebase not available after 5 seconds, initializing without it');
+      UserSystem.init();
+    }
+  }, 100);
 })();
+</script>
+
+<!-- ============================================ -->
+<!-- FIREBASE SDK -->
+<!-- ============================================ -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, updateProfile, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getDatabase, ref, push, onValue, set, onDisconnect } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDbpC4YUsnM1rbdB4adutnCaJX8OblexS4",
+    authDomain: "tradevisionpro-25888.firebaseapp.com",
+    databaseURL: "https://tradevisionpro-25888-default-rtdb.firebaseio.com",
+    projectId: "tradevisionpro-25888",
+    storageBucket: "tradevisionpro-25888.firebasestorage.app",
+    messagingSenderId: "542979547209",
+    appId: "1:542979547209:web:629a2773daba203c771f98"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  window.FB = {
+    app,
+    auth: getAuth(app),
+    db: getFirestore(app),
+    rtdb: getDatabase(app)
+  };
+  
+  // Set persistence to LOCAL so user stays logged in
+  setPersistence(window.FB.auth, browserLocalPersistence)
+    .then(function() { console.log('✅ Firebase persistence set to LOCAL'); })
+    .catch(function(err) { console.warn('Persistence setup failed:', err); });
+  
+  console.log('✅ Firebase Ready');
+  
+  // ⬇️⬇️⬇️ ADD THIS: Immediate auth state check ⬇️⬇️⬇️
+  setTimeout(function() {
+    if (window.FB && window.FB.auth) {
+      var currentUser = window.FB.auth.currentUser;
+      console.log('🔍 Initial currentUser check:', currentUser ? currentUser.email : 'none');
+      if (currentUser && typeof UserSystem !== 'undefined') {
+        console.log('Found existing Firebase user, syncing...');
+        UserSystem.handleFirebaseUser(currentUser);
+      } else if (typeof UserSystem !== 'undefined') {
+        UserSystem.updateUI();
+      }
+    }
+  }, 800);
 </script>
 
 </body>
