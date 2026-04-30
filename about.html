@@ -4,66 +4,249 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>About – TradeVision Pro</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg-primary: #0d1117;
       --bg-secondary: #161b22;
+      --bg-card: #1c2128;
       --text-primary: #e6edf3;
+      --text-secondary: #c9d1d9;
       --text-muted: #8b949e;
       --accent: #58a6ff;
+      --up-color: #26a69a;
+      --warning: #d29922;
+      --border: #30363d;
     }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      margin: 0;
       font-family: 'Inter', sans-serif;
       background: var(--bg-primary);
       color: var(--text-primary);
-      padding: 40px 20px;
-      max-width: 800px;
+      padding: 40px 20px 60px;
+      max-width: 900px;
       margin: auto;
+      line-height: 1.6;
     }
-    h1 { color: var(--accent); }
+    h1 { font-size: 2.2rem; margin-bottom: 0.2em; color: var(--accent); }
+    h2 { font-size: 1.5rem; margin: 2em 0 0.6em; color: var(--text-primary); }
+    h3 { font-size: 1.2rem; margin: 1.5em 0 0.5em; color: var(--text-secondary); }
+    p { margin-bottom: 1em; color: var(--text-secondary); }
     a { color: var(--accent); text-decoration: none; }
     a:hover { text-decoration: underline; }
-    .container { background: var(--bg-secondary); padding: 30px; border-radius: 12px; margin-top: 20px; }
-    .back-link { font-size: 14px; margin-bottom: 20px; display: inline-block; }
+    .back-link {
+      display: inline-block;
+      margin-bottom: 2em;
+      font-size: 0.9rem;
+    }
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin: 1.5em 0;
+    }
+    .tier-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin: 1em 0;
+    }
+    .tier {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      position: relative;
+    }
+    .tier h4 {
+      margin: 0 0 0.5em;
+      font-size: 1.1rem;
+    }
+    .tier.popular {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent);
+    }
+    .tier .price {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--accent);
+    }
+    .tier .price-sub {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+    .tier ul {
+      list-style: none;
+      padding: 0;
+      margin: 1em 0;
+    }
+    .tier ul li {
+      padding: 0.3em 0;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+    .tier ul li::before {
+      content: "✓ ";
+      color: var(--up-color);
+      font-weight: bold;
+    }
+    .badge {
+      display: inline-block;
+      padding: 0.2em 0.8em;
+      border-radius: 20px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      background: var(--accent);
+      color: #fff;
+      margin-bottom: 0.5em;
+    }
+    .affiliate-note {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      border-left: 3px solid var(--warning);
+      padding-left: 1em;
+      margin: 1em 0;
+    }
+    footer {
+      margin-top: 3em;
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
   </style>
 </head>
 <body>
   <a href="/index.html" class="back-link">← Back to TradeVision Pro</a>
-  <h1>About TradeVision Pro</h1>
-  <div class="container">
+
+  <h1>TradeVision Pro</h1>
+  <p style="font-size:1.1rem;">Advanced Trading Platform – Free & Premium Tools for Serious Traders</p>
+
+  <div class="card">
+    <h2>🚀 Our Mission</h2>
     <p>
-      <strong>TradeVision Pro</strong> is a professional‑grade crypto trading and analysis platform
-      built for serious traders. We combine real‑time market data from Binance, advanced
-      technical analysis tools, and a powerful charting engine to give you everything you
-      need in one place – entirely for free.
+      We believe every trader deserves access to <strong>institutional‑grade charting, real‑time data,
+      and advanced analytics</strong> without paying thousands of dollars a year. That's why we built
+      TradeVision Pro – a platform that combines the best of TradingView, Binance, and your favorite
+      indicators into one seamless, lightning‑fast web app.
     </p>
     <p>
-      Our mission is to democratize access to institutional‑level trading tools. Whether you’re
-      scalping on the 1‑minute chart or analysing multi‑year trends, TradeVision Pro provides
-      over <strong>100 indicators</strong>, 30+ drawing tools, Fibonacci patterns, a full Pine Script
-      editor, paper trading, and a community chat – all without installing anything.
-    </p>
-    <p>
-      Developed by a passionate team of traders and software engineers, we constantly
-      add new features based on feedback from our user community. Your trading success
-      drives our innovation.
-    </p>
-    <p>
-      <strong>Key Features:</strong><br>
-      • Real‑time WebSocket data from Binance<br>
-      • 100+ built‑in technical indicators<br>
-      • Advanced drawing tools & Fibonacci levels<br>
-      • Multi‑timeframe analysis (1m to 1M)<br>
-      • Paper trading simulator with P&L tracking<br>
-      • Pine Script editor for custom strategies<br>
-      • Community chat (powered by Firebase)<br>
-      • Fully responsive – works on desktop, tablet & mobile
+      Our core features are <strong>100% free</strong> forever: real‑time WebSocket data from Binance,
+      over 100 technical indicators, 30+ drawing tools, multi‑timeframe analysis, paper trading,
+      and a community chat. We sustain the platform through optional premium subscriptions, affiliate
+      partnerships, and white‑label licensing – never by selling your data.
     </p>
   </div>
-  <div style="margin-top:30px; text-align:center; color:var(--text-muted); font-size:12px;">
-    © 2025 TradeVision Pro. All rights reserved.
+
+  <h2>💎 Subscription Plans</h2>
+  <p>Upgrade for unlimited indicators, alerts, multi‑chart layouts, and API access. All plans include a <strong>7‑day free trial</strong> – no credit card required for the trial (only for payment).</p>
+
+  <div class="tier-grid">
+    <div class="tier">
+      <span class="badge">Free</span>
+      <h4>Starter</h4>
+      <div class="price">$0</div>
+      <ul>
+        <li>Real‑time charts</li>
+        <li>5 indicators</li>
+        <li>3 alerts</li>
+        <li>Basic drawing tools</li>
+        <li>Community chat (10 msgs/day)</li>
+        <li>Paper trading</li>
+      </ul>
+    </div>
+
+    <div class="tier popular">
+      <span class="badge">Popular</span>
+      <h4>Pro</h4>
+      <div class="price">$5 <span class="price-sub">/mo</span></div>
+      <ul>
+        <li>30 indicators</li>
+        <li>20 alerts</li>
+        <li>No ads</li>
+        <li>Advanced drawing tools</li>
+        <li>Multi‑chart (2 charts)</li>
+        <li>Priority support</li>
+      </ul>
+    </div>
+
+    <div class="tier">
+      <span class="badge">Best Value</span>
+      <h4>Ultimate</h4>
+      <div class="price">$10 <span class="price-sub">/mo</span></div>
+      <ul>
+        <li><strong>All 100+ indicators</strong></li>
+        <li>Unlimited alerts</li>
+        <li>4‑chart layout</li>
+        <li>API access (10k req/day)</li>
+        <li>Premium indicators</li>
+        <li>Data export (CSV/JSON)</li>
+      </ul>
+    </div>
   </div>
+
+  <p style="font-size:0.9rem; color:var(--text-muted);">
+    💰 <strong>Save 20% with annual billing</strong> – Pro $48/yr (was $60), Ultimate $96/yr (was $120).
+    <br>🔒 Payment processing is handled securely by <strong>crypto (USDT)</strong> on Polygon, BSC, or Tron – instant activation, zero fees.
+  </p>
+
+  <h2>🤝 Partner Exchanges (Earn While You Trade)</h2>
+  <p>
+    We've partnered with leading exchanges to offer you special benefits. When you sign up through
+    our links, you get <strong>reduced fees / bonuses</strong>, and we earn a small commission
+    (at no extra cost to you). This helps keep TradeVision Pro free for everyone.
+  </p>
+  <div class="tier-grid">
+    <div class="tier"><h4>Binance</h4><p>World's largest exchange. Get 10% off trading fees.</p><a href="#">Join Binance →</a></div>
+    <div class="tier"><h4>Bybit</h4><p>Derivatives & spot. Up to $30,000 bonus.</p><a href="#">Join Bybit →</a></div>
+    <div class="tier"><h4>OKX</h4><p>Web3 wallet & trading. Mystery box rewards.</p><a href="#">Join OKX →</a></div>
+    <div class="tier"><h4>KuCoin</h4><p>Altcoin paradise. Fee discount for new users.</p><a href="#">Join KuCoin →</a></div>
+  </div>
+
+  <h2>📡 API Access for Developers</h2>
+  <p>
+    Need raw market data? Our REST API serves crypto, stock, and forex data with lightning‑fast
+    response times. Choose a plan that matches your volume.
+  </p>
+  <div class="tier-grid">
+    <div class="tier"><h4>Free</h4><p>1,000 req/day</p><p>Rate: 1 req/sec</p></div>
+    <div class="tier"><h4>Basic</h4><p>10,000 req/day</p><p>Rate: 5 req/sec</p><p>$5/mo</p></div>
+    <div class="tier"><h4>Pro</h4><p>100,000 req/day</p><p>Rate: 20 req/sec</p><p>$10/mo</p></div>
+  </div>
+
+  <h2>🧠 Premium Indicators & Courses</h2>
+  <p>
+    Unlock advanced proprietary indicators (AI‑powered predictions, Smart Money Flow, etc.) for a
+    one‑time purchase. Once bought, they're yours forever – no recurring fees.
+  </p>
+  <p>
+    We also offer professional video courses on technical analysis, risk management, and
+    algorithmic trading ($49‑$199) hosted right on our platform.
+  </p>
+
+  <h2>🏢 White Label Licensing</h2>
+  <p>
+    Offer a fully branded version of TradeVision Pro to your clients. Perfect for brokerages,
+    trading communities, and educational platforms. Starting at <strong>$999/month</strong>.
+    Contact us at <a href="mailto:mwanza@tradevisionpro.online">mwanza@tradevisionpro.online</a> for details.
+  </p>
+
+  <h2>🔒 Privacy & Security</h2>
+  <p>
+    Your data is yours. We use Firebase Authentication (Google) – we never see your password.
+    Chart drawings, watchlists, and account balances are stored locally in your browser.
+    Read our full <a href="/privacy.html">Privacy Policy</a>.
+  </p>
+
+  <h2>📬 Get in Touch</h2>
+  <p>
+    Questions? Suggestions? Reach out at <a href="mailto:mwanza@tradevisionpro.online">mwanza@tradevisionpro.online</a> or
+    <a href="/contact.html">visit our contact page</a>.
+  </p>
+
+  <footer>
+    © 2025 TradeVision Pro – Built for traders, by traders.
+  </footer>
 </body>
 </html>
