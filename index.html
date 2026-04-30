@@ -25,6 +25,9 @@
   <meta name="twitter:title" content="TradeVision Pro - Advanced Trading Platform" />
   <meta name="twitter:description" content="Professional crypto charts with real-time data and AI analysis" />
   <meta name="twitter:image" content="https://tradevisionpro.online/profile.png" />
+
+  <!-- Monitization -->
+<meta name="coinzilla" content="faf32a4ff8a617a9e9062d879de9e685" />
   
   <!-- Canonical URL -->
   <link rel="canonical" href="https://tradevisionpro.online/chart.html" />
@@ -9581,6 +9584,33 @@ kbd {
                 <span class="slider"></span>
               </label>
             </div>
+			  <!-- API Settings Panel -->
+<div class="settings-panel" id="settings-api">
+  <div class="setting-item">
+    <div class="setting-info">
+      <span class="setting-label">Your API Key</span>
+      <span class="setting-desc">Use this key to access market data</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <input type="text" id="api-key-display" readonly 
+             style="width:200px;padding:6px;background:var(--bg-primary);border:1px solid var(--border-primary);color:var(--text-primary);font-family:monospace;font-size:12px;" 
+             value="No key generated" />
+      <button class="btn btn-sm btn-secondary" id="copy-api-key-btn"><i class="fas fa-copy"></i></button>
+    </div>
+  </div>
+  <div class="setting-item">
+    <span class="setting-label">Usage Today</span>
+    <span class="setting-value" id="api-usage-display">--/--</span>
+  </div>
+  <div class="setting-item">
+    <span class="setting-label">Rate Limit</span>
+    <span class="setting-value" id="api-limit-display">--</span>
+  </div>
+  <div style="display:flex;gap:8px;margin-top:12px;">
+    <button class="btn btn-primary" id="generate-api-key-btn" style="flex:1;">Generate New Key</button>
+    <button class="btn btn-secondary" id="revoke-api-key-btn" style="flex:1;color:var(--danger);">Revoke Key</button>
+  </div>
+</div>
           </div>
         </div>
       </div>
