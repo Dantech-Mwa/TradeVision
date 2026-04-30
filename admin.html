@@ -111,12 +111,15 @@
     let currentUser = null;
 
     // Check admin status
-    async function isAdmin(uid) {
-      const snap = await getDoc(doc(db, 'admin', 'admins'));
-      if (!snap.exists()) return false;
-      const data = snap.data();
-      return data.uids && data.uids.includes(uid);
-    }
+    // Check admin status (reads a string 'uids' from RTDB, splits by comma)
+async function isAdmin(uid) {
+  const snap = await get(ref(db, 'admin/admins'));
+  if (!snap.exists()) return false;
+  const data = snap.val();
+  const uidsStr = data.uids || '';
+  const uids = uidsStr.split(',').map(s => s.trim());
+  return uids.includes(uid);
+}
 
     // Show dashboard
     async function showDashboard() {
