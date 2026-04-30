@@ -9430,26 +9430,57 @@ kbd {
   <!-- ============================================ -->
   <!-- PAYMENT MODAL (Crypto) -->
   <!-- ============================================ -->
-  <div class="modal-overlay" id="payment-modal">
-    <div class="modal-container modal-md" style="max-width:440px;">
-      <div class="modal-header">
-        <h3>Complete Payment - $5/mo</h3>
-        <button class="modal-close" onclick="document.getElementById('payment-modal').classList.remove('visible')"><i class="fas fa-times"></i></button>
+  <!-- Payment Modal -->
+<div class="modal-overlay" id="payment-modal">
+  <div class="modal-container modal-md" style="max-width:440px;">
+    <div class="modal-header">
+      <h3>Complete Payment - $5/mo</h3>
+      <button class="modal-close" onclick="document.getElementById('payment-modal').classList.remove('visible')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body" style="padding:16px;">
+      <h4 style="font-size:11px;color:var(--text-muted);margin-bottom:10px;">Pay with Cryptocurrency (No Fees)</h4>
+      <div style="display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap;">
+        <button class="tvp-crypto-net active" data-net="POLYGON" 
+          style="padding:5px 12px;border:1px solid #26a69a;background:rgba(38,166,154,0.1);color:#26a69a;border-radius:14px;font-size:10px;cursor:pointer;font-weight:600;">
+          Polygon · $0.01
+        </button>
+        <button class="tvp-crypto-net" data-net="MATIC_USDC"
+          style="padding:5px 12px;border:1px solid var(--border-primary);background:transparent;color:var(--text-muted);border-radius:14px;font-size:10px;cursor:pointer;">
+          MATIC USDC · $0.01
+        </button>
+        <button class="tvp-crypto-net" data-net="BSC"
+          style="padding:5px 12px;border:1px solid var(--border-primary);background:transparent;color:var(--text-muted);border-radius:14px;font-size:10px;cursor:pointer;">
+          BSC · $0.10
+        </button>
+        <button class="tvp-crypto-net" data-net="TRC20"
+          style="padding:5px 12px;border:1px solid var(--border-primary);background:transparent;color:var(--text-muted);border-radius:14px;font-size:10px;cursor:pointer;">
+          TRC20 · $1
+        </button>
       </div>
-      <div class="modal-body" style="padding:16px;">
-        <h4 style="font-size:11px;color:var(--text-muted);margin-bottom:10px;">Pay with Cryptocurrency (No Fees)</h4>
-        <div style="display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap;">
-          <button class="tvp-crypto-net active" data-net="POLYGON" style="padding:5px 12px;border:1px solid #26a69a;background:rgba(38,166,154,0.1);color:#26a69a;border-radius:14px;font-size:10px;cursor:pointer;font-weight:600;">Polygon · $0.01</button>
-          <button class="tvp-crypto-net" data-net="BSC" style="padding:5px 12px;border:1px solid var(--border-primary);background:transparent;color:var(--text-muted);border-radius:14px;font-size:10px;cursor:pointer;">BSC · $0.10</button>
-          <button class="tvp-crypto-net" data-net="TRC20" style="padding:5px 12px;border:1px solid var(--border-primary);background:transparent;color:var(--text-muted);border-radius:14px;font-size:10px;cursor:pointer;">TRC20 · $1</button>
-        </div>
-        <div style="font-size:10px;color:var(--text-muted);margin-bottom:6px;">Send <strong>5 USDT</strong> on <strong id="crypto-net-name">Polygon</strong></div>
-        <div style="background:var(--bg-tertiary);padding:10px;border-radius:6px;font-family:monospace;font-size:10px;word-break:break-all;color:var(--up-color);margin-bottom:8px;" id="crypto-address">0x8990787D3483A1035Bc460DdA5c75AB6e23BC1b6</div>
-        <button onclick="navigator.clipboard.writeText(document.getElementById('crypto-address').textContent);alert('Address copied!')" style="width:100%;padding:8px;background:var(--accent-muted);color:var(--accent-primary);border:none;border-radius:6px;cursor:pointer;font-size:11px;">📋 Copy Address</button>
-        <p style="font-size:9px;color:var(--text-muted);text-align:center;margin-top:8px;">PRO activates 5-10 minutes after payment</p>
+
+      <div style="font-size:10px;color:var(--text-muted);margin-bottom:6px;">
+        Send <strong>5 USDT</strong> on <strong id="crypto-net-name">Polygon</strong>
       </div>
+      <div style="background:var(--bg-tertiary);padding:10px;border-radius:6px;font-family:monospace;font-size:10px;word-break:break-all;color:var(--up-color);margin-bottom:8px;" id="crypto-address">
+        0x8990787D3483A1035Bc460DdA5c75AB6e23BC1b6
+      </div>
+      <button onclick="navigator.clipboard.writeText(document.getElementById('crypto-address').textContent);alert('Address copied!')" 
+        style="width:100%;padding:8px;background:var(--accent-muted);color:var(--accent-primary);border:none;border-radius:6px;cursor:pointer;font-size:11px;">
+        📋 Copy Address
+      </button>
+
+      <hr style="border-color:var(--border-primary);margin:16px 0;">
+
+      <!-- PayPal Option -->
+      <h4 style="font-size:11px;color:var(--text-muted);margin-bottom:10px;">Pay with PayPal</h4>
+      <div id="paypal-button-container"></div>
+
+      <p style="font-size:9px;color:var(--text-muted);text-align:center;margin-top:8px;">
+        PRO activates instantly after payment
+      </p>
     </div>
   </div>
+</div>
 
   <!-- ============================================ -->
   <!-- NOTIFICATION BANNER -->
@@ -10403,6 +10434,48 @@ kbd {
       }
     }
   }, 800);
+</script>
+	<!-- PayPal SDK -->
+<script src="https://www.paypal.com/sdk/js?client-id=AQjhiaIynZCR727DZMskpbAik1vP-Rsh-6N_IHGPoHJBaTH-2uepJ03MZX9G70PzyVrjA_W1e59jC-yR&currency=USD"></script>
+<script>
+  function initPayPal() {
+    if (typeof paypal === 'undefined') return;
+    paypal.Buttons({
+      createOrder: function(data, actions) {
+        return actions.order.create({
+          purchase_units: [{
+            amount: { value: '5.00' }
+          }]
+        });
+      },
+      onApprove: function(data, actions) {
+        return actions.order.capture().then(function(details) {
+          // Payment successful – upgrade user
+          if (typeof UserSystem !== 'undefined' && UserSystem.currentUser) {
+            UserSystem.subscription = 'pro';
+            UserSystem.currentUser.subscription = 'pro';
+            UserSystem.saveSessionToLocal();
+            UserSystem.updateUI();
+            Toast.success('Payment successful! PRO activated.');
+          }
+          document.getElementById('payment-modal').classList.remove('visible');
+        });
+      },
+      onError: function(err) {
+        Toast.error('Payment failed. Please try again.');
+      }
+    }).render('#paypal-button-container');
+  }
+
+  // Initialize PayPal when the payment modal is opened
+  const observer = new MutationObserver(function(mutations) {
+    mutations.forEach(function(mutation) {
+      if (mutation.target.classList.contains('visible') && mutation.target.id === 'payment-modal') {
+        setTimeout(initPayPal, 1000);
+      }
+    });
+  });
+  observer.observe(document.getElementById('payment-modal'), { attributes: true, attributeFilter: ['class'] });
 </script>
 </body>
 </html>
