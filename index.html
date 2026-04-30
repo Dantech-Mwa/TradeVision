@@ -9473,7 +9473,22 @@ kbd {
 
       <!-- PayPal Option -->
       <h4 style="font-size:11px;color:var(--text-muted);margin-bottom:10px;">Pay with PayPal</h4>
-      <div id="paypal-button-container"></div>
+      <div id="paypal-container-T4BV28D9BL3RE"></div>
+<script>
+  if (typeof paypal !== 'undefined') {
+    paypal.HostedButtons({
+      hostedButtonId: "T4BV28D9BL3RE",
+    }).render("#paypal-container-T4BV28D9BL3RE");
+  } else {
+    // Fallback: display a manual link just in case SDK fails
+    document.getElementById('paypal-container-T4BV28D9BL3RE').innerHTML = `
+      <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=wambuamwanza6@gmail.com&item_name=TradeVision PRO Monthly&amount=5.00&currency_code=USD&no_shipping=1&return=https://tradevisionpro.online&cancel_return=https://tradevisionpro.online"
+         target="_blank"
+         style="display:inline-block;background:#0070ba;color:white;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;">
+        Pay $5.00 with PayPal
+      </a>`;
+  }
+</script>
 
       <p style="font-size:9px;color:var(--text-muted);text-align:center;margin-top:8px;">
         PRO activates instantly after payment
@@ -10435,47 +10450,7 @@ kbd {
     }
   }, 800);
 </script>
-	<!-- PayPal SDK -->
-<script src="https://www.paypal.com/sdk/js?client-id=AQjhiaIynZCR727DZMskpbAik1vP-Rsh-6N_IHGPoHJBaTH-2uepJ03MZX9G70PzyVrjA_W1e59jC-yR&currency=USD"></script>
-<script>
-  function initPayPal() {
-    if (typeof paypal === 'undefined') return;
-    paypal.Buttons({
-      createOrder: function(data, actions) {
-        return actions.order.create({
-          purchase_units: [{
-            amount: { value: '5.00' }
-          }]
-        });
-      },
-      onApprove: function(data, actions) {
-        return actions.order.capture().then(function(details) {
-          // Payment successful – upgrade user
-          if (typeof UserSystem !== 'undefined' && UserSystem.currentUser) {
-            UserSystem.subscription = 'pro';
-            UserSystem.currentUser.subscription = 'pro';
-            UserSystem.saveSessionToLocal();
-            UserSystem.updateUI();
-            Toast.success('Payment successful! PRO activated.');
-          }
-          document.getElementById('payment-modal').classList.remove('visible');
-        });
-      },
-      onError: function(err) {
-        Toast.error('Payment failed. Please try again.');
-      }
-    }).render('#paypal-button-container');
-  }
-
-  // Initialize PayPal when the payment modal is opened
-  const observer = new MutationObserver(function(mutations) {
-    mutations.forEach(function(mutation) {
-      if (mutation.target.classList.contains('visible') && mutation.target.id === 'payment-modal') {
-        setTimeout(initPayPal, 1000);
-      }
-    });
-  });
-  observer.observe(document.getElementById('payment-modal'), { attributes: true, attributeFilter: ['class'] });
-</script>
+	<!-- PayPal Hosted Buttons SDK -->
+<script src="https://www.paypal.com/sdk/js?client-id=BAA6-pKbrnpOaKuvEMkQ8nG3vEociOmnS3OVnp_oPANPNefmj3dPjrXcVvoKrr3prhADRZ4TY1jidZlNOQ&components=hosted-buttons&disable-funding=venmo&currency=USD"></script>
 </body>
 </html>
