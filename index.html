@@ -3248,72 +3248,215 @@ kbd { background: var(--bg-tertiary); border: 1px solid var(--border-primary); b
   <!-- ============================================ -->
   <!-- PAYMENT MODAL (Crypto) -->
   <!-- ============================================ -->
-  <!-- Payment Modal -->
+  <!-- ============================================ -->
+<!-- PAYMENT MODAL - 3 TIER SYSTEM -->
+<!-- ============================================ -->
 <div class="modal-overlay" id="payment-modal">
-  <div class="modal-container modal-md" style="max-width:440px;">
-    <div class="modal-header">
-      <h3>Complete Payment - $5/mo</h3>
-      <button class="modal-close" onclick="document.getElementById('payment-modal').classList.remove('visible')"><i class="fas fa-times"></i></button>
+  <div class="modal-container modal-md" style="max-width:460px;">
+    <div class="modal-header" style="border-bottom:1px solid var(--border-primary);">
+      <div class="modal-title">
+        <i class="fas fa-crown" style="color:#ffd700;font-size:18px;"></i>
+        <div>
+          <h3 style="margin:0;">Upgrade Plan</h3>
+          <p class="modal-subtitle" style="margin:2px 0 0 0;">Unlock powerful features</p>
+        </div>
+      </div>
+      <button class="modal-close" onclick="document.getElementById('payment-modal').classList.remove('visible')">
+        <i class="fas fa-times"></i>
+      </button>
     </div>
+
     <div class="modal-body" style="padding:16px;">
-      <h4 style="font-size:11px;color:var(--text-muted);margin-bottom:10px;">Pay with Cryptocurrency (No Fees)</h4>
+      
+      <!-- ============================================ -->
+      <!-- TIER SELECTION BUTTONS -->
+      <!-- ============================================ -->
+      <h4 style="font-size:11px;color:var(--text-muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px;">Select Plan</h4>
+      <div style="display:flex;gap:8px;margin-bottom:16px;">
+        <button class="tvp-plan-btn active" data-plan="pro" 
+          style="flex:1;padding:12px 8px;border:2px solid var(--accent-primary);background:var(--accent-muted);color:var(--accent-primary);border-radius:10px;cursor:pointer;font-size:11px;font-weight:700;transition:all 0.2s;text-align:center;">
+          <div style="font-size:20px;margin-bottom:4px;">⭐</div>
+          <div style="font-size:13px;">PRO</div>
+          <div style="font-size:10px;opacity:0.7;">$5/month</div>
+        </button>
+        <button class="tvp-plan-btn" data-plan="ultimate" 
+          style="flex:1;padding:12px 8px;border:2px solid var(--border-primary);background:transparent;color:var(--text-muted);border-radius:10px;cursor:pointer;font-size:11px;font-weight:700;transition:all 0.2s;text-align:center;">
+          <div style="font-size:20px;margin-bottom:4px;">👑</div>
+          <div style="font-size:13px;">ULTIMATE</div>
+          <div style="font-size:10px;opacity:0.7;">$10/month</div>
+        </button>
+      </div>
+
+      <!-- ============================================ -->
+      <!-- FEATURES COMPARISON -->
+      <!-- ============================================ -->
+      <div id="plan-features" style="background:var(--bg-tertiary);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:11px;color:var(--text-secondary);line-height:2;border:1px solid var(--border-primary);">
+        <!-- Dynamically filled by JS -->
+      </div>
+
+      <!-- ============================================ -->
+      <!-- PRICE DISPLAY -->
+      <!-- ============================================ -->
+      <div style="text-align:center;margin-bottom:18px;padding:12px;background:linear-gradient(135deg,rgba(255,215,0,0.08),rgba(255,215,0,0.02));border-radius:10px;border:1px solid rgba(255,215,0,0.15);">
+        <span style="font-size:32px;font-weight:800;color:#ffd700;" id="plan-price">$5</span>
+        <span style="font-size:13px;color:var(--text-muted);">/month</span>
+        <div style="font-size:10px;color:var(--text-muted);margin-top:4px;" id="plan-name-display">TradeVision PRO</div>
+      </div>
+
+      <!-- ============================================ -->
+      <!-- CRYPTO PAYMENT -->
+      <!-- ============================================ -->
+      <h4 style="font-size:11px;color:var(--text-muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px;">
+        <i class="fab fa-bitcoin" style="color:#f7931a;"></i> Pay with Crypto
+      </h4>
+      
       <div style="display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap;">
         <button class="tvp-crypto-net active" data-net="POLYGON" 
-          style="padding:5px 12px;border:1px solid #26a69a;background:rgba(38,166,154,0.1);color:#26a69a;border-radius:14px;font-size:10px;cursor:pointer;font-weight:600;">
-          Polygon · $0.01
+          style="padding:5px 12px;border:1px solid #26a69a;background:rgba(38,166,154,0.1);color:#26a69a;border-radius:14px;font-size:10px;cursor:pointer;font-weight:600;white-space:nowrap;">
+          Polygon
         </button>
         <button class="tvp-crypto-net" data-net="MATIC_USDC"
-          style="padding:5px 12px;border:1px solid var(--border-primary);background:transparent;color:var(--text-muted);border-radius:14px;font-size:10px;cursor:pointer;">
-          MATIC USDC · $0.01
+          style="padding:5px 12px;border:1px solid var(--border-primary);background:transparent;color:var(--text-muted);border-radius:14px;font-size:10px;cursor:pointer;white-space:nowrap;">
+          MATIC USDC
         </button>
         <button class="tvp-crypto-net" data-net="BSC"
-          style="padding:5px 12px;border:1px solid var(--border-primary);background:transparent;color:var(--text-muted);border-radius:14px;font-size:10px;cursor:pointer;">
-          BSC · $0.10
+          style="padding:5px 12px;border:1px solid var(--border-primary);background:transparent;color:var(--text-muted);border-radius:14px;font-size:10px;cursor:pointer;white-space:nowrap;">
+          BSC
         </button>
         <button class="tvp-crypto-net" data-net="TRC20"
-          style="padding:5px 12px;border:1px solid var(--border-primary);background:transparent;color:var(--text-muted);border-radius:14px;font-size:10px;cursor:pointer;">
-          TRC20 · $1
+          style="padding:5px 12px;border:1px solid var(--border-primary);background:transparent;color:var(--text-muted);border-radius:14px;font-size:10px;cursor:pointer;white-space:nowrap;">
+          TRC20
         </button>
       </div>
 
       <div style="font-size:10px;color:var(--text-muted);margin-bottom:6px;">
-        Send <strong>5 USDT</strong> on <strong id="crypto-net-name">Polygon</strong>
+        Send <strong id="crypto-amount-display">5 USDT</strong> on <strong id="crypto-net-name">Polygon</strong>
       </div>
-      <div style="background:var(--bg-tertiary);padding:10px;border-radius:6px;font-family:monospace;font-size:10px;word-break:break-all;color:var(--up-color);margin-bottom:8px;" id="crypto-address">
+      <div style="background:var(--bg-primary);padding:12px;border-radius:8px;font-family:monospace;font-size:11px;word-break:break-all;color:var(--up-color);margin-bottom:8px;border:1px solid var(--border-primary);" id="crypto-address">
         0x8990787D3483A1035Bc460DdA5c75AB6e23BC1b6
       </div>
       <button onclick="navigator.clipboard.writeText(document.getElementById('crypto-address').textContent);alert('Address copied!')" 
-        style="width:100%;padding:8px;background:var(--accent-muted);color:var(--accent-primary);border:none;border-radius:6px;cursor:pointer;font-size:11px;">
-        📋 Copy Address
+        style="width:100%;padding:10px;background:var(--accent-muted);color:var(--accent-primary);border:1px solid var(--accent-primary);border-radius:8px;cursor:pointer;font-size:11px;font-weight:600;transition:all 0.2s;">
+        📋 Copy Wallet Address
       </button>
 
       <hr style="border-color:var(--border-primary);margin:16px 0;">
 
-      <!-- PayPal Option -->
-      <h4 style="font-size:11px;color:var(--text-muted);margin-bottom:10px;">Pay with PayPal</h4>
-      <div id="paypal-container-T4BV28D9BL3RE"></div>
-<script>
-  if (typeof paypal !== 'undefined') {
-    paypal.HostedButtons({
-      hostedButtonId: "T4BV28D9BL3RE",
-    }).render("#paypal-container-T4BV28D9BL3RE");
-  } else {
-    // Fallback: display a manual link just in case SDK fails
-    document.getElementById('paypal-container-T4BV28D9BL3RE').innerHTML = `
-      <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=wambuamwanza6@gmail.com&item_name=TradeVision PRO Monthly&amount=5.00&currency_code=USD&no_shipping=1&return=https://tradevisionpro.online&cancel_return=https://tradevisionpro.online"
-         target="_blank"
-         style="display:inline-block;background:#0070ba;color:white;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;">
-        Pay $5.00 with PayPal
-      </a>`;
-  }
-</script>
+      <!-- ============================================ -->
+      <!-- PAYPAL PAYMENT -->
+      <!-- ============================================ -->
+      <h4 style="font-size:11px;color:var(--text-muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px;">
+        <i class="fab fa-paypal" style="color:#0070ba;"></i> Pay with PayPal
+      </h4>
+      <div id="paypal-container-T4BV28D9BL3RE" style="min-height:40px;"></div>
 
-      <p style="font-size:9px;color:var(--text-muted);text-align:center;margin-top:8px;">
-        PRO activates instantly after payment
+      <p style="font-size:9px;color:var(--text-muted);text-align:center;margin-top:10px;">
+        <span id="plan-activation-text">PRO</span> access activates instantly after payment confirmation
       </p>
+
     </div>
   </div>
 </div>
+
+<!-- ============================================ -->
+<!-- PAYMENT MODAL - PLAN SWITCHER SCRIPT -->
+<!-- ============================================ -->
+<script>
+(function() {
+  'use strict';
+  
+  var selectedPlan = 'pro';
+  
+  var planConfig = {
+    pro: {
+      name: 'PRO',
+      price: 5,
+      color: '#ffd700',
+      icon: '⭐',
+      features: [
+        { text: '30 Indicators', ok: true },
+        { text: '20 Alerts', ok: true },
+        { text: '2 Charts', ok: true },
+        { text: 'Unlimited Chat', ok: true },
+        { text: 'API Access', ok: false },
+        { text: 'Premium Indicators', ok: false },
+        { text: 'Data Export', ok: false },
+        { text: 'No Ads', ok: true }
+      ]
+    },
+    ultimate: {
+      name: 'ULTIMATE',
+      price: 10,
+      color: '#9b6cff',
+      icon: '👑',
+      features: [
+        { text: 'Unlimited Indicators', ok: true },
+        { text: 'Unlimited Alerts', ok: true },
+        { text: '4 Charts', ok: true },
+        { text: 'Unlimited Chat', ok: true },
+        { text: 'API Access', ok: true },
+        { text: 'Premium Indicators', ok: true },
+        { text: 'Data Export', ok: true },
+        { text: 'No Ads', ok: true }
+      ]
+    }
+  };
+
+  function updatePlanUI() {
+    var plan = planConfig[selectedPlan];
+    
+    // Update plan buttons
+    document.querySelectorAll('.tvp-plan-btn').forEach(function(btn) {
+      var isActive = btn.dataset.plan === selectedPlan;
+      btn.style.border = isActive ? '2px solid ' + plan.color : '2px solid var(--border-primary)';
+      btn.style.background = isActive ? 'rgba(' + (selectedPlan === 'pro' ? '255,215,0' : '155,108,255') + ',0.1)' : 'transparent';
+      btn.style.color = isActive ? plan.color : 'var(--text-muted)';
+      btn.classList.toggle('active', isActive);
+    });
+    
+    // Update price
+    document.getElementById('plan-price').textContent = '$' + plan.price;
+    document.getElementById('plan-name-display').textContent = 'TradeVision ' + plan.name;
+    document.getElementById('plan-name-display').style.color = plan.color;
+    
+    // Update crypto amount
+    document.getElementById('crypto-amount-display').textContent = plan.price + ' USDT';
+    
+    // Update features list
+    document.getElementById('plan-features').innerHTML = plan.features.map(function(f) {
+      return '<div style="display:flex;align-items:center;gap:8px;">' +
+        '<span style="color:' + (f.ok ? 'var(--up-color)' : 'var(--down-color)') + ';font-size:14px;width:16px;text-align:center;">' + (f.ok ? '✓' : '✗') + '</span>' +
+        '<span style="color:' + (f.ok ? 'var(--text-primary)' : 'var(--text-muted)') + ';">' + f.text + '</span>' +
+      '</div>';
+    }).join('');
+    
+    // Update activation text
+    document.getElementById('plan-activation-text').textContent = plan.name;
+    document.getElementById('plan-activation-text').style.color = plan.color;
+    
+    // Update PayPal button (if using dynamic amount)
+    var paypalContainer = document.getElementById('paypal-container-T4BV28D9BL3RE');
+    if (paypalContainer) {
+      if (selectedPlan === 'pro') {
+        paypalContainer.innerHTML = '<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=wambuamwanza6@gmail.com&item_name=TradeVision PRO Monthly&amount=5.00&currency_code=USD&no_shipping=1&return=https://tradevisionpro.online&cancel_return=https://tradevisionpro.online" target="_blank" style="display:inline-block;background:#0070ba;color:white;padding:10px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:12px;width:100%;text-align:center;">Pay $5.00 with PayPal ⭐</a>';
+      } else {
+        paypalContainer.innerHTML = '<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=wambuamwanza6@gmail.com&item_name=TradeVision ULTIMATE Monthly&amount=10.00&currency_code=USD&no_shipping=1&return=https://tradevisionpro.online&cancel_return=https://tradevisionpro.online" target="_blank" style="display:inline-block;background:#7c3aed;color:white;padding:10px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:12px;width:100%;text-align:center;">Pay $10.00 with PayPal 👑</a>';
+      }
+    }
+  }
+
+  // Plan button click handlers
+  document.querySelectorAll('.tvp-plan-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      selectedPlan = this.dataset.plan;
+      updatePlanUI();
+    });
+  });
+
+  // Initialize UI
+  updatePlanUI();
+})();
+</script>
 
   <!-- ============================================ -->
   <!-- NOTIFICATION BANNER -->
