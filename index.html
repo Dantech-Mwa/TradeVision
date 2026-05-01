@@ -3362,7 +3362,208 @@ kbd { background: var(--bg-tertiary); border: 1px solid var(--border-primary); b
     </div>
   </div>
 </div>
+<!-- PayPal SDK - Load Once -->
+<script src="https://www.paypal.com/sdk/js?client-id=BAA6-pKbrnpOaKuvEMkQ8nG3vEociOmnS3OVnp_oPANPNefmj3dPjrXcVvoKrr3prhADRZ4TY1jidZlNOQ&components=hosted-buttons&disable-funding=venmo&currency=USD"></script>
 
+<!-- PayPal Buttons Initialization -->
+<script>
+(function() {
+  'use strict';
+  
+  var selectedPlan = 'pro';
+  var paypalRendered = { pro: false, ultimate: false };
+  
+  var planConfig = {
+    pro: {
+      name: 'PRO',
+      price: 5,
+      color: '#ffd700',
+      icon: '⭐',
+      paypalButtonId: 'T4BV28D9BL3RE',
+      features: [
+        { text: '30 Indicators', ok: true },
+        { text: '20 Alerts', ok: true },
+        { text: '2 Charts', ok: true },
+        { text: 'Unlimited Chat', ok: true },
+        { text: '50 AI Requests/day', ok: true },
+        { text: 'No Ads', ok: true },
+        { text: 'API Access', ok: false },
+        { text: 'Premium Indicators', ok: false },
+        { text: 'Data Export', ok: false }
+      ]
+    },
+    ultimate: {
+      name: 'ULTIMATE',
+      price: 10,
+      color: '#9b6cff',
+      icon: '👑',
+      paypalButtonId: '7EBJYV5NG2452',
+      features: [
+        { text: 'Unlimited Indicators', ok: true },
+        { text: 'Unlimited Alerts', ok: true },
+        { text: '4 Charts', ok: true },
+        { text: 'Unlimited Chat', ok: true },
+        { text: '200 AI Requests/day', ok: true },
+        { text: 'No Ads', ok: true },
+        { text: 'API Access', ok: true },
+        { text: 'Premium Indicators', ok: true },
+        { text: 'Data Export', ok: true }
+      ]
+    }
+  };
+
+  function updatePlanUI() {
+    var plan = planConfig[selectedPlan];
+    
+    // Update plan buttons
+    document.querySelectorAll('.tvp-plan-btn').forEach(function(btn) {
+      var isActive = btn.dataset.plan === selectedPlan;
+      var cfg = planConfig[btn.dataset.plan];
+      btn.style.border = isActive ? '2px solid ' + cfg.color : '2px solid var(--border-primary)';
+      btn.style.background = isActive ? 'rgba(' + (btn.dataset.plan === 'pro' ? '255,215,0' : '155,108,255') + ',0.1)' : 'transparent';
+      btn.style.color = isActive ? cfg.color : 'var(--text-muted)';
+    });
+    
+    // Update price
+    document.getElementById('plan-price').textContent = '$' + plan.price;
+    document.getElementById('plan-name-display').textContent = 'TradeVision ' + plan.name;
+    document.getElementById('plan-name-display').style.color = plan.color;
+    
+    // Update crypto amount
+    var cryptoAmount = document.getElementById('crypto-amount-display');
+    if (cryptoAmount) cryptoAmount.textContent = plan.price + ' USDT';
+    
+    // Update features
+    var featuresEl = document.getElementById('plan-features');
+    if (featuresEl) {
+      featuresEl.innerHTML = plan.features.map(function(f) {
+        return '<div style="display:flex;align-items:center;gap:8px;">' +
+          '<span style="color:' + (f.ok ? 'var(--up-color)' : 'var(--down-color)') + ';font-size:14px;width:16px;text-align:center;">' + (f.ok ? '✓' : '✗') + '</span>' +
+          '<span style="color:' + (f.ok ? 'var(--text-primary)' : 'var(--text-muted)') + ';">' + f.text + '</span>' +
+        '</div>';
+      }).join('');
+    }
+    
+    // Update activation text
+    var activationEl = document.getElementById('plan-activation-text');
+    if (activationEl) {
+      activationEl.textContent = plan.name;
+      activationEl.style.color = plan.color;
+    }
+    
+    // Show/hide PayPal containers
+    var proContainer = document.getElementById('paypal-container-pro');
+    var ultimateContainer = document.getElementById('paypal-container-ultimate');
+    
+    if (proContainer) proContainer.style.display = selectedPlan === 'pro' ? 'block' : 'none';
+    if (ultimateContainer) ultimateContainer.style.display = selectedPlan === 'ultimate' ? 'block' : 'none';
+    
+    // DELAYED RENDER - Wait for modal to be visible
+    setTimeout(function() {
+      renderCurrentPayPalButton();
+    }, 100);
+  }
+  
+  function renderCurrentPayPalButton() {
+    var plan = planConfig[selectedPlan];
+    var containerId = selectedPlan === 'pro' ? 'paypal-container-pro' : 'paypal-container-ultimate';
+    var container = document.getElementById(containerId);
+    
+    if (!container) return;
+    
+    // Check if PayPal SDK is ready
+    if (typeof paypal === 'undefined') {
+      // Fallback link
+      container.innerHTML = 
+        '<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=mwanza.madet@gmail.com&item_name=TradeVision+' + plan.name + '+Monthly&amount=' + plan.price + '.00&currency_code=USD&no_shipping=1" target="_blank" ' +
+        'style="display:inline-block;background:' + (selectedPlan === 'pro' ? '#0070ba' : '#7c3aed') + ';color:white;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;font-size:13px;width:100%;text-align:center;">' +
+        'Pay with PayPal</a>';
+      return;
+    }
+    
+    // Clear and re-render
+    container.innerHTML = '';
+    
+    paypal.HostedButtons({
+      hostedButtonId: plan.paypalButtonId,
+    }).render('#' + containerId);
+    
+    console.log('✅ PayPal button rendered for: ' + plan.name);
+  }
+
+  // Plan button click handlers
+  document.querySelectorAll('.tvp-plan-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      selectedPlan = this.dataset.plan;
+      updatePlanUI();
+    });
+  });
+
+  // Crypto network switcher
+  document.querySelectorAll('.tvp-crypto-net').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.tvp-crypto-net').forEach(function(b) {
+        b.style.border = '1px solid var(--border-primary)';
+        b.style.background = 'transparent';
+        b.style.color = 'var(--text-muted)';
+      });
+      this.style.border = '1px solid #26a69a';
+      this.style.background = 'rgba(38,166,154,0.1)';
+      this.style.color = '#26a69a';
+
+      var net = this.dataset.net;
+      var netNames = { POLYGON: 'Polygon', BSC: 'BSC', TRC20: 'Tron (TRC20)' };
+      var netNameEl = document.getElementById('crypto-net-name');
+      if (netNameEl) netNameEl.textContent = netNames[net] || net;
+    });
+  });
+
+  // ============================================
+  // CRITICAL: Render PayPal when modal OPENS
+  // ============================================
+  var paymentModal = document.getElementById('payment-modal');
+  if (paymentModal) {
+    // Override the click handlers for buttons that open this modal
+    var openPaymentModal = function() {
+      paymentModal.classList.add('visible');
+      setTimeout(function() {
+        updatePlanUI();
+      }, 200);
+    };
+    
+    // Attach to upgrade buttons
+    var upgradeBtn = document.getElementById('upgrade-btn');
+    if (upgradeBtn) {
+      upgradeBtn.addEventListener('click', function() {
+        document.getElementById('upgrade-modal').classList.remove('visible');
+        openPaymentModal();
+      });
+    }
+    
+    // Attach to tier banner button
+    document.addEventListener('click', function(e) {
+      if (e.target.closest('#upgrade-tier-btn')) {
+        openPaymentModal();
+      }
+    });
+    
+    // Also trigger when modal becomes visible via any means
+    var observer = new MutationObserver(function(mutations) {
+      mutations.forEach(function(mutation) {
+        if (paymentModal.classList.contains('visible')) {
+          setTimeout(function() {
+            updatePlanUI();
+          }, 200);
+        }
+      });
+    });
+    observer.observe(paymentModal, { attributes: true, attributeFilter: ['class'] });
+  }
+
+  // Initial setup
+  updatePlanUI();
+})();
+</script>
   <!-- ============================================ -->
   <!-- NOTIFICATION BANNER -->
   <!-- ============================================ -->
@@ -4266,170 +4467,7 @@ kbd { background: var(--bg-tertiary); border: 1px solid var(--border-primary); b
     }
   }, 800);
 </script>
-	<!-- PayPal SDK - Load Once -->
-<script src="https://www.paypal.com/sdk/js?client-id=BAA6-pKbrnpOaKuvEMkQ8nG3vEociOmnS3OVnp_oPANPNefmj3dPjrXcVvoKrr3prhADRZ4TY1jidZlNOQ&components=hosted-buttons&disable-funding=venmo&currency=USD"></script>
-
-<!-- PayPal Buttons Initialization -->
-<script>
-(function() {
-  'use strict';
-  
-  var selectedPlan = 'pro';
-  var paypalRendered = { pro: false, ultimate: false };
-  
-  var planConfig = {
-    pro: {
-      name: 'PRO',
-      price: 5,
-      color: '#ffd700',
-      icon: '⭐',
-      paypalButtonId: 'T4BV28D9BL3RE',
-      features: [
-        { text: '30 Indicators', ok: true },
-        { text: '20 Alerts', ok: true },
-        { text: '2 Charts', ok: true },
-        { text: 'Unlimited Chat', ok: true },
-        { text: '50 AI Requests/day', ok: true },
-        { text: 'No Ads', ok: true },
-        { text: 'API Access', ok: false },
-        { text: 'Premium Indicators', ok: false },
-        { text: 'Data Export', ok: false }
-      ]
-    },
-    ultimate: {
-      name: 'ULTIMATE',
-      price: 10,
-      color: '#9b6cff',
-      icon: '👑',
-      paypalButtonId: '7EBJYV5NG2452',
-      features: [
-        { text: 'Unlimited Indicators', ok: true },
-        { text: 'Unlimited Alerts', ok: true },
-        { text: '4 Charts', ok: true },
-        { text: 'Unlimited Chat', ok: true },
-        { text: '200 AI Requests/day', ok: true },
-        { text: 'No Ads', ok: true },
-        { text: 'API Access', ok: true },
-        { text: 'Premium Indicators', ok: true },
-        { text: 'Data Export', ok: true }
-      ]
-    }
-  };
-
-  function updatePlanUI() {
-    var plan = planConfig[selectedPlan];
-    var otherPlan = selectedPlan === 'pro' ? 'ultimate' : 'pro';
-    
-    // Update plan buttons
-    document.querySelectorAll('.tvp-plan-btn').forEach(function(btn) {
-      var isActive = btn.dataset.plan === selectedPlan;
-      var cfg = planConfig[btn.dataset.plan];
-      btn.style.border = isActive ? '2px solid ' + cfg.color : '2px solid var(--border-primary)';
-      btn.style.background = isActive ? 'rgba(' + (btn.dataset.plan === 'pro' ? '255,215,0' : '155,108,255') + ',0.1)' : 'transparent';
-      btn.style.color = isActive ? cfg.color : 'var(--text-muted)';
-      btn.classList.toggle('active', isActive);
-    });
-    
-    // Update price display
-    document.getElementById('plan-price').textContent = '$' + plan.price;
-    document.getElementById('plan-name-display').textContent = 'TradeVision ' + plan.name;
-    document.getElementById('plan-name-display').style.color = plan.color;
-    
-    // Update crypto amount
-    document.getElementById('crypto-amount-display').textContent = plan.price + ' USDT';
-    
-    // Update features list
-    document.getElementById('plan-features').innerHTML = plan.features.map(function(f) {
-      return '<div style="display:flex;align-items:center;gap:8px;">' +
-        '<span style="color:' + (f.ok ? 'var(--up-color)' : 'var(--down-color)') + ';font-size:14px;width:16px;text-align:center;">' + (f.ok ? '✓' : '✗') + '</span>' +
-        '<span style="color:' + (f.ok ? 'var(--text-primary)' : 'var(--text-muted)') + ';">' + f.text + '</span>' +
-      '</div>';
-    }).join('');
-    
-    // Update activation text
-    var activationEl = document.getElementById('plan-activation-text');
-    activationEl.textContent = plan.name;
-    activationEl.style.color = plan.color;
-    
-    // Toggle PayPal containers
-    document.getElementById('paypal-container-pro').style.display = selectedPlan === 'pro' ? 'block' : 'none';
-    document.getElementById('paypal-container-ultimate').style.display = selectedPlan === 'ultimate' ? 'block' : 'none';
-    
-    // Render PayPal button if not already rendered
-    if (!paypalRendered[selectedPlan]) {
-      renderPayPalButton(selectedPlan);
-    }
-  }
-  
-  function renderPayPalButton(plan) {
-    if (typeof paypal === 'undefined') {
-      // PayPal SDK not loaded - show fallback
-      var fallbackUrl = plan === 'pro' 
-        ? 'https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=mwanza.madet@gmail.com&item_name=TradeVision+PRO+Monthly&amount=5.00&currency_code=USD&no_shipping=1'
-        : 'https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=mwanza.madet@gmail.com&item_name=TradeVision+ULTIMATE+Monthly&amount=10.00&currency_code=USD&no_shipping=1';
-      
-      var containerId = plan === 'pro' ? 'paypal-container-pro' : 'paypal-container-ultimate';
-      document.getElementById(containerId).innerHTML = 
-        '<a href="' + fallbackUrl + '" target="_blank" ' +
-        'style="display:inline-block;background:#0070ba;color:white;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;font-size:13px;width:100%;text-align:center;">' +
-        'Pay with PayPal</a>';
-      return;
-    }
-    
-    var config = planConfig[plan];
-    var containerId = plan === 'pro' ? 'paypal-container-pro' : 'paypal-container-ultimate';
-    
-    paypal.HostedButtons({
-      hostedButtonId: config.paypalButtonId,
-    }).render('#' + containerId);
-    
-    paypalRendered[plan] = true;
-    console.log('✅ PayPal button rendered for ' + config.name);
-  }
-
-  // Plan button click handlers
-  document.querySelectorAll('.tvp-plan-btn').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      selectedPlan = this.dataset.plan;
-      updatePlanUI();
-    });
-  });
-
-  // Crypto network switcher
-  document.querySelectorAll('.tvp-crypto-net').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      document.querySelectorAll('.tvp-crypto-net').forEach(function(b) {
-        b.style.border = '1px solid var(--border-primary)';
-        b.style.background = 'transparent';
-        b.style.color = 'var(--text-muted)';
-      });
-      this.style.border = '1px solid #26a69a';
-      this.style.background = 'rgba(38,166,154,0.1)';
-      this.style.color = '#26a69a';
-
-      var net = this.dataset.net;
-      var netNames = { POLYGON: 'Polygon', BSC: 'BSC', TRC20: 'Tron (TRC20)' };
-      document.getElementById('crypto-net-name').textContent = netNames[net] || net;
-    });
-  });
-
-  // Initialize UI on modal open
-  var paymentModal = document.getElementById('payment-modal');
-  if (paymentModal) {
-    var observer = new MutationObserver(function(mutations) {
-      mutations.forEach(function(mutation) {
-        if (mutation.target.classList.contains('visible')) {
-          updatePlanUI();
-        }
-      });
-    });
-    observer.observe(paymentModal, { attributes: true, attributeFilter: ['class'] });
-  }
-
-  // Initial render
-  updatePlanUI();
-})();
-</script>
+	
 </body>
 </html>
 	   
