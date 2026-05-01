@@ -3246,10 +3246,10 @@ kbd { background: var(--bg-tertiary); border: 1px solid var(--border-primary); b
   </div>
 
   <!-- ============================================ -->
-  <!-- PAYMENT MODAL (Crypto) -->
-  <!-- ============================================ -->
-  <!-- ============================================ -->
 <!-- PAYMENT MODAL - 3 TIER SYSTEM -->
+<!-- PRO: Button T4BV28D9BL3RE ($5) -->
+<!-- ULTIMATE: Button 7EBJYV5NG2452 ($10) -->
+<!-- PayPal Email: mwanza.madet@gmail.com -->
 <!-- ============================================ -->
 <div class="modal-overlay" id="payment-modal">
   <div class="modal-container modal-md" style="max-width:460px;">
@@ -3269,12 +3269,12 @@ kbd { background: var(--bg-tertiary); border: 1px solid var(--border-primary); b
     <div class="modal-body" style="padding:16px;">
       
       <!-- ============================================ -->
-      <!-- TIER SELECTION BUTTONS -->
+      <!-- TIER SELECTION -->
       <!-- ============================================ -->
       <h4 style="font-size:11px;color:var(--text-muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px;">Select Plan</h4>
       <div style="display:flex;gap:8px;margin-bottom:16px;">
         <button class="tvp-plan-btn active" data-plan="pro" 
-          style="flex:1;padding:12px 8px;border:2px solid var(--accent-primary);background:var(--accent-muted);color:var(--accent-primary);border-radius:10px;cursor:pointer;font-size:11px;font-weight:700;transition:all 0.2s;text-align:center;">
+          style="flex:1;padding:12px 8px;border:2px solid #ffd700;background:rgba(255,215,0,0.1);color:#ffd700;border-radius:10px;cursor:pointer;font-size:11px;font-weight:700;transition:all 0.2s;text-align:center;">
           <div style="font-size:20px;margin-bottom:4px;">⭐</div>
           <div style="font-size:13px;">PRO</div>
           <div style="font-size:10px;opacity:0.7;">$5/month</div>
@@ -3288,14 +3288,13 @@ kbd { background: var(--bg-tertiary); border: 1px solid var(--border-primary); b
       </div>
 
       <!-- ============================================ -->
-      <!-- FEATURES COMPARISON -->
+      <!-- FEATURES -->
       <!-- ============================================ -->
       <div id="plan-features" style="background:var(--bg-tertiary);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:11px;color:var(--text-secondary);line-height:2;border:1px solid var(--border-primary);">
-        <!-- Dynamically filled by JS -->
       </div>
 
       <!-- ============================================ -->
-      <!-- PRICE DISPLAY -->
+      <!-- PRICE -->
       <!-- ============================================ -->
       <div style="text-align:center;margin-bottom:18px;padding:12px;background:linear-gradient(135deg,rgba(255,215,0,0.08),rgba(255,215,0,0.02));border-radius:10px;border:1px solid rgba(255,215,0,0.15);">
         <span style="font-size:32px;font-weight:800;color:#ffd700;" id="plan-price">$5</span>
@@ -3306,157 +3305,63 @@ kbd { background: var(--bg-tertiary); border: 1px solid var(--border-primary); b
       <!-- ============================================ -->
       <!-- CRYPTO PAYMENT -->
       <!-- ============================================ -->
-      <h4 style="font-size:11px;color:var(--text-muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px;">
-        <i class="fab fa-bitcoin" style="color:#f7931a;"></i> Pay with Crypto
-      </h4>
-      
-      <div style="display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap;">
-        <button class="tvp-crypto-net active" data-net="POLYGON" 
-          style="padding:5px 12px;border:1px solid #26a69a;background:rgba(38,166,154,0.1);color:#26a69a;border-radius:14px;font-size:10px;cursor:pointer;font-weight:600;white-space:nowrap;">
-          Polygon
-        </button>
-        <button class="tvp-crypto-net" data-net="MATIC_USDC"
-          style="padding:5px 12px;border:1px solid var(--border-primary);background:transparent;color:var(--text-muted);border-radius:14px;font-size:10px;cursor:pointer;white-space:nowrap;">
-          MATIC USDC
-        </button>
-        <button class="tvp-crypto-net" data-net="BSC"
-          style="padding:5px 12px;border:1px solid var(--border-primary);background:transparent;color:var(--text-muted);border-radius:14px;font-size:10px;cursor:pointer;white-space:nowrap;">
-          BSC
-        </button>
-        <button class="tvp-crypto-net" data-net="TRC20"
-          style="padding:5px 12px;border:1px solid var(--border-primary);background:transparent;color:var(--text-muted);border-radius:14px;font-size:10px;cursor:pointer;white-space:nowrap;">
-          TRC20
-        </button>
-      </div>
+      <div class="crypto-section">
+        <h4 style="font-size:11px;color:var(--text-muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px;">
+          <i class="fab fa-bitcoin" style="color:#f7931a;"></i> Pay with Crypto
+        </h4>
+        
+        <div style="display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap;">
+          <button class="tvp-crypto-net active" data-net="POLYGON" 
+            style="padding:5px 12px;border:1px solid #26a69a;background:rgba(38,166,154,0.1);color:#26a69a;border-radius:14px;font-size:10px;cursor:pointer;font-weight:600;">Polygon</button>
+          <button class="tvp-crypto-net" data-net="BSC"
+            style="padding:5px 12px;border:1px solid var(--border-primary);background:transparent;color:var(--text-muted);border-radius:14px;font-size:10px;cursor:pointer;">BSC</button>
+          <button class="tvp-crypto-net" data-net="TRC20"
+            style="padding:5px 12px;border:1px solid var(--border-primary);background:transparent;color:var(--text-muted);border-radius:14px;font-size:10px;cursor:pointer;">TRC20</button>
+        </div>
 
-      <div style="font-size:10px;color:var(--text-muted);margin-bottom:6px;">
-        Send <strong id="crypto-amount-display">5 USDT</strong> on <strong id="crypto-net-name">Polygon</strong>
+        <div style="font-size:10px;color:var(--text-muted);margin-bottom:6px;">
+          Send <strong id="crypto-amount-display">5 USDT</strong> on <strong id="crypto-net-name">Polygon</strong>
+        </div>
+        <div style="background:var(--bg-primary);padding:12px;border-radius:8px;font-family:monospace;font-size:11px;word-break:break-all;color:var(--up-color);margin-bottom:8px;border:1px solid var(--border-primary);" id="crypto-address">
+          0x8990787D3483A1035Bc460DdA5c75AB6e23BC1b6
+        </div>
+        <button onclick="navigator.clipboard.writeText(document.getElementById('crypto-address').textContent);alert('Address copied!')" 
+          style="width:100%;padding:10px;background:var(--accent-muted);color:var(--accent-primary);border:1px solid var(--accent-primary);border-radius:8px;cursor:pointer;font-size:11px;font-weight:600;">
+          📋 Copy Wallet Address
+        </button>
       </div>
-      <div style="background:var(--bg-primary);padding:12px;border-radius:8px;font-family:monospace;font-size:11px;word-break:break-all;color:var(--up-color);margin-bottom:8px;border:1px solid var(--border-primary);" id="crypto-address">
-        0x8990787D3483A1035Bc460DdA5c75AB6e23BC1b6
-      </div>
-      <button onclick="navigator.clipboard.writeText(document.getElementById('crypto-address').textContent);alert('Address copied!')" 
-        style="width:100%;padding:10px;background:var(--accent-muted);color:var(--accent-primary);border:1px solid var(--accent-primary);border-radius:8px;cursor:pointer;font-size:11px;font-weight:600;transition:all 0.2s;">
-        📋 Copy Wallet Address
-      </button>
 
       <hr style="border-color:var(--border-primary);margin:16px 0;">
 
       <!-- ============================================ -->
-      <!-- PAYPAL PAYMENT -->
+      <!-- PAYPAL PAYMENT - DYNAMIC PER TIER -->
       <!-- ============================================ -->
-      <h4 style="font-size:11px;color:var(--text-muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px;">
-        <i class="fab fa-paypal" style="color:#0070ba;"></i> Pay with PayPal
-      </h4>
-      <div id="paypal-container-T4BV28D9BL3RE" style="min-height:40px;"></div>
+      <div class="paypal-section">
+        <h4 style="font-size:11px;color:var(--text-muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px;">
+          <i class="fab fa-paypal" style="color:#0070ba;"></i> Pay with PayPal
+        </h4>
+        
+        <!-- PRO Plan PayPal Button -->
+        <div id="paypal-container-pro" style="min-height:40px;text-align:center;">
+          <!-- PayPal SDK renders here for PRO ($5) -->
+        </div>
+        
+        <!-- ULTIMATE Plan PayPal Button -->
+        <div id="paypal-container-ultimate" style="display:none;min-height:40px;text-align:center;">
+          <!-- PayPal SDK renders here for ULTIMATE ($10) -->
+        </div>
+      </div>
 
       <p style="font-size:9px;color:var(--text-muted);text-align:center;margin-top:10px;">
-        <span id="plan-activation-text">PRO</span> access activates instantly after payment confirmation
+        <span id="plan-activation-text" style="color:#ffd700;">PRO</span> activates instantly after payment
+      </p>
+      <p style="font-size:8px;color:var(--text-muted);text-align:center;margin-top:4px;">
+        Secure payment · Cancel anytime · 24h refund
       </p>
 
     </div>
   </div>
 </div>
-
-<!-- ============================================ -->
-<!-- PAYMENT MODAL - PLAN SWITCHER SCRIPT -->
-<!-- ============================================ -->
-<script>
-(function() {
-  'use strict';
-  
-  var selectedPlan = 'pro';
-  
-  var planConfig = {
-    pro: {
-      name: 'PRO',
-      price: 5,
-      color: '#ffd700',
-      icon: '⭐',
-      features: [
-        { text: '30 Indicators', ok: true },
-        { text: '20 Alerts', ok: true },
-        { text: '2 Charts', ok: true },
-        { text: 'Unlimited Chat', ok: true },
-        { text: 'API Access', ok: false },
-        { text: 'Premium Indicators', ok: false },
-        { text: 'Data Export', ok: false },
-        { text: 'No Ads', ok: true }
-      ]
-    },
-    ultimate: {
-      name: 'ULTIMATE',
-      price: 10,
-      color: '#9b6cff',
-      icon: '👑',
-      features: [
-        { text: 'Unlimited Indicators', ok: true },
-        { text: 'Unlimited Alerts', ok: true },
-        { text: '4 Charts', ok: true },
-        { text: 'Unlimited Chat', ok: true },
-        { text: 'API Access', ok: true },
-        { text: 'Premium Indicators', ok: true },
-        { text: 'Data Export', ok: true },
-        { text: 'No Ads', ok: true }
-      ]
-    }
-  };
-
-  function updatePlanUI() {
-    var plan = planConfig[selectedPlan];
-    
-    // Update plan buttons
-    document.querySelectorAll('.tvp-plan-btn').forEach(function(btn) {
-      var isActive = btn.dataset.plan === selectedPlan;
-      btn.style.border = isActive ? '2px solid ' + plan.color : '2px solid var(--border-primary)';
-      btn.style.background = isActive ? 'rgba(' + (selectedPlan === 'pro' ? '255,215,0' : '155,108,255') + ',0.1)' : 'transparent';
-      btn.style.color = isActive ? plan.color : 'var(--text-muted)';
-      btn.classList.toggle('active', isActive);
-    });
-    
-    // Update price
-    document.getElementById('plan-price').textContent = '$' + plan.price;
-    document.getElementById('plan-name-display').textContent = 'TradeVision ' + plan.name;
-    document.getElementById('plan-name-display').style.color = plan.color;
-    
-    // Update crypto amount
-    document.getElementById('crypto-amount-display').textContent = plan.price + ' USDT';
-    
-    // Update features list
-    document.getElementById('plan-features').innerHTML = plan.features.map(function(f) {
-      return '<div style="display:flex;align-items:center;gap:8px;">' +
-        '<span style="color:' + (f.ok ? 'var(--up-color)' : 'var(--down-color)') + ';font-size:14px;width:16px;text-align:center;">' + (f.ok ? '✓' : '✗') + '</span>' +
-        '<span style="color:' + (f.ok ? 'var(--text-primary)' : 'var(--text-muted)') + ';">' + f.text + '</span>' +
-      '</div>';
-    }).join('');
-    
-    // Update activation text
-    document.getElementById('plan-activation-text').textContent = plan.name;
-    document.getElementById('plan-activation-text').style.color = plan.color;
-    
-    // Update PayPal button (if using dynamic amount)
-    var paypalContainer = document.getElementById('paypal-container-T4BV28D9BL3RE');
-    if (paypalContainer) {
-      if (selectedPlan === 'pro') {
-        paypalContainer.innerHTML = '<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=wambuamwanza6@gmail.com&item_name=TradeVision PRO Monthly&amount=5.00&currency_code=USD&no_shipping=1&return=https://tradevisionpro.online&cancel_return=https://tradevisionpro.online" target="_blank" style="display:inline-block;background:#0070ba;color:white;padding:10px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:12px;width:100%;text-align:center;">Pay $5.00 with PayPal ⭐</a>';
-      } else {
-        paypalContainer.innerHTML = '<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=wambuamwanza6@gmail.com&item_name=TradeVision ULTIMATE Monthly&amount=10.00&currency_code=USD&no_shipping=1&return=https://tradevisionpro.online&cancel_return=https://tradevisionpro.online" target="_blank" style="display:inline-block;background:#7c3aed;color:white;padding:10px 24px;border-radius:8px;text-decoration:none;font-weight:600;font-size:12px;width:100%;text-align:center;">Pay $10.00 with PayPal 👑</a>';
-      }
-    }
-  }
-
-  // Plan button click handlers
-  document.querySelectorAll('.tvp-plan-btn').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      selectedPlan = this.dataset.plan;
-      updatePlanUI();
-    });
-  });
-
-  // Initialize UI
-  updatePlanUI();
-})();
-</script>
 
   <!-- ============================================ -->
   <!-- NOTIFICATION BANNER -->
@@ -4360,6 +4265,170 @@ kbd { background: var(--bg-tertiary); border: 1px solid var(--border-primary); b
       }
     }
   }, 800);
+</script>
+	<!-- PayPal SDK - Load Once -->
+<script src="https://www.paypal.com/sdk/js?client-id=BAA6-pKbrnpOaKuvEMkQ8nG3vEociOmnS3OVnp_oPANPNefmj3dPjrXcVvoKrr3prhADRZ4TY1jidZlNOQ&components=hosted-buttons&disable-funding=venmo&currency=USD"></script>
+
+<!-- PayPal Buttons Initialization -->
+<script>
+(function() {
+  'use strict';
+  
+  var selectedPlan = 'pro';
+  var paypalRendered = { pro: false, ultimate: false };
+  
+  var planConfig = {
+    pro: {
+      name: 'PRO',
+      price: 5,
+      color: '#ffd700',
+      icon: '⭐',
+      paypalButtonId: 'T4BV28D9BL3RE',
+      features: [
+        { text: '30 Indicators', ok: true },
+        { text: '20 Alerts', ok: true },
+        { text: '2 Charts', ok: true },
+        { text: 'Unlimited Chat', ok: true },
+        { text: '50 AI Requests/day', ok: true },
+        { text: 'No Ads', ok: true },
+        { text: 'API Access', ok: false },
+        { text: 'Premium Indicators', ok: false },
+        { text: 'Data Export', ok: false }
+      ]
+    },
+    ultimate: {
+      name: 'ULTIMATE',
+      price: 10,
+      color: '#9b6cff',
+      icon: '👑',
+      paypalButtonId: '7EBJYV5NG2452',
+      features: [
+        { text: 'Unlimited Indicators', ok: true },
+        { text: 'Unlimited Alerts', ok: true },
+        { text: '4 Charts', ok: true },
+        { text: 'Unlimited Chat', ok: true },
+        { text: '200 AI Requests/day', ok: true },
+        { text: 'No Ads', ok: true },
+        { text: 'API Access', ok: true },
+        { text: 'Premium Indicators', ok: true },
+        { text: 'Data Export', ok: true }
+      ]
+    }
+  };
+
+  function updatePlanUI() {
+    var plan = planConfig[selectedPlan];
+    var otherPlan = selectedPlan === 'pro' ? 'ultimate' : 'pro';
+    
+    // Update plan buttons
+    document.querySelectorAll('.tvp-plan-btn').forEach(function(btn) {
+      var isActive = btn.dataset.plan === selectedPlan;
+      var cfg = planConfig[btn.dataset.plan];
+      btn.style.border = isActive ? '2px solid ' + cfg.color : '2px solid var(--border-primary)';
+      btn.style.background = isActive ? 'rgba(' + (btn.dataset.plan === 'pro' ? '255,215,0' : '155,108,255') + ',0.1)' : 'transparent';
+      btn.style.color = isActive ? cfg.color : 'var(--text-muted)';
+      btn.classList.toggle('active', isActive);
+    });
+    
+    // Update price display
+    document.getElementById('plan-price').textContent = '$' + plan.price;
+    document.getElementById('plan-name-display').textContent = 'TradeVision ' + plan.name;
+    document.getElementById('plan-name-display').style.color = plan.color;
+    
+    // Update crypto amount
+    document.getElementById('crypto-amount-display').textContent = plan.price + ' USDT';
+    
+    // Update features list
+    document.getElementById('plan-features').innerHTML = plan.features.map(function(f) {
+      return '<div style="display:flex;align-items:center;gap:8px;">' +
+        '<span style="color:' + (f.ok ? 'var(--up-color)' : 'var(--down-color)') + ';font-size:14px;width:16px;text-align:center;">' + (f.ok ? '✓' : '✗') + '</span>' +
+        '<span style="color:' + (f.ok ? 'var(--text-primary)' : 'var(--text-muted)') + ';">' + f.text + '</span>' +
+      '</div>';
+    }).join('');
+    
+    // Update activation text
+    var activationEl = document.getElementById('plan-activation-text');
+    activationEl.textContent = plan.name;
+    activationEl.style.color = plan.color;
+    
+    // Toggle PayPal containers
+    document.getElementById('paypal-container-pro').style.display = selectedPlan === 'pro' ? 'block' : 'none';
+    document.getElementById('paypal-container-ultimate').style.display = selectedPlan === 'ultimate' ? 'block' : 'none';
+    
+    // Render PayPal button if not already rendered
+    if (!paypalRendered[selectedPlan]) {
+      renderPayPalButton(selectedPlan);
+    }
+  }
+  
+  function renderPayPalButton(plan) {
+    if (typeof paypal === 'undefined') {
+      // PayPal SDK not loaded - show fallback
+      var fallbackUrl = plan === 'pro' 
+        ? 'https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=mwanza.madet@gmail.com&item_name=TradeVision+PRO+Monthly&amount=5.00&currency_code=USD&no_shipping=1'
+        : 'https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=mwanza.madet@gmail.com&item_name=TradeVision+ULTIMATE+Monthly&amount=10.00&currency_code=USD&no_shipping=1';
+      
+      var containerId = plan === 'pro' ? 'paypal-container-pro' : 'paypal-container-ultimate';
+      document.getElementById(containerId).innerHTML = 
+        '<a href="' + fallbackUrl + '" target="_blank" ' +
+        'style="display:inline-block;background:#0070ba;color:white;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;font-size:13px;width:100%;text-align:center;">' +
+        'Pay with PayPal</a>';
+      return;
+    }
+    
+    var config = planConfig[plan];
+    var containerId = plan === 'pro' ? 'paypal-container-pro' : 'paypal-container-ultimate';
+    
+    paypal.HostedButtons({
+      hostedButtonId: config.paypalButtonId,
+    }).render('#' + containerId);
+    
+    paypalRendered[plan] = true;
+    console.log('✅ PayPal button rendered for ' + config.name);
+  }
+
+  // Plan button click handlers
+  document.querySelectorAll('.tvp-plan-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      selectedPlan = this.dataset.plan;
+      updatePlanUI();
+    });
+  });
+
+  // Crypto network switcher
+  document.querySelectorAll('.tvp-crypto-net').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.tvp-crypto-net').forEach(function(b) {
+        b.style.border = '1px solid var(--border-primary)';
+        b.style.background = 'transparent';
+        b.style.color = 'var(--text-muted)';
+      });
+      this.style.border = '1px solid #26a69a';
+      this.style.background = 'rgba(38,166,154,0.1)';
+      this.style.color = '#26a69a';
+
+      var net = this.dataset.net;
+      var netNames = { POLYGON: 'Polygon', BSC: 'BSC', TRC20: 'Tron (TRC20)' };
+      document.getElementById('crypto-net-name').textContent = netNames[net] || net;
+    });
+  });
+
+  // Initialize UI on modal open
+  var paymentModal = document.getElementById('payment-modal');
+  if (paymentModal) {
+    var observer = new MutationObserver(function(mutations) {
+      mutations.forEach(function(mutation) {
+        if (mutation.target.classList.contains('visible')) {
+          updatePlanUI();
+        }
+      });
+    });
+    observer.observe(paymentModal, { attributes: true, attributeFilter: ['class'] });
+  }
+
+  // Initial render
+  updatePlanUI();
+})();
 </script>
 </body>
 </html>
