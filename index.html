@@ -3258,16 +3258,111 @@ kbd { background: var(--bg-tertiary); border: 1px solid var(--border-primary); b
       <!-- ============================================ -->
       <!-- PLAN SELECTION -->
       <!-- ============================================ -->
-      <div style="display:flex;gap:8px;margin-bottom:16px;">
-        <button class="tvp-plan-btn active" data-plan="pro" 
-          style="flex:1;padding:10px;border:2px solid #ffd700;background:rgba(255,215,0,0.1);color:#ffd700;border-radius:8px;cursor:pointer;font-size:11px;font-weight:700;">
-          ⭐ PRO · $5/mo
-        </button>
-        <button class="tvp-plan-btn" data-plan="ultimate" 
-          style="flex:1;padding:10px;border:2px solid var(--border-primary);background:transparent;color:var(--text-muted);border-radius:8px;cursor:pointer;font-size:11px;font-weight:700;">
-          👑 ULTIMATE · $10/mo
-        </button>
-      </div>
+     <!-- ============================================ -->
+<!-- PLAN SELECTION -->
+<!-- ============================================ -->
+<div style="display:flex;gap:8px;margin-bottom:12px;">
+  <button id="tvp-plan-pro" class="tvp-plan-btn active" data-plan="pro" 
+    style="flex:1;padding:10px;border:2px solid #ffd700;background:rgba(255,215,0,0.15);color:#ffd700;border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;">
+    ⭐ PRO · $5/mo
+  </button>
+  <button id="tvp-plan-ultimate" class="tvp-plan-btn" data-plan="ultimate" 
+    style="flex:1;padding:10px;border:2px solid var(--border-primary);background:transparent;color:var(--text-muted);border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;">
+    👑 ULTIMATE · $10/mo
+  </button>
+</div>
+
+<!-- ============================================ -->
+<!-- FEATURE COMPARISON TABLE -->
+<!-- ============================================ -->
+<div id="plan-comparison" style="margin-bottom:14px;background:var(--bg-tertiary);border-radius:8px;overflow:hidden;border:1px solid var(--border-primary);">
+  <!-- Header -->
+  <div style="display:grid;grid-template-columns:1fr 80px 80px;padding:8px 12px;background:var(--bg-secondary);border-bottom:1px solid var(--border-primary);font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;">
+    <span>Feature</span>
+    <span style="text-align:center;color:#ffd700;">PRO</span>
+    <span style="text-align:center;color:#9b6cff;">ULTIMATE</span>
+  </div>
+  
+  <!-- Feature Rows -->
+  <div id="plan-rows" style="font-size:10px;">
+    <!-- Indicators -->
+    <div style="display:grid;grid-template-columns:1fr 80px 80px;padding:7px 12px;border-bottom:1px solid rgba(48,54,61,0.3);color:var(--text-secondary);">
+      <span>Indicators</span>
+      <span style="text-align:center;color:#ffd700;">30</span>
+      <span style="text-align:center;color:#9b6cff;">∞</span>
+    </div>
+    <!-- Alerts -->
+    <div style="display:grid;grid-template-columns:1fr 80px 80px;padding:7px 12px;border-bottom:1px solid rgba(48,54,61,0.3);color:var(--text-secondary);">
+      <span>Price Alerts</span>
+      <span style="text-align:center;color:#ffd700;">20</span>
+      <span style="text-align:center;color:#9b6cff;">∞</span>
+    </div>
+    <!-- Charts -->
+    <div style="display:grid;grid-template-columns:1fr 80px 80px;padding:7px 12px;border-bottom:1px solid rgba(48,54,61,0.3);color:var(--text-secondary);">
+      <span>Multi-Charts</span>
+      <span style="text-align:center;color:#ffd700;">2</span>
+      <span style="text-align:center;color:#9b6cff;">4</span>
+    </div>
+    <!-- AI Requests -->
+    <div style="display:grid;grid-template-columns:1fr 80px 80px;padding:7px 12px;border-bottom:1px solid rgba(48,54,61,0.3);color:var(--text-secondary);">
+      <span>AI Requests/day</span>
+      <span style="text-align:center;color:#ffd700;">50</span>
+      <span style="text-align:center;color:#9b6cff;">200</span>
+    </div>
+    <!-- Chat -->
+    <div style="display:grid;grid-template-columns:1fr 80px 80px;padding:7px 12px;border-bottom:1px solid rgba(48,54,61,0.3);color:var(--text-secondary);">
+      <span>Community Chat</span>
+      <span style="text-align:center;color:var(--up-color);">✓</span>
+      <span style="text-align:center;color:var(--up-color);">✓</span>
+    </div>
+    <!-- No Ads -->
+    <div style="display:grid;grid-template-columns:1fr 80px 80px;padding:7px 12px;border-bottom:1px solid rgba(48,54,61,0.3);color:var(--text-secondary);">
+      <span>No Ads</span>
+      <span style="text-align:center;color:var(--up-color);">✓</span>
+      <span style="text-align:center;color:var(--up-color);">✓</span>
+    </div>
+    <!-- API Access -->
+    <div style="display:grid;grid-template-columns:1fr 80px 80px;padding:7px 12px;border-bottom:1px solid rgba(48,54,61,0.3);color:var(--text-secondary);">
+      <span>API Access</span>
+      <span style="text-align:center;color:var(--down-color);">✗</span>
+      <span style="text-align:center;color:var(--up-color);">✓</span>
+    </div>
+    <!-- Premium Indicators -->
+    <div style="display:grid;grid-template-columns:1fr 80px 80px;padding:7px 12px;border-bottom:1px solid rgba(48,54,61,0.3);color:var(--text-secondary);">
+      <span>Premium Indicators</span>
+      <span style="text-align:center;color:var(--down-color);">✗</span>
+      <span style="text-align:center;color:var(--up-color);">✓</span>
+    </div>
+    <!-- Data Export -->
+    <div style="display:grid;grid-template-columns:1fr 80px 80px;padding:7px 12px;border-bottom:1px solid rgba(48,54,61,0.3);color:var(--text-secondary);">
+      <span>Data Export</span>
+      <span style="text-align:center;color:var(--down-color);">✗</span>
+      <span style="text-align:center;color:var(--up-color);">✓</span>
+    </div>
+    <!-- Pine Script -->
+    <div style="display:grid;grid-template-columns:1fr 80px 80px;padding:7px 12px;border-bottom:1px solid rgba(48,54,61,0.3);color:var(--text-secondary);">
+      <span>Pine Editor</span>
+      <span style="text-align:center;color:var(--up-color);">✓</span>
+      <span style="text-align:center;color:var(--up-color);">✓</span>
+    </div>
+    <!-- Drawing Tools -->
+    <div style="display:grid;grid-template-columns:1fr 80px 80px;padding:7px 12px;color:var(--text-secondary);">
+      <span>Drawing Tools</span>
+      <span style="text-align:center;color:#ffd700;">20+</span>
+      <span style="text-align:center;color:#9b6cff;">35+</span>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- HIGHLIGHT BOX FOR SELECTED PLAN -->
+<!-- ============================================ -->
+<div id="plan-highlight" style="text-align:center;margin-bottom:12px;padding:10px;background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.2);border-radius:8px;">
+  <div style="font-size:22px;font-weight:800;color:#ffd700;" id="highlight-price">$5<span style="font-size:12px;font-weight:500;">/month</span></div>
+  <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">
+    ⭐ <strong>PRO</strong> — Perfect for active traders
+  </div>
+</div>
 
       <!-- ============================================ -->
       <!-- CRYPTO PAYMENT -->
@@ -3350,13 +3445,61 @@ kbd { background: var(--bg-tertiary); border: 1px solid var(--border-primary); b
       btn.classList.toggle('active', isActive);
     });
     
+    // ============================================
+    // UPDATE HIGHLIGHT BOX
+    // ============================================
+    var highlightPrice = document.getElementById('highlight-price');
+    var highlightDiv = document.getElementById('plan-highlight');
+    
+    if (highlightPrice && highlightDiv) {
+      if (plan === 'pro') {
+        highlightPrice.innerHTML = '$5<span style="font-size:12px;font-weight:500;">/month</span>';
+        highlightPrice.style.color = '#ffd700';
+        highlightDiv.style.background = 'rgba(255,215,0,0.08)';
+        highlightDiv.style.border = '1px solid rgba(255,215,0,0.2)';
+        var descEl = highlightDiv.querySelector('div:last-child');
+        if (descEl) descEl.innerHTML = '⭐ <strong>PRO</strong> — Perfect for active traders';
+      } else {
+        highlightPrice.innerHTML = '$10<span style="font-size:12px;font-weight:500;">/month</span>';
+        highlightPrice.style.color = '#9b6cff';
+        highlightDiv.style.background = 'rgba(155,108,255,0.08)';
+        highlightDiv.style.border = '1px solid rgba(155,108,255,0.2)';
+        var descEl = highlightDiv.querySelector('div:last-child');
+        if (descEl) descEl.innerHTML = '👑 <strong>ULTIMATE</strong> — Full power unlocked';
+      }
+    }
+    
+    // ============================================
+    // UPDATE FEATURE TABLE HIGHLIGHTS
+    // ============================================
+    var planRows = document.querySelectorAll('#plan-rows > div');
+    planRows.forEach(function(row) {
+      if (plan === 'pro') {
+        row.style.background = 'transparent';
+        // Highlight PRO column slightly
+        var proCell = row.querySelector('span:nth-child(2)');
+        if (proCell) proCell.style.fontWeight = '600';
+        var ultCell = row.querySelector('span:nth-child(3)');
+        if (ultCell) ultCell.style.fontWeight = '400';
+      } else {
+        row.style.background = 'transparent';
+        // Highlight ULTIMATE column slightly
+        var proCell = row.querySelector('span:nth-child(2)');
+        if (proCell) proCell.style.fontWeight = '400';
+        var ultCell = row.querySelector('span:nth-child(3)');
+        if (ultCell) ultCell.style.fontWeight = '600';
+      }
+    });
+    
     // Update crypto amount
     var cryptoAmount = document.getElementById('crypto-amount-display');
     if (cryptoAmount) cryptoAmount.textContent = plan === 'pro' ? '5 USDT' : '10 USDT';
     
     // Show/hide PayPal sections
-    document.getElementById('paypal-section-pro').style.display = plan === 'pro' ? 'block' : 'none';
-    document.getElementById('paypal-section-ultimate').style.display = plan === 'ultimate' ? 'block' : 'none';
+    var proSection = document.getElementById('paypal-section-pro');
+    var ultimateSection = document.getElementById('paypal-section-ultimate');
+    if (proSection) proSection.style.display = plan === 'pro' ? 'block' : 'none';
+    if (ultimateSection) ultimateSection.style.display = plan === 'ultimate' ? 'block' : 'none';
     
     // Update activation text
     var activationEl = document.getElementById('plan-activation-text');
@@ -3367,7 +3510,7 @@ kbd { background: var(--bg-tertiary); border: 1px solid var(--border-primary); b
     
     // Render PayPal button for selected plan
     renderPayPal(plan);
-  }
+}
   
   function renderPayPal(plan) {
     if (paypalRendered[plan]) return; // Already rendered
