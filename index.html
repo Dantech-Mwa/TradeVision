@@ -1023,8 +1023,11 @@ kbd { background: var(--bg-tertiary); border: 1px solid var(--border-primary); b
 .chart-container.sheet-open { max-height: calc(45vh - 40px); overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; }
 #main-chart-pane { flex: 1 1 auto !important; min-height: 200px !important; position: relative; overflow: hidden; padding: 0 !important; margin: 0 !important; width: 100% !important; }
 #price-chart { width: 100% !important; height: 100% !important; padding: 0 !important; margin: 0 !important; }
-#volume-chart-pane { flex: 0 0 80px !important; display: flex !important; min-height: 80px !important; height: 80px !important; max-height: 80px !important; width: 100% !important; overflow: hidden; border-top: 1px solid var(--border-primary); border-bottom: 1px solid var(--border-primary); }
-#volume-chart { width: 100% !important; height: 100% !important; display: block !important; }
+/* ============================================ */
+/* PHASE 1 FIX: Mobile volume chart visibility */
+/* ============================================ */
+#volume-chart-pane { flex: 0 0 auto !important; display: flex !important; min-height: 60px !important;height: auto !important;max-height: 100px !important; width: 100% !important; overflow: hidden; border-top: 1px solid var(--border-primary); border-bottom: 1px solid var(--border-primary);visibility: visible !important;opacity: 1 !important;z-index: 5;}
+#volume-chart { width: 100% !important; height: 100% !important; display: block !important;min-height: 60px !important;}
 .indicator-panes-container { display: none !important; flex-direction: column !important; max-height: 40% !important; width: 100% !important; padding: 0 !important; margin: 0 !important; border-top: 2px solid var(--border-primary); }
 .indicator-panes-container:not(:empty) { display: flex !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; }
 .chart-pane-indicator { flex: 0 0 100px !important; min-height: 90px !important; max-height: 150px !important; display: flex !important; flex-direction: column !important; border-bottom: 1px solid var(--border-primary); overflow: hidden; width: 100% !important; }
