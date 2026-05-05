@@ -1130,6 +1130,19 @@ kbd { background: var(--bg-tertiary); border: 1px solid var(--border-primary); b
   .mobile-panel-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 9997; }
   .mobile-panel-overlay.visible { display: block !important; }
 
+button:active,.trade-type:active,.order-type-btn:active,.quick-amount-btn:active,.watchlist-item:active,.screener-item:active,.market-item:active,.mobile-wl-item:active,.mob-action-btn:active,.sheet-indicator-btn:active,.sheet-tool-btn:active,.symbol-pill:active {opacity: 0.7;transform: scale(0.97);transition: all 0.1s ease;}
+  /* Trade buttons touch feedback */
+  .trade-type:active {filter: brightness(1.2);}
+  .place-order-btn:active {filter: brightness(0.9);transform: scale(0.98);}
+  /* Sheet handle more visible */
+  .sheet-handle-bar {height: 5px;margin: 4px auto;}
+  /* Larger touch targets for critical buttons */
+  .trade-type,.order-type-btn,.quick-amount-btn,.place-order-btn {min-height: 44px;display: flex;align-items: center;justify-content: center;}
+  /* Ensure inputs are tappable */
+  .trade-input,.trade-input-wrapper input {min-height: 44px;font-size: 16px; /* Prevents iOS zoom */}
+  /* Position close buttons for easier tapping */
+  .position-close-btn {padding: 12px; margin: -4px; opacity: 0.7;}
+
   /* Modal Adjustments */
   .modal-container { width: 95vw; max-height: 85vh; border-radius: 12px; }
   .modal-header { padding: 10px 12px; }
@@ -4306,6 +4319,7 @@ kbd { background: var(--bg-tertiary); border: 1px solid var(--border-primary); b
     <button class="mob-action-btn" data-action="journal"><i class="fas fa-book"></i> Trade Journal</button>
     <button class="mob-action-btn" data-action="backtest"><i class="fas fa-flask"></i> Backtest</button>
     <button class="mob-action-btn" data-action="pine"><i class="fas fa-code"></i> Pine Editor</button>
+	<button class="mob-action-btn" data-action="testnet" id="mobile-testnet-btn"><i class="fas fa-flask"></i> Testnet: OFF</button>
     <button class="mob-action-btn" data-action="settings"><i class="fas fa-cog"></i> Settings</button>
     <button class="mob-action-btn" data-action="theme"><i class="fas fa-moon"></i> Toggle Theme</button>
 	<button class="mob-action-btn" data-action="screenshot"><i class="fas fa-camera"></i> Screenshot</button>
