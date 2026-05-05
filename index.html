@@ -1633,8 +1633,15 @@ kbd { background: var(--bg-tertiary); border: 1px solid var(--border-primary); b
             <button class="chart-ctrl-btn active" id="toggle-drawings-btn" data-tooltip="Show Drawings">
               <i class="fas fa-eye"></i>
             </button>
-            <button class="chart-ctrl-btn" id="toggle-grid-btn" data-tooltip="Show Grid">
+			<button class="chart-ctrl-btn" id="toggle-grid-btn" data-tooltip="Show Grid">
               <i class="fas fa-th"></i>
+            </button>
+            <button class="chart-ctrl-btn" id="log-scale-btn" data-tooltip="Toggle Log Scale (Alt+L)">
+              <span style="font-size:11px;font-weight:700;">log</span>
+            </button>
+			  <div class="ctrl-divider"></div>
+            <button class="chart-ctrl-btn active" id="magnet-mode-btn" data-tooltip="Magnet Mode - Snap to Price (Alt+M)">
+              <i class="fas fa-magnet"></i>
             </button>
           </div>
 
@@ -3067,10 +3074,11 @@ kbd { background: var(--bg-tertiary); border: 1px solid var(--border-primary); b
             <label style="font-size:10px;font-weight:600;">Indicator</label>
             <select id="alert2-indicator" style="width:100%;padding:10px;background:var(--bg-primary);border:1px solid var(--border-primary);border-radius:6px;color:var(--text-primary);font-size:13px;">
               <option value="RSI">RSI (14)</option>
-              <option value="MACD_CROSS">MACD Crossover</option>
+              <option value="MACD_CROSS">MACD Histogram</option>
               <option value="MA_CROSS">MA Crossover (20/50)</option>
               <option value="BB_TOUCH">Bollinger Band Touch</option>
-              <option value="STOCH">Stochastic (14)</option>
+              <option value="STOCH">Stochastic %K (14)</option>
+              <option value="ATR">ATR Volatility (14)</option>
             </select>
           </div>
           <div class="form-group">
@@ -4200,6 +4208,7 @@ kbd { background: var(--bg-tertiary); border: 1px solid var(--border-primary); b
     <button class="mob-action-btn" data-action="pine"><i class="fas fa-code"></i> Pine Editor</button>
     <button class="mob-action-btn" data-action="settings"><i class="fas fa-cog"></i> Settings</button>
     <button class="mob-action-btn" data-action="theme"><i class="fas fa-moon"></i> Toggle Theme</button>
+	<button class="mob-action-btn" data-action="screenshot"><i class="fas fa-camera"></i> Screenshot</button>
     <button class="mob-action-btn" data-action="fullscreen"><i class="fas fa-expand"></i> Fullscreen</button>
   </div>
 </div>
