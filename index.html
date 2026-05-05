@@ -1947,6 +1947,75 @@ kbd { background: var(--bg-tertiary); border: 1px solid var(--border-primary); b
   <!-- Dynamically populated -->
 </div>
 
+		<!-- ============================================ -->
+<!-- PORTFOLIO ANALYTICS PANEL -->
+<!-- ============================================ -->
+<div class="right-section" id="portfolio-analytics-section" style="display:none;">
+  <div class="right-section-header">
+    <span class="section-title">Portfolio Analytics</span>
+    <button class="section-btn" id="refresh-portfolio-btn" data-tooltip="Refresh Analytics">
+      <i class="fas fa-sync-alt"></i>
+    </button>
+  </div>
+  <div class="tv-panel-section">
+    
+    <!-- Risk Metrics -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;">
+      <div style="background:var(--bg-tertiary);border-radius:6px;padding:8px;text-align:center;">
+        <div style="font-size:9px;color:var(--text-muted);">Win Rate</div>
+        <div style="font-size:16px;font-weight:700;color:var(--accent-primary);" id="pa-winrate">--</div>
+      </div>
+      <div style="background:var(--bg-tertiary);border-radius:6px;padding:8px;text-align:center;">
+        <div style="font-size:9px;color:var(--text-muted);">Profit Factor</div>
+        <div style="font-size:16px;font-weight:700;color:var(--up-color);" id="pa-profit-factor">--</div>
+      </div>
+      <div style="background:var(--bg-tertiary);border-radius:6px;padding:8px;text-align:center;">
+        <div style="font-size:9px;color:var(--text-muted);">Sharpe Ratio</div>
+        <div style="font-size:16px;font-weight:700;" id="pa-sharpe">--</div>
+      </div>
+      <div style="background:var(--bg-tertiary);border-radius:6px;padding:8px;text-align:center;">
+        <div style="font-size:9px;color:var(--text-muted);">Max Drawdown</div>
+        <div style="font-size:16px;font-weight:700;color:var(--down-color);" id="pa-max-dd">--</div>
+      </div>
+    </div>
+    
+    <!-- VaR Display -->
+    <div style="background:var(--bg-tertiary);border-radius:6px;padding:10px;margin-bottom:8px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:11px;color:var(--text-muted);">Daily VaR (95%)</span>
+        <span style="font-size:13px;font-weight:700;color:var(--down-color);" id="pa-var">--</span>
+      </div>
+      <div style="font-size:9px;color:var(--text-muted);margin-top:2px;" id="pa-var-label"></div>
+    </div>
+    
+    <!-- Kelly Position Sizing -->
+    <div style="background:var(--bg-tertiary);border-radius:6px;padding:10px;margin-bottom:8px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:11px;color:var(--text-muted);">Kelly Optimal Size</span>
+        <span style="font-size:13px;font-weight:700;color:var(--accent-primary);" id="pa-kelly">--</span>
+      </div>
+      <div style="font-size:9px;color:var(--text-muted);margin-top:2px;" id="pa-kelly-rec"></div>
+    </div>
+    
+    <!-- Position Exposure -->
+    <div style="background:var(--bg-tertiary);border-radius:6px;padding:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:11px;color:var(--text-muted);">Total Exposure</span>
+        <span style="font-size:13px;font-weight:700;" id="pa-exposure">--</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;">
+        <span style="font-size:11px;color:var(--text-muted);">Open Positions</span>
+        <span style="font-size:13px;font-weight:700;" id="pa-open-positions">0</span>
+      </div>
+    </div>
+    
+    <!-- Action Button -->
+    <button class="btn btn-primary btn-full" id="generate-risk-report-btn" style="margin-top:10px;font-size:11px;">
+      <i class="fas fa-file-alt"></i> Generate Risk Report
+    </button>
+  </div>
+</div>
+
 <!-- ============================================ -->
 <!-- LIVE TRADING BUTTONS -->
 <!-- ============================================ -->
