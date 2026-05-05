@@ -978,6 +978,16 @@ kbd { background: var(--bg-tertiary); border: 1px solid var(--border-primary); b
 .broker-card:hover { transform: translateY(-4px); border-color: var(--accent-primary) !important; box-shadow: 0 8px 20px rgba(88,166,255,0.2); background: var(--bg-hover); }
 
 /* ============================================
+   PREVENT CHART GLITCHES DURING ASSET SWITCH
+   ============================================ */
+.chart-canvas { min-height: 100px; background: var(--chart-bg); transition: opacity 0.2s ease; }
+.chart-loading { opacity: 0.5; pointer-events: none; }
+.chart-pane { position: relative; overflow: hidden; }
+#price-chart canvas, #volume-chart canvas { transition: opacity 0.15s ease; }
+.chart-resetting #price-chart canvas, .chart-resetting #volume-chart canvas { opacity: 0.3; }
+
+	
+/* ============================================
    RESPONSIVE - TABLET (max-width: 1200px)
    ============================================ */
 @media (max-width: 1200px) {
