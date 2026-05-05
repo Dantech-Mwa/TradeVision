@@ -1072,6 +1072,8 @@ kbd { background: var(--bg-tertiary); border: 1px solid var(--border-primary); b
 
   .sheet-handle { display: flex; flex-direction: column; align-items: center; padding: 8px 0 4px; cursor: pointer; flex-shrink: 0; border-bottom: 1px solid var(--border-primary); user-select: none; }
   .sheet-handle-bar { width: 32px; height: 4px; background: var(--border-primary); border-radius: 2px; margin-bottom: 6px; }
+   .sheet-handle-hint {opacity: 1;transition: opacity 0.3s ease;}
+  .sheet-handle-hint.hidden {opacity: 0;}
   .sheet-tabs { display: flex; width: 100%; padding: 0 4px; gap: 0; }
   .sheet-tab { flex: 1; padding: 8px 4px; font-size: 10px; font-weight: 600; color: var(--text-muted); text-align: center; cursor: pointer; border: none; background: transparent; border-bottom: 2px solid transparent; transition: all 0.2s; white-space: nowrap; min-height: 40px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
   .sheet-tab i { font-size: 13px; }
@@ -4066,8 +4068,11 @@ kbd { background: var(--bg-tertiary); border: 1px solid var(--border-primary); b
 <!-- MOBILE BOTTOM SHEET -->
 <!-- ============================================ -->
 <div class="mobile-bottom-sheet" id="mobile-bottom-sheet">
-  <div class="sheet-handle" id="sheet-handle">
+    <div class="sheet-handle" id="sheet-handle">
     <div class="sheet-handle-bar"></div>
+    <div class="sheet-handle-hint" id="sheet-handle-hint" style="font-size:9px;color:var(--text-muted);text-align:center;padding:2px 0;transition:opacity 0.3s;">
+      Pull up for tools ↑
+    </div>
     <div class="sheet-tabs" id="sheet-tabs">
       <button class="sheet-tab active" data-tab="watchlist"><i class="fas fa-star"></i>Watch</button>
       <button class="sheet-tab" data-tab="indicators"><i class="fas fa-wave-square"></i>Inds</button>
