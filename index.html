@@ -1046,6 +1046,8 @@ kbd { background: var(--bg-tertiary); border: 1px solid var(--border-primary); b
 #mobile-bottom-sheet { touch-action: auto !important; }
 .sheet-handle { touch-action: pan-y !important; }
 .drawing-canvas { touch-action: none !important; }
+.mobile-timeframe-overlay {display: none !important;}
+#mobile-tf-fixed-btn {display: flex !important;}
 
   /* Mobile Footer */
   .footer { height: 40px !important; min-height: 40px !important; position: fixed !important; bottom: 0; left: 0; right: 0; z-index: 95; background: var(--bg-secondary); border-top: 1px solid var(--border-primary); display: flex !important; align-items: center; justify-content: center; padding: 0 12px; overflow: hidden; }
@@ -1127,7 +1129,7 @@ kbd { background: var(--bg-tertiary); border: 1px solid var(--border-primary); b
   .mobile-tf-modal-content { background: var(--bg-secondary); border-radius: 16px 16px 0 0; width: 100%; padding: 16px; animation: slideInUp 0.3s ease; }
   .mobile-tf-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
   .mobile-tf-option { padding: 12px; border: 1px solid var(--border-primary); border-radius: 8px; background: var(--bg-tertiary); color: var(--text-primary); font-size: 13px; font-weight: 600; cursor: pointer; text-align: center; }
-  .mobile-tf-option:active, .mobile-tf-option.active { background: var(--accent-muted); border-color: var(--accent-primary); color: var(--accent-primary); }
+  .mobile-tf-option:active, .mobile-tf-option.active ,.mobile-tf-option:hover{ background: var(--accent-muted); border-color: var(--accent-primary); color: var(--accent-primary); }
 
   /* Mobile Right Panel */
   .mobile-right-panel { display: flex !important; flex-direction: column; position: fixed; top: 0; right: -100%; width: 320px; max-width: 85vw; height: 100vh; height: 100dvh; background: var(--bg-secondary); z-index: 9998; transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: -4px 0 20px rgba(0,0,0,0.4); overflow-y: auto; }
@@ -1139,6 +1141,35 @@ kbd { background: var(--bg-tertiary); border: 1px solid var(--border-primary); b
   .mobile-panel-content { flex: 1; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; touch-action: pan-y; }
   .mobile-panel-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 9997; }
   .mobile-panel-overlay.visible { display: block !important; }
+
+	/* ============================================ */
+/* P0 FIX #6: MOBILE LAYOUT OVERRIDES */
+/* ============================================ */
+@media (max-width: 768px) {
+  /* Prevent iOS rubber-banding on chart */
+  #chart-container {overflow: hidden !important;position: relative !important;touch-action: manipulation !important;-webkit-overflow-scrolling: auto !important;}
+  #main-chart-pane {touch-action: pan-x pinch-zoom !important;}
+  /* Drawing canvas touch handling */
+  .drawing-canvas.drawing-active {touch-action: none !important;pointer-events: auto !important;}
+  /* Prevent text selection on double-tap */
+  .chart-canvas, .drawing-canvas, #price-chart, #volume-chart {-webkit-user-select: none !important;user-select: none !important;-webkit-touch-callout: none !important;}
+  /* Ensure indicator panes don't overflow */
+  .indicator-panes-container {max-height: 35vh !important;overflow-y: auto !important;-webkit-overflow-scrolling: touch !important;}
+  /* Trade buttons visibility */
+  #chart-trade-buttons {z-index: 25 !important;pointer-events: auto !important;}
+  #chart-buy-btn, #chart-sell-btn {pointer-events: auto !important;cursor: pointer !important;touch-action: manipulation !important;}
+  /* Sheet tab touch targets */
+  .sheet-tab {min-height: 48px !important;touch-action: manipulation !important;}
+  /* Indicator buttons in sheet */
+  .sheet-indicator-btn {min-height: 44px !important;touch-action: manipulation !important;}
+  /* Drawing tool buttons in sheet */
+  .sheet-tool-btn {min-height: 52px !important;touch-action: manipulation !important;}
+  /* Mobile panel scroll */
+  .mobile-panel-content {-webkit-overflow-scrolling: touch !important;overscroll-behavior: contain !important;}
+  /* Fix for iOS Safari 100vh issue */
+  .mobile-bottom-sheet {max-height: 60vh !important;height: auto !important;}
+  .mobile-right-panel {height: 100dvh !important;}
+}
 
 button:active,.trade-type:active,.order-type-btn:active,.quick-amount-btn:active,.watchlist-item:active,.screener-item:active,.market-item:active,.mobile-wl-item:active,.mob-action-btn:active,.sheet-indicator-btn:active,.sheet-tool-btn:active,.symbol-pill:active {opacity: 0.7;transform: scale(0.97);transition: all 0.1s ease;}
   /* Trade buttons touch feedback */
@@ -1549,20 +1580,7 @@ button:active,.trade-type:active,.order-type-btn:active,.quick-amount-btn:active
     <main class="center-content">
       
 	  <!-- Mobile Timeframe Bar - Overlay on chart -->
-<div class="mobile-timeframe-overlay">
-  <button class="mobile-current-tf" id="mobile-current-tf">
-    <span id="mobile-tf-label">15m</span>
-    <i class="fas fa-chevron-down"></i>
-  </button>
-  <div class="mobile-tf-quick">
-    <button class="mobile-tf-pill" data-interval="1m">1m</button>
-    <button class="mobile-tf-pill" data-interval="5m">5m</button>
-    <button class="mobile-tf-pill active" data-interval="15m">15m</button>
-    <button class="mobile-tf-pill" data-interval="1h">1h</button>
-    <button class="mobile-tf-pill" data-interval="4h">4h</button>
-    <button class="mobile-tf-pill" data-interval="1d">1D</button>
-  </div>
-</div>
+
 
 <!-- Mobile Timeframe Modal -->
 <div class="mobile-tf-modal" id="mobile-tf-modal">
@@ -1759,6 +1777,37 @@ button:active,.trade-type:active,.order-type-btn:active,.quick-amount-btn:active
     </div>
   </button>
 </div>
+<!-- P0 FIX #2: Single timeframe button (replaces overlay bar) -->
+<button id="mobile-tf-fixed-btn" class="mobile-only" style="
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 25;
+  padding: 8px 14px;
+  background: rgba(13, 17, 23, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1.5px solid var(--accent-primary);
+  border-radius: 10px;
+  color: var(--accent-primary);
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  transition: all 0.2s ease;
+  font-family: 'Inter', -apple-system, sans-serif;
+  letter-spacing: 0.3px;
+" onmouseenter="this.style.transform='scale(1.05)';this.style.boxShadow='0 6px 20px rgba(88,166,255,0.3)'" onmouseleave="this.style.transform='scale(1)';this.style.boxShadow='0 4px 16px rgba(0,0,0,0.5)'" onmousedown="this.style.transform='scale(0.97)'" onmouseup="this.style.transform='scale(1.05)'">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="10"></circle>
+    <polyline points="12 6 12 12 16 14"></polyline>
+  </svg>
+  <span id="mobile-tf-label-fixed">15m</span>
+  <i class="fas fa-chevron-down" style="font-size: 9px; opacity: 0.7;"></i>
+</button>
 </div>
 
 <!-- ============================================ -->
