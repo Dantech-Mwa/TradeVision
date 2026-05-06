@@ -1264,15 +1264,121 @@ button:active,.trade-type:active,.order-type-btn:active,.quick-amount-btn:active
 </noscript>
 
 <!-- Initial Loader -->
-<div id="app-loader" style="position:fixed; top:0; left:0; right:0; bottom:0; 
-            background:var(--bg-primary); z-index:99998; 
-            display:flex; align-items:center; justify-content:center; 
-            flex-direction:column; color:var(--text-primary);">
-  <div style="width:48px; height:48px; border:4px solid var(--border-primary); 
-              border-top-color:var(--accent-primary); border-radius:50%; 
-              animation:spin 0.8s linear infinite; margin-bottom:16px;"></div>
-  <p style="font-size:14px; color:var(--text-muted);">Loading TradeVision Pro…</p>
+<!-- ============================================ -->
+<!-- PRODUCTION LOADER - Progress Bar + Retry -->
+<!-- ============================================ -->
+<div id="app-loader" style="
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: var(--bg-primary); z-index: 99998;
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; color: var(--text-primary);
+  font-family: 'Inter', -apple-system, sans-serif;
+">
+  <!-- App Icon -->
+  <svg width="64" height="64" viewBox="0 0 64 64" style="margin-bottom: 20px;">
+    <rect width="64" height="64" rx="14" fill="var(--accent-primary)" opacity="0.15"/>
+    <path d="M16 44L28 28L36 36L50 20" stroke="var(--accent-primary)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="50" cy="20" r="3" fill="var(--accent-primary)"/>
+    <line x1="16" y1="52" x2="48" y2="52" stroke="var(--border-primary)" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="22" cy="52" r="2" fill="var(--text-muted)"/>
+    <circle cx="32" cy="52" r="2" fill="var(--text-muted)"/>
+    <circle cx="42" cy="52" r="2" fill="var(--text-muted)"/>
+  </svg>
+  
+  <!-- Progress Bar -->
+  <div style="
+    width: 200px; height: 3px; background: var(--border-primary);
+    border-radius: 3px; overflow: hidden; margin-bottom: 12px;
+  ">
+    <div id="loader-progress-bar" style="
+      width: 0%; height: 100%; background: var(--accent-primary);
+      border-radius: 3px; transition: width 0.3s ease;
+    "></div>
+  </div>
+  
+  <!-- Status Text -->
+  <p id="loader-status" style="
+    font-size: 13px; color: var(--text-muted); margin: 0;
+    transition: all 0.3s ease;
+  ">Initializing TradeVision Pro...</p>
+  
+  <!-- Retry Button (hidden by default) -->
+  <button id="loader-retry-btn" style="
+    display: none; margin-top: 16px; padding: 10px 24px;
+    background: var(--accent-primary); color: white; border: none;
+    border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600;
+  ">Retry</button>
 </div>
+
+<!-- Loader Control Script -->
+<script>
+(function() {
+  var progressBar = document.getElementById('loader-progress-bar');
+  var statusText = document.getElementById('loader-status');
+  var retryBtn = document.getElementById('loader-retry-btn');
+  var currentStep = 0;
+  
+  var loadingSteps = [
+    { pct: 15, msg: 'Loading chart library...' },
+    { pct: 35, msg: 'Connecting to market data...' },
+    { pct: 55, msg: 'Initializing indicators...' },
+    { pct: 75, msg: 'Loading user preferences...' },
+    { pct: 90, msg: 'Almost ready...' },
+    { pct: 100, msg: 'Welcome to TradeVision Pro' }
+  ];
+  
+  function advanceProgress() {
+    if (currentStep >= loadingSteps.length) return;
+    
+    var step = loadingSteps[currentStep];
+    if (progressBar) progressBar.style.width = step.pct + '%';
+    if (statusText) statusText.textContent = step.msg;
+    currentStep++;
+    
+    if (step.pct < 100) {
+      setTimeout(advanceProgress, 400 + Math.random() * 300);
+    }
+  }
+  
+  // Start animation after a small delay
+  setTimeout(advanceProgress, 200);
+  
+  // Safety timeout: Show retry button if loading takes > 15 seconds
+  setTimeout(function() {
+    var loader = document.getElementById('app-loader');
+    if (loader && loader.style.display !== 'none' && loader.style.opacity !== '0') {
+      if (statusText) {
+        statusText.textContent = '⚠️ Loading is taking longer than expected';
+        statusText.style.color = 'var(--warning)';
+      }
+      if (retryBtn) {
+        retryBtn.style.display = 'block';
+        retryBtn.onclick = function() { location.reload(); };
+      }
+    }
+  }, 15000);
+  
+  // Global function to hide loader when app is ready
+  window.hideAppLoader = function() {
+    var loader = document.getElementById('app-loader');
+    if (!loader) return;
+    
+    if (progressBar) progressBar.style.width = '100%';
+    if (statusText) {
+      statusText.textContent = 'Welcome to TradeVision Pro';
+      statusText.style.color = 'var(--up-color)';
+    }
+    
+    setTimeout(function() {
+      loader.style.opacity = '0';
+      loader.style.transition = 'opacity 0.4s ease';
+      setTimeout(function() { 
+        if (loader.parentNode) loader.remove(); 
+      }, 400);
+    }, 500);
+  };
+})();
+</script>
  
  <!-- ============================================
        HEADER SECTION
