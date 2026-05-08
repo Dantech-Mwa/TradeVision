@@ -2151,6 +2151,18 @@ button:active,.trade-type:active,.order-type-btn:active,.quick-amount-btn:active
         <div style="font-size:9px;color:var(--text-muted);">Sharpe Ratio</div>
         <div style="font-size:16px;font-weight:700;" id="pa-sharpe">--</div>
       </div>
+		          <div style="background:var(--bg-tertiary);border-radius:8px;padding:12px;text-align:center;">
+            <div style="font-size:9px;color:var(--text-muted);">Fitness</div>
+            <div style="font-size:20px;font-weight:700;" id="bt-fitness">--</div>
+          </div>
+          <div style="background:var(--bg-tertiary);border-radius:8px;padding:12px;text-align:center;">
+            <div style="font-size:9px;color:var(--text-muted);">Turnover</div>
+            <div style="font-size:20px;font-weight:700;" id="bt-turnover">--</div>
+          </div>
+          <div style="background:var(--bg-tertiary);border-radius:8px;padding:12px;text-align:center;">
+            <div style="font-size:9px;color:var(--text-muted);">Margin</div>
+            <div style="font-size:20px;font-weight:700;" id="bt-margin">--</div>
+          </div>
       <div style="background:var(--bg-tertiary);border-radius:6px;padding:8px;text-align:center;">
         <div style="font-size:9px;color:var(--text-muted);">Max Drawdown</div>
         <div style="font-size:16px;font-weight:700;color:var(--down-color);" id="pa-max-dd">--</div>
@@ -4306,6 +4318,50 @@ button:active,.trade-type:active,.order-type-btn:active,.quick-amount-btn:active
           <span>Total Trades: <strong id="bt-trades">0</strong></span>
           <span>Profit Factor: <strong id="bt-profit-factor">--</strong></span>
           <span>Avg Trade: <strong id="bt-avg-trade">--</strong></span>
+        </div>
+		          
+        <!-- ============================================ -->
+        <!-- PERFORMANCE TABLE (like the one you shared) -->
+        <!-- ============================================ -->
+        <div style="margin-top:16px;border-top:2px solid var(--border-primary);padding-top:12px;">
+          <h4 style="font-size:11px;color:var(--text-muted);margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+            <i class="fas fa-table"></i> Performance Breakdown
+          </h4>
+          
+          <div style="overflow-x:auto;">
+            <table style="width:100%;font-size:10px;border-collapse:collapse;">
+              <thead>
+                <tr style="border-bottom:2px solid var(--border-primary);color:var(--text-muted);font-size:9px;text-transform:uppercase;">
+                  <th style="padding:6px 4px;text-align:left;">Period</th>
+                  <th style="padding:6px 4px;text-align:right;">Sharpe</th>
+                  <th style="padding:6px 4px;text-align:right;">Turnover</th>
+                  <th style="padding:6px 4px;text-align:right;">Fitness</th>
+                  <th style="padding:6px 4px;text-align:right;">Returns</th>
+                  <th style="padding:6px 4px;text-align:right;">Drawdown</th>
+                  <th style="padding:6px 4px;text-align:right;">Margin</th>
+                  <th style="padding:6px 4px;text-align:center;">Long</th>
+                  <th style="padding:6px 4px;text-align:center;">Short</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Aggregate Row -->
+                <tr style="background:var(--accent-muted);font-weight:600;">
+                  <td style="padding:6px 4px;">Aggregate Data</td>
+                  <td style="padding:6px 4px;text-align:right;font-family:monospace;" id="bt-agg-sharpe">--</td>
+                  <td style="padding:6px 4px;text-align:right;font-family:monospace;" id="bt-agg-turnover">--</td>
+                  <td style="padding:6px 4px;text-align:right;font-family:monospace;" id="bt-agg-fitness">--</td>
+                  <td style="padding:6px 4px;text-align:right;font-family:monospace;" id="bt-agg-returns">--</td>
+                  <td style="padding:6px 4px;text-align:right;font-family:monospace;color:var(--down-color);" id="bt-agg-dd">--</td>
+                  <td style="padding:6px 4px;text-align:right;font-family:monospace;" id="bt-agg-margin">--</td>
+                  <td style="padding:6px 4px;text-align:center;color:var(--up-color);" id="bt-agg-long">--</td>
+                  <td style="padding:6px 4px;text-align:center;color:var(--down-color);" id="bt-agg-short">--</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          
+          <!-- Yearly Breakdown (populated by JS) -->
+          <div id="bt-yearly-table" style="margin-top:0;display:none;"></div>
         </div>
       </div>
     </div>
