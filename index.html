@@ -1470,9 +1470,10 @@ button:active,.trade-type:active,.order-type-btn:active,.quick-amount-btn:active
   }
 </script>
 	
-  <script 
-  src="https://www.paypal.com/sdk/js?client-id=BAA6-pKbrnpOaKuvEMkQ8nG3vEociOmnS3OVnp_oPANPNefmj3dPjrXcVvoKrr3prhADRZ4TY1jidZlNOQ&components=hosted-buttons&disable-funding=venmo&currency=USD">
-</script>
+ <!-- ============================================ -->
+<!-- PAYPAL SUBSCRIPTION SDK (ONE TIME - PUT IN HEAD) -->
+<!-- ============================================ -->
+<script src="https://www.paypal.com/sdk/js?client-id=BAA4jslwzKt9dDq-J2L2J-Vjw1v3O0zU3FEB10HZ4Uj4hnPfhPAdGd3K7cy0S7pEbR9QjYbK4-CPhP7_M4&vault=true&intent=subscription&disable-funding=venmo&currency=USD&components=buttons"></script>
 </head>
 <body data-theme="dark">
 <noscript>
@@ -3857,6 +3858,20 @@ button:active,.trade-type:active,.order-type-btn:active,.quick-amount-btn:active
             <label style="font-size:10px;font-weight:600;color:var(--text-muted);display:block;margin-bottom:4px;">Password</label>
             <input type="password" id="register-password" placeholder="Min 6 characters" style="width:100%;padding:10px;background:var(--bg-primary);border:1px solid var(--border-primary);border-radius:6px;color:var(--text-primary);font-size:13px;outline:none;">
           </div>
+		  <div style="margin: 12px 0;">
+  <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+    <input type="checkbox" id="reg-email-marketing" checked style="width: 16px; height: 16px;">
+    <span style="font-size: 11px; color: var(--text-secondary);">
+      📧 Send me trading insights, strategy updates, and platform news
+    </span>
+  </label>
+  <label style="display: flex; align-items: center; gap: 8px; margin-top: 8px; cursor: pointer;">
+    <input type="checkbox" id="reg-email-alerts" checked style="width: 16px; height: 16px;">
+    <span style="font-size: 11px; color: var(--text-secondary);">
+      🔔 Send me price alerts and market movers (gainers/losers)
+    </span>
+  </label>
+</div>
           <button id="register-submit" style="width:100%;padding:11px;background:var(--success);color:#fff;border:none;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;">Create Account</button>
           <div id="register-error" style="color:var(--danger);font-size:10px;margin-top:8px;text-align:center;display:none;"></div>
         </div>
@@ -3924,313 +3939,812 @@ button:active,.trade-type:active,.order-type-btn:active,.quick-amount-btn:active
   <!-- ============================================ -->
 <!-- PAYMENT MODAL - PRO ($5) + ULTIMATE ($10) -->
 <!-- ============================================ -->
+<!-- ============================================ -->
+<!-- PAYMENT MODAL - PRO ($5) + ULTIMATE ($10) + TRIAL -->
+<!-- ============================================ -->
 <div class="modal-overlay" id="payment-modal">
-  <div class="modal-container modal-md" style="max-width:440px;">
+  <div class="modal-container modal-md" style="max-width: 480px;">
     <div class="modal-header">
-      <h3>Complete Payment</h3>
-      <button class="modal-close" onclick="document.getElementById('payment-modal').classList.remove('visible')"><i class="fas fa-times"></i></button>
-    </div>
-    <div class="modal-body" style="padding:16px;">
-
-      <!-- ============================================ -->
-      <!-- PLAN SELECTION -->
-      <!-- ============================================ -->
-     <!-- ============================================ -->
-<!-- PLAN SELECTION -->
-<!-- ============================================ -->
-<div style="display:flex;gap:8px;margin-bottom:12px;">
-  <button id="tvp-plan-pro" class="tvp-plan-btn active" data-plan="pro" 
-    style="flex:1;padding:10px;border:2px solid #ffd700;background:rgba(255,215,0,0.15);color:#ffd700;border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;">
-    ⭐ PRO · $5/mo
-  </button>
-  <button id="tvp-plan-ultimate" class="tvp-plan-btn" data-plan="ultimate" 
-    style="flex:1;padding:10px;border:2px solid var(--border-primary);background:transparent;color:var(--text-muted);border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;">
-    👑 ULTIMATE · $10/mo
-  </button>
-</div>
-
-<!-- ============================================ -->
-<!-- FEATURE COMPARISON TABLE -->
-<!-- ============================================ -->
-<div id="plan-comparison" style="margin-bottom:14px;background:var(--bg-tertiary);border-radius:8px;overflow:hidden;border:1px solid var(--border-primary);">
-  <!-- Header -->
-  <div style="display:grid;grid-template-columns:1fr 80px 80px;padding:8px 12px;background:var(--bg-secondary);border-bottom:1px solid var(--border-primary);font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;">
-    <span>Feature</span>
-    <span style="text-align:center;color:#ffd700;">PRO</span>
-    <span style="text-align:center;color:#9b6cff;">ULTIMATE</span>
-  </div>
-  
-  <!-- Feature Rows -->
-  <div id="plan-rows" style="font-size:10px;">
-    <!-- Indicators -->
-    <div style="display:grid;grid-template-columns:1fr 80px 80px;padding:7px 12px;border-bottom:1px solid rgba(48,54,61,0.3);color:var(--text-secondary);">
-      <span>Indicators</span>
-      <span style="text-align:center;color:#ffd700;">30</span>
-      <span style="text-align:center;color:#9b6cff;">∞</span>
-    </div>
-    <!-- Alerts -->
-    <div style="display:grid;grid-template-columns:1fr 80px 80px;padding:7px 12px;border-bottom:1px solid rgba(48,54,61,0.3);color:var(--text-secondary);">
-      <span>Price Alerts</span>
-      <span style="text-align:center;color:#ffd700;">20</span>
-      <span style="text-align:center;color:#9b6cff;">∞</span>
-    </div>
-    <!-- Charts -->
-    <div style="display:grid;grid-template-columns:1fr 80px 80px;padding:7px 12px;border-bottom:1px solid rgba(48,54,61,0.3);color:var(--text-secondary);">
-      <span>Multi-Charts</span>
-      <span style="text-align:center;color:#ffd700;">2</span>
-      <span style="text-align:center;color:#9b6cff;">4</span>
-    </div>
-    <!-- AI Requests -->
-    <div style="display:grid;grid-template-columns:1fr 80px 80px;padding:7px 12px;border-bottom:1px solid rgba(48,54,61,0.3);color:var(--text-secondary);">
-      <span>AI Requests/day</span>
-      <span style="text-align:center;color:#ffd700;">50</span>
-      <span style="text-align:center;color:#9b6cff;">200</span>
-    </div>
-    <!-- Chat -->
-    <div style="display:grid;grid-template-columns:1fr 80px 80px;padding:7px 12px;border-bottom:1px solid rgba(48,54,61,0.3);color:var(--text-secondary);">
-      <span>Community Chat</span>
-      <span style="text-align:center;color:var(--up-color);">✓</span>
-      <span style="text-align:center;color:var(--up-color);">✓</span>
-    </div>
-    <!-- No Ads -->
-    <div style="display:grid;grid-template-columns:1fr 80px 80px;padding:7px 12px;border-bottom:1px solid rgba(48,54,61,0.3);color:var(--text-secondary);">
-      <span>No Ads</span>
-      <span style="text-align:center;color:var(--up-color);">✓</span>
-      <span style="text-align:center;color:var(--up-color);">✓</span>
-    </div>
-    <!-- API Access -->
-    <div style="display:grid;grid-template-columns:1fr 80px 80px;padding:7px 12px;border-bottom:1px solid rgba(48,54,61,0.3);color:var(--text-secondary);">
-      <span>API Access</span>
-      <span style="text-align:center;color:var(--down-color);">✗</span>
-      <span style="text-align:center;color:var(--up-color);">✓</span>
-    </div>
-    <!-- Premium Indicators -->
-    <div style="display:grid;grid-template-columns:1fr 80px 80px;padding:7px 12px;border-bottom:1px solid rgba(48,54,61,0.3);color:var(--text-secondary);">
-      <span>Premium Indicators</span>
-      <span style="text-align:center;color:var(--down-color);">✗</span>
-      <span style="text-align:center;color:var(--up-color);">✓</span>
-    </div>
-    <!-- Data Export -->
-    <div style="display:grid;grid-template-columns:1fr 80px 80px;padding:7px 12px;border-bottom:1px solid rgba(48,54,61,0.3);color:var(--text-secondary);">
-      <span>Data Export</span>
-      <span style="text-align:center;color:var(--down-color);">✗</span>
-      <span style="text-align:center;color:var(--up-color);">✓</span>
-    </div>
-    <!-- Pine Script -->
-    <div style="display:grid;grid-template-columns:1fr 80px 80px;padding:7px 12px;border-bottom:1px solid rgba(48,54,61,0.3);color:var(--text-secondary);">
-      <span>Pine Editor</span>
-      <span style="text-align:center;color:var(--up-color);">✓</span>
-      <span style="text-align:center;color:var(--up-color);">✓</span>
-    </div>
-    <!-- Drawing Tools -->
-    <div style="display:grid;grid-template-columns:1fr 80px 80px;padding:7px 12px;color:var(--text-secondary);">
-      <span>Drawing Tools</span>
-      <span style="text-align:center;color:#ffd700;">20+</span>
-      <span style="text-align:center;color:#9b6cff;">35+</span>
-    </div>
-  </div>
-</div>
-
-<!-- ============================================ -->
-<!-- HIGHLIGHT BOX FOR SELECTED PLAN -->
-<!-- ============================================ -->
-<div id="plan-highlight" style="text-align:center;margin-bottom:12px;padding:10px;background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.2);border-radius:8px;">
-  <div style="font-size:22px;font-weight:800;color:#ffd700;" id="highlight-price">$5<span style="font-size:12px;font-weight:500;">/month</span></div>
-  <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">
-    ⭐ <strong>PRO</strong> — Perfect for active traders
-  </div>
-</div>
-
-      <!-- ============================================ -->
-      <!-- CRYPTO PAYMENT -->
-      <!-- ============================================ -->
-      <h4 style="font-size:11px;color:var(--text-muted);margin-bottom:10px;">Pay with Cryptocurrency (No Fees)</h4>
-      <div style="display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap;">
-        <button class="tvp-crypto-net active" data-net="POLYGON" 
-          style="padding:5px 12px;border:1px solid #26a69a;background:rgba(38,166,154,0.1);color:#26a69a;border-radius:14px;font-size:10px;cursor:pointer;font-weight:600;">
-          Polygon · $0.01
-        </button>
-        <button class="tvp-crypto-net" data-net="MATIC_USDC"
-          style="padding:5px 12px;border:1px solid var(--border-primary);background:transparent;color:var(--text-muted);border-radius:14px;font-size:10px;cursor:pointer;">
-          MATIC USDC · $0.01
-        </button>
-        <button class="tvp-crypto-net" data-net="BSC"
-          style="padding:5px 12px;border:1px solid var(--border-primary);background:transparent;color:var(--text-muted);border-radius:14px;font-size:10px;cursor:pointer;">
-          BSC · $0.10
-        </button>
-        <button class="tvp-crypto-net" data-net="TRC20"
-          style="padding:5px 12px;border:1px solid var(--border-primary);background:transparent;color:var(--text-muted);border-radius:14px;font-size:10px;cursor:pointer;">
-          TRC20 · $1
-        </button>
+      <div class="modal-title">
+        <i class="fas fa-crown" style="color: #ffd700;"></i>
+        <div>
+          <h3>Upgrade Your Plan</h3>
+          <p class="modal-subtitle">Choose how you want to upgrade</p>
+        </div>
       </div>
-
-      <div style="font-size:10px;color:var(--text-muted);margin-bottom:6px;">
-        Send <strong id="crypto-amount-display">5 USDT</strong> on <strong id="crypto-net-name">Polygon</strong>
-      </div>
-      <div style="background:var(--bg-tertiary);padding:10px;border-radius:6px;font-family:monospace;font-size:10px;word-break:break-all;color:var(--up-color);margin-bottom:8px;" id="crypto-address">
-        0x8990787D3483A1035Bc460DdA5c75AB6e23BC1b6
-      </div>
-      <button onclick="navigator.clipboard.writeText(document.getElementById('crypto-address').textContent);alert('Address copied!')" 
-        style="width:100%;padding:8px;background:var(--accent-muted);color:var(--accent-primary);border:none;border-radius:6px;cursor:pointer;font-size:11px;">
-        📋 Copy Address
+      <button class="modal-close" onclick="document.getElementById('payment-modal').classList.remove('visible')">
+        <i class="fas fa-times"></i>
       </button>
-
-      <hr style="border-color:var(--border-primary);margin:16px 0;">
-
-      <!-- ============================================ -->
-      <!-- PAYPAL - PRO PLAN ($5) -->
-      <!-- ============================================ -->
-      <div id="paypal-section-pro">
-        <h4 style="font-size:11px;color:var(--text-muted);margin-bottom:10px;">Pay with PayPal · ⭐ PRO</h4>
-        <div id="paypal-container-T4BV28D9BL3RE"></div>
+    </div>
+    <div class="modal-body" style="padding: 20px;">
+      
+      <!-- TRIAL OPTION (Prominent) -->
+      <!-- Trial Option Card - Opens PayPal Subscription Modal -->
+<div id="show-trial-choice" style="background: linear-gradient(135deg, rgba(255,152,0,0.15), rgba(255,152,0,0.05)); border: 2px solid #ff9800; border-radius: 16px; padding: 16px; cursor: pointer;">
+  <div style="display: flex; align-items: center; justify-content: space-between;">
+    <div>
+      <span style="background: #ff9800; color: white; padding: 2px 10px; border-radius: 20px; font-size: 10px; font-weight: 700;">🎁 RECOMMENDED</span>
+      <h4 style="margin: 8px 0 4px 0; font-size: 16px;">Start 14-Day Free Trial</h4>
+      <p style="font-size: 11px; color: var(--text-muted); margin: 0;">Full access to PRO or ULTIMATE features. No upfront payment.</p>
+      <p style="font-size: 10px; color: #ff9800; margin: 4px 0 0 0;">✓ Auto-renews after trial • Cancel anytime</p>
+    </div>
+    <i class="fas fa-chevron-right" style="color: #ff9800;"></i>
+  </div>
+</div>
+      
+      <!-- Divider -->
+      <div style="display: flex; align-items: center; gap: 12px; margin: 16px 0;">
+        <div style="flex: 1; height: 1px; background: var(--border-primary);"></div>
+        <span style="font-size: 11px; color: var(--text-muted);">OR PAY IMMEDIATELY</span>
+        <div style="flex: 1; height: 1px; background: var(--border-primary);"></div>
       </div>
-
-      <!-- ============================================ -->
-      <!-- PAYPAL - ULTIMATE PLAN ($10) -->
-      <!-- ============================================ -->
-      <div id="paypal-section-ultimate" style="display:none;">
-        <h4 style="font-size:11px;color:var(--text-muted);margin-bottom:10px;">Pay with PayPal · 👑 ULTIMATE</h4>
-        <div id="paypal-container-7EBJYV5NG2452"></div>
+      
+      <!-- Plan Selection -->
+      <div style="display: flex; gap: 12px; margin-bottom: 20px;">
+        <div id="pay-pro-option" class="pay-plan-option active" data-plan="pro" style="flex: 1; padding: 16px; border: 2px solid #ffd700; border-radius: 12px; cursor: pointer; background: rgba(255,215,0,0.05);">
+          <div style="font-size: 24px;">⭐</div>
+          <div style="font-weight: 700; font-size: 14px; margin-top: 4px;">PRO</div>
+          <div style="font-size: 20px; font-weight: 800; color: #ffd700; margin: 4px 0;">$5<span style="font-size: 10px;">/month</span></div>
+          <div style="font-size: 9px; color: var(--text-muted);">30 indicators · 20 alerts · 2 charts · AI 50/day</div>
+        </div>
+        <div id="pay-ultimate-option" class="pay-plan-option" data-plan="ultimate" style="flex: 1; padding: 16px; border: 2px solid var(--border-primary); border-radius: 12px; cursor: pointer;">
+          <div style="font-size: 24px;">👑</div>
+          <div style="font-weight: 700; font-size: 14px; margin-top: 4px;">ULTIMATE</div>
+          <div style="font-size: 20px; font-weight: 800; color: #9b6cff; margin: 4px 0;">$10<span style="font-size: 10px;">/month</span></div>
+          <div style="font-size: 9px; color: var(--text-muted);">Unlimited · API · Premium indicators · AI 200/day</div>
+        </div>
       </div>
-
-      <p style="font-size:9px;color:var(--text-muted);text-align:center;margin-top:8px;">
-        <span id="plan-activation-text" style="color:#ffd700;">PRO</span> activates instantly after payment
+      
+      <!-- Selected Plan Highlight -->
+      <div id="selected-plan-highlight" style="background: rgba(255,215,0,0.1); border-radius: 10px; padding: 12px; margin-bottom: 16px; text-align: center;">
+        <span id="selected-plan-name" style="font-weight: 700;">PRO</span>
+        <span id="selected-plan-price" style="color: #ffd700; font-weight: 700;">$5/month</span>
+        <span id="selected-plan-features" style="font-size: 10px; color: var(--text-muted); display: block; margin-top: 4px;">30 indicators · 20 alerts · 2 charts</span>
+      </div>
+      
+      <!-- Payment Methods -->
+      <div style="margin-bottom: 16px;">
+        <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+          <button id="paypal-pay-btn" class="payment-method-btn active" data-method="paypal" style="flex: 1; padding: 10px; background: var(--accent-primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+            <i class="fab fa-paypal"></i> PayPal
+          </button>
+          <button id="crypto-pay-btn" class="payment-method-btn" data-method="crypto" style="flex: 1; padding: 10px; background: var(--bg-tertiary); color: var(--text-secondary); border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+            <i class="fab fa-bitcoin"></i> Cryptocurrency
+          </button>
+        </div>
+        
+<!-- PayPal Section -->
+<div id="paypal-payment-section">
+  <div id="paypal-immediate-button-container" style="min-height: 180px;"></div>
+  <p style="font-size: 9px; color: var(--text-muted); text-align: center; margin-top: 8px;">
+    Secure payment via PayPal. Your subscription will activate immediately.
+  </p>
+</div>
+        
+        <!-- Crypto Section (Hidden by default) -->
+        <div id="crypto-payment-section" style="display: none;">
+          <div style="background: var(--bg-tertiary); border-radius: 10px; padding: 12px; margin-bottom: 12px;">
+            <div style="display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap;">
+              <button class="crypto-net-btn active" data-net="POLYGON" style="padding: 6px 12px; border: 1px solid #26a69a; background: rgba(38,166,154,0.1); color: #26a69a; border-radius: 20px; font-size: 10px; cursor: pointer;">Polygon · $0.01</button>
+              <button class="crypto-net-btn" data-net="BSC" style="padding: 6px 12px; border: 1px solid var(--border-primary); background: transparent; color: var(--text-muted); border-radius: 20px; font-size: 10px; cursor: pointer;">BSC · $0.10</button>
+              <button class="crypto-net-btn" data-net="TRC20" style="padding: 6px 12px; border: 1px solid var(--border-primary); background: transparent; color: var(--text-muted); border-radius: 20px; font-size: 10px; cursor: pointer;">TRC20 · $1</button>
+            </div>
+            <div style="font-size: 11px; margin-bottom: 6px;">Send <strong id="crypto-amount">5 USDT</strong> on <strong id="crypto-network">Polygon</strong> to:</div>
+            <div style="background: var(--bg-primary); padding: 10px; border-radius: 6px; font-family: monospace; font-size: 10px; word-break: break-all; color: #26a69a;" id="crypto-address-display">0x8990787D3483A1035Bc460DdA5c75AB6e23BC1b6</div>
+            <button onclick="navigator.clipboard.writeText(document.getElementById('crypto-address-display').textContent)" style="width: 100%; margin-top: 8px; padding: 6px; background: var(--accent-muted); border: none; border-radius: 6px; color: var(--accent-primary); cursor: pointer; font-size: 10px;">📋 Copy Address</button>
+            <p style="font-size: 9px; color: var(--text-muted); text-align: center; margin-top: 8px;">After sending, click "I've Paid" to activate your subscription.</p>
+            <button id="crypto-paid-btn" style="width: 100%; margin-top: 8px; padding: 10px; background: var(--success); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">I've Paid - Activate Subscription</button>
+          </div>
+        </div>
+      </div>
+      
+      <p style="font-size: 9px; color: var(--text-muted); text-align: center; margin-top: 12px;">
+        By upgrading, you agree to auto-renewal. Cancel anytime in Settings.
       </p>
     </div>
   </div>
 </div>
 
 <!-- ============================================ -->
+<!-- TRIAL SUBSCRIPTION MODAL (Add to body) -->
+<!-- ============================================ -->
+<div class="modal-overlay" id="trial-subscription-modal">
+  <div class="modal-container modal-md" style="max-width: 500px;">
+    <div class="modal-header">
+      <div class="modal-title">
+        <i class="fab fa-paypal" style="color: #0070ba;"></i>
+        <div>
+          <h3>Start 14-Day Free Trial</h3>
+          <p class="modal-subtitle" id="trial-plan-display">PRO Plan - $5/month after trial</p>
+        </div>
+      </div>
+      <button class="modal-close" onclick="document.getElementById('trial-subscription-modal').classList.remove('visible')">✕</button>
+    </div>
+    <div class="modal-body" style="padding: 20px;">
+      
+      <!-- Plan Selection -->
+      <div style="display: flex; gap: 12px; margin-bottom: 20px;">
+        <div id="trial-pro-plan" class="trial-plan-selector active" data-plan="pro" style="flex: 1; padding: 16px; border: 2px solid #ffd700; border-radius: 12px; cursor: pointer; background: rgba(255,215,0,0.1);">
+          <div style="font-size: 24px;">⭐</div>
+          <div style="font-weight: 700; margin: 6px 0;">PRO</div>
+          <div style="font-size: 11px;">$5/month after trial</div>
+          <div style="font-size: 10px; color: #ffd700; margin-top: 6px;">30 indicators · 20 alerts · 2 charts</div>
+        </div>
+        <div id="trial-ultimate-plan" class="trial-plan-selector" data-plan="ultimate" style="flex: 1; padding: 16px; border: 2px solid var(--border-primary); border-radius: 12px; cursor: pointer;">
+          <div style="font-size: 24px;">👑</div>
+          <div style="font-weight: 700; margin: 6px 0;">ULTIMATE</div>
+          <div style="font-size: 11px;">$10/month after trial</div>
+          <div style="font-size: 10px; color: #9b6cff; margin-top: 6px;">Unlimited · API · Premium indicators</div>
+        </div>
+      </div>
+      
+      <!-- Trial Info -->
+      <div style="background: rgba(255,152,0,0.1); border-radius: 10px; padding: 14px; margin-bottom: 20px; text-align: center;">
+        <span style="font-size: 28px;">🎁</span>
+        <p style="margin: 6px 0 0; font-size: 13px; font-weight: 600;">14 Days Free • Cancel Anytime</p>
+        <p style="font-size: 10px; margin: 4px 0 0;">No charge during trial. Auto-renews after 14 days unless cancelled.</p>
+      </div>
+      
+      <!-- PayPal Button Container -->
+      <div id="paypal-trial-button-container"></div>
+      
+      <p style="font-size: 10px; color: var(--text-muted); text-align: center; margin-top: 12px;">
+        <i class="fas fa-shield-alt"></i> Your payment info is secure. You won't be charged until the trial ends.
+      </p>
+    </div>
+  </div>
+</div>
+<script>
+// ============================================
+// DUAL PAYPAL SYSTEM: TRIAL (Plan IDs) + IMMEDIATE (Hosted Button IDs)
+// ============================================
+
+(function() {
+  // ============================================
+  // CONFIGURATION - YOUR ACTUAL IDs
+  // ============================================
+  
+  // TRIAL Plan IDs (14-day free trial - from PayPal Subscriptions)
+  // YOU MUST CREATE THESE IN YOUR PAYPAL DASHBOARD
+  // Format: P-XXXXXXXXXXXX
+  const PAYPAL_TRIAL_PLANS = {
+    pro: 'P-69T33863SC7123047NICM4LI',        // YOUR PRO TRIAL PLAN ID
+    ultimate: 'P-03F769921C778452GNICM6XQ'     // YOUR ULTIMATE TRIAL PLAN ID
+  };
+  
+  // IMMEDIATE Hosted Button IDs (one-time payment - from PayPal Buttons)
+  // Format: alphanumeric string like T4BV28D9BL3RE
+  const PAYPAL_IMMEDIATE_BUTTONS = {
+    pro: 'T4BV28D9BL3RE',      // YOUR PRO HOSTED BUTTON ID - WORKS
+    ultimate: '7EBJYV5NG2452'   // YOUR ULTIMATE HOSTED BUTTON ID - WORKS
+  };
+  
+  // ============================================
+  // STATE
+  // ============================================
+  let selectedTrialPlan = 'pro';
+  let selectedImmediatePlan = 'pro';
+  let trialModal = document.getElementById('trial-subscription-modal');
+  let paymentModal = document.getElementById('payment-modal');
+  
+  // ============================================
+  // CHECK IF USER ALREADY USED TRIAL
+  // ============================================
+  function hasUserUsedTrial() {
+    const trialUsed = localStorage.getItem('tvp_trial_used');
+    if (trialUsed) return true;
+    if (typeof UserSystem !== 'undefined' && UserSystem.currentUser) {
+      if (UserSystem.currentUser.trialUsed) return true;
+      if (UserSystem.currentUser.paypalSubscriptionId) return true;
+    }
+    return false;
+  }
+  
+  // ============================================
+  // RENDER TRIAL BUTTON - Uses Subscription Plan ID
+  // Creates subscription that starts free for 14 days
+  // ============================================
+  function renderPayPalTrialButton() {
+  const container = document.getElementById('paypal-trial-button-container');
+  if (!container) return;
+  
+  container.innerHTML = '';
+  
+  if (typeof paypal === 'undefined' || !paypal.Buttons) {
+    setTimeout(renderPayPalTrialButton, 500);
+    return;
+  }
+  
+  if (hasUserUsedTrial()) {
+    container.innerHTML = `
+      <div style="background: rgba(239,83,80,0.1); padding: 16px; border-radius: 8px; text-align: center;">
+        <p style="color: #ef5350; margin: 0 0 10px; font-size: 13px;">⚠️ You have already used your free trial.</p>
+        <button onclick="document.getElementById('trial-subscription-modal').classList.remove('visible'); document.getElementById('payment-modal').classList.add('visible');" style="padding: 10px 24px; background: var(--accent-primary); color: white; border: none; border-radius: 6px; cursor: pointer;">Subscribe Now →</button>
+      </div>
+    `;
+    return;
+  }
+  
+  const planId = PAYPAL_TRIAL_PLANS[selectedTrialPlan];
+  
+  // DON'T validate here - let PayPal handle it
+  // Just try to create the subscription
+  paypal.Buttons({
+    style: { shape: 'rect', color: 'gold', layout: 'vertical', label: 'subscribe' },
+    
+    createSubscription: function(data, actions) {
+      return actions.subscription.create({ plan_id: planId });
+    },
+    
+   onApprove: async function(data, actions) {
+    container.innerHTML = '<div style="text-align:center; padding:20px;"><i class="fas fa-spinner fa-spin"></i> Activating your 14-day free trial...</div>';
+    
+    try {
+        // ✅ CALL THE EXISTING UserSystem.startTrial() METHOD
+        if (typeof UserSystem !== 'undefined') {
+            const result = await UserSystem.startTrial(selectedTrialPlan);
+            
+            if (result.success) {
+                // Store PayPal subscription ID separately if needed
+                localStorage.setItem('tvp_paypal_subscription_id', data.subscriptionID);
+                
+                if (typeof Toast !== 'undefined') {
+                    Toast.success(`${selectedTrialPlan.toUpperCase()} 14-day trial activated!`);
+                }
+                if (trialModal) trialModal.classList.remove('visible');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                container.innerHTML = `<div style="background:rgba(239,83,80,0.1); padding:12px; text-align:center;">
+                    <p style="color:#ef5350;">${result.error}</p>
+                    <button onclick="location.reload()" style="margin-top:10px; padding:8px 16px; background:var(--accent-primary); color:white; border:none; border-radius:6px;">Try Again</button>
+                </div>`;
+            }
+        }
+    } catch(error) {
+        console.error('Trial activation error:', error);
+        container.innerHTML = `<div style="background:rgba(239,83,80,0.1); padding:12px; text-align:center;">
+            <p style="color:#ef5350;">Activation failed. Please try again.</p>
+            <button onclick="location.reload()" style="margin-top:10px; padding:8px 16px;">Retry</button>
+        </div>`;
+    }
+},
+    
+    onError: function(err) {
+      console.error('PayPal trial error:', err);
+      container.innerHTML = `<div style="background:rgba(239,83,80,0.1); padding:12px; text-align:center;">
+        <p style="color:#ef5350;">Trial not available. Please use immediate payment.</p>
+        <button onclick="document.getElementById('trial-subscription-modal').classList.remove('visible'); document.getElementById('payment-modal').classList.add('visible');" style="margin-top:10px; padding:8px 16px; background:var(--accent-primary); color:white; border:none; border-radius:6px;">Subscribe Now</button>
+      </div>`;
+    }
+    
+  }).render('#paypal-trial-button-container');
+}
+  // ============================================
+  // RENDER IMMEDIATE PAYMENT BUTTON - Uses Hosted Button ID
+  // Creates one-time payment that charges NOW
+  // ============================================
+  function renderPayPalImmediateButton() {
+    const container = document.getElementById('paypal-immediate-button-container');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    if (typeof paypal === 'undefined' || !paypal.Buttons) {
+      setTimeout(renderPayPalImmediateButton, 500);
+      return;
+    }
+    
+    const buttonId = PAYPAL_IMMEDIATE_BUTTONS[selectedImmediatePlan];
+    
+    // Use the hosted button ID directly in the button creation
+    paypal.Buttons({
+      style: { 
+        shape: 'rect', 
+        color: selectedImmediatePlan === 'pro' ? 'gold' : 'blue', 
+        layout: 'vertical',
+        label: 'paypal'
+      },
+      
+      // For hosted button IDs, we use the hosted_button_id parameter
+      createOrder: function(data, actions) {
+        // Create order with the hosted button ID
+        return fetch('/api/create-paypal-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ buttonId: buttonId, plan: selectedImmediatePlan })
+        })
+        .then(res => res.json())
+        .then(order => order.id);
+      },
+      
+      onApprove: async function(data, actions) {
+    container.innerHTML = '<div style="text-align:center; padding:20px;"><i class="fas fa-spinner fa-spin"></i> Processing payment...</div>';
+    
+    return actions.order.capture().then(async function(details) {
+        try {
+            // ✅ CALL THE EXISTING UserSystem.upgradeToTier() METHOD
+            if (typeof UserSystem !== 'undefined') {
+                const result = await UserSystem.upgradeToTier(
+                    selectedImmediatePlan,  // 'pro' or 'ultimate'
+                    'paypal',
+                    { orderId: data.orderID, details: details }
+                );
+                
+                if (result.success) {
+                    if (typeof Toast !== 'undefined') {
+                        Toast.success(`${selectedImmediatePlan.toUpperCase()} subscription activated! Thank you!`);
+                    }
+                    if (paymentModal) paymentModal.classList.remove('visible');
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    container.innerHTML = `<div style="background:rgba(239,83,80,0.1); padding:12px; text-align:center;">
+                        <p style="color:#ef5350;">${result.error}</p>
+                        <button onclick="location.reload()" style="margin-top:10px; padding:8px 16px;">Try Again</button>
+                    </div>`;
+                }
+            }
+        } catch(error) {
+            console.error('Activation error:', error);
+            container.innerHTML = `<div style="background:rgba(239,83,80,0.1); padding:12px; text-align:center;">
+                <p style="color:#ef5350;">Payment successful but activation failed. Please contact support.</p>
+                <button onclick="location.reload()" style="margin-top:10px; padding:8px 16px;">Refresh</button>
+            </div>`;
+        }
+    });
+},
+      
+      onError: function(err) {
+        console.error('PayPal error:', err);
+        container.innerHTML = `<div style="background:rgba(239,83,80,0.1); padding:12px; text-align:center;">
+          <p style="color:#ef5350;">Payment failed. Please try again or use Crypto.</p>
+          <button onclick="renderPayPalImmediateButton()" style="margin-top:10px; padding:8px 16px; background:var(--accent-primary); color:white; border:none; border-radius:6px;">Retry</button>
+        </div>`;
+      }
+      
+    }).render('#paypal-immediate-button-container');
+  }
+  
+  // ============================================
+  // TRIAL MODAL - Plan Selection UI
+  // ============================================
+  const trialProPlan = document.getElementById('trial-pro-plan');
+  const trialUltimatePlan = document.getElementById('trial-ultimate-plan');
+  const trialPlanDisplay = document.getElementById('trial-plan-display');
+  
+  function updateTrialPlanSelection(plan) {
+    selectedTrialPlan = plan;
+    if (trialProPlan) {
+      trialProPlan.style.borderColor = plan === 'pro' ? '#ffd700' : 'var(--border-primary)';
+      trialProPlan.style.background = plan === 'pro' ? 'rgba(255,215,0,0.1)' : 'transparent';
+    }
+    if (trialUltimatePlan) {
+      trialUltimatePlan.style.borderColor = plan === 'ultimate' ? '#9b6cff' : 'var(--border-primary)';
+      trialUltimatePlan.style.background = plan === 'ultimate' ? 'rgba(155,108,255,0.1)' : 'transparent';
+    }
+    if (trialPlanDisplay) {
+      trialPlanDisplay.textContent = plan === 'pro' ? 'PRO Plan - $5/month after trial' : 'ULTIMATE Plan - $10/month after trial';
+    }
+    renderPayPalTrialButton();
+  }
+  
+  if (trialProPlan) trialProPlan.onclick = () => updateTrialPlanSelection('pro');
+  if (trialUltimatePlan) trialUltimatePlan.onclick = () => updateTrialPlanSelection('ultimate');
+  
+  // ============================================
+  // PAYMENT MODAL - Plan Selection UI
+  // ============================================
+  const payProOption = document.getElementById('pay-pro-option');
+  const payUltimateOption = document.getElementById('pay-ultimate-option');
+  
+  function updateImmediatePlanSelection(plan) {
+    selectedImmediatePlan = plan;
+    if (payProOption) {
+      payProOption.style.borderColor = plan === 'pro' ? '#ffd700' : 'var(--border-primary)';
+      payProOption.style.background = plan === 'pro' ? 'rgba(255,215,0,0.05)' : 'transparent';
+    }
+    if (payUltimateOption) {
+      payUltimateOption.style.borderColor = plan === 'ultimate' ? '#9b6cff' : 'var(--border-primary)';
+      payUltimateOption.style.background = plan === 'ultimate' ? 'rgba(155,108,255,0.05)' : 'transparent';
+    }
+    
+    const nameEl = document.getElementById('selected-plan-name');
+    const priceEl = document.getElementById('selected-plan-price');
+    const featuresEl = document.getElementById('selected-plan-features');
+    
+    if (plan === 'pro') {
+      if (nameEl) nameEl.textContent = 'PRO';
+      if (priceEl) { priceEl.textContent = '$5/month'; priceEl.style.color = '#ffd700'; }
+      if (featuresEl) featuresEl.textContent = '30 indicators · 20 alerts · 2 charts · AI 50/day';
+    } else {
+      if (nameEl) nameEl.textContent = 'ULTIMATE';
+      if (priceEl) { priceEl.textContent = '$10/month'; priceEl.style.color = '#9b6cff'; }
+      if (featuresEl) featuresEl.textContent = 'Unlimited indicators · API access · Premium indicators · AI 200/day';
+    }
+    
+    renderPayPalImmediateButton();
+  }
+  
+  if (payProOption) payProOption.onclick = () => updateImmediatePlanSelection('pro');
+  if (payUltimateOption) payUltimateOption.onclick = () => updateImmediatePlanSelection('ultimate');
+  
+  // ============================================
+  // OPEN TRIAL MODAL FROM PAYMENT MODAL
+  // ============================================
+  const showTrialChoice = document.getElementById('show-trial-choice');
+  if (showTrialChoice) {
+    showTrialChoice.addEventListener('click', () => {
+      if (paymentModal) paymentModal.classList.remove('visible');
+      if (trialModal) {
+        trialModal.classList.add('visible');
+        setTimeout(() => updateTrialPlanSelection(selectedTrialPlan), 100);
+      }
+    });
+  }
+  
+  // ============================================
+  // PAYMENT METHOD SWITCHING (PayPal vs Crypto)
+  // ============================================
+  const paypalMethodBtn = document.getElementById('paypal-pay-btn');
+  const cryptoMethodBtn = document.getElementById('crypto-pay-btn');
+  const paypalSection = document.getElementById('paypal-payment-section');
+  const cryptoSection = document.getElementById('crypto-payment-section');
+  
+  function switchPaymentMethod(method) {
+    if (method === 'paypal') {
+      if (paypalSection) paypalSection.style.display = 'block';
+      if (cryptoSection) cryptoSection.style.display = 'none';
+      if (paypalMethodBtn) {
+        paypalMethodBtn.style.background = 'var(--accent-primary)';
+        paypalMethodBtn.style.color = 'white';
+      }
+      if (cryptoMethodBtn) {
+        cryptoMethodBtn.style.background = 'var(--bg-tertiary)';
+        cryptoMethodBtn.style.color = 'var(--text-secondary)';
+      }
+      renderPayPalImmediateButton();
+    } else {
+      if (paypalSection) paypalSection.style.display = 'none';
+      if (cryptoSection) cryptoSection.style.display = 'block';
+      if (cryptoMethodBtn) {
+        cryptoMethodBtn.style.background = 'var(--accent-primary)';
+        cryptoMethodBtn.style.color = 'white';
+      }
+      if (paypalMethodBtn) {
+        paypalMethodBtn.style.background = 'var(--bg-tertiary)';
+        paypalMethodBtn.style.color = 'var(--text-secondary)';
+      }
+    }
+  }
+  
+  if (paypalMethodBtn) paypalMethodBtn.onclick = () => switchPaymentMethod('paypal');
+  if (cryptoMethodBtn) cryptoMethodBtn.onclick = () => switchPaymentMethod('crypto');
+  
+  // ============================================
+  // CRYPTO PAYMENT HANDLING
+  // ============================================
+  const cryptoNetworks = {
+    POLYGON: { name: 'Polygon', address: '0x8990787D3483A1035Bc460DdA5c75AB6e23BC1b6', fee: '$0.01' },
+    BSC: { name: 'BSC', address: '0x8990787D3483A1035Bc460DdA5c75AB6e23BC1b6', fee: '$0.10' },
+    TRC20: { name: 'TRC20', address: 'TYOURTRONADDRESS', fee: '$1' }
+  };
+  
+  const cryptoBtns = document.querySelectorAll('.crypto-net-btn');
+  cryptoBtns.forEach(btn => {
+    btn.addEventListener('click', function() {
+      cryptoBtns.forEach(b => {
+        b.style.border = '1px solid var(--border-primary)';
+        b.style.background = 'transparent';
+        b.style.color = 'var(--text-muted)';
+      });
+      this.style.border = '1px solid #26a69a';
+      this.style.background = 'rgba(38,166,154,0.1)';
+      this.style.color = '#26a69a';
+      
+      const net = this.getAttribute('data-net');
+      const config = cryptoNetworks[net];
+      if (config) {
+        const netNameEl = document.getElementById('crypto-network');
+        const addressEl = document.getElementById('crypto-address-display');
+        if (netNameEl) netNameEl.textContent = config.name;
+        if (addressEl) addressEl.textContent = config.address;
+      }
+    });
+  });
+  
+  const cryptoPaidBtn = document.getElementById('crypto-paid-btn');
+  if (cryptoPaidBtn) {
+    cryptoPaidBtn.addEventListener('click', async function() {
+      this.disabled = true;
+      this.textContent = 'Processing...';
+      
+      if (typeof UserSystem !== 'undefined') {
+        const result = await UserSystem.upgradeToTier(selectedImmediatePlan, 'crypto');
+        if (result.success) {
+          if (typeof Toast !== 'undefined') Toast.success('Subscription activated! Thank you!');
+          if (paymentModal) paymentModal.classList.remove('visible');
+          setTimeout(() => location.reload(), 1500);
+        } else {
+          if (typeof Toast !== 'undefined') Toast.error(result.error || 'Payment verification failed');
+          this.disabled = false;
+          this.textContent = 'I\'ve Paid - Activate Subscription';
+        }
+      }
+    });
+  }
+  
+  // ============================================
+  // MODAL OBSERVERS - Auto-render when opened
+  // ============================================
+  if (trialModal) {
+    const trialObserver = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (trialModal.classList.contains('visible')) {
+          updateTrialPlanSelection(selectedTrialPlan);
+        }
+      });
+    });
+    trialObserver.observe(trialModal, { attributes: true });
+  }
+  
+  if (paymentModal) {
+    const paymentObserver = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (paymentModal.classList.contains('visible')) {
+          setTimeout(() => updateImmediatePlanSelection(selectedImmediatePlan), 100);
+        }
+      });
+    });
+    paymentObserver.observe(paymentModal, { attributes: true });
+  }
+  
+  console.log('✅ Dual PayPal System Ready:');
+  console.log('   - Trial uses Subscription Plan IDs (14-day free)');
+  console.log('   - Immediate uses Hosted Button IDs (charge now)');
+  console.log('   - Both mechanisms work independently');
+})();
+</script>
+
+
+<!-- ============================================ -->
 <!-- PAYPAL + PLAN SWITCHER SCRIPT -->
 <!-- ============================================ -->
 <script>
+// ============================================
+// PAYMENT & TRIAL MODAL LOGIC - COMPLETE FIX
+// ============================================
 (function() {
-  'use strict';
+  // Current selected plan for payment
+  let selectedPayPlan = 'pro';
   
-  var selectedPlan = 'pro';
-  var paypalRendered = { pro: false, ultimate: false };
-
-  function switchPlan(plan) {
-    selectedPlan = plan;
+  // ============================================
+  // PLAN SELECTION HANDLERS
+  // ============================================
+  const proOption = document.getElementById('pay-pro-option');
+  const ultimateOption = document.getElementById('pay-ultimate-option');
+  
+  function updatePayPlanSelection(plan) {
+    selectedPayPlan = plan;
     
-    // Update plan buttons
-    document.querySelectorAll('.tvp-plan-btn').forEach(function(btn) {
-      var isActive = btn.dataset.plan === plan;
-      btn.style.border = isActive ? '2px solid ' + (plan === 'pro' ? '#ffd700' : '#9b6cff') : '2px solid var(--border-primary)';
-      btn.style.background = isActive ? (plan === 'pro' ? 'rgba(255,215,0,0.1)' : 'rgba(155,108,255,0.1)') : 'transparent';
-      btn.style.color = isActive ? (plan === 'pro' ? '#ffd700' : '#9b6cff') : 'var(--text-muted)';
-      btn.classList.toggle('active', isActive);
-    });
-    
-    // ============================================
-    // UPDATE HIGHLIGHT BOX
-    // ============================================
-    var highlightPrice = document.getElementById('highlight-price');
-    var highlightDiv = document.getElementById('plan-highlight');
-    
-    if (highlightPrice && highlightDiv) {
-      if (plan === 'pro') {
-        highlightPrice.innerHTML = '$5<span style="font-size:12px;font-weight:500;">/month</span>';
-        highlightPrice.style.color = '#ffd700';
-        highlightDiv.style.background = 'rgba(255,215,0,0.08)';
-        highlightDiv.style.border = '1px solid rgba(255,215,0,0.2)';
-        var descEl = highlightDiv.querySelector('div:last-child');
-        if (descEl) descEl.innerHTML = '⭐ <strong>PRO</strong> — Perfect for active traders';
-      } else {
-        highlightPrice.innerHTML = '$10<span style="font-size:12px;font-weight:500;">/month</span>';
-        highlightPrice.style.color = '#9b6cff';
-        highlightDiv.style.background = 'rgba(155,108,255,0.08)';
-        highlightDiv.style.border = '1px solid rgba(155,108,255,0.2)';
-        var descEl = highlightDiv.querySelector('div:last-child');
-        if (descEl) descEl.innerHTML = '👑 <strong>ULTIMATE</strong> — Full power unlocked';
-      }
+    // Update UI borders
+    if (proOption) {
+      proOption.style.borderColor = plan === 'pro' ? '#ffd700' : 'var(--border-primary)';
+      proOption.style.background = plan === 'pro' ? 'rgba(255,215,0,0.05)' : 'transparent';
+    }
+    if (ultimateOption) {
+      ultimateOption.style.borderColor = plan === 'ultimate' ? '#9b6cff' : 'var(--border-primary)';
+      ultimateOption.style.background = plan === 'ultimate' ? 'rgba(155,108,255,0.05)' : 'transparent';
     }
     
-    // ============================================
-    // UPDATE FEATURE TABLE HIGHLIGHTS
-    // ============================================
-    var planRows = document.querySelectorAll('#plan-rows > div');
-    planRows.forEach(function(row) {
-      if (plan === 'pro') {
-        row.style.background = 'transparent';
-        // Highlight PRO column slightly
-        var proCell = row.querySelector('span:nth-child(2)');
-        if (proCell) proCell.style.fontWeight = '600';
-        var ultCell = row.querySelector('span:nth-child(3)');
-        if (ultCell) ultCell.style.fontWeight = '400';
-      } else {
-        row.style.background = 'transparent';
-        // Highlight ULTIMATE column slightly
-        var proCell = row.querySelector('span:nth-child(2)');
-        if (proCell) proCell.style.fontWeight = '400';
-        var ultCell = row.querySelector('span:nth-child(3)');
-        if (ultCell) ultCell.style.fontWeight = '600';
-      }
-    });
+    // Update highlight box
+    const nameEl = document.getElementById('selected-plan-name');
+    const priceEl = document.getElementById('selected-plan-price');
+    const featuresEl = document.getElementById('selected-plan-features');
+    
+    if (plan === 'pro') {
+      if (nameEl) nameEl.textContent = 'PRO';
+      if (priceEl) { priceEl.textContent = '$5/month'; priceEl.style.color = '#ffd700'; }
+      if (featuresEl) featuresEl.textContent = '30 indicators · 20 alerts · 2 charts · AI 50/day';
+    } else {
+      if (nameEl) nameEl.textContent = 'ULTIMATE';
+      if (priceEl) { priceEl.textContent = '$10/month'; priceEl.style.color = '#9b6cff'; }
+      if (featuresEl) featuresEl.textContent = 'Unlimited indicators · API access · Premium indicators · AI 200/day';
+    }
+    
+    // Update PayPal containers visibility
+    const proContainer = document.getElementById('paypal-container-pro');
+    const ultimateContainer = document.getElementById('paypal-container-ultimate');
+    if (proContainer) proContainer.style.display = plan === 'pro' ? 'block' : 'none';
+    if (ultimateContainer) ultimateContainer.style.display = plan === 'ultimate' ? 'block' : 'none';
     
     // Update crypto amount
-    var cryptoAmount = document.getElementById('crypto-amount-display');
+    const cryptoAmount = document.getElementById('crypto-amount');
     if (cryptoAmount) cryptoAmount.textContent = plan === 'pro' ? '5 USDT' : '10 USDT';
-    
-    // Show/hide PayPal sections
-    var proSection = document.getElementById('paypal-section-pro');
-    var ultimateSection = document.getElementById('paypal-section-ultimate');
-    if (proSection) proSection.style.display = plan === 'pro' ? 'block' : 'none';
-    if (ultimateSection) ultimateSection.style.display = plan === 'ultimate' ? 'block' : 'none';
-    
-    // Update activation text
-    var activationEl = document.getElementById('plan-activation-text');
-    if (activationEl) {
-      activationEl.textContent = plan === 'pro' ? 'PRO' : 'ULTIMATE';
-      activationEl.style.color = plan === 'pro' ? '#ffd700' : '#9b6cff';
-    }
-    
-    // Render PayPal button for selected plan
-    renderPayPal(plan);
-}
+  }
   
-  function renderPayPal(plan) {
-    if (paypalRendered[plan]) return; // Already rendered
-    
-    var buttonId = plan === 'pro' ? 'T4BV28D9BL3RE' : '7EBJYV5NG2452';
-    var containerId = plan === 'pro' ? 'paypal-container-T4BV28D9BL3RE' : 'paypal-container-7EBJYV5NG2452';
-    
-    if (typeof paypal !== 'undefined') {
-      paypal.HostedButtons({
-        hostedButtonId: buttonId,
-      }).render('#' + containerId);
-      paypalRendered[plan] = true;
+  if (proOption) proOption.onclick = () => updatePayPlanSelection('pro');
+  if (ultimateOption) ultimateOption.onclick = () => updatePayPlanSelection('ultimate');
+  
+  // ============================================
+  // PAYMENT METHOD SWITCHING
+  // ============================================
+  const paypalMethodBtn = document.getElementById('paypal-pay-btn');
+  const cryptoMethodBtn = document.getElementById('crypto-pay-btn');
+  const paypalSection = document.getElementById('paypal-payment-section');
+  const cryptoSection = document.getElementById('crypto-payment-section');
+  
+  function switchPaymentMethod(method) {
+    if (method === 'paypal') {
+      if (paypalSection) paypalSection.style.display = 'block';
+      if (cryptoSection) cryptoSection.style.display = 'none';
+      if (paypalMethodBtn) {
+        paypalMethodBtn.style.background = 'var(--accent-primary)';
+        paypalMethodBtn.style.color = 'white';
+      }
+      if (cryptoMethodBtn) {
+        cryptoMethodBtn.style.background = 'var(--bg-tertiary)';
+        cryptoMethodBtn.style.color = 'var(--text-secondary)';
+      }
     } else {
-      // Fallback link
-      var amount = plan === 'pro' ? '5.00' : '10.00';
-      var itemName = plan === 'pro' ? 'TradeVision PRO Monthly' : 'TradeVision ULTIMATE Monthly';
-      document.getElementById(containerId).innerHTML = 
-        '<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=mwanza.madet@gmail.com&item_name=' + encodeURIComponent(itemName) + '&amount=' + amount + '&currency_code=USD&no_shipping=1&return=https://tradevisionpro.online&cancel_return=https://tradevisionpro.online" target="_blank" style="display:inline-block;background:#0070ba;color:white;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;">Pay $' + amount + ' with PayPal</a>';
+      if (paypalSection) paypalSection.style.display = 'none';
+      if (cryptoSection) cryptoSection.style.display = 'block';
+      if (cryptoMethodBtn) {
+        cryptoMethodBtn.style.background = 'var(--accent-primary)';
+        cryptoMethodBtn.style.color = 'white';
+      }
+      if (paypalMethodBtn) {
+        paypalMethodBtn.style.background = 'var(--bg-tertiary)';
+        paypalMethodBtn.style.color = 'var(--text-secondary)';
+      }
     }
   }
-
-  // Plan button clicks
-  document.querySelectorAll('.tvp-plan-btn').forEach(function(btn) {
+  
+  if (paypalMethodBtn) paypalMethodBtn.onclick = () => switchPaymentMethod('paypal');
+  if (cryptoMethodBtn) cryptoMethodBtn.onclick = () => switchPaymentMethod('crypto');
+  
+  // ============================================
+  // CRYPTO NETWORK SWITCHING
+  // ============================================
+  const cryptoNetworks = {
+    POLYGON: { name: 'Polygon', address: '0x8990787D3483A1035Bc460DdA5c75AB6e23BC1b6', fee: '$0.01' },
+    BSC: { name: 'BSC', address: '0x8990787D3483A1035Bc460DdA5c75AB6e23BC1b6', fee: '$0.10' },
+    TRC20: { name: 'TRC20', address: 'TYOURTRONADDRESS', fee: '$1' }
+  };
+  
+  const cryptoBtns = document.querySelectorAll('.crypto-net-btn');
+  cryptoBtns.forEach(btn => {
     btn.addEventListener('click', function() {
-      switchPlan(this.dataset.plan);
-    });
-  });
-
-  // Render initial PayPal button when modal opens
-  var paymentModal = document.getElementById('payment-modal');
-  var observer = new MutationObserver(function(mutations) {
-    mutations.forEach(function(mutation) {
-      if (paymentModal.classList.contains('visible')) {
-        setTimeout(function() {
-          renderPayPal('pro');
-        }, 100);
+      cryptoBtns.forEach(b => {
+        b.style.border = '1px solid var(--border-primary)';
+        b.style.background = 'transparent';
+        b.style.color = 'var(--text-muted)';
+      });
+      this.style.border = '1px solid #26a69a';
+      this.style.background = 'rgba(38,166,154,0.1)';
+      this.style.color = '#26a69a';
+      
+      const net = this.getAttribute('data-net');
+      const config = cryptoNetworks[net];
+      if (config) {
+        const netNameEl = document.getElementById('crypto-network');
+        const addressEl = document.getElementById('crypto-address-display');
+        if (netNameEl) netNameEl.textContent = config.name;
+        if (addressEl) addressEl.textContent = config.address;
       }
     });
   });
-  observer.observe(paymentModal, { attributes: true, attributeFilter: ['class'] });
-
-  // Initial render
-  renderPayPal('pro');
+  
+  // ============================================
+  // CRYPTO PAID BUTTON
+  // ============================================
+  const cryptoPaidBtn = document.getElementById('crypto-paid-btn');
+  if (cryptoPaidBtn) {
+    cryptoPaidBtn.addEventListener('click', async function() {
+      this.disabled = true;
+      this.textContent = 'Processing...';
+      
+      if (typeof UserSystem !== 'undefined') {
+        const result = await UserSystem.upgradeToTier(selectedPayPlan, 'crypto');
+        if (result.success) {
+          if (typeof Toast !== 'undefined') Toast.success('Subscription activated! Thank you!');
+          document.getElementById('payment-modal')?.classList.remove('visible');
+          setTimeout(() => location.reload(), 1500);
+        } else {
+          if (typeof Toast !== 'undefined') Toast.error(result.error || 'Payment verification failed');
+          this.disabled = false;
+          this.textContent = 'I\'ve Paid - Activate Subscription';
+        }
+      }
+    });
+  }
+  
+  // ============================================
+  // TRIAL MODAL LOGIC
+  // ============================================
+  const showTrialChoice = document.getElementById('show-trial-choice');
+  const trialModal = document.getElementById('trial-selection-modal');
+  const confirmTrialBtn = document.getElementById('confirm-trial-btn');
+  let selectedTrialTier = 'pro';
+  
+  // Open trial selection modal
+  if (showTrialChoice) {
+    showTrialChoice.addEventListener('click', () => {
+      document.getElementById('payment-modal')?.classList.remove('visible');
+      if (trialModal) trialModal.classList.add('visible');
+    });
+  }
+  
+  // Trial plan card selection
+  const trialProCard = document.getElementById('trial-pro-card');
+  const trialUltimateCard = document.getElementById('trial-ultimate-card');
+  
+  function updateTrialSelection(tier) {
+    selectedTrialTier = tier;
+    if (trialProCard) {
+      trialProCard.style.borderColor = tier === 'pro' ? '#ffd700' : 'var(--border-primary)';
+      trialProCard.style.background = tier === 'pro' ? 'rgba(255,215,0,0.1)' : 'transparent';
+    }
+    if (trialUltimateCard) {
+      trialUltimateCard.style.borderColor = tier === 'ultimate' ? '#9b6cff' : 'var(--border-primary)';
+      trialUltimateCard.style.background = tier === 'ultimate' ? 'rgba(155,108,255,0.1)' : 'transparent';
+    }
+  }
+  
+  if (trialProCard) trialProCard.onclick = () => updateTrialSelection('pro');
+  if (trialUltimateCard) trialUltimateCard.onclick = () => updateTrialSelection('ultimate');
+  
+  // Confirm trial button
+  if (confirmTrialBtn) {
+    confirmTrialBtn.addEventListener('click', async function() {
+      this.disabled = true;
+      this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Starting trial...';
+      
+      if (typeof UserSystem !== 'undefined') {
+        const result = await UserSystem.startTrial(selectedTrialTier);
+        if (result.success) {
+          if (typeof Toast !== 'undefined') Toast.success(`${selectedTrialTier.toUpperCase()} 14-day trial started!`);
+          if (trialModal) trialModal.classList.remove('visible');
+          document.getElementById('payment-modal')?.classList.remove('visible');
+          setTimeout(() => location.reload(), 1500);
+        } else {
+          if (typeof Toast !== 'undefined') Toast.error(result.error || 'Failed to start trial');
+          this.disabled = false;
+          this.innerHTML = '<i class="fas fa-gift"></i> Start 14-Day Free Trial';
+        }
+      }
+    });
+  }
+  
+  // ============================================
+  // UPGRADE BUTTON (from banner)
+  // ============================================
+  const upgradeBannerBtn = document.getElementById('upgrade-tier-banner');
+  if (upgradeBannerBtn) {
+    upgradeBannerBtn.addEventListener('click', () => {
+      document.getElementById('payment-modal')?.classList.add('visible');
+    });
+  }
+  
+  // ============================================
+  // INITIALIZE - Render PayPal buttons when modal opens
+  // ============================================
+  const paymentModal = document.getElementById('payment-modal');
+  if (paymentModal) {
+    const observer = new MutationObserver(function(mutations) {
+      mutations.forEach(function(mutation) {
+        if (paymentModal.classList.contains('visible')) {
+          setTimeout(renderPayPalButtons, 300);
+        }
+      });
+    });
+    observer.observe(paymentModal, { attributes: true });
+  }
+  
+  // Also render immediately if modal is already visible
+  if (paymentModal && paymentModal.classList.contains('visible')) {
+    setTimeout(renderPayPalButtons, 300);
+  }
+  
+  console.log('✅ Payment modal script loaded');
 })();
 </script>
   <!-- ============================================ -->
@@ -5012,12 +5526,81 @@ button:active,.trade-type:active,.order-type-btn:active,.quick-amount-btn:active
 <!-- Mobile Panel Overlay -->
 <div class="mobile-panel-overlay" id="mobile-panel-overlay"></div>
   
-
-  <!-- ============================================ -->
-<!-- LOAD ENGINE FROM VERCEL (PRIVATE BACKEND)    -->
 <!-- ============================================ -->
-<script src="https://tradevision-backend.vercel.app/engine.js"></script>
-	
+<!-- FIREBASE SDK - DIRECT LOAD (NO BACKEND FETCH) -->
+<!-- ============================================ -->
+<script type="module">
+  // Import Firebase modules directly
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, updateProfile, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getDatabase, ref, set, onDisconnect, push, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+  console.log('🔥 Loading Firebase...');
+
+  // Your Firebase config (public - safe for client)
+  const firebaseConfig = {
+    apiKey: "AIzaSyDbpC4YUsnM1rbdB4adutnCaJX8OblexS4",
+    authDomain: "tradevisionpro-25888.firebaseapp.com",
+    databaseURL: "https://tradevisionpro-25888-default-rtdb.firebaseio.com",
+    projectId: "tradevisionpro-25888",
+    storageBucket: "tradevisionpro-25888.firebasestorage.app",
+    messagingSenderId: "542979547209",
+    appId: "1:542979547209:web:629a2773daba203c771f98",
+    measurementId: "G-GGPGS65LTG"
+  };
+
+  try {
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const rtdb = getDatabase(app);
+    
+    // Set persistence
+    setPersistence(auth, browserLocalPersistence)
+      .then(() => console.log('✅ Firebase persistence set to LOCAL'))
+      .catch(err => console.warn('Persistence warning:', err.message));
+    
+    // Make available globally
+    window.FB = {
+      app: app,
+      auth: auth,
+      db: db,
+      rtdb: rtdb
+    };
+    window.__FIREBASE_READY = true;
+    
+    console.log('✅ Firebase initialized successfully!');
+    console.log('✅ window.FB.auth exists:', !!window.FB.auth);
+    console.log('✅ window.FB.rtdb exists:', !!window.FB.rtdb);
+    
+    // Dispatch event
+    window.dispatchEvent(new CustomEvent('firebase-ready'));
+    
+  } catch (error) {
+    console.error('❌ Firebase init error:', error.message);
+    window.FB = null;
+    window.__FIREBASE_READY = false;
+  }
+</script>
+
+<!-- Load Engine AFTER Firebase -->
+<script src="engine.js"></script>
+
+<!-- Load Chart Libraries AFTER Engine if needed -->
+<script>
+  // Final check that everything loaded
+  document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+      if (window.FB && window.FB.auth) {
+        console.log('✅ Final verification: Firebase ready');
+      } else {
+        console.warn('⚠️ Final verification: Firebase NOT ready');
+      }
+    }, 1000);
+  });
+</script>
 
 <!-- ============================================ -->
 <!-- UI EVENT BINDING ONLY - NO ENGINE INIT HERE -->
@@ -5254,90 +5837,6 @@ button:active,.trade-type:active,.order-type-btn:active,.quick-amount-btn:active
       }
     }, 100);
   });
-</script>
-	
-	<!-- ============================================ -->
-<!-- FIREBASE SDK -->
-<!-- ============================================ -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, updateProfile, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-  import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-  import { getDatabase, ref, push, onValue, set, onDisconnect } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-
-  // ============================================
-  // P0 FIX: Fetch Firebase config from secure backend
-  // Config is NEVER exposed in client-side code
-  // ============================================
-  async function initializeFirebase() {
-    try {
-      const apiBase = (window.TRADEVISION_CONFIG && window.TRADEVISION_CONFIG.API_URL) || 
-                      'https://tradevision-backend.vercel.app/api';
-      
-      const response = await fetch(apiBase + '/firebase-config');
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch Firebase config: ' + response.status);
-      }
-      
-      const firebaseConfig = await response.json();
-      
-      // Validate all required fields are present
-      const requiredFields = ['apiKey', 'authDomain', 'databaseURL', 'projectId', 'storageBucket', 'messagingSenderId', 'appId'];
-      for (const field of requiredFields) {
-        if (!firebaseConfig[field]) {
-          throw new Error('Missing Firebase config field: ' + field);
-        }
-      }
-      
-      const app = initializeApp(firebaseConfig);
-      
-      window.FB = {
-        app,
-        auth: getAuth(app),
-        db: getFirestore(app),
-        rtdb: getDatabase(app)
-      };
-      
-      // Set persistence to LOCAL so user stays logged in
-      setPersistence(window.FB.auth, browserLocalPersistence)
-        .then(function() { console.log('✅ Firebase persistence set to LOCAL'); })
-        .catch(function(err) { console.warn('Persistence setup failed:', err); });
-      
-      console.log('✅ Firebase Ready (config loaded securely from backend)');
-      
-      // Check initial auth state
-      setTimeout(function() {
-        if (window.FB && window.FB.auth) {
-          var currentUser = window.FB.auth.currentUser;
-          console.log('🔍 Initial currentUser check:', currentUser ? currentUser.email : 'none');
-          if (currentUser && typeof UserSystem !== 'undefined') {
-            console.log('Found existing Firebase user, syncing...');
-            UserSystem.handleFirebaseUser(currentUser);
-          } else if (typeof UserSystem !== 'undefined') {
-            UserSystem.updateUI();
-          }
-        }
-      }, 800);
-      
-    } catch (error) {
-      console.error('❌ Firebase initialization failed:', error.message);
-      
-      // Show user-friendly error
-      if (typeof Toast !== 'undefined') {
-        Toast.error('Authentication service temporarily unavailable. Please refresh.', 10000);
-      }
-      
-      // Still allow the app to function without auth
-      window.FB = null;
-      if (typeof UserSystem !== 'undefined') {
-        UserSystem.updateUI();
-      }
-    }
-  }
-  
-  // Initialize Firebase
-  initializeFirebase();
 </script>
 </body>
 </html>
