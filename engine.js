@@ -2020,8 +2020,6 @@ window.debugTimers = function() {
     series: {},
     overlays: {},
     mainSeries: null,
-	_pendingMainData: null,      // <-- ADD THIS LINE
-  _pendingVolumeData: null,
     
     init() {
       this.createPriceChart();
@@ -2080,24 +2078,13 @@ window.debugTimers = function() {
             labelVisible: true
           }
         },
-       rightPriceScale: {
-  visible: true,
-  borderVisible: true,
-  borderColor: '#30363d',
-  scaleMargins: {
-    top: 0.08,
-    bottom: 0.08
-  },
-  autoScale: true,
-  mode: 0,
-  drawTicks: true,
-  ticksVisible: true,
-  invertScale: false,
-  alignLabels: true,
-  minWidth: 50,
-  maxWidth: 80
-},
-      
+        rightPriceScale: {
+          borderColor: '#30363d',
+          scaleMargins: { top: 0.05, bottom: 0.05 },
+          autoScale: true,
+          visible: true,
+          borderVisible: true
+        },
         timeScale: {
           borderColor: '#30363d',
           timeVisible: true,
