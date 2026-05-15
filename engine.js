@@ -1951,6 +1951,8 @@ window.debugTimers = function() {
     series: {},
     overlays: {},
     mainSeries: null,
+	_pendingMainData: null,      // <-- ADD THIS LINE
+  _pendingVolumeData: null,
     
     init() {
       this.createPriceChart();
@@ -2058,6 +2060,12 @@ createPriceChart() {
     return;
   }
   
+  // ============================================
+  // CRITICAL FIX: Clear ALL existing canvas data to prevent rectangles
+  // ============================================
+  const existingCanvases = el.querySelectorAll('canvas');
+  existingCanvases.forEach(canvas => canvas.remove());
+  
   // Detect mobile for touch handling
   const isMobile = window.innerWidth <= 768;
   
@@ -2067,7 +2075,6 @@ createPriceChart() {
   if (isMobile) {
     const mainPane = document.getElementById('main-chart-pane');
     if (mainPane) {
-      // Ensure the main pane has proper dimensions
       if (mainPane.clientHeight === 0 || mainPane.clientWidth === 0) {
         console.warn('⚠️ Main chart pane has zero dimensions, forcing layout...');
         mainPane.style.display = 'block';
@@ -2080,7 +2087,6 @@ createPriceChart() {
       }
     }
     
-    // Force the chart canvas element to have dimensions
     if (el.clientHeight === 0 || el.clientWidth === 0) {
       console.warn('⚠️ Price chart canvas has zero dimensions, forcing...');
       el.style.width = '100%';
@@ -2094,7 +2100,6 @@ createPriceChart() {
       el.style.bottom = '0';
     }
     
-    // Hide the chart watermark on mobile for cleaner look
     const watermark = document.querySelector('.chart-watermark');
     if (watermark) {
       watermark.style.display = 'none';
@@ -2107,7 +2112,6 @@ createPriceChart() {
   let chartWidth = el.clientWidth;
   let chartHeight = el.clientHeight;
   
-  // Apply fallback dimensions
   if (!chartWidth || chartWidth < 50) {
     chartWidth = isMobile ? (window.innerWidth || 375) : 800;
     console.warn('⚠️ Chart width fallback applied: ' + chartWidth + 'px');
@@ -2115,10 +2119,8 @@ createPriceChart() {
   
   if (!chartHeight || chartHeight < 50) {
     if (isMobile) {
-      // Mobile: Use 55% of viewport height
       chartHeight = Math.max(300, window.innerHeight * 0.55);
     } else {
-      // Desktop: Use reasonable default
       chartHeight = 450;
     }
     console.warn('⚠️ Chart height fallback applied: ' + chartHeight + 'px');
@@ -2131,31 +2133,28 @@ createPriceChart() {
   // ============================================
   if (this.charts.price) {
     try {
-      // Remove existing series first
       if (this.mainSeries) {
         this.charts.price.removeSeries(this.mainSeries);
+        this.mainSeries = null;
       }
-      // Remove overlay series
       if (this.overlays) {
         Object.keys(this.overlays).forEach(key => {
           try {
-            this.charts.price.removeSeries(this.overlays[key]);
-          } catch(e) {
-            // Ignore removal errors
-          }
+            if (this.overlays[key] && this.charts.price) {
+              this.charts.price.removeSeries(this.overlays[key]);
+            }
+          } catch(e) {}
         });
         this.overlays = {};
       }
-      // Remove the chart
       this.charts.price.remove();
     } catch(e) {
       console.warn('Error cleaning up existing chart:', e.message);
     }
     this.charts.price = null;
-    this.mainSeries = null;
   }
   
-    const chartOptions = this._getCommonChartOptions({
+  const chartOptions = this._getCommonChartOptions({
     rightPriceScale: {
       scaleMargins: { 
         top: isMobile ? 0.2 : 0.15,
@@ -2198,7 +2197,6 @@ createPriceChart() {
     borderDownColor: '#ef5350',
     wickUpColor: '#26a69a',
     wickDownColor: '#ef5350',
-    // PHASE 2 FIX: Better visibility on mobile
     borderVisible: true,
     wickVisible: true
   });
@@ -2218,32 +2216,23 @@ createPriceChart() {
   // ============================================
   // Store crosshair subscription for drawing engine
   // ============================================
+  const self = this;
+  
   chart.subscribeCrosshairMove((param) => {
     if (DrawingEngine && typeof DrawingEngine.handleCrosshairMove === 'function') {
       DrawingEngine.handleCrosshairMove(param);
     }
-        // ============================================
-  // PHASE 2 FIX: Redraw drawings when chart is zoomed or panned
-  // ============================================
-  chart.timeScale().subscribeVisibleTimeRangeChange(function() {
-    if (DrawingEngine && typeof DrawingEngine.redraw === 'function') {
-      DrawingEngine.redraw();
+    
+    // Update mobile tooltip on crosshair move
+    if (isMobile && param && param.point && param.time) {
+      self.updateMobileCrosshair(param);
     }
   });
   
-  // Also redraw on any crosshair move (catches price scale changes)
-  chart.subscribeCrosshairMove(function(param) {
-    if (DrawingEngine && typeof DrawingEngine.handleCrosshairMove === 'function') {
-      DrawingEngine.handleCrosshairMove(param);
-    }
-    // Redraw drawings periodically during chart interaction
-    if (DrawingEngine && typeof DrawingEngine.redraw === 'function' && param.point) {
+  // PHASE 2 FIX: Redraw drawings when chart is zoomed or panned
+  chart.timeScale().subscribeVisibleTimeRangeChange(function() {
+    if (DrawingEngine && typeof DrawingEngine.redraw === 'function') {
       DrawingEngine.redraw();
-    }
-  });
-    // PHASE 2 FIX: Update mobile tooltip on crosshair move
-    if (isMobile && param.point && param.time) {
-      this.updateMobileCrosshair(param);
     }
   });
   
@@ -2263,16 +2252,9 @@ createPriceChart() {
   // PHASE 2 FIX: Verify chart rendered correctly
   // ============================================
   setTimeout(() => {
-    const currentWidth = el.clientWidth;
-    const currentHeight = el.clientHeight;
-    if (currentWidth > 0 && currentHeight > 0) {
-      console.log('✅ Chart verified: ' + currentWidth + 'x' + currentHeight);
-    } else {
-      console.warn('⚠️ Chart may not have rendered properly. Current dimensions: ' + currentWidth + 'x' + currentHeight);
-      // Force resize if needed
-      if (currentWidth > 0 && currentHeight > 0) {
-        chart.resize(currentWidth, currentHeight);
-      }
+    if (self.charts.price && el.clientWidth > 0 && el.clientHeight > 0) {
+      self.charts.price.resize(el.clientWidth, el.clientHeight);
+      console.log('✅ Chart verified: ' + el.clientWidth + 'x' + el.clientHeight);
     }
   }, 500);
 },
@@ -3179,17 +3161,119 @@ setupCrosshair() {
       
       console.log('✅ P0 FIX: All charts, overlays, and indicator panes destroyed');
     },
-    updateMain(data) {
-      if(!this.mainSeries || !data.length) return;
-      if(STATE.chartType === 'candlestick' || STATE.chartType === 'bar') {
-        this.mainSeries.setData(data.map(d=>({time:d.time,open:d.open,high:d.high,low:d.low,close:d.close})));
-      } else if(STATE.chartType === 'line' || STATE.chartType === 'area') {
-        this.mainSeries.setData(data.map(d=>({time:d.time,value:d.close})));
-      } else if(STATE.chartType === 'heikinashi') {
-        const heikin = this.calculateHeikinAshi(data);
-        this.mainSeries.setData(heikin.map(d=>({time:d.time,open:d.open,high:d.high,low:d.low,close:d.close})));
+   // ============================================
+// UPDATE MAIN CHART - INSTITUTIONAL GRADE
+// Prevents rectangles and disappearing charts
+// ============================================
+updateMain(data) {
+  // ============================================
+  // GUARD: Validate input
+  // ============================================
+  if (!data || !data.length) {
+    console.warn('⚠️ updateMain: No data provided');
+    return;
+  }
+  
+  if (!this.mainSeries || !this.charts.price) {
+    console.warn('⚠️ updateMain: Chart not ready, queueing update');
+    this._pendingMainData = data;
+    setTimeout(() => {
+      if (this.mainSeries && this._pendingMainData) {
+        this.updateMain(this._pendingMainData);
+        this._pendingMainData = null;
       }
-    },
+    }, 200);
+    return;
+  }
+  
+  // Validate data integrity
+  const firstCandle = data[0];
+  if (!firstCandle || typeof firstCandle.time !== 'number' || typeof firstCandle.close !== 'number') {
+    console.error('❌ updateMain: Invalid candle data structure');
+    return;
+  }
+  
+  console.log(`📊 updateMain: Rendering ${data.length} candles (${STATE.chartType})`);
+  
+  // ============================================
+  // PREPARE DATA BASED ON CHART TYPE
+  // ============================================
+  let chartData;
+  
+  try {
+    if (STATE.chartType === 'candlestick' || STATE.chartType === 'bar') {
+      chartData = data.map(d => ({
+        time: d.time,
+        open: d.open,
+        high: d.high,
+        low: d.low,
+        close: d.close
+      }));
+    } else if (STATE.chartType === 'line' || STATE.chartType === 'area') {
+      chartData = data.map(d => ({
+        time: d.time,
+        value: d.close
+      }));
+    } else if (STATE.chartType === 'heikinashi') {
+      const heikin = this.calculateHeikinAshi(data);
+      chartData = heikin.map(d => ({
+        time: d.time,
+        open: d.open,
+        high: d.high,
+        low: d.low,
+        close: d.close
+      }));
+    } else {
+      // Default to candlestick
+      chartData = data.map(d => ({
+        time: d.time,
+        open: d.open,
+        high: d.high,
+        low: d.low,
+        close: d.close
+      }));
+    }
+  } catch(e) {
+    console.error('❌ updateMain: Error preparing data:', e.message);
+    return;
+  }
+  
+  // ============================================
+  // CLEAR EXISTING DATA FIRST (Prevents rectangles)
+  // ============================================
+  try {
+    this.mainSeries.setData([]);
+  } catch(e) {
+    console.warn('Could not clear main series:', e.message);
+  }
+  
+  // ============================================
+  // SET NEW DATA WITH DELAY FOR CLEAN RENDER
+  // ============================================
+  setTimeout(() => {
+    try {
+      this.mainSeries.setData(chartData);
+      console.log(`✅ updateMain: Successfully rendered ${chartData.length} candles`);
+    } catch(e) {
+      console.error('❌ updateMain: Failed to set data:', e.message);
+      
+      // Retry once with fallback
+      setTimeout(() => {
+        try {
+          // Simplified data as fallback
+          const fallbackData = chartData.slice(-100).map(d => ({
+            time: d.time,
+            value: d.close || d.value
+          }));
+          this.mainSeries.setData(fallbackData);
+          console.log('✅ updateMain: Fallback render successful');
+        } catch(e2) {
+          console.error('❌ updateMain: Fallback also failed:', e2.message);
+        }
+      }, 100);
+    }
+  }, 30);
+},
     
     calculateHeikinAshi(data) {
       const result = [];
@@ -10976,6 +11060,9 @@ const StockDataManager = {
 
  // ---------- HISTORICAL CANDLES (Twelve Data) ----------
 // Update the loadCandles method in StockDataManager
+// ============================================
+// HISTORICAL CANDLES (Twelve Data) - INSTITUTIONAL GRADE
+// ============================================
 async loadCandles(symbol, interval) {
   // ============================================
   // INPUT VALIDATION
@@ -10985,27 +11072,28 @@ async loadCandles(symbol, interval) {
     return [];
   }
   
+  console.log(`📈 Loading ${STATE.assetType} candles for ${symbol} (${interval})`);
+  
   const intervalMap = {
     '1m': '1min', '5m': '5min', '15m': '15min', '30m': '30min',
     '1h': '1h', '4h': '4h', '1d': '1day', '1w': '1week', '1M': '1month'
   };
   const twelveInterval = intervalMap[interval] || '1day';
   
+  // Fix forex symbols for Twelve Data (EURUSD -> EUR/USD)
   let twelveSymbol = symbol;
   if (STATE.assetType === 'forex' && symbol.length === 6) {
     twelveSymbol = symbol.slice(0, 3) + '/' + symbol.slice(3);
   }
   
+  // Use Cloudflare worker directly (no failover delays)
+  const apiBase = 'https://tradevision-backend.wambuamwanza6.workers.dev/api';
+  const url = `${apiBase}/proxy?endpoint=twelvedata&symbol=${twelveSymbol}&interval=${twelveInterval}&outputsize=200`;
+  
   try {
-    // Use fetchWithFailover with timeout
+    // Fetch with timeout
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000);
-    
-    const apiBase = getApiBase();
-    const url = `${apiBase}/proxy?endpoint=twelvedata&symbol=${twelveSymbol}&interval=${twelveInterval}&outputsize=200`;
-    
-    console.log(`📈 Fetching stock/forex data: ${url}`);
-    
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
     const response = await fetch(url, { signal: controller.signal });
     clearTimeout(timeoutId);
     
@@ -11017,24 +11105,43 @@ async loadCandles(symbol, interval) {
     
     // Check for API errors
     if (responseData.code === 401 || responseData.status === 'error') {
-      console.warn('Twelve Data API error:', responseData.message);
-      return this.getFallbackCandles(symbol, interval);
+      console.warn('⚠️ Twelve Data API error:', responseData.message);
+      return this.generateSmartMockCandles(symbol, interval);
     }
     
     if (!responseData.values || responseData.values.length === 0) {
       console.warn('⚠️ No candle data from Twelve Data for', symbol);
-      return this.getFallbackCandles(symbol, interval);
+      return this.generateSmartMockCandles(symbol, interval);
     }
     
-    // Parse candles
+    // Parse and validate candles
     const candles = [];
+    const seenTimes = new Set();
+    
     for (let i = 0; i < responseData.values.length; i++) {
       const val = responseData.values[i];
       if (!val || !val.datetime) continue;
       
-      const date = new Date(val.datetime);
+      // Handle different date formats
+      let date;
+      if (val.datetime.includes('-')) {
+        date = new Date(val.datetime);
+      } else {
+        // Handle format like "2024-01-15 14:30:00"
+        const parts = val.datetime.split(' ');
+        if (parts.length === 2) {
+          date = new Date(parts[0] + 'T' + parts[1]);
+        } else {
+          date = new Date(val.datetime);
+        }
+      }
+      
       const time = Math.floor(date.getTime() / 1000);
-      if (isNaN(time)) continue;
+      if (isNaN(time) || time <= 0) continue;
+      
+      // Skip duplicate timestamps
+      if (seenTimes.has(time)) continue;
+      seenTimes.add(time);
       
       const open = parseFloat(val.open);
       const high = parseFloat(val.high);
@@ -11042,50 +11149,189 @@ async loadCandles(symbol, interval) {
       const close = parseFloat(val.close);
       const volume = parseFloat(val.volume || 0);
       
+      // Validate price data
       if (isNaN(open) || isNaN(high) || isNaN(low) || isNaN(close)) continue;
+      if (open <= 0 || high <= 0 || low <= 0 || close <= 0) continue;
       
-      candles.push({ time, open, high, low, close, volume });
+      // Ensure high is highest, low is lowest
+      const adjustedHigh = Math.max(high, open, close);
+      const adjustedLow = Math.min(low, open, close);
+      
+      candles.push({ 
+        time, 
+        open, 
+        high: adjustedHigh, 
+        low: adjustedLow, 
+        close, 
+        volume,
+        _source: 'twelvedata'
+      });
     }
     
     if (candles.length === 0) {
-      return this.getFallbackCandles(symbol, interval);
+      console.warn('⚠️ No valid candles parsed for', symbol);
+      return this.generateSmartMockCandles(symbol, interval);
     }
     
+    // Sort by time ascending
     candles.sort((a, b) => a.time - b.time);
-    console.log(`✅ Loaded ${candles.length} candles for ${symbol}`);
+    
+    console.log(`✅ Loaded ${candles.length} candles for ${symbol} (${STATE.assetType})`);
+    
+    // ============================================
+    // STORE AND UPDATE CHART IMMEDIATELY
+    // ============================================
+    STATE.candles = candles;
+    
+    // Update chart if ChartEngine is ready
+    if (ChartEngine && ChartEngine.mainSeries && ChartEngine.charts.price) {
+      // Clear existing data first to prevent rectangles
+      try {
+        ChartEngine.mainSeries.setData([]);
+      } catch(e) {}
+      
+      // Small delay to let chart clear
+      setTimeout(() => {
+        ChartEngine.updateMain(candles);
+        ChartEngine.updateVolume(candles);
+        ChartEngine.fitContent();
+      }, 50);
+    }
+    
     return candles;
     
-  } catch (e) {
-    console.error('❌ Failed to load candles:', e.message);
-    return this.getFallbackCandles(symbol, interval);
+  } catch (error) {
+    console.error('❌ Failed to load candles:', error.message);
+    return this.generateSmartMockCandles(symbol, interval);
   }
 },
 
-// Add fallback method to StockDataManager
-getFallbackCandles(symbol, interval) {
-  console.log(`📊 Using fallback data for ${symbol}`);
+// ============================================
+// GENERATE SMART MOCK CANDLES (Realistic Fallback)
+// ============================================
+generateSmartMockCandles(symbol, interval) {
+  console.log(`📊 Generating realistic mock candles for ${symbol} (${STATE.assetType})`);
   
-  // Generate synthetic candles based on current price
-  const currentPrice = STATE.currentPrice || (symbol === 'AAPL' ? 175 : symbol === 'TSLA' ? 240 : 1.08);
-  const now = Date.now();
-  const intervalMinutes = {
-    '1m': 1, '5m': 5, '15m': 15, '30m': 30, '1h': 60, '4h': 240, '1d': 1440, '1w': 10080, '1M': 43200
-  };
-  const minutes = intervalMinutes[interval] || 15;
-  const candles = [];
+  // Determine base price and volatility based on asset type and symbol
+  let basePrice = 100;
+  let volatility = 0.015;
+  let priceDecimals = 2;
   
-  for (let i = 200; i > 0; i--) {
-    const time = Math.floor((now - (i * minutes * 60 * 1000)) / 1000);
-    const change = (Math.random() - 0.5) * (currentPrice * 0.01);
-    const open = currentPrice + change;
-    const close = open + (Math.random() - 0.5) * (currentPrice * 0.005);
-    const high = Math.max(open, close) + Math.random() * (currentPrice * 0.003);
-    const low = Math.min(open, close) - Math.random() * (currentPrice * 0.003);
-    
-    candles.push({ time, open, high, low, close, volume: Math.random() * 1000000 });
+  if (STATE.assetType === 'stocks') {
+    const stockPrices = {
+      'AAPL': 175.42, 'MSFT': 420.50, 'GOOGL': 140.25, 'AMZN': 180.75,
+      'TSLA': 240.30, 'META': 330.80, 'NVDA': 900.00, 'NFLX': 600.50,
+      'ADBE': 525.00, 'CRM': 250.00, 'ORCL': 115.00, 'IBM': 185.00,
+      'INTC': 45.00, 'AMD': 150.00, 'QCOM': 130.00, 'TXN': 170.00,
+      'JPM': 155.00, 'BAC': 35.00, 'WMT': 65.00, 'PG': 155.00,
+      'JNJ': 160.00, 'V': 250.00, 'MA': 400.00, 'PYPL': 65.00,
+      'COIN': 85.00, 'SQ': 70.00, 'BA': 180.00, 'CAT': 300.00,
+      'GE': 120.00, 'F': 12.00, 'GM': 40.00, 'NIO': 7.50,
+      'XPEV': 8.50, 'RIVN': 15.00, 'LCID': 3.50
+    };
+    basePrice = stockPrices[symbol] || 150;
+    volatility = 0.02;
+    priceDecimals = 2;
+  } else if (STATE.assetType === 'forex') {
+    const forexPrices = {
+      'EURUSD': 1.0850, 'GBPUSD': 1.2650, 'USDJPY': 150.50,
+      'USDCHF': 0.9100, 'AUDUSD': 0.6500, 'USDCAD': 1.3700,
+      'NZDUSD': 0.6000, 'EURGBP': 0.8550, 'EURJPY': 163.50,
+      'GBPJPY': 190.00, 'CHFJPY': 165.00, 'AUDJPY': 98.00,
+      'USDTRY': 32.00, 'USDMXN': 17.00, 'USDZAR': 18.50
+    };
+    basePrice = forexPrices[symbol] || 1.0800;
+    volatility = 0.003;
+    priceDecimals = 4;
   }
   
-  console.log(`⚠️ Generated ${candles.length} synthetic candles for ${symbol}`);
+  const now = Date.now();
+  const intervalMinutes = {
+    '1m': 1, '5m': 5, '15m': 15, '30m': 30,
+    '1h': 60, '4h': 240, '1d': 1440, '1w': 10080, '1M': 43200
+  };
+  const minutes = intervalMinutes[interval] || 15;
+  
+  const candles = [];
+  let currentPrice = basePrice;
+  let trend = 0;
+  
+  // Generate realistic price movement with trend and noise
+  for (let i = 200; i >= 0; i--) {
+    const time = Math.floor((now - (i * minutes * 60 * 1000)) / 1000);
+    
+    // Random walk with momentum
+    const momentum = trend * 0.3;
+    const noise = (Math.random() - 0.5) * volatility * currentPrice;
+    const change = momentum + noise;
+    
+    const close = currentPrice + change;
+    const open = currentPrice;
+    
+    // Update trend (slow mean reversion)
+    trend = trend * 0.9 + (change / currentPrice) * 0.1;
+    
+    // Generate high and low based on volatility
+    const range = Math.abs(change) + (Math.random() * volatility * currentPrice);
+    const high = Math.max(open, close) + (Math.random() * range * 0.7);
+    const low = Math.min(open, close) - (Math.random() * range * 0.5);
+    
+    // Ensure high/low are valid
+    const adjustedHigh = Math.max(high, open, close);
+    const adjustedLow = Math.min(low, open, close);
+    
+    // Format based on asset type
+    let formattedClose = close;
+    let formattedOpen = open;
+    let formattedHigh = adjustedHigh;
+    let formattedLow = adjustedLow;
+    
+    if (priceDecimals === 4) {
+      formattedClose = parseFloat(close.toFixed(4));
+      formattedOpen = parseFloat(open.toFixed(4));
+      formattedHigh = parseFloat(adjustedHigh.toFixed(4));
+      formattedLow = parseFloat(adjustedLow.toFixed(4));
+    } else {
+      formattedClose = parseFloat(close.toFixed(2));
+      formattedOpen = parseFloat(open.toFixed(2));
+      formattedHigh = parseFloat(adjustedHigh.toFixed(2));
+      formattedLow = parseFloat(adjustedLow.toFixed(2));
+    }
+    
+    candles.push({ 
+      time, 
+      open: formattedOpen, 
+      high: formattedHigh, 
+      low: formattedLow, 
+      close: formattedClose, 
+      volume: Math.floor(Math.random() * 10000000) + 1000000,
+      _source: 'mock'
+    });
+    
+    currentPrice = close;
+  }
+  
+  // Sort by time ascending
+  candles.sort((a, b) => a.time - b.time);
+  
+  console.log(`✅ Generated ${candles.length} realistic mock candles for ${symbol}`);
+  
+  // Store and update chart
+  STATE.candles = candles;
+  
+  if (ChartEngine && ChartEngine.mainSeries && ChartEngine.charts.price) {
+    // Clear existing data first
+    try {
+      ChartEngine.mainSeries.setData([]);
+    } catch(e) {}
+    
+    setTimeout(() => {
+      ChartEngine.updateMain(candles);
+      ChartEngine.updateVolume(candles);
+      ChartEngine.fitContent();
+    }, 50);
+  }
+  
   return candles;
 }
   
