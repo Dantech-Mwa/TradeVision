@@ -3031,184 +3031,151 @@ setupCrosshair() {
   });
 },
     
-        /**
-     * COMPLETE CHART RESET - Prevents "large rectangles" on asset switch
-     * Called before loading new symbol/asset type data
-     */
-        resetAllCharts() {
-      console.log('🔄 P0 FIX: Complete chart reset for asset switch...');
-
-      var chartContainer = document.getElementById('chart-container');
-      if (chartContainer) {
-        chartContainer.classList.add('chart-resetting');
+  // ============================================
+// COMPLETE REPLACEMENT: ChartEngine.resetAllCharts()
+// COMPLETELY DESTROYS AND RECREATES CLEANLY
+// ============================================
+resetAllCharts() {
+  console.log('🔄 COMPLETE CHART RESET - No fallbacks');
+  
+  const chartContainer = document.getElementById('chart-container');
+  if (chartContainer) {
+    chartContainer.classList.add('chart-resetting');
+  }
+  
+  // ============================================
+  // STEP 1: COMPLETELY DESTROY PRICE CHART
+  // ============================================
+  if (this.charts.price) {
+    try {
+      if (this.mainSeries) {
+        this.charts.price.removeSeries(this.mainSeries);
+        this.mainSeries = null;
       }
-      
-      // ============================================
-      // STEP 1: Clear main price series completely
-      // ============================================
-      if (this.mainSeries && this.charts.price) {
-        try {
-          this.mainSeries.setData([]);
-          if (this.mainSeries.setMarkers) {
-            this.mainSeries.setMarkers([]);
-          }
-        } catch(e) {
-          console.warn('Could not clear main series:', e.message);
-        }
-      }
-      
-      // ============================================
-      // STEP 2: Clear volume series
-      // ============================================
-      if (this.series && this.series.volume && this.charts.volume) {
-        try {
-          this.series.volume.setData([]);
-        } catch(e) {
-          console.warn('Could not clear volume series:', e.message);
-        }
-      }
-      
-      // ============================================
-      // STEP 3: DESTROY ALL OVERLAYS COMPLETELY
-      // This is critical - old overlays cause the "big rectangles"
-      // ============================================
       if (this.overlays) {
-        var overlayKeys = Object.keys(this.overlays);
-        for (var i = 0; i < overlayKeys.length; i++) {
-          var key = overlayKeys[i];
-          if (this.overlays[key] && this.charts.price) {
-            try {
+        Object.keys(this.overlays).forEach(key => {
+          try {
+            if (this.overlays[key] && this.charts.price) {
               this.charts.price.removeSeries(this.overlays[key]);
-            } catch(e) {
-              console.warn('Could not remove overlay:', key, e.message);
             }
-          }
-        }
-        // Reset the overlays object completely
+          } catch(e) {}
+        });
         this.overlays = {};
       }
-      
-      // ============================================
-      // STEP 4: DESTROY ALL INDICATOR PANES
-      // ============================================
-      var indicatorIds = ['rsi', 'macd', 'cci', 'clv', 'williamsr', 'atr', 'stoch', 'obv', 'mfi', 'stochrsi', 'mom', 'roc', 'ad', 'cmf', 'volprof'];
-      
-      for (var j = 0; j < indicatorIds.length; j++) {
-        var id = indicatorIds[j];
-        
-        // Remove the pane DOM element
-        var pane = document.getElementById(id + '-pane');
-        if (pane) {
-          pane.remove();
-        }
-        
-        // Handle MACD special case (3 series)
-        if (id === 'macd') {
-          if (this.series.macdLine) {
-            try { this.series.macdLine.setData([]); } catch(e) {}
-            delete this.series.macdLine;
-          }
-          if (this.series.macdSignal) {
-            try { this.series.macdSignal.setData([]); } catch(e) {}
-            delete this.series.macdSignal;
-          }
-          if (this.series.macdHist) {
-            try { this.series.macdHist.setData([]); } catch(e) {}
-            delete this.series.macdHist;
-          }
-          if (this.charts.macd) {
-            try { this.charts.macd.remove(); } catch(e) {}
-            delete this.charts.macd;
-          }
-        }
-        
-        // Handle Stochastic dual series
-        if (id === 'stoch' && this.series.stochD) {
-          try { this.series.stochD.setData([]); } catch(e) {}
-          delete this.series.stochD;
-        }
-        if (id === 'stochrsi' && this.series.stochrsiD) {
-          try { this.series.stochrsiD.setData([]); } catch(e) {}
-          delete this.series.stochrsiD;
-        }
-        
-        // Remove chart reference
-        if (this.charts[id]) {
-          try { this.charts[id].remove(); } catch(e) {}
-          delete this.charts[id];
-        }
-        
-        // Remove series reference
-        if (this.series[id]) {
-          try { this.series[id].setData([]); } catch(e) {}
-          delete this.series[id];
-        }
+      this.charts.price.remove();
+    } catch(e) {
+      console.warn('Error destroying price chart:', e.message);
+    }
+    this.charts.price = null;
+  }
+  
+  // ============================================
+  // STEP 2: COMPLETELY DESTROY VOLUME CHART
+  // ============================================
+  if (this.charts.volume) {
+    try {
+      if (this.series.volume) {
+        this.charts.volume.removeSeries(this.series.volume);
+        this.series.volume = null;
       }
-      
-      // ============================================
-      // STEP 5: Hide indicator panes container
-      // ============================================
-      var indContainer = document.getElementById('indicator-panes-container');
-      if (indContainer) {
-        indContainer.style.display = 'none';
-        // Clear any remaining children
-        while (indContainer.firstChild) {
-          indContainer.removeChild(indContainer.firstChild);
-        }
-      }
-      
-      // ============================================
-      // STEP 6: Reset time scale
-      // ============================================
-      if (this.charts.price) {
-        try {
-          this.charts.price.timeScale().resetTimeScale();
-        } catch(e) {}
-      }
-      
-      // ============================================
-      // STEP 7: Clear cached data
-      // ============================================
-      STATE.candles = [];
-      
-      // ============================================
-      // STEP 8: Force resize after cleanup
-      // ============================================
-      var self = this;
-      setTimeout(function() {
-        self.resizeAll();
-        if (chartContainer) {
-          chartContainer.classList.remove('chart-resetting');
-        }
-      }, 100);
-      
-      console.log('✅ P0 FIX: All charts, overlays, and indicator panes destroyed');
-    },
+      this.charts.volume.remove();
+    } catch(e) {}
+    this.charts.volume = null;
+  }
+  
+  // ============================================
+  // STEP 3: REMOVE ALL CANVAS ELEMENTS
+  // ============================================
+  const priceEl = document.getElementById('price-chart');
+  if (priceEl) {
+    const canvases = priceEl.querySelectorAll('canvas');
+    canvases.forEach(canvas => canvas.remove());
+    priceEl.innerHTML = '';
+    priceEl.style.width = '100%';
+    priceEl.style.height = '100%';
+  }
+  
+  const volumeEl = document.getElementById('volume-chart');
+  if (volumeEl) {
+    const canvases = volumeEl.querySelectorAll('canvas');
+    canvases.forEach(canvas => canvas.remove());
+    volumeEl.innerHTML = '';
+  }
+  
+  // ============================================
+  // STEP 4: DESTROY ALL INDICATOR PANES
+  // ============================================
+  const indContainer = document.getElementById('indicator-panes-container');
+  if (indContainer) {
+    while (indContainer.firstChild) {
+      indContainer.removeChild(indContainer.firstChild);
+    }
+    indContainer.style.display = 'none';
+  }
+  
+  // Clear series references
+  if (this.series) {
+    Object.keys(this.series).forEach(key => {
+      try { delete this.series[key]; } catch(e) {}
+    });
+  }
+  this.series = {};
+  
+  // ============================================
+  // STEP 5: RECREATE FRESH CHARTS
+  // ============================================
+  setTimeout(() => {
+    this.createPriceChart();
+    this.createVolumeChart();
+    
+    // Reload data if available
+    if (STATE.candles && STATE.candles.length > 0) {
+      setTimeout(() => {
+        this.updateMain(STATE.candles);
+        this.updateVolume(STATE.candles);
+        this.fitContent();
+      }, 150);
+    }
+    
+    if (chartContainer) {
+      chartContainer.classList.remove('chart-resetting');
+    }
+  }, 100);
+  
+  console.log('✅ Complete chart reset finished');
+},
+
 // ============================================
-// CODE BLOCK O: Complete replace of ChartEngine.updateMain
-// FIXES: Binance array format support + rectangles
+// COMPLETE REPLACEMENT: ChartEngine.updateMain()
+// NO FALLBACKS - ONLY LIVE DATA
 // ============================================
 updateMain(data) {
   // ============================================
-  // STEP 1: Validate and CONVERT data format
+  // STRICT VALIDATION - NO FALLBACKS
   // ============================================
-  if (!data || !data.length) {
-    console.warn('⚠️ updateMain: No data provided');
-    return;
+  if (!data || !Array.isArray(data) || data.length === 0) {
+    console.error('❌ updateMain REJECTED: No valid data array', {
+      hasData: !!data,
+      isArray: Array.isArray(data),
+      length: data?.length
+    });
+    return;  // DO NOTHING - WAIT FOR REAL DATA
   }
   
-  // DETECT DATA FORMAT and CONVERT if needed
-  let normalizedData = data;
   const firstItem = data[0];
   
-  // Check if data is in Binance array format [timestamp, open, high, low, close, volume]
+  // REJECT invalid data formats - NO FALLBACKS
   if (Array.isArray(firstItem) && firstItem.length >= 6) {
-    console.log('🔄 Converting Binance array format to object format');
-    normalizedData = [];
+    console.log('🔄 Converting Binance array to object format');
+    const normalizedData = [];
     for (let i = 0; i < data.length; i++) {
       const k = data[i];
+      if (!k || k.length < 6) {
+        console.warn('⚠️ Invalid candle at index', i, 'skipping');
+        continue;
+      }
       normalizedData.push({
-        time: Math.floor(k[0] / 1000),  // Convert ms to seconds
+        time: Math.floor(k[0] / 1000),
         open: parseFloat(k[1]),
         high: parseFloat(k[2]),
         low: parseFloat(k[3]),
@@ -3216,32 +3183,44 @@ updateMain(data) {
         volume: parseFloat(k[5])
       });
     }
-    // Update STATE with converted data
+    
+    if (normalizedData.length === 0) {
+      console.error('❌ No valid candles after conversion');
+      return;
+    }
     STATE.candles = normalizedData;
-    console.log(`✅ Converted ${normalizedData.length} candles from array format`);
+    data = normalizedData;
   }
-  // Check if data is already in object format
-  else if (typeof firstItem === 'object' && firstItem !== null && 
-           typeof firstItem.time !== 'undefined' && typeof firstItem.close !== 'undefined') {
-    console.log('✅ Data already in object format');
-    normalizedData = data;
+  
+  // REJECT object format if missing required fields
+  else if (typeof firstItem === 'object') {
+    if (!firstItem.time || typeof firstItem.close !== 'number') {
+      console.error('❌ updateMain REJECTED: Invalid candle object', firstItem);
+      return;
+    }
   }
+  
+  // REJECT any other format
   else {
-    console.error('❌ updateMain: Unknown data format', typeof firstItem, firstItem);
+    console.error('❌ updateMain REJECTED: Unknown data format', typeof firstItem);
     return;
   }
   
-  // ============================================
-  // STEP 2: Guard checks after conversion
-  // ============================================
-  if (!normalizedData || !normalizedData.length) {
-    console.warn('⚠️ updateMain: No data after normalization');
-    return;
+  // CRITICAL: Clear ALL existing canvas elements before rendering
+  const priceContainer = document.getElementById('price-chart');
+  if (priceContainer) {
+    const canvases = priceContainer.querySelectorAll('canvas');
+    if (canvases.length > 1) {
+      console.log(`🧹 Removing ${canvases.length - 1} extra canvases`);
+      for (let i = 1; i < canvases.length; i++) {
+        canvases[i].remove();
+      }
+    }
   }
   
   if (!this.mainSeries || !this.charts.price) {
-    console.warn('⚠️ updateMain: Chart not ready, queueing update');
-    this._pendingMainData = normalizedData;
+    console.warn('⚠️ Chart not ready, queueing update');
+    this._pendingMainData = data;
     setTimeout(() => {
       if (this.mainSeries && this._pendingMainData) {
         this.updateMain(this._pendingMainData);
@@ -3251,23 +3230,19 @@ updateMain(data) {
     return;
   }
   
-  // Validate first candle has required properties
-  const firstCandle = normalizedData[0];
-  if (!firstCandle || typeof firstCandle.time !== 'number' || typeof firstCandle.close !== 'number') {
-    console.error('❌ updateMain: Invalid candle after conversion', firstCandle);
-    return;
+  // Force clear existing data
+  try {
+    this.mainSeries.setData([]);
+    console.log('🧹 Cleared existing series data');
+  } catch(e) {
+    console.warn('Clear failed:', e.message);
   }
   
-  console.log(`📊 updateMain: Rendering ${normalizedData.length} candles (${STATE.chartType})`);
-  
-  // ============================================
-  // STEP 3: Prepare data based on chart type
-  // ============================================
+  // Prepare chart data based on type
   let chartData;
-  
   try {
     if (STATE.chartType === 'candlestick' || STATE.chartType === 'bar') {
-      chartData = normalizedData.map(d => ({
+      chartData = data.map(d => ({
         time: d.time,
         open: d.open,
         high: d.high,
@@ -3275,12 +3250,12 @@ updateMain(data) {
         close: d.close
       }));
     } else if (STATE.chartType === 'line' || STATE.chartType === 'area') {
-      chartData = normalizedData.map(d => ({
+      chartData = data.map(d => ({
         time: d.time,
         value: d.close
       }));
     } else if (STATE.chartType === 'heikinashi') {
-      const heikin = this.calculateHeikinAshi(normalizedData);
+      const heikin = this.calculateHeikinAshi(data);
       chartData = heikin.map(d => ({
         time: d.time,
         open: d.open,
@@ -3289,7 +3264,7 @@ updateMain(data) {
         close: d.close
       }));
     } else {
-      chartData = normalizedData.map(d => ({
+      chartData = data.map(d => ({
         time: d.time,
         open: d.open,
         high: d.high,
@@ -3298,79 +3273,25 @@ updateMain(data) {
       }));
     }
   } catch(e) {
-    console.error('❌ updateMain: Error preparing data:', e.message);
+    console.error('❌ Data preparation failed:', e.message);
     return;
   }
   
-  if (!chartData || !chartData.length) {
-    console.error('❌ updateMain: No chart data prepared');
-    return;
-  }
-  
-  // ============================================
-  // STEP 4: Clear existing data (prevents rectangles)
-  // ============================================
+  // Single render attempt - NO RETRIES, NO FALLBACKS
   try {
-    this.mainSeries.setData([]);
-    console.log('🧹 Cleared existing chart data');
-  } catch(e) {
-    console.warn('Could not clear main series:', e.message);
-  }
-  
-  // ============================================
-  // STEP 5: Set new data with multiple retries
-  // ============================================
-  const self = this;
-  let retryCount = 0;
-  const maxRetries = 3;
-  
-  function attemptSetData() {
-    try {
-      self.mainSeries.setData(chartData);
-      console.log(`✅ updateMain: Successfully rendered ${chartData.length} candles`);
-      
-      // Force fit content after successful render
-      setTimeout(() => {
-        if (self.charts.price && self.charts.price.timeScale) {
-          self.charts.price.timeScale().fitContent();
-        }
-      }, 100);
-      
-    } catch(e) {
-      console.error(`❌ updateMain: Failed to set data (attempt ${retryCount + 1}):`, e.message);
-      retryCount++;
-      
-      if (retryCount < maxRetries) {
-        // Exponential backoff
-        const delay = 100 * Math.pow(2, retryCount);
-        setTimeout(attemptSetData, delay);
-      } else {
-        // Final fallback - try simplified data
-        try {
-          const fallbackData = chartData.slice(-50).map(d => ({
-            time: d.time,
-            value: d.close || d.value || 0
-          }));
-          self.mainSeries.setData(fallbackData);
-          console.log('✅ updateMain: Fallback render successful with 50 candles');
-        } catch(e2) {
-          console.error('❌ updateMain: All rendering attempts failed:', e2.message);
-          
-          // Ultimate fallback - force chart recreation
-          if (typeof self.forceChartReset === 'function') {
-            self.forceChartReset();
-          }
-        }
+    this.mainSeries.setData(chartData);
+    console.log(`✅ Rendered ${chartData.length} candles`);
+    
+    setTimeout(() => {
+      if (this.charts.price && this.charts.price.timeScale) {
+        this.charts.price.timeScale().fitContent();
       }
-    }
+    }, 100);
+  } catch(e) {
+    console.error('❌ Render failed:', e.message);
+    // DO NOT use fallback data - chart remains blank until real data arrives
   }
-  
-  // Start with a small delay to ensure clear completes
-  setTimeout(attemptSetData, 30);
 },
-// ============================================
-// END OF CODE BLOCK O
-// ============================================
     
     calculateHeikinAshi(data) {
       const result = [];
@@ -8369,204 +8290,132 @@ _buildExtendedFallbackSymbols() {
     }));
   },
   // ============================================
-  // END OF CODE BLOCK F
-  // ============================================
-    
-
-    async loadHistory(symbol, interval) {
-  ErrorHandler.clearInlineErrors();
-  
+// COMPLETE REPLACEMENT: DataManager.loadHistory()
+// NO FALLBACKS - ONLY LIVE BINANCE DATA
+// ============================================
+async loadHistory(symbol, interval) {
   if (STATE.assetType !== 'crypto') return;
   
-  // ============================================
-  // CRITICAL: Clear chart BEFORE fetching to prevent partial renders
-  // ============================================
+  console.log(`📊 Loading LIVE data for ${symbol} ${interval} - NO FALLBACKS`);
+  
+  // Clear chart BEFORE fetch
   if (typeof ChartEngine !== 'undefined' && ChartEngine.mainSeries) {
     try {
-      // Force clear current chart data immediately
       ChartEngine.mainSeries.setData([]);
-      if (ChartEngine.series && ChartEngine.series.volume) {
-        ChartEngine.series.volume.setData([]);
-      }
-      console.log('🧹 Cleared chart data before fetching new data');
-    } catch(e) {
-      console.warn('Could not clear chart data:', e.message);
-    }
-  }
-   // ============================================
-  // CRITICAL FIX: Clear chart BEFORE any fetch
-  // ============================================
-  if (ChartEngine && ChartEngine.mainSeries) {
-    try {
-      ChartEngine.mainSeries.setData([]);
-      console.log('🧹 Cleared main series before fetch');
+      console.log('  ✓ Cleared main series');
     } catch(e) {}
   }
   
   if (ChartEngine.series && ChartEngine.series.volume) {
     try {
       ChartEngine.series.volume.setData([]);
-      console.log('🧹 Cleared volume series before fetch');
+      console.log('  ✓ Cleared volume series');
     } catch(e) {}
   }
   
-  // Clear STATE candles immediately
   STATE.candles = [];
- 
   
-  // Guard: Don't load if a reset is in progress
-  if (this._loadQueueTimeout) {
-    clearTimeout(this._loadQueueTimeout);
-    this._loadQueueTimeout = null;
-  }
-  
-  // Always reset charts before loading new data
-  if (typeof ChartEngine !== 'undefined' && ChartEngine.resetAllCharts) {
-    ChartEngine.resetAllCharts();
-  }
-  
-  this._loadingInProgress = true;
+  // ============================================
+  // DIRECT BINANCE API CALL - NO WORKER PROXY
+  // ============================================
+  const directUrl = `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${CONFIG.CANDLE_LIMIT}`;
   
   try {
-    // Use fetchWithFailover instead of direct fetch
-    const klinesData = await fetchWithFailover(`endpoint=klines&symbol=${symbol}&interval=${interval}&limit=${CONFIG.CANDLE_LIMIT}`);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
     
-    if (klinesData.error) {
-      throw new Error(klinesData.message);
+    const response = await fetch(directUrl, { signal: controller.signal });
+    clearTimeout(timeoutId);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
     
-  // In loadHistory, replace fallback with proper error
-if (!klinesData || !Array.isArray(klinesData) || klinesData.length === 0) {
-  console.error(`❌ No candle data for ${symbol}`);
-  // Show error on chart instead of fallback
-  if (ChartEngine && ChartEngine.mainSeries) {
-    ChartEngine.mainSeries.setData([]);
-    ChartEngine.mainSeries.setMarkers([{
-      time: Math.floor(Date.now() / 1000),
-      position: 'inBar',
-      color: '#ef5350',
-      shape: 'circle',
-      text: `No data for ${symbol}`
-    }]);
-  }
-  return; // DON'T use fallback data
-}
-    // Parse and validate Binance klines
-    const rawKlines = [];
-    const seenTimestamps = {};
+    const klinesData = await response.json();
+    
+    if (!Array.isArray(klinesData) || klinesData.length === 0) {
+      throw new Error('Empty response from Binance');
+    }
+    
+    // Parse klines
+    const candles = [];
+    const seenTimestamps = new Set();
     
     for (let i = 0; i < klinesData.length; i++) {
       const k = klinesData[i];
       if (!k || k.length < 6) continue;
       
       const time = Math.floor(k[0] / 1000);
+      if (seenTimestamps.has(time)) continue;
+      seenTimestamps.add(time);
+      
       const open = parseFloat(k[1]);
       const high = parseFloat(k[2]);
       const low = parseFloat(k[3]);
       const close = parseFloat(k[4]);
       const volume = parseFloat(k[5]);
       
-      // Validate each value
-      if (isNaN(time) || time <= 0) continue;
+      // Validate ALL values are positive numbers
       if (isNaN(open) || open <= 0) continue;
       if (isNaN(high) || high <= 0) continue;
       if (isNaN(low) || low <= 0) continue;
       if (isNaN(close) || close <= 0) continue;
       
-      const adjustedHigh = Math.max(high, open, close);
-      const adjustedLow = Math.min(low, open, close);
-      
-      if (seenTimestamps[time]) continue;
-      seenTimestamps[time] = true;
-      
-      rawKlines.push({
+      candles.push({
         time: time,
         open: open,
-        high: adjustedHigh,
-        low: adjustedLow,
+        high: Math.max(high, open, close),
+        low: Math.min(low, open, close),
         close: close,
-        volume: Math.max(0, volume)
+        volume: Math.max(0, volume),
+        _source: 'binance_live'
       });
     }
     
-    rawKlines.sort(function(a, b) { return a.time - b.time; });
-    
-    if (rawKlines.length === 0) {
-      throw new Error('No valid candles after parsing');
+    if (candles.length === 0) {
+      throw new Error('No valid candles after parsing Binance response');
     }
     
-    // ============================================
-    // FINAL VALIDATION - Remove outliers
-    // ============================================
-    const prices = rawKlines.map(function(k) { return k.close; });
-    const avgPrice = prices.reduce(function(a, b) { return a + b; }, 0) / prices.length;
-    const variance = prices.reduce(function(a, b) { return a + Math.pow(b - avgPrice, 2); }, 0) / prices.length;
-    const stdDev = Math.sqrt(variance);
+    // Sort by time ascending
+    candles.sort((a, b) => a.time - b.time);
     
-    // Remove candles that are more than 5 standard deviations from mean (data corruption)
-    const filteredKlines = rawKlines.filter(function(k) {
-      const zScore = Math.abs(k.close - avgPrice) / stdDev;
-      return zScore < 5 && k.high > 0 && k.low > 0 && k.high < avgPrice * 10;
-    });
+    console.log(`✅ Loaded ${candles.length} LIVE candles from Binance direct API`);
     
-    if (filteredKlines.length === 0) {
-      console.warn('⚠️ All candles filtered out as outliers, using original data');
-      STATE.candles = rawKlines;
-    } else if (filteredKlines.length < rawKlines.length * 0.5) {
-      console.warn('⚠️ More than 50% candles filtered, using original data');
-      STATE.candles = rawKlines;
-    } else {
-      STATE.candles = filteredKlines;
-      console.log(`📊 Filtered ${rawKlines.length - filteredKlines.length} outlier candles`);
+    // Store and update
+    STATE.candles = candles;
+    
+    if (ChartEngine && ChartEngine.mainSeries) {
+      ChartEngine.updateMain(candles);
+      setTimeout(() => ChartEngine.updateVolume(candles), 150);
+      setTimeout(() => ChartEngine.fitContent(), 250);
     }
     
-    // Cache for offline fallback
-    StorageManager.set('tvp_cached_candles_' + symbol, STATE.candles);
-    
-    // ============================================
-    // SAFE DATA ASSIGNMENT
-    // Only assign if the symbol hasn't changed during fetch
-    // ============================================
-    if (STATE.symbol !== symbol) {
-      console.warn('⚠️ Symbol changed during fetch, discarding data for', symbol);
-      this._loadingInProgress = false;
-      return;
-    }
-    
-    // Update charts - main first
-    ChartEngine.updateMain(STATE.candles);
-    
-    // Volume with delay to prevent render conflict
-    setTimeout(function() {
-      ChartEngine.updateVolume(STATE.candles);
-      ChartEngine.fitContent();
-    }, 150);
-    
-    // Indicators with longer delay
-    setTimeout(function() {
-      if (typeof IndicatorEngine !== 'undefined' && STATE.activeIndicators && STATE.activeIndicators.size > 0) {
-        IndicatorEngine.calculateAll();
-      }
-    }, 500);
-    
-    this.updatePriceDisplay(STATE.candles[STATE.candles.length - 1]);
+    // Load 24h ticker separately
     await this.load24h(symbol);
     
-  } catch (e) {
-    console.warn('⚠️ Failed to load fresh candles for ' + symbol + ' (' + interval + '):', e.message);
-    ErrorHandler.handle(e, 'DataManager.loadHistory', 'critical', function() {
-      var cached = StorageManager.get('tvp_cached_candles_' + symbol, null);
-      if (cached && cached.length > 0) {
-        STATE.candles = cached;
-        ChartEngine.updateMain(STATE.candles);
-        ChartEngine.updateVolume(STATE.candles);
-      }
-    });
-  } finally {
-    this._loadingInProgress = false;
+    // Update price display
+    if (candles.length > 0) {
+      this.updatePriceDisplay(candles[candles.length - 1]);
+    }
+    
+  } catch(error) {
+    console.error('❌ loadHistory FAILED - NO FALLBACK:', error.message);
+    
+    // Show error on chart - NO FALLBACK DATA
+    if (ChartEngine && ChartEngine.mainSeries) {
+      ChartEngine.mainSeries.setMarkers([{
+        time: Math.floor(Date.now() / 1000),
+        position: 'inBar',
+        color: '#ef5350',
+        shape: 'circle',
+        text: `Failed to load ${symbol} data`
+      }]);
+    }
+    
+    // Rethrow - let caller handle
+    throw error;
   }
 },
-    
 async load24h(symbol) {
   try {
     let data;
@@ -8975,54 +8824,47 @@ setFallbackValues() {
     change: STATE.change24h
   });
 },
+// ============================================
+// COMPLETE REPLACEMENT: DataManager.connectWS()
+// NO REST FALLBACK - PURE WEBSOCKET
+// ============================================
 connectWS() {
-  // ============================================
-  // PREVENT MULTIPLE CONNECTIONS
-  // ============================================
   if (this._wsConnecting) {
-    console.log('⏳ WebSocket connection already in progress, skipping');
+    console.log('⏳ WebSocket connection already in progress');
     return;
   }
   
-  // Clean up existing connection
   this.cleanupConnection();
   
-  // ============================================
-  // VALIDATE SYMBOL
-  // ============================================
   const symbol = STATE.symbol;
   if (!symbol || symbol.length < 3) {
-    console.warn('⚠️ Invalid symbol for WebSocket:', symbol);
+    console.warn('⚠️ Invalid symbol for WebSocket');
     return;
   }
   
-  // Only connect WebSocket for crypto assets
   if (STATE.assetType !== 'crypto') {
-    console.log('📡 Non-crypto asset, skipping WebSocket (using REST polling)');
+    console.log('📡 Non-crypto asset, WebSocket not used');
     return;
   }
   
   const sym = symbol.toLowerCase();
   const interval = STATE.interval || '15m';
   
-  // Validate symbol has USDT for Binance streams
   if (!sym.includes('usdt')) {
-    console.warn('⚠️ Non-USDT symbol, WebSocket may not work:', symbol);
-    // Still try but log warning
+    console.warn('⚠️ Non-USDT symbol:', symbol);
   }
   
   // ============================================
-  // BUILD STREAMS WITH PROPER FORMAT
+  // DIRECT BINANCE WEBSOCKET - NO PROXY
   // ============================================
-  // Binance stream format: symbol@kline_interval
   const streams = [
     `${sym}@kline_${interval}`,
     `${sym}@trade`,
     `${sym}@depth20@100ms`
   ];
   
-  const streamUrl = `${CONFIG.BINANCE_WS_STREAM}?streams=${streams.join('/')}`;
-  console.log(`🔌 Connecting WebSocket: ${streamUrl.substring(0, 80)}...`);
+  const streamUrl = `wss://stream.binance.com:9443/stream?streams=${streams.join('/')}`;
+  console.log(`🔌 Connecting WebSocket directly to Binance: ${streamUrl.substring(0, 70)}...`);
   
   this._wsConnecting = true;
   
@@ -9030,104 +8872,53 @@ connectWS() {
     const ws = new WebSocket(streamUrl);
     STATE.websockets.multi = ws;
     
-    // ============================================
-    // INITIALIZE HEALTH TRACKING
-    // ============================================
+    // Initialize health tracking
     if (!STATE._wsHealth) {
       STATE._wsHealth = {
-        lastMessageTime: 0,
-        lastPingTime: 0,
-        messageCount: 0,
+        lastMessageTime: Date.now(),
         reconnectAttempts: 0,
-        isHealthy: false,
-        pingIntervalId: null,
-        healthIntervalId: null
+        isHealthy: false
       };
     }
     
-    // Reset reconnect attempts on new connection
     STATE.reconnectAttempts = 0;
     STATE._wsHealth.reconnectAttempts = 0;
     
-    // ============================================
-    // ON OPEN HANDLER
-    // ============================================
     ws.onopen = () => {
-      console.log('✅ WebSocket connected successfully');
+      console.log('✅ WebSocket connected to Binance');
       STATE.isConnected = true;
       STATE._wsHealth.isHealthy = true;
       STATE._wsHealth.lastMessageTime = Date.now();
-      STATE._wsHealth.lastPingTime = Date.now();
       this._wsConnecting = false;
       
-      // Clear any existing intervals
-      if (STATE._wsHealth.pingIntervalId) {
-        IntervalManager.clear(STATE._wsHealth.pingIntervalId);
-      }
-      if (STATE._wsHealth.healthIntervalId) {
-        IntervalManager.clear(STATE._wsHealth.healthIntervalId);
-      }
+      // Keep status hidden
+      const statusDot = document.getElementById('status-dot');
+      const statusText = document.getElementById('status-text');
+      if (statusDot) statusDot.style.display = 'none';
+      if (statusText) statusText.style.display = 'none';
       
-      // ============================================
-      // PING INTERVAL (keep connection alive)
-      // ============================================
+      // Ping interval
+      if (STATE._wsHealth.pingIntervalId) IntervalManager.clear(STATE._wsHealth.pingIntervalId);
       STATE._wsHealth.pingIntervalId = IntervalManager.register(() => {
         if (ws && ws.readyState === WebSocket.OPEN) {
-          try {
-            ws.send(JSON.stringify({ method: 'ping' }));
-            STATE._wsHealth.lastPingTime = Date.now();
-          } catch(e) {
-            console.warn('Ping failed:', e.message);
-          }
+          try { ws.send(JSON.stringify({ method: 'ping' })); } catch(e) {}
         }
-      }, 30000, 'WS-ping-' + sym);
-      
-      // ============================================
-      // HEALTH CHECK INTERVAL
-      // ============================================
-      STATE._wsHealth.healthIntervalId = IntervalManager.register(() => {
-        const now = Date.now();
-        const timeSinceLastMessage = now - STATE._wsHealth.lastMessageTime;
-        
-        // If no message in 60 seconds, connection is stale
-        if (timeSinceLastMessage > 60000 && STATE.isConnected) {
-          console.warn(`⚠️ WebSocket stale (${Math.round(timeSinceLastMessage/1000)}s no data), reconnecting...`);
-          STATE._wsHealth.isHealthy = false;
-          this.reconnect(true);
-        }
-      }, 30000, 'WS-health-' + sym);
+      }, 30000, 'WS-ping');
     };
     
-    // ============================================
-    // ON MESSAGE HANDLER
-    // ============================================
     ws.onmessage = (e) => {
       STATE._wsHealth.lastMessageTime = Date.now();
-      STATE._wsHealth.messageCount++;
       
       try {
         const m = JSON.parse(e.data);
         
-        // Handle ping/pong
-        if (m.result === 'pong' || m.pong) {
-          const latency = Date.now() - STATE._wsHealth.lastPingTime;
-          if (latency > 0 && latency < 10000) {
-            STATE.latency = latency;
-            this.updateLatencyDisplay();
-          }
-          return;
-        }
+        if (m.result === 'pong' || m.pong) return;
         
-        // Handle data streams
         if (m.stream && m.data) {
-          STATE._lastWSUpdate = Date.now();
-          
           if (m.stream.includes('@kline')) {
             this.handleKline(m.data.k);
           } else if (m.stream.includes('@depth')) {
             this.handleDepth(m.data);
-          } else if (m.stream.includes('@trade')) {
-            // Optional: handle trades if needed
           }
         }
       } catch(ex) {
@@ -9135,72 +8926,111 @@ connectWS() {
       }
     };
     
-   // ============================================
-// REPLACE THE ONERROR HANDLER
-// ============================================
-ws.onerror = (error) => {
-  console.error('🔴 WebSocket error:', error);
-  STATE._wsHealth.isHealthy = false;
-  this._wsConnecting = false;
-  
-  // NEW: Immediately fall back to REST polling on error
-  if (!this._restPollingActive) {
-    console.log(`⚠️ WebSocket failed for ${STATE.symbol}, falling back to REST polling`);
-    this.startRestPolling();
-  }
-};
-
-ws.onclose = (event) => {
-  console.log(`🔴 WebSocket closed: code=${event.code}, reason=${event.reason || 'none'}`);
-  STATE.isConnected = false;
-  STATE._wsHealth.isHealthy = false;
-  this._wsConnecting = false;
-  
-  // Clear intervals
-  if (STATE._wsHealth.pingIntervalId) {
-    IntervalManager.clear(STATE._wsHealth.pingIntervalId);
-    STATE._wsHealth.pingIntervalId = null;
-  }
-  if (STATE._wsHealth.healthIntervalId) {
-    IntervalManager.clear(STATE._wsHealth.healthIntervalId);
-    STATE._wsHealth.healthIntervalId = null;
-  }
-  
-  // CRITICAL FIX: For code 1008 (invalid symbol), use REST polling immediately
-  // This fixes AIGENSYN and PNT
-  if (event.code === 1008) {
-    console.log(`⚠️ WebSocket invalid for ${STATE.symbol} (code 1008), using REST polling`);
-    if (!this._restPollingActive) {
-      this.startRestPolling();
-    }
-    return;
-  }
-  
-  // IMPORTANT: For code 1006 (network issue), keep existing chart data
-  // Don't clear candles, just try to reconnect
-  if (event.code === 1006) {
-    console.log(`⚠️ WebSocket network error (code 1006), keeping existing chart data`);
-    // Don't clear STATE.candles - keep showing existing data
-    setTimeout(() => {
-      if (!STATE.isConnected) {
-        this.reconnect(false);
+    ws.onerror = (error) => {
+      console.error('🔴 WebSocket error:', error);
+      STATE._wsHealth.isHealthy = false;
+      this._wsConnecting = false;
+      // NO REST FALLBACK - just wait for reconnect
+    };
+    
+    ws.onclose = (event) => {
+      console.log(`🔴 WebSocket closed: code=${event.code}, reason=${event.reason || 'none'}`);
+      STATE.isConnected = false;
+      STATE._wsHealth.isHealthy = false;
+      this._wsConnecting = false;
+      
+      if (STATE._wsHealth.pingIntervalId) {
+        IntervalManager.clear(STATE._wsHealth.pingIntervalId);
+        STATE._wsHealth.pingIntervalId = null;
       }
-    }, 3000);
-    return;
-  }
-  
-  // Reconnect only for recoverable errors (not normal closure)
-  if (event.code !== 1000 && event.code !== 1001) {
-    console.log('🔄 Scheduling reconnect...');
-    this.reconnect(false);
-  }
-};
+      
+      // Only reconnect for recoverable errors (not normal closure)
+      if (event.code !== 1000 && event.code !== 1001) {
+        console.log('🔄 Scheduling reconnect in 3 seconds...');
+        setTimeout(() => this.reconnect(), 3000);
+      }
+    };
     
   } catch(e) {
     console.error('❌ Failed to create WebSocket:', e.message);
     this._wsConnecting = false;
-    this.reconnect(false);
+    setTimeout(() => this.reconnect(), 3000);
   }
+},
+
+// ============================================
+// REPLACE reconnect() - NO FALLBACK, JUST RETRY
+// ============================================
+reconnect(forceImmediate = false) {
+  if (this._reconnecting) {
+    console.log('⏳ Reconnect already in progress');
+    return;
+  }
+  
+  this._reconnecting = true;
+  
+  const maxAttempts = 10;
+  
+  if (STATE.reconnectAttempts >= maxAttempts) {
+    console.error(`❌ Max reconnection attempts (${maxAttempts}) reached`);
+    STATE.reconnectAttempts = 0;
+    this._reconnecting = false;
+    
+    // Show subtle indicator but NO REST polling
+    console.log('🔌 WebSocket: Max attempts reached, will retry in 60 seconds');
+    setTimeout(() => {
+      STATE.reconnectAttempts = 0;
+      this.connectWS();
+    }, 60000);
+    return;
+  }
+  
+  STATE.reconnectAttempts++;
+  
+  const baseDelay = 2000;
+  const delay = Math.min(baseDelay * Math.pow(1.5, STATE.reconnectAttempts - 1), 30000);
+  const jitter = Math.random() * 500;
+  const totalDelay = Math.round(delay + jitter);
+  
+  console.log(`🔄 Reconnecting in ${totalDelay}ms (attempt ${STATE.reconnectAttempts}/${maxAttempts})`);
+  
+  setTimeout(() => {
+    this._reconnecting = false;
+    this.connectWS();
+  }, totalDelay);
+},
+
+	  // ============================================
+// ADD TO DataManager: WebSocket Health Monitor
+// NO FALLBACKS - Just monitors and reconnects
+// ============================================
+startHealthMonitor() {
+  if (this._healthMonitorId) {
+    IntervalManager.clear(this._healthMonitorId);
+  }
+  
+  this._healthMonitorId = IntervalManager.register(() => {
+    if (!STATE.isConnected) return;
+    
+    const now = Date.now();
+    const timeSinceLastMessage = now - (STATE._wsHealth?.lastMessageTime || now);
+    
+    // If no message in 45 seconds, consider connection stale
+    if (timeSinceLastMessage > 45000) {
+      console.warn(`⚠️ WebSocket stale (${Math.round(timeSinceLastMessage/1000)}s no data), reconnecting...`);
+      
+      // Close existing connection
+      if (STATE.websockets.multi) {
+        try {
+          STATE.websockets.multi.close();
+        } catch(e) {}
+        STATE.websockets.multi = null;
+      }
+      
+      STATE.isConnected = false;
+      this.reconnect(true);
+    }
+  }, 30000, 'WS-health-monitor');
 },
 // ============================================
 // PHASE 1 FIX: Add connection cleanup method
@@ -22277,7 +22107,7 @@ function initTVPanels() {
 // MAIN INITIALIZATION
 // ============================================
 // ============================================
-// MAIN INITIALIZATION - DATA FIRST, THEN CHART
+// COMPLETE REPLACEMENT: main() - FIXED ORDER
 // ============================================
 async function main() {
   if (window.__tradevision_initialized) {
@@ -22286,79 +22116,68 @@ async function main() {
   }
   window.__tradevision_initialized = true;
   
-  console.log('🚀 TradeVision Pro v4.0 Starting...');
+  console.log('🚀 TradeVision Pro v5.0 Starting (NO FALLBACKS MODE)...');
   
-  // Show loading state on chart container
+  // Show loading state
   const chartContainer = document.getElementById('price-chart');
   if (chartContainer) {
     chartContainer.style.opacity = '0.5';
-    chartContainer.style.transition = 'opacity 0.3s';
   }
   
   try {
     // ============================================
-    // STEP 1: Initialize ONLY non-chart systems first
+    // STEP 1: Initialize UI FIRST (creates containers)
     // ============================================
+    console.log('📱 STEP 1: Setting up UI...');
+    setupUI();
     DrawingEngine.init();
     DrawingToolsModal.init();
-    setupUI();
     WatchlistManager.init();
-    IndicatorsModal.init();
-    PineEditor.init();
-    setTimeout(() => PushNotifications.init(), 3000);
-    TradeManager.init();
     
     // ============================================
-    // STEP 2: Load ALL data BEFORE creating charts
+    // STEP 2: Initialize ChartEngine (but no data yet)
     // ============================================
-    console.log('📊 Loading market data before chart creation...');
+    console.log('📊 STEP 2: Initializing ChartEngine...');
+    ChartEngine.init();
+    
+    // ============================================
+    // STEP 3: Initialize DataManager and LOAD REAL DATA
+    // ============================================
+    console.log('📈 STEP 3: Loading LIVE data from Binance...');
     
     await DataManager.loadSymbols();
     await DataManager.loadHistory(STATE.symbol, STATE.interval);
     await DataManager.load24h(STATE.symbol);
     
-    // Also load stock symbols for search
-    if (StockDataManager && StockDataManager.loadStockSymbols) {
-      StockDataManager.loadStockSymbols();
-    }
-    
-    console.log('✅ Data loaded, creating charts...');
+    console.log('✅ STEP 3: Live data loaded successfully');
     
     // ============================================
-    // STEP 3: Create charts ONLY after data is ready
+    // STEP 4: Connect WebSocket for real-time updates
     // ============================================
-    ChartEngine.init();
-    
-    // Force chart to fit content after creation
-    setTimeout(() => {
-      if (ChartEngine && ChartEngine.fitContent) {
-        ChartEngine.fitContent();
-      }
-      if (chartContainer) {
-        chartContainer.style.opacity = '1';
-      }
-    }, 200);
+    console.log('🔌 STEP 4: Connecting WebSocket...');
+    DataManager.connectWS();
     
     // ============================================
-    // STEP 4: Initialize remaining systems
+    // STEP 5: Initialize remaining systems
     // ============================================
+    console.log('⚙️ STEP 5: Initializing remaining systems...');
+    IndicatorsModal.init();
+    PineEditor.init();
+    TradeManager.init();
     TickerManager.init();
     initTVPanels();
-    await NewsManager.init();
+    NewsManager.init();
     EconomicCalendar.init();
     MarketOverview.init();
-    ChartSharing.init();
-    AIAssistant.init();
-    setTimeout(() => OnboardingTour.init(), 2000);
     
-    // Portfolio analytics
-    initPortfolioAnalytics();
-    IntervalManager.register(() => updatePortfolioAnalytics(), 30000, 'PortfolioAnalytics-update');
+    // Initialize mobile features if on mobile
+    if (window.innerWidth <= 768) {
+      initAllMobileFeatures();
+    }
     
-    // Mobile features
-    initAllMobileFeatures();
-    
-    // Start periodic checks
+    // ============================================
+    // STEP 6: Start periodic checks
+    // ============================================
     IntervalManager.register(() => {
       if (typeof AlertSystem2 !== 'undefined') AlertSystem2.checkAlerts();
     }, 1000, 'AlertSystem-checkAlerts');
@@ -22368,32 +22187,24 @@ async function main() {
     }, 1000, 'TradeManager-updatePrices');
     
     // ============================================
-    // STEP 5: Connect WebSocket LAST
+    // STEP 7: Hide loader
     // ============================================
-    DataManager.connectWS();
+    setTimeout(() => {
+      if (chartContainer) chartContainer.style.opacity = '1';
+    }, 500);
     
-    // Hide loader
-    if (typeof window.hideAppLoader === 'function') {
-      window.hideAppLoader();
-    } else {
-      const loader = document.getElementById('app-loader');
-      if (loader) {
-        loader.style.opacity = '0';
-        loader.style.transition = 'opacity 0.3s';
-        setTimeout(() => loader.remove(), 300);
-      }
+    const loader = document.getElementById('app-loader');
+    if (loader) {
+      loader.style.opacity = '0';
+      loader.style.transition = 'opacity 0.3s';
+      setTimeout(() => loader.remove(), 300);
     }
     
-    console.log('✅ TradeVision Pro v4.0 Ready');
+    console.log('✅ TradeVision Pro v5.0 Ready - NO FALLBACKS MODE');
     
   } catch(e) {
     console.error('❌ Initialization failed:', e);
-    if (chartContainer) {
-      chartContainer.style.opacity = '1';
-    }
-    if (typeof Toast !== 'undefined') {
-      Toast.error('Failed to initialize. Please refresh the page.', 10000);
-    }
+    if (chartContainer) chartContainer.style.opacity = '1';
   }
 }
 // Sync dropdown active states
@@ -29203,35 +29014,46 @@ const OnboardingTour = {
   }
 };
 // ============================================
-// CRITICAL EXPOSURE - MUST BE AT VERY END
+// CRITICAL: EXPOSE MODULES GLOBALLY
 // ============================================
-(function exposeCriticalModules() {
-  console.log('🔧 EXPOSING CRITICAL MODULES...');
+(function exposeGlobally() {
+  console.log('🔧 Exposing critical modules to window...');
   
-  // Expose ChartEngine
   if (typeof ChartEngine !== 'undefined') {
     window.ChartEngine = ChartEngine;
-    console.log('✅ ChartEngine exposed to window');
+    console.log('✅ ChartEngine exposed');
   } else {
-    console.error('❌ ChartEngine not found');
+    console.error('❌ ChartEngine not found for exposure');
   }
   
-  // Expose DataManager
   if (typeof DataManager !== 'undefined') {
     window.DataManager = DataManager;
-    console.log('✅ DataManager exposed to window');
+    console.log('✅ DataManager exposed');
   } else {
-    console.error('❌ DataManager not found');
+    console.error('❌ DataManager not found for exposure');
   }
   
-  // Expose STATE for debugging
   if (typeof STATE !== 'undefined') {
     window._TV_STATE = STATE;
+    console.log('✅ STATE exposed as _TV_STATE');
   }
   
-  // Verify
-  console.log('=== VERIFICATION ===');
+  if (typeof IndicatorEngine !== 'undefined') {
+    window.IndicatorEngine = IndicatorEngine;
+    console.log('✅ IndicatorEngine exposed');
+  }
+  
+  if (typeof DrawingEngine !== 'undefined') {
+    window.DrawingEngine = DrawingEngine;
+    console.log('✅ DrawingEngine exposed');
+  }
+  
+  if (typeof TradeManager !== 'undefined') {
+    window.TradeManager = TradeManager;
+    console.log('✅ TradeManager exposed');
+  }
+  
+  console.log('=== GLOBAL EXPOSURE COMPLETE ===');
   console.log('window.ChartEngine:', !!window.ChartEngine);
   console.log('window.DataManager:', !!window.DataManager);
 })();
-// ============================================
