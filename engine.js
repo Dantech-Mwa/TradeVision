@@ -2061,10 +2061,20 @@ createPriceChart() {
   }
   
   // ============================================
-  // CRITICAL FIX: Clear ALL existing canvas data to prevent rectangles
+  // CRITICAL FIX: Remove ALL existing canvases first
+  // This prevents the "multiple canvases" issue
   // ============================================
   const existingCanvases = el.querySelectorAll('canvas');
-  existingCanvases.forEach(canvas => canvas.remove());
+  if (existingCanvases.length > 1) {
+    console.warn(`⚠️ Found ${existingCanvases.length} duplicate canvases, cleaning up...`);
+    existingCanvases.forEach(canvas => canvas.remove());
+  }
+  
+  // Also remove any orphaned drawing canvases
+  const drawingCanvas = document.getElementById('drawing-canvas');
+  if (drawingCanvas && drawingCanvas.parentElement === el) {
+    drawingCanvas.remove();
+  }
   
   // Detect mobile for touch handling
   const isMobile = window.innerWidth <= 768;
