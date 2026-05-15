@@ -21163,155 +21163,124 @@ function initTVPanels() {
 // MAIN INITIALIZATION
 // ============================================
 // ============================================
-// MAIN INITIALIZATION - FIXED ORDER
-// Charts created AFTER data loads to prevent rectangles
+// MAIN INITIALIZATION - DATA FIRST, THEN CHART
 // ============================================
 async function main() {
-    // === GUARD AGAINST DOUBLE INITIALIZATION ===
-    if (window.__tradevision_initialized) {
-        console.warn('⚠️ TradeVision already initialized, skipping duplicate init');
-        return;
-    }
-    window.__tradevision_initialized = true;
-    
-    console.log('🚀 TradeVision Pro v4.0 Starting...');
-    
-    try {
-        // ============================================
-        // STEP 1: Initialize NON-CHART systems first
-        // ============================================
-        DrawingEngine.init();
-        DrawingToolsModal.init();
-        setupUI();
-        WatchlistManager.init();
-        IndicatorsModal.init();
-        PineEditor.init();
-        setTimeout(() => PushNotifications.init(), 3000);
-        TradeManager.init();
-        
-        // ============================================
-        // STEP 2: Load DATA before creating charts
-        // This prevents "big rectangles" issue
-        // ============================================
-        console.log('📊 Loading data before creating charts...');
-        await DataManager.init();
-        await MarketOverview.init();
-        
-        // ============================================
-        // STEP 3: Create charts AFTER data is loaded
-        // ============================================
-        console.log('📈 Creating charts after data load...');
-        ChartEngine.init();
-        
-        // ============================================
-        // STEP 4: Initialize remaining systems
-        // ============================================
-        TickerManager.init();
-        StockDataManager.init();
-        initTVPanels();
-        await NewsManager.init();
-        EconomicCalendar.init();
-        ChartSharing.init();
-        AIAssistant.init();
-        setTimeout(() => OnboardingTour.init(), 2000);
-        
-        // ============================================
-        // STEP 5: Initialize Portfolio Analytics
-        // ============================================
-        initPortfolioAnalytics();
-        IntervalManager.register(function() {
-            updatePortfolioAnalytics();
-        }, 30000, 'PortfolioAnalytics-update');
-        
-        // ============================================
-        // STEP 6: Mobile features
-        // ============================================
-        initAllMobileFeatures();
-        
-        // ============================================
-        // STEP 7: Start periodic checks
-        // ============================================
-        IntervalManager.register(function() {
-            if (typeof AlertSystem2 !== 'undefined') AlertSystem2.checkAlerts();
-        }, 1000, 'AlertSystem-checkAlerts');
-        
-        IntervalManager.register(function() {
-            if (typeof TradeManager !== 'undefined') TradeManager.updatePrices();
-        }, 1000, 'TradeManager-updatePrices');
-        
-        setupMobileTimeframePills();
-        
-        // ============================================
-        // STEP 8: Force final resize after all is ready
-        // ============================================
-        setTimeout(function() {
-            if (typeof ChartEngine !== 'undefined' && ChartEngine.resizeAll) {
-                ChartEngine.resizeAll();
-                console.log('✅ Final chart resize complete');
-            }
-        }, 1000);
-        
-        // Hide loading spinner
-        if (typeof window.hideAppLoader === 'function') {
-            window.hideAppLoader();
-        } else {
-            const loader = document.getElementById('app-loader');
-            if (loader) {
-                loader.style.opacity = '0';
-                loader.style.transition = 'opacity 0.3s';
-                setTimeout(() => loader.remove(), 300);
-            }
-        }
-        
-        console.log('✅ TradeVision Pro v4.0 Ready - Charts should display correctly');
-        
-    } catch(e) {
-        console.error('❌ Initialization failed:', e);
-        console.error('Error stack:', e.stack);
-        
-        if (typeof Toast !== 'undefined') {
-            Toast.error('Failed to initialize. Please refresh the page.', 10000);
-        }
-    }
-	// Add after ChartEngine.init() in main()
-function monitorCanvasHealth() {
-  const priceChart = document.getElementById('price-chart');
-  if (!priceChart) return;
+  if (window.__tradevision_initialized) {
+    console.warn('⚠️ TradeVision already initialized');
+    return;
+  }
+  window.__tradevision_initialized = true;
   
-  const observer = new MutationObserver(function(mutations) {
-    mutations.forEach(function(mutation) {
-      if (mutation.type === 'childList') {
-        mutation.addedNodes.forEach(function(node) {
-          if (node.tagName === 'CANVAS') {
-            // Check if canvas dimensions are suspicious
-            setTimeout(function() {
-              if (node.width > node.clientWidth * 2 || node.height > node.clientHeight * 2) {
-                console.warn('🔴 Canvas dimension mismatch detected!', {
-                  width: node.width,
-                  clientWidth: node.clientWidth,
-                  height: node.height,
-                  clientHeight: node.clientHeight
-                });
-                
-                // Auto-recover
-                if (window.DataManager && DataManager.forceReloadChart) {
-                  console.log('🔄 Auto-recovering chart...');
-                  DataManager.forceReloadChart();
-                }
-              }
-            }, 100);
-          }
-        });
+  console.log('🚀 TradeVision Pro v4.0 Starting...');
+  
+  // Show loading state on chart container
+  const chartContainer = document.getElementById('price-chart');
+  if (chartContainer) {
+    chartContainer.style.opacity = '0.5';
+    chartContainer.style.transition = 'opacity 0.3s';
+  }
+  
+  try {
+    // ============================================
+    // STEP 1: Initialize ONLY non-chart systems first
+    // ============================================
+    DrawingEngine.init();
+    DrawingToolsModal.init();
+    setupUI();
+    WatchlistManager.init();
+    IndicatorsModal.init();
+    PineEditor.init();
+    setTimeout(() => PushNotifications.init(), 3000);
+    TradeManager.init();
+    
+    // ============================================
+    // STEP 2: Load ALL data BEFORE creating charts
+    // ============================================
+    console.log('📊 Loading market data before chart creation...');
+    
+    await DataManager.loadSymbols();
+    await DataManager.loadHistory(STATE.symbol, STATE.interval);
+    await DataManager.load24h(STATE.symbol);
+    
+    // Also load stock symbols for search
+    if (StockDataManager && StockDataManager.loadStockSymbols) {
+      StockDataManager.loadStockSymbols();
+    }
+    
+    console.log('✅ Data loaded, creating charts...');
+    
+    // ============================================
+    // STEP 3: Create charts ONLY after data is ready
+    // ============================================
+    ChartEngine.init();
+    
+    // Force chart to fit content after creation
+    setTimeout(() => {
+      if (ChartEngine && ChartEngine.fitContent) {
+        ChartEngine.fitContent();
       }
-    });
-  });
-  
-  observer.observe(priceChart, { childList: true, subtree: true });
-  console.log('✅ Canvas health monitor active');
-}
-
-// Call this after ChartEngine.init()
-monitorCanvasHealth();
+      if (chartContainer) {
+        chartContainer.style.opacity = '1';
+      }
+    }, 200);
+    
+    // ============================================
+    // STEP 4: Initialize remaining systems
+    // ============================================
+    TickerManager.init();
+    initTVPanels();
+    await NewsManager.init();
+    EconomicCalendar.init();
+    MarketOverview.init();
+    ChartSharing.init();
+    AIAssistant.init();
+    setTimeout(() => OnboardingTour.init(), 2000);
+    
+    // Portfolio analytics
+    initPortfolioAnalytics();
+    IntervalManager.register(() => updatePortfolioAnalytics(), 30000, 'PortfolioAnalytics-update');
+    
+    // Mobile features
+    initAllMobileFeatures();
+    
+    // Start periodic checks
+    IntervalManager.register(() => {
+      if (typeof AlertSystem2 !== 'undefined') AlertSystem2.checkAlerts();
+    }, 1000, 'AlertSystem-checkAlerts');
+    
+    IntervalManager.register(() => {
+      if (typeof TradeManager !== 'undefined') TradeManager.updatePrices();
+    }, 1000, 'TradeManager-updatePrices');
+    
+    // ============================================
+    // STEP 5: Connect WebSocket LAST
+    // ============================================
+    DataManager.connectWS();
+    
+    // Hide loader
+    if (typeof window.hideAppLoader === 'function') {
+      window.hideAppLoader();
+    } else {
+      const loader = document.getElementById('app-loader');
+      if (loader) {
+        loader.style.opacity = '0';
+        loader.style.transition = 'opacity 0.3s';
+        setTimeout(() => loader.remove(), 300);
+      }
+    }
+    
+    console.log('✅ TradeVision Pro v4.0 Ready');
+    
+  } catch(e) {
+    console.error('❌ Initialization failed:', e);
+    if (chartContainer) {
+      chartContainer.style.opacity = '1';
+    }
+    if (typeof Toast !== 'undefined') {
+      Toast.error('Failed to initialize. Please refresh the page.', 10000);
+    }
+  }
 }
 // Sync dropdown active states
 setInterval(function() {
