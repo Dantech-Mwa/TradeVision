@@ -2056,39 +2056,10 @@ window.debugTimers = function() {
 createPriceChart() {
   const el = document.getElementById('price-chart');
   if(!el) {
-    console.error('❌ Price chart element not found');
+    console.error('❌ Price chart element not found in DOM');
     return;
   }
   
-  // ============================================
-  // CRITICAL: COMPLETELY DESTROY ALL EXISTING CANVASES
-  // This prevents the "rectangle" issue
-  // ============================================
-  const existingCanvases = el.querySelectorAll('canvas');
-  if (existingCanvases.length > 0) {
-    console.log(`🧹 Destroying ${existingCanvases.length} existing canvases`);
-    existingCanvases.forEach(canvas => canvas.remove());
-  }
-  
-  // Also clear any Lightweight Charts instances
-  if (this.charts.price) {
-    try {
-      this.charts.price.remove();
-    } catch(e) {}
-    this.charts.price = null;
-  }
-  
-  // Force DOM to settle - use setTimeout instead of await
-  const self = this;
-  setTimeout(function() {
-    self._createPriceChartInternal(el);
-  }, 50);
-},
-
-// ============================================
-// INTERNAL METHOD - Do the actual chart creation
-// ============================================
-_createPriceChartInternal(el) {
   // Detect mobile for touch handling
   const isMobile = window.innerWidth <= 768;
   
@@ -2098,6 +2069,7 @@ _createPriceChartInternal(el) {
   if (isMobile) {
     const mainPane = document.getElementById('main-chart-pane');
     if (mainPane) {
+      // Ensure the main pane has proper dimensions
       if (mainPane.clientHeight === 0 || mainPane.clientWidth === 0) {
         console.warn('⚠️ Main chart pane has zero dimensions, forcing layout...');
         mainPane.style.display = 'block';
@@ -2110,6 +2082,7 @@ _createPriceChartInternal(el) {
       }
     }
     
+    // Force the chart canvas element to have dimensions
     if (el.clientHeight === 0 || el.clientWidth === 0) {
       console.warn('⚠️ Price chart canvas has zero dimensions, forcing...');
       el.style.width = '100%';
@@ -2123,6 +2096,7 @@ _createPriceChartInternal(el) {
       el.style.bottom = '0';
     }
     
+    // Hide the chart watermark on mobile for cleaner look
     const watermark = document.querySelector('.chart-watermark');
     if (watermark) {
       watermark.style.display = 'none';
@@ -2135,6 +2109,7 @@ _createPriceChartInternal(el) {
   let chartWidth = el.clientWidth;
   let chartHeight = el.clientHeight;
   
+  // Apply fallback dimensions
   if (!chartWidth || chartWidth < 50) {
     chartWidth = isMobile ? (window.innerWidth || 375) : 800;
     console.warn('⚠️ Chart width fallback applied: ' + chartWidth + 'px');
@@ -2142,8 +2117,10 @@ _createPriceChartInternal(el) {
   
   if (!chartHeight || chartHeight < 50) {
     if (isMobile) {
+      // Mobile: Use 55% of viewport height
       chartHeight = Math.max(300, window.innerHeight * 0.55);
     } else {
+      // Desktop: Use reasonable default
       chartHeight = 450;
     }
     console.warn('⚠️ Chart height fallback applied: ' + chartHeight + 'px');
@@ -2156,28 +2133,31 @@ _createPriceChartInternal(el) {
   // ============================================
   if (this.charts.price) {
     try {
+      // Remove existing series first
       if (this.mainSeries) {
         this.charts.price.removeSeries(this.mainSeries);
-        this.mainSeries = null;
       }
+      // Remove overlay series
       if (this.overlays) {
         Object.keys(this.overlays).forEach(key => {
           try {
-            if (this.overlays[key] && this.charts.price) {
-              this.charts.price.removeSeries(this.overlays[key]);
-            }
-          } catch(e) {}
+            this.charts.price.removeSeries(this.overlays[key]);
+          } catch(e) {
+            // Ignore removal errors
+          }
         });
         this.overlays = {};
       }
+      // Remove the chart
       this.charts.price.remove();
     } catch(e) {
       console.warn('Error cleaning up existing chart:', e.message);
     }
     this.charts.price = null;
+    this.mainSeries = null;
   }
   
-  const chartOptions = this._getCommonChartOptions({
+    const chartOptions = this._getCommonChartOptions({
     rightPriceScale: {
       scaleMargins: { 
         top: isMobile ? 0.2 : 0.15,
@@ -2220,6 +2200,7 @@ _createPriceChartInternal(el) {
     borderDownColor: '#ef5350',
     wickUpColor: '#26a69a',
     wickDownColor: '#ef5350',
+    // PHASE 2 FIX: Better visibility on mobile
     borderVisible: true,
     wickVisible: true
   });
@@ -2239,23 +2220,32 @@ _createPriceChartInternal(el) {
   // ============================================
   // Store crosshair subscription for drawing engine
   // ============================================
-  const self = this;
-  
   chart.subscribeCrosshairMove((param) => {
     if (DrawingEngine && typeof DrawingEngine.handleCrosshairMove === 'function') {
       DrawingEngine.handleCrosshairMove(param);
     }
-    
-    // Update mobile tooltip on crosshair move
-    if (isMobile && param && param.point && param.time) {
-      self.updateMobileCrosshair(param);
-    }
-  });
-  
+        // ============================================
   // PHASE 2 FIX: Redraw drawings when chart is zoomed or panned
+  // ============================================
   chart.timeScale().subscribeVisibleTimeRangeChange(function() {
     if (DrawingEngine && typeof DrawingEngine.redraw === 'function') {
       DrawingEngine.redraw();
+    }
+  });
+  
+  // Also redraw on any crosshair move (catches price scale changes)
+  chart.subscribeCrosshairMove(function(param) {
+    if (DrawingEngine && typeof DrawingEngine.handleCrosshairMove === 'function') {
+      DrawingEngine.handleCrosshairMove(param);
+    }
+    // Redraw drawings periodically during chart interaction
+    if (DrawingEngine && typeof DrawingEngine.redraw === 'function' && param.point) {
+      DrawingEngine.redraw();
+    }
+  });
+    // PHASE 2 FIX: Update mobile tooltip on crosshair move
+    if (isMobile && param.point && param.time) {
+      this.updateMobileCrosshair(param);
     }
   });
   
@@ -2275,9 +2265,16 @@ _createPriceChartInternal(el) {
   // PHASE 2 FIX: Verify chart rendered correctly
   // ============================================
   setTimeout(() => {
-    if (self.charts.price && el.clientWidth > 0 && el.clientHeight > 0) {
-      self.charts.price.resize(el.clientWidth, el.clientHeight);
-      console.log('✅ Chart verified: ' + el.clientWidth + 'x' + el.clientHeight);
+    const currentWidth = el.clientWidth;
+    const currentHeight = el.clientHeight;
+    if (currentWidth > 0 && currentHeight > 0) {
+      console.log('✅ Chart verified: ' + currentWidth + 'x' + currentHeight);
+    } else {
+      console.warn('⚠️ Chart may not have rendered properly. Current dimensions: ' + currentWidth + 'x' + currentHeight);
+      // Force resize if needed
+      if (currentWidth > 0 && currentHeight > 0) {
+        chart.resize(currentWidth, currentHeight);
+      }
     }
   }, 500);
 },
@@ -8289,131 +8286,146 @@ _buildExtendedFallbackSymbols() {
       quoteAsset: 'USDT'
     }));
   },
-  // ============================================
-// COMPLETE REPLACEMENT: DataManager.loadHistory()
-// NO FALLBACKS - ONLY LIVE BINANCE DATA
+ // ============================================
+// CODE BLOCK 1: DataManager.loadHistory()
+// REMOVED: cached candles, filtered outliers, all fallbacks
+// KEPT: All original validation logic
 // ============================================
 async loadHistory(symbol, interval) {
+  ErrorHandler.clearInlineErrors();
+  
   if (STATE.assetType !== 'crypto') return;
   
-  console.log(`📊 Loading LIVE data for ${symbol} ${interval} - NO FALLBACKS`);
-  
-  // Clear chart BEFORE fetch
+  // Clear chart BEFORE fetching
   if (typeof ChartEngine !== 'undefined' && ChartEngine.mainSeries) {
     try {
       ChartEngine.mainSeries.setData([]);
-      console.log('  ✓ Cleared main series');
-    } catch(e) {}
+      if (ChartEngine.series && ChartEngine.series.volume) {
+        ChartEngine.series.volume.setData([]);
+      }
+      console.log('🧹 Cleared chart data before fetching');
+    } catch(e) {
+      console.warn('Could not clear chart data:', e.message);
+    }
   }
   
+  if (ChartEngine && ChartEngine.mainSeries) {
+    try { ChartEngine.mainSeries.setData([]); } catch(e) {}
+  }
   if (ChartEngine.series && ChartEngine.series.volume) {
-    try {
-      ChartEngine.series.volume.setData([]);
-      console.log('  ✓ Cleared volume series');
-    } catch(e) {}
+    try { ChartEngine.series.volume.setData([]); } catch(e) {}
   }
   
   STATE.candles = [];
   
-  // ============================================
-  // DIRECT BINANCE API CALL - NO WORKER PROXY
-  // ============================================
-  const directUrl = `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${CONFIG.CANDLE_LIMIT}`;
+  if (this._loadQueueTimeout) {
+    clearTimeout(this._loadQueueTimeout);
+    this._loadQueueTimeout = null;
+  }
+  
+  if (typeof ChartEngine !== 'undefined' && ChartEngine.resetAllCharts) {
+    ChartEngine.resetAllCharts();
+  }
+  
+  this._loadingInProgress = true;
   
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    // Use fetchWithFailover (preserves your multi-backend system)
+    const klinesData = await fetchWithFailover(`endpoint=klines&symbol=${symbol}&interval=${interval}&limit=${CONFIG.CANDLE_LIMIT}`);
     
-    const response = await fetch(directUrl, { signal: controller.signal });
-    clearTimeout(timeoutId);
-    
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    // REJECT if error - NO FALLBACK
+    if (klinesData.error) {
+      throw new Error(klinesData.message);
     }
     
-    const klinesData = await response.json();
-    
-    if (!Array.isArray(klinesData) || klinesData.length === 0) {
-      throw new Error('Empty response from Binance');
+    // REJECT if no data - NO FALLBACK
+    if (!klinesData || !Array.isArray(klinesData) || klinesData.length === 0) {
+      throw new Error('No candle data received for ' + symbol);
     }
     
-    // Parse klines
-    const candles = [];
-    const seenTimestamps = new Set();
+    // Parse and validate Binance klines (YOUR ORIGINAL PARSING LOGIC)
+    const rawKlines = [];
+    const seenTimestamps = {};
     
     for (let i = 0; i < klinesData.length; i++) {
       const k = klinesData[i];
       if (!k || k.length < 6) continue;
       
       const time = Math.floor(k[0] / 1000);
-      if (seenTimestamps.has(time)) continue;
-      seenTimestamps.add(time);
-      
       const open = parseFloat(k[1]);
       const high = parseFloat(k[2]);
       const low = parseFloat(k[3]);
       const close = parseFloat(k[4]);
       const volume = parseFloat(k[5]);
       
-      // Validate ALL values are positive numbers
+      // Validate each value
+      if (isNaN(time) || time <= 0) continue;
       if (isNaN(open) || open <= 0) continue;
       if (isNaN(high) || high <= 0) continue;
       if (isNaN(low) || low <= 0) continue;
       if (isNaN(close) || close <= 0) continue;
       
-      candles.push({
+      const adjustedHigh = Math.max(high, open, close);
+      const adjustedLow = Math.min(low, open, close);
+      
+      if (seenTimestamps[time]) continue;
+      seenTimestamps[time] = true;
+      
+      rawKlines.push({
         time: time,
         open: open,
-        high: Math.max(high, open, close),
-        low: Math.min(low, open, close),
+        high: adjustedHigh,
+        low: adjustedLow,
         close: close,
-        volume: Math.max(0, volume),
-        _source: 'binance_live'
+        volume: Math.max(0, volume)
       });
     }
     
-    if (candles.length === 0) {
-      throw new Error('No valid candles after parsing Binance response');
+    rawKlines.sort(function(a, b) { return a.time - b.time; });
+    
+    if (rawKlines.length === 0) {
+      throw new Error('No valid candles after parsing');
     }
     
-    // Sort by time ascending
-    candles.sort((a, b) => a.time - b.time);
+    // ============================================
+    // REMOVED: Outlier filtering that was causing data loss
+    // REMOVED: Cached fallback
+    // Just use rawKlines directly
+    // ============================================
+    STATE.candles = rawKlines;
+    console.log(`✅ Loaded ${STATE.candles.length} LIVE candles for ${symbol}`);
     
-    console.log(`✅ Loaded ${candles.length} LIVE candles from Binance direct API`);
+    // No cache storage - live data only
     
-    // Store and update
-    STATE.candles = candles;
-    
-    if (ChartEngine && ChartEngine.mainSeries) {
-      ChartEngine.updateMain(candles);
-      setTimeout(() => ChartEngine.updateVolume(candles), 150);
-      setTimeout(() => ChartEngine.fitContent(), 250);
+    if (STATE.symbol !== symbol) {
+      console.warn('⚠️ Symbol changed during fetch, discarding data for', symbol);
+      this._loadingInProgress = false;
+      return;
     }
     
-    // Load 24h ticker separately
+    // Update charts - use your original updateMain
+    ChartEngine.updateMain(STATE.candles);
+    
+    setTimeout(function() {
+      ChartEngine.updateVolume(STATE.candles);
+      ChartEngine.fitContent();
+    }, 150);
+    
+    setTimeout(function() {
+      if (typeof IndicatorEngine !== 'undefined' && STATE.activeIndicators && STATE.activeIndicators.size > 0) {
+        IndicatorEngine.calculateAll();
+      }
+    }, 500);
+    
+    this.updatePriceDisplay(STATE.candles[STATE.candles.length - 1]);
     await this.load24h(symbol);
     
-    // Update price display
-    if (candles.length > 0) {
-      this.updatePriceDisplay(candles[candles.length - 1]);
-    }
-    
-  } catch(error) {
-    console.error('❌ loadHistory FAILED - NO FALLBACK:', error.message);
-    
-    // Show error on chart - NO FALLBACK DATA
-    if (ChartEngine && ChartEngine.mainSeries) {
-      ChartEngine.mainSeries.setMarkers([{
-        time: Math.floor(Date.now() / 1000),
-        position: 'inBar',
-        color: '#ef5350',
-        shape: 'circle',
-        text: `Failed to load ${symbol} data`
-      }]);
-    }
-    
-    // Rethrow - let caller handle
-    throw error;
+  } catch (e) {
+    console.error('❌ loadHistory FAILED - NO FALLBACK DATA:', e.message);
+    ErrorHandler.handle(e, 'DataManager.loadHistory', 'critical');
+    // DO NOT inject fallback data - chart stays blank
+  } finally {
+    this._loadingInProgress = false;
   }
 },
 async load24h(symbol) {
@@ -8959,45 +8971,68 @@ connectWS() {
 },
 
 // ============================================
-// REPLACE reconnect() - NO FALLBACK, JUST RETRY
+// CODE BLOCK 3: Modify reconnect() - remove REST polling
 // ============================================
 reconnect(forceImmediate = false) {
   if (this._reconnecting) {
-    console.log('⏳ Reconnect already in progress');
+    console.log('⏳ Reconnect already in progress, skipping');
     return;
   }
   
   this._reconnecting = true;
   
-  const maxAttempts = 10;
+  const maxAttempts = CONFIG.MAX_RECONNECT_ATTEMPTS || 10;
   
   if (STATE.reconnectAttempts >= maxAttempts) {
-    console.error(`❌ Max reconnection attempts (${maxAttempts}) reached`);
+    console.error('❌ Max reconnection attempts reached (' + maxAttempts + ')');
+    
+    // ============================================
+    // REMOVED: this.startRestPolling();
+    // Just reset attempts and retry after longer delay
+    // ============================================
     STATE.reconnectAttempts = 0;
     this._reconnecting = false;
     
-    // Show subtle indicator but NO REST polling
     console.log('🔌 WebSocket: Max attempts reached, will retry in 60 seconds');
+    
+    // Keep status elements hidden
+    const statusDot = document.getElementById('status-dot');
+    const statusText = document.getElementById('status-text');
+    if (statusDot) statusDot.style.display = 'none';
+    if (statusText) statusText.style.display = 'none';
+    
+    // Schedule retry after 60 seconds
     setTimeout(() => {
       STATE.reconnectAttempts = 0;
       this.connectWS();
     }, 60000);
+    
     return;
   }
   
   STATE.reconnectAttempts++;
   
-  const baseDelay = 2000;
-  const delay = Math.min(baseDelay * Math.pow(1.5, STATE.reconnectAttempts - 1), 30000);
+  const baseDelay = forceImmediate ? 1000 : (CONFIG.RECONNECT_BASE_DELAY || 2000);
+  const delay = Math.min(
+    baseDelay * Math.pow(1.5, STATE.reconnectAttempts - 1),
+    CONFIG.RECONNECT_MAX_DELAY || 30000
+  );
+  
   const jitter = Math.random() * 500;
   const totalDelay = Math.round(delay + jitter);
   
   console.log(`🔄 Reconnecting in ${totalDelay}ms (attempt ${STATE.reconnectAttempts}/${maxAttempts})`);
   
-  setTimeout(() => {
+  const reconnectId = IntervalManager.registerTimeout(() => {
     this._reconnecting = false;
     this.connectWS();
-  }, totalDelay);
+  }, totalDelay, 'WS-reconnect-attempt-' + STATE.reconnectAttempts);
+  
+  if (!STATE._wsHealth) STATE._wsHealth = {};
+  if (STATE._wsHealth.reconnectTimeoutId) {
+    IntervalManager.clear(STATE._wsHealth.reconnectTimeoutId);
+  }
+  STATE._wsHealth.reconnectTimeoutId = reconnectId;
 },
 
 	  // ============================================
@@ -9243,7 +9278,6 @@ cleanupConnection() {
     // ============================================
     // PHASE 1 FIX: Fallback to REST polling
     // ============================================
-    this.startRestPolling();
     
     // Reset reconnect attempts for future retry
     STATE.reconnectAttempts = 0;
@@ -9303,195 +9337,6 @@ cleanupConnection() {
   }
   
   STATE._wsHealth.reconnectTimeoutId = reconnectId;
-},
-
-// ============================================
-// PHASE 1 FIX: REST Polling Fallback System
-// ============================================
-startRestPolling() {
-	 if (this._restPollingActive) return;  // <-- ADD THIS LINE
-  this._restPollingActive = true;       // <-- ADD THIS LINE
-  console.log('📡 Starting REST polling fallback for ' + STATE.symbol);
-  
-  // Clear any existing REST polling
-  this.stopRestPolling();
-  
-  // Notify user
-  if (typeof Toast !== 'undefined') {
-    Toast.warning('WebSocket unavailable. Using REST polling (slower updates).', 8000);
-  }
-  
-  const updateStatusDisplay = () => {
-    //const statusDot = document.getElementById('status-dot');
-    //const statusText = document.getElementById('status-text');
-    //if(statusDot) statusDot.className = 'status-dot reconnecting';
-    //if(statusText) statusText.textContent = 'REST Polling';
-	      // Production: Silent connection management
-    console.log('🔌 WebSocket: Connected');
-    
-    // Keep status elements hidden
-    const statusDot = document.getElementById('status-dot');
-    const statusText = document.getElementById('status-text');
-    if(statusDot) statusDot.style.display = 'none';
-    if(statusText) statusText.style.display = 'none';
-  };
-  
-  updateStatusDisplay();
-  
-  // ============================================
-  // KLINE POLLING: Every 5 seconds
-  // ============================================
-  const klinePollId = IntervalManager.register(async () => {
-    try {
-      const apiBase = getApiBase();  // ← Uses failover system
-const proxyUrl = `${apiBase}/proxy?endpoint=klines&symbol=${STATE.symbol}&interval=${STATE.interval}&limit=2`;
-      const res = await fetch(proxyUrl);
-      
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      
-      const data = await res.json();
-      if (!data || data.length === 0) return;
-      
-      const lastKline = data[data.length - 1];
-      const candle = {
-        time: Math.floor(lastKline[0] / 1000),
-        open: parseFloat(lastKline[1]),
-        high: parseFloat(lastKline[2]),
-        low: parseFloat(lastKline[3]),
-        close: parseFloat(lastKline[4]),
-        volume: parseFloat(lastKline[5])
-      };
-      
-      // Check if this is a new candle or update to existing
-      const lastStored = STATE.candles[STATE.candles.length - 1];
-      
-      if (!lastStored || candle.time > lastStored.time) {
-        // New candle - add to array
-        STATE.candles.push(candle);
-        if (STATE.candles.length > CONFIG.MAX_CANDLES) {
-          STATE.candles = STATE.candles.slice(-CONFIG.CANDLE_LIMIT);
-        }
-        ChartEngine.updateMain(STATE.candles);
-        ChartEngine.updateVolume(STATE.candles);
-        if (typeof IndicatorEngine !== 'undefined') {
-          IndicatorEngine.calculateAll();
-        }
-      } else if (candle.time === lastStored.time) {
-        // Update last candle
-        STATE.candles[STATE.candles.length - 1] = candle;
-        ChartEngine.updateLastCandle(candle);
-      }
-      
-      STATE.currentPrice = candle.close;
-      this.updatePriceDisplay(candle);
-      
-      // Update health status
-      STATE._wsHealth.lastMessageTime = Date.now();
-      STATE._wsHealth.messageCount++;
-      
-    } catch(e) {
-      console.warn('REST kline poll failed:', e.message);
-    }
-  }, 5000, 'REST-kline-poll-' + STATE.symbol);
-  
-  // ============================================
-  // TICKER POLLING: Every 10 seconds
-  // ============================================
-  const tickerPollId = IntervalManager.register(async () => {
-    try {
-      const proxyUrl = `https://tradevision-backend.vercel.app/api/proxy?endpoint=ticker&symbol=${STATE.symbol}`;
-      const res = await fetch(proxyUrl);
-      
-      if (!res.ok) return;
-      
-      const d = await res.json();
-      STATE.change24h = parseFloat(d.priceChangePercent);
-      STATE.high24h = parseFloat(d.highPrice);
-      STATE.low24h = parseFloat(d.lowPrice);
-      STATE.volume24h = parseFloat(d.volume);
-      
-      if (typeof TradeManager !== 'undefined') {
-        TradeManager.updatePrices();
-      }
-      
-    } catch(e) {
-      console.warn('REST ticker poll failed:', e.message);
-    }
-  }, 10000, 'REST-ticker-poll-' + STATE.symbol);
-  
-  // ============================================
-  // DEPTH POLLING: Every 5 seconds
-  // ============================================
-  const depthPollId = IntervalManager.register(async () => {
-    try {
-      const proxyUrl = `https://tradevision-backend.vercel.app/api/proxy?endpoint=depth&symbol=${STATE.symbol}&limit=20`;
-      const res = await fetch(proxyUrl);
-      
-      if (!res.ok) return;
-      
-      const d = await res.json();
-      STATE.orderBook.bids = (d.bids || []).slice(0, 15).map(([p, q]) => ({
-        price: parseFloat(p),
-        quantity: parseFloat(q)
-      }));
-      STATE.orderBook.asks = (d.asks || []).slice(0, 15).map(([p, q]) => ({
-        price: parseFloat(p),
-        quantity: parseFloat(q)
-      }));
-      
-      this.updateOrderBookDisplay();
-      
-    } catch(e) {
-      console.warn('REST depth poll failed:', e.message);
-    }
-  }, 5000, 'REST-depth-poll-' + STATE.symbol);
-  
-  // ============================================
-  // STORE POLLING IDs FOR CLEANUP
-  // ============================================
-  if (!STATE._restPolling) STATE._restPolling = {};
-  STATE._restPolling = {
-    klinePollId,
-    tickerPollId,
-    depthPollId,
-    isActive: true
-  };
-  
-  // ============================================
-  // PERIODIC WEBSOCKET RETRY
-  // ============================================
-  const wsRetryId = IntervalManager.register(() => {
-    console.log('🔄 Attempting WebSocket reconnection...');
-    this.stopRestPolling();
-    STATE.reconnectAttempts = 0; // Reset counter for fresh attempt
-    this.connectWS();
-  }, 60000, 'WS-retry-attempt');
-  
-  STATE._restPolling.wsRetryId = wsRetryId;
-  
-  console.log('✅ REST polling fallback active');
-},
-
-stopRestPolling() {
-	this._restPollingActive = false; 
-  if (STATE._restPolling && STATE._restPolling.isActive) {
-    console.log('🛑 Stopping REST polling');
-    
-    if (STATE._restPolling.klinePollId) {
-      IntervalManager.clear(STATE._restPolling.klinePollId);
-    }
-    if (STATE._restPolling.tickerPollId) {
-      IntervalManager.clear(STATE._restPolling.tickerPollId);
-    }
-    if (STATE._restPolling.depthPollId) {
-      IntervalManager.clear(STATE._restPolling.depthPollId);
-    }
-    if (STATE._restPolling.wsRetryId) {
-      IntervalManager.clear(STATE._restPolling.wsRetryId);
-    }
-    
-    STATE._restPolling = { isActive: false };
-  }
 },
 	  
   disconnect() {
@@ -11195,21 +11040,12 @@ const StockDataManager = {
 }
   },
 
- // ---------- HISTORICAL CANDLES (Twelve Data) ----------
-// Update the loadCandles method in StockDataManager
-// ============================================
-// HISTORICAL CANDLES (Twelve Data) - INSTITUTIONAL GRADE
-// ============================================
+
 async loadCandles(symbol, interval) {
-  // ============================================
-  // INPUT VALIDATION
-  // ============================================
   if (!symbol || !interval) {
     console.warn('⚠️ StockDataManager: Missing symbol or interval');
     return [];
   }
-  
-  console.log(`📈 Loading ${STATE.assetType} candles for ${symbol} (${interval})`);
   
   const intervalMap = {
     '1m': '1min', '5m': '5min', '15m': '15min', '30m': '30min',
@@ -11217,20 +11053,20 @@ async loadCandles(symbol, interval) {
   };
   const twelveInterval = intervalMap[interval] || '1day';
   
-  // Fix forex symbols for Twelve Data (EURUSD -> EUR/USD)
   let twelveSymbol = symbol;
   if (STATE.assetType === 'forex' && symbol.length === 6) {
     twelveSymbol = symbol.slice(0, 3) + '/' + symbol.slice(3);
   }
   
-  // Use Cloudflare worker directly (no failover delays)
-  const apiBase = 'https://tradevision-backend.wambuamwanza6.workers.dev/api';
-  const url = `${apiBase}/proxy?endpoint=twelvedata&symbol=${twelveSymbol}&interval=${twelveInterval}&outputsize=200`;
-  
   try {
-    // Fetch with timeout
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    
+    const apiBase = getApiBase();
+    const url = `${apiBase}/proxy?endpoint=twelvedata&symbol=${twelveSymbol}&interval=${twelveInterval}&outputsize=200`;
+    
+    console.log(`📈 Fetching stock/forex data: ${url}`);
+    
     const response = await fetch(url, { signal: controller.signal });
     clearTimeout(timeoutId);
     
@@ -11240,45 +11076,23 @@ async loadCandles(symbol, interval) {
     
     const responseData = await response.json();
     
-    // Check for API errors
+    // NO FALLBACK - just throw error
     if (responseData.code === 401 || responseData.status === 'error') {
-      console.warn('⚠️ Twelve Data API error:', responseData.message);
-      return this.generateSmartMockCandles(symbol, interval);
+      throw new Error(responseData.message || 'Twelve Data API error');
     }
     
     if (!responseData.values || responseData.values.length === 0) {
-      console.warn('⚠️ No candle data from Twelve Data for', symbol);
-      return this.generateSmartMockCandles(symbol, interval);
+      throw new Error('No candle data from Twelve Data');
     }
     
-    // Parse and validate candles
     const candles = [];
-    const seenTimes = new Set();
-    
     for (let i = 0; i < responseData.values.length; i++) {
       const val = responseData.values[i];
       if (!val || !val.datetime) continue;
       
-      // Handle different date formats
-      let date;
-      if (val.datetime.includes('-')) {
-        date = new Date(val.datetime);
-      } else {
-        // Handle format like "2024-01-15 14:30:00"
-        const parts = val.datetime.split(' ');
-        if (parts.length === 2) {
-          date = new Date(parts[0] + 'T' + parts[1]);
-        } else {
-          date = new Date(val.datetime);
-        }
-      }
-      
+      const date = new Date(val.datetime);
       const time = Math.floor(date.getTime() / 1000);
-      if (isNaN(time) || time <= 0) continue;
-      
-      // Skip duplicate timestamps
-      if (seenTimes.has(time)) continue;
-      seenTimes.add(time);
+      if (isNaN(time)) continue;
       
       const open = parseFloat(val.open);
       const high = parseFloat(val.high);
@@ -11286,191 +11100,25 @@ async loadCandles(symbol, interval) {
       const close = parseFloat(val.close);
       const volume = parseFloat(val.volume || 0);
       
-      // Validate price data
       if (isNaN(open) || isNaN(high) || isNaN(low) || isNaN(close)) continue;
-      if (open <= 0 || high <= 0 || low <= 0 || close <= 0) continue;
       
-      // Ensure high is highest, low is lowest
-      const adjustedHigh = Math.max(high, open, close);
-      const adjustedLow = Math.min(low, open, close);
-      
-      candles.push({ 
-        time, 
-        open, 
-        high: adjustedHigh, 
-        low: adjustedLow, 
-        close, 
-        volume,
-        _source: 'twelvedata'
-      });
+      candles.push({ time, open, high, low, close, volume });
     }
     
     if (candles.length === 0) {
-      console.warn('⚠️ No valid candles parsed for', symbol);
-      return this.generateSmartMockCandles(symbol, interval);
+      throw new Error('No valid candles after parsing');
     }
     
-    // Sort by time ascending
     candles.sort((a, b) => a.time - b.time);
-    
-    console.log(`✅ Loaded ${candles.length} candles for ${symbol} (${STATE.assetType})`);
-    
-    // ============================================
-    // STORE AND UPDATE CHART IMMEDIATELY
-    // ============================================
-    STATE.candles = candles;
-    
-    // Update chart if ChartEngine is ready
-    if (ChartEngine && ChartEngine.mainSeries && ChartEngine.charts.price) {
-      // Clear existing data first to prevent rectangles
-      try {
-        ChartEngine.mainSeries.setData([]);
-      } catch(e) {}
-      
-      // Small delay to let chart clear
-      setTimeout(() => {
-        ChartEngine.updateMain(candles);
-        ChartEngine.updateVolume(candles);
-        ChartEngine.fitContent();
-      }, 50);
-    }
-    
+    console.log(`✅ Loaded ${candles.length} LIVE candles for ${symbol}`);
     return candles;
     
-  } catch (error) {
-    console.error('❌ Failed to load candles:', error.message);
-    return this.generateSmartMockCandles(symbol, interval);
+  } catch (e) {
+    console.error('❌ Failed to load candles:', e.message);
+    // NO FALLBACK - return empty array, chart stays blank
+    return [];
   }
 },
-
-// ============================================
-// GENERATE SMART MOCK CANDLES (Realistic Fallback)
-// ============================================
-generateSmartMockCandles(symbol, interval) {
-  console.log(`📊 Generating realistic mock candles for ${symbol} (${STATE.assetType})`);
-  
-  // Determine base price and volatility based on asset type and symbol
-  let basePrice = 100;
-  let volatility = 0.015;
-  let priceDecimals = 2;
-  
-  if (STATE.assetType === 'stocks') {
-    const stockPrices = {
-      'AAPL': 175.42, 'MSFT': 420.50, 'GOOGL': 140.25, 'AMZN': 180.75,
-      'TSLA': 240.30, 'META': 330.80, 'NVDA': 900.00, 'NFLX': 600.50,
-      'ADBE': 525.00, 'CRM': 250.00, 'ORCL': 115.00, 'IBM': 185.00,
-      'INTC': 45.00, 'AMD': 150.00, 'QCOM': 130.00, 'TXN': 170.00,
-      'JPM': 155.00, 'BAC': 35.00, 'WMT': 65.00, 'PG': 155.00,
-      'JNJ': 160.00, 'V': 250.00, 'MA': 400.00, 'PYPL': 65.00,
-      'COIN': 85.00, 'SQ': 70.00, 'BA': 180.00, 'CAT': 300.00,
-      'GE': 120.00, 'F': 12.00, 'GM': 40.00, 'NIO': 7.50,
-      'XPEV': 8.50, 'RIVN': 15.00, 'LCID': 3.50
-    };
-    basePrice = stockPrices[symbol] || 150;
-    volatility = 0.02;
-    priceDecimals = 2;
-  } else if (STATE.assetType === 'forex') {
-    const forexPrices = {
-      'EURUSD': 1.0850, 'GBPUSD': 1.2650, 'USDJPY': 150.50,
-      'USDCHF': 0.9100, 'AUDUSD': 0.6500, 'USDCAD': 1.3700,
-      'NZDUSD': 0.6000, 'EURGBP': 0.8550, 'EURJPY': 163.50,
-      'GBPJPY': 190.00, 'CHFJPY': 165.00, 'AUDJPY': 98.00,
-      'USDTRY': 32.00, 'USDMXN': 17.00, 'USDZAR': 18.50
-    };
-    basePrice = forexPrices[symbol] || 1.0800;
-    volatility = 0.003;
-    priceDecimals = 4;
-  }
-  
-  const now = Date.now();
-  const intervalMinutes = {
-    '1m': 1, '5m': 5, '15m': 15, '30m': 30,
-    '1h': 60, '4h': 240, '1d': 1440, '1w': 10080, '1M': 43200
-  };
-  const minutes = intervalMinutes[interval] || 15;
-  
-  const candles = [];
-  let currentPrice = basePrice;
-  let trend = 0;
-  
-  // Generate realistic price movement with trend and noise
-  for (let i = 200; i >= 0; i--) {
-    const time = Math.floor((now - (i * minutes * 60 * 1000)) / 1000);
-    
-    // Random walk with momentum
-    const momentum = trend * 0.3;
-    const noise = (Math.random() - 0.5) * volatility * currentPrice;
-    const change = momentum + noise;
-    
-    const close = currentPrice + change;
-    const open = currentPrice;
-    
-    // Update trend (slow mean reversion)
-    trend = trend * 0.9 + (change / currentPrice) * 0.1;
-    
-    // Generate high and low based on volatility
-    const range = Math.abs(change) + (Math.random() * volatility * currentPrice);
-    const high = Math.max(open, close) + (Math.random() * range * 0.7);
-    const low = Math.min(open, close) - (Math.random() * range * 0.5);
-    
-    // Ensure high/low are valid
-    const adjustedHigh = Math.max(high, open, close);
-    const adjustedLow = Math.min(low, open, close);
-    
-    // Format based on asset type
-    let formattedClose = close;
-    let formattedOpen = open;
-    let formattedHigh = adjustedHigh;
-    let formattedLow = adjustedLow;
-    
-    if (priceDecimals === 4) {
-      formattedClose = parseFloat(close.toFixed(4));
-      formattedOpen = parseFloat(open.toFixed(4));
-      formattedHigh = parseFloat(adjustedHigh.toFixed(4));
-      formattedLow = parseFloat(adjustedLow.toFixed(4));
-    } else {
-      formattedClose = parseFloat(close.toFixed(2));
-      formattedOpen = parseFloat(open.toFixed(2));
-      formattedHigh = parseFloat(adjustedHigh.toFixed(2));
-      formattedLow = parseFloat(adjustedLow.toFixed(2));
-    }
-    
-    candles.push({ 
-      time, 
-      open: formattedOpen, 
-      high: formattedHigh, 
-      low: formattedLow, 
-      close: formattedClose, 
-      volume: Math.floor(Math.random() * 10000000) + 1000000,
-      _source: 'mock'
-    });
-    
-    currentPrice = close;
-  }
-  
-  // Sort by time ascending
-  candles.sort((a, b) => a.time - b.time);
-  
-  console.log(`✅ Generated ${candles.length} realistic mock candles for ${symbol}`);
-  
-  // Store and update chart
-  STATE.candles = candles;
-  
-  if (ChartEngine && ChartEngine.mainSeries && ChartEngine.charts.price) {
-    // Clear existing data first
-    try {
-      ChartEngine.mainSeries.setData([]);
-    } catch(e) {}
-    
-    setTimeout(() => {
-      ChartEngine.updateMain(candles);
-      ChartEngine.updateVolume(candles);
-      ChartEngine.fitContent();
-    }, 50);
-  }
-  
-  return candles;
-}
   
 };
 
