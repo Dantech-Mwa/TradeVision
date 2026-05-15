@@ -37,7 +37,7 @@ const backendHealth = {
 
 // Get current active backend URL
 const getApiBase = () => {
-  return BACKEND_ENDPOINTS[currentBackendIndex].url;
+  return 'https://tradevision-backend.wambuamwanza6.workers.dev/api';
 };
 
 // Switch to next available backend
