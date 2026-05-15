@@ -2056,25 +2056,37 @@ window.debugTimers = function() {
 createPriceChart() {
   const el = document.getElementById('price-chart');
   if(!el) {
-    console.error('❌ Price chart element not found in DOM');
+    console.error('❌ Price chart element not found');
     return;
   }
   
   // ============================================
-  // CRITICAL FIX: Remove ALL existing canvases first
-  // This prevents the "multiple canvases" issue
+  // CRITICAL: COMPLETELY DESTROY ALL EXISTING CANVASES
+  // This prevents the "rectangle" issue
   // ============================================
   const existingCanvases = el.querySelectorAll('canvas');
-  if (existingCanvases.length > 1) {
-    console.warn(`⚠️ Found ${existingCanvases.length} duplicate canvases, cleaning up...`);
+  if (existingCanvases.length > 0) {
+    console.log(`🧹 Destroying ${existingCanvases.length} existing canvases`);
     existingCanvases.forEach(canvas => canvas.remove());
   }
   
-  // Also remove any orphaned drawing canvases
-  const drawingCanvas = document.getElementById('drawing-canvas');
-  if (drawingCanvas && drawingCanvas.parentElement === el) {
-    drawingCanvas.remove();
+  // Also clear any Lightweight Charts instances
+  if (this.charts.price) {
+    try {
+      this.charts.price.remove();
+    } catch(e) {}
+    this.charts.price = null;
   }
+  
+  // Force DOM to settle
+  el.innerHTML = '';
+  el.style.width = '100%';
+  el.style.height = '100%';
+  el.style.position = 'relative';
+  el.style.display = 'block';
+  
+  // Small delay to ensure DOM is clean
+  await new Promise(resolve => setTimeout(resolve, 50));
   
   // Detect mobile for touch handling
   const isMobile = window.innerWidth <= 768;
@@ -8100,7 +8112,7 @@ const DrawingToolsModal = {
   const DataManager = {
 _wsConnecting: false,
   _reconnecting: false,
-	   _restPollingActive: false, 
+	_restPollingActive: false, 
     async init() {
       await this.loadSymbols();
       await this.loadHistory(STATE.symbol, STATE.interval);
@@ -8422,10 +8434,22 @@ _buildExtendedFallbackSymbols() {
       throw new Error(klinesData.message);
     }
     
-    if (!klinesData || !Array.isArray(klinesData) || klinesData.length === 0) {
-      throw new Error('No candle data received for ' + symbol);
-    }
-    
+  // In loadHistory, replace fallback with proper error
+if (!klinesData || !Array.isArray(klinesData) || klinesData.length === 0) {
+  console.error(`❌ No candle data for ${symbol}`);
+  // Show error on chart instead of fallback
+  if (ChartEngine && ChartEngine.mainSeries) {
+    ChartEngine.mainSeries.setData([]);
+    ChartEngine.mainSeries.setMarkers([{
+      time: Math.floor(Date.now() / 1000),
+      position: 'inBar',
+      color: '#ef5350',
+      shape: 'circle',
+      text: `No data for ${symbol}`
+    }]);
+  }
+  return; // DON'T use fallback data
+}
     // Parse and validate Binance klines
     const rawKlines = [];
     const seenTimestamps = {};
@@ -9125,9 +9149,6 @@ ws.onerror = (error) => {
   }
 };
 
-// ============================================
-// REPLACE THE ONCLOSE HANDLER
-// ============================================
 ws.onclose = (event) => {
   console.log(`🔴 WebSocket closed: code=${event.code}, reason=${event.reason || 'none'}`);
   STATE.isConnected = false;
@@ -9145,11 +9166,25 @@ ws.onclose = (event) => {
   }
   
   // CRITICAL FIX: For code 1008 (invalid symbol), use REST polling immediately
+  // This fixes AIGENSYN and PNT
   if (event.code === 1008) {
     console.log(`⚠️ WebSocket invalid for ${STATE.symbol} (code 1008), using REST polling`);
     if (!this._restPollingActive) {
       this.startRestPolling();
     }
+    return;
+  }
+  
+  // IMPORTANT: For code 1006 (network issue), keep existing chart data
+  // Don't clear candles, just try to reconnect
+  if (event.code === 1006) {
+    console.log(`⚠️ WebSocket network error (code 1006), keeping existing chart data`);
+    // Don't clear STATE.candles - keep showing existing data
+    setTimeout(() => {
+      if (!STATE.isConnected) {
+        this.reconnect(false);
+      }
+    }, 3000);
     return;
   }
   
@@ -9688,19 +9723,18 @@ stopRestPolling() {
     }
     
     // STEP 2: FORCE CLEAR all chart data BEFORE fetching
-    if (ChartEngine && ChartEngine.mainSeries) {
-      try {
-        ChartEngine.mainSeries.setData([]);
-        console.log('🧹 Cleared main series');
-      } catch(e) {}
+     // CRITICAL: Force clean chart before loading new data
+  if (ChartEngine && ChartEngine.charts && ChartEngine.charts.price) {
+    const container = document.getElementById('price-chart');
+    if (container) {
+      const canvases = container.querySelectorAll('canvas');
+      canvases.forEach(canvas => canvas.remove());
     }
     
-    if (ChartEngine && ChartEngine.series && ChartEngine.series.volume) {
-      try {
-        ChartEngine.series.volume.setData([]);
-        console.log('🧹 Cleared volume series');
-      } catch(e) {}
-    }
+    // Force chart recreation
+    ChartEngine.createPriceChart();
+    ChartEngine.createVolumeChart();
+  }
     
     // Clear all overlays
     if (ChartEngine && ChartEngine.overlays) {
@@ -29167,3 +29201,36 @@ const OnboardingTour = {
     }
   }
 };
+// ============================================
+// CRITICAL EXPOSURE - MUST BE AT VERY END
+// ============================================
+(function exposeCriticalModules() {
+  console.log('🔧 EXPOSING CRITICAL MODULES...');
+  
+  // Expose ChartEngine
+  if (typeof ChartEngine !== 'undefined') {
+    window.ChartEngine = ChartEngine;
+    console.log('✅ ChartEngine exposed to window');
+  } else {
+    console.error('❌ ChartEngine not found');
+  }
+  
+  // Expose DataManager
+  if (typeof DataManager !== 'undefined') {
+    window.DataManager = DataManager;
+    console.log('✅ DataManager exposed to window');
+  } else {
+    console.error('❌ DataManager not found');
+  }
+  
+  // Expose STATE for debugging
+  if (typeof STATE !== 'undefined') {
+    window._TV_STATE = STATE;
+  }
+  
+  // Verify
+  console.log('=== VERIFICATION ===');
+  console.log('window.ChartEngine:', !!window.ChartEngine);
+  console.log('window.DataManager:', !!window.DataManager);
+})();
+// ============================================
