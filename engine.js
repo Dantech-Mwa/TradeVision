@@ -29182,207 +29182,88 @@ const OnboardingTour = {
   }
 };
 // ============================================
-// CRITICAL: EXPOSE ALL MODULES TO GLOBAL SCOPE
+// CODE BLOCK L: Replace exposeModules function
 // ============================================
 (function exposeModules() {
   console.log('🔧 Exposing TradeVision modules to window...');
   
-  // Core modules
-  window.ChartEngine = typeof ChartEngine !== 'undefined' ? ChartEngine : null;
-  window.DataManager = typeof DataManager !== 'undefined' ? DataManager : null;
-  window.IndicatorEngine = typeof IndicatorEngine !== 'undefined' ? IndicatorEngine : null;
-  window.DrawingEngine = typeof DrawingEngine !== 'undefined' ? DrawingEngine : null;
-  window.TradeManager = typeof TradeManager !== 'undefined' ? TradeManager : null;
-  window.AlertSystem2 = typeof AlertSystem2 !== 'undefined' ? AlertSystem2 : null;
-  window.UserSystem = typeof UserSystem !== 'undefined' ? UserSystem : null;
-  window.AIAssistant = typeof AIAssistant !== 'undefined' ? AIAssistant : null;
-  
-  // Failover system
-  window.BACKEND_ENDPOINTS = typeof BACKEND_ENDPOINTS !== 'undefined' ? BACKEND_ENDPOINTS : null;
-  window.backendHealth = typeof backendHealth !== 'undefined' ? backendHealth : null;
-  window.getApiBase = typeof getApiBase !== 'undefined' ? getApiBase : null;
-  window.fetchWithFailover = typeof fetchWithFailover !== 'undefined' ? fetchWithFailover : null;
-  
-  // UI Components
-  window.Toast = typeof Toast !== 'undefined' ? Toast : null;
-  window.Events = typeof Events !== 'undefined' ? Events : null;
-  window.ErrorHandler = typeof ErrorHandler !== 'undefined' ? ErrorHandler : null;
-  window.Notifications = typeof Notifications !== 'undefined' ? Notifications : null;
-  
-  // Additional modules
-  window.MarketOverview = typeof MarketOverview !== 'undefined' ? MarketOverview : null;
-  window.WatchlistManager = typeof WatchlistManager !== 'undefined' ? WatchlistManager : null;
-  window.NewsManager = typeof NewsManager !== 'undefined' ? NewsManager : null;
-  window.TickerManager = typeof TickerManager !== 'undefined' ? TickerManager : null;
-  window.EconomicCalendar = typeof EconomicCalendar !== 'undefined' ? EconomicCalendar : null;
-  window.PushNotifications = typeof PushNotifications !== 'undefined' ? PushNotifications : null;
-  window.ChartTemplates = typeof ChartTemplates !== 'undefined' ? ChartTemplates : null;
-  window.ReportGenerator = typeof ReportGenerator !== 'undefined' ? ReportGenerator : null;
-  window.ChartSharing = typeof ChartSharing !== 'undefined' ? ChartSharing : null;
-  window.OnboardingTour = typeof OnboardingTour !== 'undefined' ? OnboardingTour : null;
-  window.MultiChart = typeof MultiChart !== 'undefined' ? MultiChart : null;
-  window.Backtester = typeof Backtester !== 'undefined' ? Backtester : null;
-  window.VolumeProfileEngine = typeof VolumeProfileEngine !== 'undefined' ? VolumeProfileEngine : null;
-  window.StockDataManager = typeof StockDataManager !== 'undefined' ? StockDataManager : null;
-  window.ExchangeManager = typeof ExchangeManager !== 'undefined' ? ExchangeManager : null;
-  window.RiskManager = typeof RiskManager !== 'undefined' ? RiskManager : null;
-  window.PineEditor = typeof PineEditor !== 'undefined' ? PineEditor : null;
-  window.IntervalManager = typeof IntervalManager !== 'undefined' ? IntervalManager : null;
-  
-  // Verify what was exposed
-  console.log('✅ Modules exposed:');
-  console.log('  - ChartEngine:', window.ChartEngine ? '✓' : '✗');
-  console.log('  - DataManager:', window.DataManager ? '✓' : '✗');
-  console.log('  - IndicatorEngine:', window.IndicatorEngine ? '✓' : '✗');
-  console.log('  - DrawingEngine:', window.DrawingEngine ? '✓' : '✗');
-  console.log('  - BACKEND_ENDPOINTS:', window.BACKEND_ENDPOINTS ? '✓' : '✗');
-  
-  // If ChartEngine is still missing, try to find it
-  if (!window.ChartEngine) {
-    console.error('❌ ChartEngine not found! Searching scope...');
-    // Try to find it in the IIFE scope
-    if (typeof ChartEngine !== 'undefined') {
-      window.ChartEngine = ChartEngine;
-      console.log('✅ ChartEngine recovered from local scope');
-    }
-  }
-})();
-// ============================================
-// EMERGENCY CHART FIX - WITH FULL RECOVERY
-// ============================================
-window.fixBigRectangles = function() {
-  console.log('🔧 EMERGENCY FIX: Cleaning up big rectangles...');
-  
-  // Step 1: Save current symbol and interval
-  let currentSymbol = 'BTCUSDT';
-  let currentInterval = '15m';
-  let currentAssetType = 'crypto';
-  
-  if (typeof TV !== 'undefined' && TV.getState) {
-    const state = TV.getState();
-    if (state) {
-      currentSymbol = state.symbol || 'BTCUSDT';
-      currentInterval = state.interval || '15m';
-      currentAssetType = state.assetType || 'crypto';
-      console.log(`📊 Saved state: ${currentSymbol} ${currentInterval}`);
-    }
-  } else if (typeof STATE !== 'undefined') {
-    currentSymbol = STATE.symbol || 'BTCUSDT';
-    currentInterval = STATE.interval || '15m';
-    currentAssetType = STATE.assetType || 'crypto';
-  }
-  
-  // Step 2: Get chart containers
-  const priceChart = document.getElementById('price-chart');
-  const volumeChart = document.getElementById('volume-chart');
-  const mainPane = document.getElementById('main-chart-pane');
-  
-  // Step 3: Remove ALL canvases
-  if (priceChart) {
-    const canvases = priceChart.querySelectorAll('canvas');
-    console.log(`📊 Removing ${canvases.length} canvases from price chart`);
-    canvases.forEach(canvas => canvas.remove());
-    priceChart.innerHTML = '';
-    // Reset container styles
-    priceChart.style.width = '100%';
-    priceChart.style.height = '100%';
-    priceChart.style.position = 'relative';
-    priceChart.style.display = 'block';
-  }
-  
-  if (volumeChart) {
-    const canvases = volumeChart.querySelectorAll('canvas');
-    console.log(`📊 Removing ${canvases.length} canvases from volume chart`);
-    canvases.forEach(canvas => canvas.remove());
-    volumeChart.innerHTML = '';
-    volumeChart.style.width = '100%';
-    volumeChart.style.height = '100%';
-  }
-  
-  // Step 4: Reset ChartEngine completely
-  if (typeof ChartEngine !== 'undefined' && ChartEngine) {
-    console.log('🔄 Resetting ChartEngine...');
-    try {
-      // Destroy existing charts
-      if (ChartEngine.charts) {
-        if (ChartEngine.charts.price) {
-          try { ChartEngine.charts.price.remove(); } catch(e) {}
-          ChartEngine.charts.price = null;
-        }
-        if (ChartEngine.charts.volume) {
-          try { ChartEngine.charts.volume.remove(); } catch(e) {}
-          ChartEngine.charts.volume = null;
-        }
-      }
-      // Reset all references
-      ChartEngine.mainSeries = null;
-      ChartEngine.series = {};
-      ChartEngine.overlays = {};
-      ChartEngine.charts = {};
-    } catch(e) {
-      console.warn('ChartEngine reset error:', e.message);
-    }
-  }
-  
-  // Step 5: Recreate charts with delay
-  setTimeout(() => {
-    console.log('🔄 Recreating charts...');
+  // Wait for all modules to be defined
+  const checkModules = setInterval(() => {
+    const modulesReady = {
+      chartEngine: typeof ChartEngine !== 'undefined' && ChartEngine,
+      dataManager: typeof DataManager !== 'undefined' && DataManager,
+      indicatorEngine: typeof IndicatorEngine !== 'undefined' && IndicatorEngine,
+      drawingEngine: typeof DrawingEngine !== 'undefined' && DrawingEngine,
+      tradeManager: typeof TradeManager !== 'undefined' && TradeManager,
+      alertSystem: typeof AlertSystem2 !== 'undefined' && AlertSystem2,
+      userSystem: typeof UserSystem !== 'undefined' && UserSystem,
+      aiAssistant: typeof AIAssistant !== 'undefined' && AIAssistant,
+      multiChart: typeof MultiChart !== 'undefined' && MultiChart,
+      backtester: typeof Backtester !== 'undefined' && Backtester
+    };
     
-    if (typeof ChartEngine !== 'undefined' && ChartEngine) {
-      // Recreate price chart
-      if (ChartEngine.createPriceChart) {
-        ChartEngine.createPriceChart();
-        console.log('  ✓ Price chart recreated');
-      }
+    const allReady = Object.values(modulesReady).every(v => v !== undefined && v !== null);
+    
+    if (allReady) {
+      clearInterval(checkModules);
       
-      // Recreate volume chart
-      if (ChartEngine.createVolumeChart) {
-        ChartEngine.createVolumeChart();
-        console.log('  ✓ Volume chart recreated');
-      }
+      // Now expose all modules
+      window.ChartEngine = modulesReady.chartEngine;
+      window.DataManager = modulesReady.dataManager;
+      window.IndicatorEngine = modulesReady.indicatorEngine;
+      window.DrawingEngine = modulesReady.drawingEngine;
+      window.TradeManager = modulesReady.tradeManager;
+      window.AlertSystem2 = modulesReady.alertSystem;
+      window.UserSystem = modulesReady.userSystem;
+      window.AIAssistant = modulesReady.aiAssistant;
+      window.MultiChart = modulesReady.multiChart;
+      window.Backtester = modulesReady.backtester;
       
-      // Recreate any active indicator panes
-      if (typeof STATE !== 'undefined' && STATE.activeIndicators && STATE.activeIndicators.size > 0) {
-        setTimeout(() => {
-          if (typeof IndicatorEngine !== 'undefined' && IndicatorEngine.calculateAll) {
-            IndicatorEngine.calculateAll();
-            console.log('  ✓ Indicators recalculated');
-          }
-        }, 300);
-      }
+      // Backend systems
+      window.BACKEND_ENDPOINTS = typeof BACKEND_ENDPOINTS !== 'undefined' ? BACKEND_ENDPOINTS : null;
+      window.backendHealth = typeof backendHealth !== 'undefined' ? backendHealth : null;
+      window.getApiBase = typeof getApiBase !== 'undefined' ? getApiBase : null;
+      window.fetchWithFailover = typeof fetchWithFailover !== 'undefined' ? fetchWithFailover : null;
+      
+      // UI Components
+      window.Toast = typeof Toast !== 'undefined' ? Toast : null;
+      window.Events = typeof Events !== 'undefined' ? Events : null;
+      window.ErrorHandler = typeof ErrorHandler !== 'undefined' ? ErrorHandler : null;
+      
+      // Additional modules
+      window.MarketOverview = typeof MarketOverview !== 'undefined' ? MarketOverview : null;
+      window.WatchlistManager = typeof WatchlistManager !== 'undefined' ? WatchlistManager : null;
+      window.NewsManager = typeof NewsManager !== 'undefined' ? NewsManager : null;
+      window.TickerManager = typeof TickerManager !== 'undefined' ? TickerManager : null;
+      window.EconomicCalendar = typeof EconomicCalendar !== 'undefined' ? EconomicCalendar : null;
+      window.PushNotifications = typeof PushNotifications !== 'undefined' ? PushNotifications : null;
+      window.ChartTemplates = typeof ChartTemplates !== 'undefined' ? ChartTemplates : null;
+      window.ReportGenerator = typeof ReportGenerator !== 'undefined' ? ReportGenerator : null;
+      window.ChartSharing = typeof ChartSharing !== 'undefined' ? ChartSharing : null;
+      window.OnboardingTour = typeof OnboardingTour !== 'undefined' ? OnboardingTour : null;
+      window.VolumeProfileEngine = typeof VolumeProfileEngine !== 'undefined' ? VolumeProfileEngine : null;
+      window.StockDataManager = typeof StockDataManager !== 'undefined' ? StockDataManager : null;
+      window.ExchangeManager = typeof ExchangeManager !== 'undefined' ? ExchangeManager : null;
+      window.RiskManager = typeof RiskManager !== 'undefined' ? RiskManager : null;
+      window.PineEditor = typeof PineEditor !== 'undefined' ? PineEditor : null;
+      window.IntervalManager = typeof IntervalManager !== 'undefined' ? IntervalManager : null;
+      
+      console.log('✅ All modules exposed successfully:', {
+        ChartEngine: !!window.ChartEngine,
+        DataManager: !!window.DataManager,
+        IndicatorEngine: !!window.IndicatorEngine,
+        DrawingEngine: !!window.DrawingEngine,
+        TradeManager: !!window.TradeManager
+      });
     }
-    
-    // Step 6: Reload data
-    setTimeout(() => {
-      console.log(`🔄 Reloading data for ${currentSymbol} ${currentInterval}...`);
-      
-      // Try DataManager first
-      if (typeof DataManager !== 'undefined' && DataManager) {
-        if (DataManager.loadHistory) {
-          DataManager.loadHistory(currentSymbol, currentInterval);
-        }
-        if (DataManager.load24h) {
-          DataManager.load24h(currentSymbol);
-        }
-        if (DataManager.connectWS) {
-          DataManager.connectWS();
-        }
-      }
-      
-      // Force resize after data loads
-      setTimeout(() => {
-        if (typeof ChartEngine !== 'undefined' && ChartEngine.resizeAll) {
-          ChartEngine.resizeAll();
-        }
-        if (typeof ChartEngine !== 'undefined' && ChartEngine.fitContent) {
-          ChartEngine.fitContent();
-        }
-        console.log('✅ Chart recovery complete!');
-      }, 500);
-      
-    }, 200);
-    
   }, 100);
   
-  return 'Fix applied. Charts should reappear in 3-5 seconds.';
-};
+  // Timeout after 10 seconds
+  setTimeout(() => {
+    clearInterval(checkModules);
+    console.warn('⚠️ Module exposure timeout - some modules may not be ready');
+  }, 10000);
+})();
+// ============================================
+// END OF CODE BLOCK L
+// ============================================
