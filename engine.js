@@ -2,26 +2,8 @@
 // TRIPLE FAILOVER BACKEND SYSTEM
 // Automatically switches between Vercel, Cloudflare, and Render
 // ============================================
-
 const BACKEND_ENDPOINTS = [
-  { 
-    name: 'Render', 
-    url: 'https://tradevision-backend-1.onrender.com/api', 
-    timeout: 8000, 
-    active: true 
-  },
-  { 
-    name: 'Cloudflare', 
-    url: 'https://tradevision-backend.wambuamwanza6.workers.dev/api', 
-    timeout: 8000, 
-    active: true 
-  },
-  { 
-    name: 'Vercel', 
-    url: 'https://tradevision-backend.vercel.app/api', 
-    timeout: 8000, 
-    active: true 
-  }
+  { name: 'Cloudflare', url: 'https://tradevision-backend.wambuamwanza6.workers.dev/api', timeout: 8000, active: true }
 ];
 
 let currentBackendIndex = 0;
@@ -8246,123 +8228,260 @@ async load24h(symbol) {
   try {
     let data;
     
+    // ============================================
+    // CRYPTO - Binance via Cloudflare Worker
+    // ============================================
     if (STATE.assetType === 'crypto') {
-      // Crypto - use Binance via failover
-      data = await fetchWithFailover(`endpoint=ticker&symbol=${symbol}`);
-      if (data.error) return;
+      // Use direct Cloudflare worker call (no failover delays)
+      const apiBase = 'https://tradevision-backend.wambuamwanza6.workers.dev/api';
+      const response = await fetch(`${apiBase}/proxy?endpoint=ticker&symbol=${symbol}`);
       
-      STATE.change24h = parseFloat(data.priceChangePercent);
-      STATE.high24h = parseFloat(data.highPrice);
-      STATE.low24h = parseFloat(data.lowPrice);
-      STATE.volume24h = parseFloat(data.volume);
-      STATE.currentPrice = parseFloat(data.lastPrice);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
       
-    } else if (STATE.assetType === 'stocks') {
-      // Stocks - use Finnhub
-      const apiBase = getApiBase();
+      data = await response.json();
+      
+      if (data && !data.error) {
+        STATE.change24h = parseFloat(data.priceChangePercent);
+        STATE.high24h = parseFloat(data.highPrice);
+        STATE.low24h = parseFloat(data.lowPrice);
+        STATE.volume24h = parseFloat(data.volume);
+        STATE.currentPrice = parseFloat(data.lastPrice);
+        
+        console.log(`✅ Crypto 24h data loaded for ${symbol}:`, {
+          price: STATE.currentPrice,
+          change: STATE.change24h,
+          high: STATE.high24h,
+          low: STATE.low24h,
+          volume: STATE.volume24h
+        });
+      } else {
+        throw new Error(data?.error || 'No ticker data');
+      }
+    }
+    
+    // ============================================
+    // STOCKS - Finnhub via Cloudflare Worker
+    // ============================================
+    else if (STATE.assetType === 'stocks') {
+      const apiBase = 'https://tradevision-backend.wambuamwanza6.workers.dev/api';
       const stockSymbol = symbol.replace('USDT', '');
+      
       const response = await fetch(`${apiBase}/proxy?endpoint=finnhub&symbol=${stockSymbol}`);
       
       if (response.ok) {
         const quote = await response.json();
-        if (quote && quote.c) {
+        
+        if (quote && typeof quote.c === 'number' && quote.c > 0) {
           STATE.currentPrice = quote.c;
+          
           // Calculate 24h change from previous close
           const prevClose = quote.pc || quote.c * 0.98;
           STATE.change24h = ((quote.c - prevClose) / prevClose) * 100;
           STATE.high24h = quote.h || quote.c * 1.02;
           STATE.low24h = quote.l || quote.c * 0.98;
           STATE.volume24h = quote.v || 0;
+          
+          console.log(`✅ Stock 24h data loaded for ${stockSymbol}:`, {
+            price: STATE.currentPrice,
+            change: STATE.change24h,
+            high: STATE.high24h,
+            low: STATE.low24h,
+            volume: STATE.volume24h
+          });
+        } else {
+          console.warn(`⚠️ Invalid stock quote for ${stockSymbol}, using fallback`);
+          this.setStockFallbackValues(symbol);
         }
       } else {
-        // Fallback for stocks
+        console.warn(`⚠️ Finnhub API returned ${response.status} for ${stockSymbol}, using fallback`);
         this.setStockFallbackValues(symbol);
       }
-      
-    } else if (STATE.assetType === 'forex') {
-      // Forex - use Twelve Data
-      const apiBase = getApiBase();
+    }
+    
+    // ============================================
+    // FOREX - Twelve Data via Cloudflare Worker
+    // ============================================
+    else if (STATE.assetType === 'forex') {
+      const apiBase = 'https://tradevision-backend.wambuamwanza6.workers.dev/api';
       let forexSymbol = symbol;
       if (symbol.length === 6) {
         forexSymbol = symbol.slice(0, 3) + '/' + symbol.slice(3);
       }
-      const response = await fetch(`${apiBase}/proxy?endpoint=twelvedata&symbol=${forexSymbol}`);
+      
+      const response = await fetch(`${apiBase}/proxy?endpoint=twelvedata&symbol=${forexSymbol}&interval=1day`);
       
       if (response.ok) {
-        const data = await response.json();
-        if (data.values && data.values.length > 0) {
-          const current = parseFloat(data.values[0].close);
-          const previous = parseFloat(data.values[1]?.close || current * 0.998);
+        const forexData = await response.json();
+        
+        if (forexData.values && forexData.values.length > 0) {
+          const current = parseFloat(forexData.values[0].close);
+          const previous = parseFloat(forexData.values[1]?.close || current * 0.998);
+          
           STATE.currentPrice = current;
           STATE.change24h = ((current - previous) / previous) * 100;
-          STATE.high24h = Math.max(...data.values.slice(0, 24).map(v => parseFloat(v.high)));
-          STATE.low24h = Math.min(...data.values.slice(0, 24).map(v => parseFloat(v.low)));
+          
+          // Calculate 24h high/low from last 24 data points (approximately 1 day)
+          const last24Points = forexData.values.slice(0, 24);
+          const highs = last24Points.map(v => parseFloat(v.high));
+          const lows = last24Points.map(v => parseFloat(v.low));
+          
+          STATE.high24h = Math.max(...highs);
+          STATE.low24h = Math.min(...lows);
           STATE.volume24h = 0; // Forex doesn't have volume
+          
+          console.log(`✅ Forex 24h data loaded for ${forexSymbol}:`, {
+            price: STATE.currentPrice,
+            change: STATE.change24h,
+            high: STATE.high24h,
+            low: STATE.low24h
+          });
+        } else {
+          console.warn(`⚠️ No forex data for ${forexSymbol}, using fallback`);
+          this.setForexFallbackValues(symbol);
         }
       } else {
+        console.warn(`⚠️ Twelve Data API returned ${response.status} for ${forexSymbol}, using fallback`);
         this.setForexFallbackValues(symbol);
       }
     }
     
-    // Update UI elements
+    // ============================================
+    // UPDATE UI COMPONENTS
+    // ============================================
     this.updateStats();
-    this.updatePriceDisplay({ close: STATE.currentPrice, open: STATE.currentPrice, high: STATE.high24h, low: STATE.low24h });
+    this.updatePriceDisplay({ 
+      close: STATE.currentPrice, 
+      open: STATE.currentPrice, 
+      high: STATE.high24h, 
+      low: STATE.low24h 
+    });
     
-    if (typeof TradeManager !== 'undefined') {
+    // Update watchlist if needed
+    if (typeof WatchlistManager !== 'undefined' && WatchlistManager.updatePrice) {
+      WatchlistManager.updatePrice(symbol, STATE.currentPrice, STATE.change24h);
+    }
+    
+    // Update trade manager prices
+    if (typeof TradeManager !== 'undefined' && TradeManager.updatePrices) {
       TradeManager.updatePrices();
     }
     
-  } catch(e) {
-    console.warn('load24h error:', e.message);
+    // Force update of ticker display
+    const tickerPriceEl = document.getElementById(`tp-${symbol}`);
+    if (tickerPriceEl && STATE.currentPrice) {
+      tickerPriceEl.textContent = '$' + U.formatPrice(STATE.currentPrice);
+      tickerPriceEl.style.color = STATE.change24h >= 0 ? 'var(--up-color)' : 'var(--down-color)';
+    }
+    
+    const tickerChangeEl = document.getElementById(`tc-${symbol}`);
+    if (tickerChangeEl && STATE.change24h !== null) {
+      tickerChangeEl.textContent = `${STATE.change24h >= 0 ? '+' : ''}${U.formatNum(STATE.change24h, 2)}%`;
+      tickerChangeEl.className = `ticker-change ${STATE.change24h >= 0 ? 'positive' : 'negative'}`;
+    }
+    
+  } catch(error) {
+    console.error('❌ load24h fatal error:', error.message);
+    
+    // Set fallback values to prevent UI from showing empty
     this.setFallbackValues();
+    
+    // Update UI with whatever we have
+    this.updateStats();
+    if (STATE.currentPrice) {
+      this.updatePriceDisplay({ close: STATE.currentPrice });
+    }
   }
 },
 
-// Add fallback methods
+// ============================================
+// COMPLETE STOCK FALLBACK VALUES
+// ============================================
 setStockFallbackValues(symbol) {
   const stockPrices = {
-    'AAPL': 175, 'MSFT': 420, 'GOOGL': 140, 'AMZN': 180, 'TSLA': 240,
-    'META': 330, 'NVDA': 900, 'NFLX': 600
+    'AAPL': 175.42, 'MSFT': 420.50, 'GOOGL': 140.25, 'AMZN': 180.75,
+    'TSLA': 240.30, 'META': 330.80, 'NVDA': 900.00, 'NFLX': 600.50,
+    'ADBE': 525.00, 'CRM': 250.00, 'ORCL': 115.00, 'IBM': 185.00,
+    'INTC': 45.00, 'AMD': 150.00, 'QCOM': 130.00, 'TXN': 170.00
   };
-  const basePrice = stockPrices[symbol.replace('USDT', '')] || 100;
-  STATE.currentPrice = basePrice;
-  STATE.change24h = (Math.random() - 0.5) * 3;
-  STATE.high24h = basePrice * 1.02;
-  STATE.low24h = basePrice * 0.98;
-  STATE.volume24h = Math.random() * 10000000;
-  console.log(`📊 Stock fallback values for ${symbol}`);
-},
-
-setForexFallbackValues(symbol) {
-  const forexPrices = {
-    'EURUSD': 1.08, 'GBPUSD': 1.26, 'USDJPY': 150, 'USDCHF': 0.91,
-    'AUDUSD': 0.65, 'USDCAD': 1.37
-  };
-  const basePrice = forexPrices[symbol] || 1.08;
-  STATE.currentPrice = basePrice;
-  STATE.change24h = (Math.random() - 0.5) * 0.5;
-  STATE.high24h = basePrice * 1.005;
-  STATE.low24h = basePrice * 0.995;
-  STATE.volume24h = 0;
-  console.log(`📊 Forex fallback values for ${symbol}`);
-},
-
-setFallbackValues() {
-  if (STATE.currentPrice === null) {
-    STATE.currentPrice = 81512;
+  
+  const cleanSymbol = symbol.replace('USDT', '');
+  const basePrice = stockPrices[cleanSymbol] || 100.00;
+  
+  // Only set if values are null/undefined to preserve real data if available
+  if (STATE.currentPrice === null || STATE.currentPrice === undefined) {
+    STATE.currentPrice = basePrice;
   }
-  if (STATE.change24h === null) {
+  if (STATE.change24h === null || STATE.change24h === undefined) {
     STATE.change24h = (Math.random() - 0.5) * 2;
   }
-  if (STATE.high24h === null) {
+  if (STATE.high24h === null || STATE.high24h === undefined) {
+    STATE.high24h = (STATE.currentPrice || basePrice) * 1.02;
+  }
+  if (STATE.low24h === null || STATE.low24h === undefined) {
+    STATE.low24h = (STATE.currentPrice || basePrice) * 0.98;
+  }
+  if (STATE.volume24h === null || STATE.volume24h === undefined) {
+    STATE.volume24h = Math.floor(Math.random() * 10000000);
+  }
+  
+  console.log(`📊 Stock fallback values set for ${cleanSymbol}`);
+},
+
+// ============================================
+// COMPLETE FOREX FALLBACK VALUES
+// ============================================
+setForexFallbackValues(symbol) {
+  const forexPrices = {
+    'EURUSD': 1.0850, 'GBPUSD': 1.2650, 'USDJPY': 150.50,
+    'USDCHF': 0.9100, 'AUDUSD': 0.6500, 'USDCAD': 1.3700,
+    'NZDUSD': 0.6000, 'EURGBP': 0.8550, 'EURJPY': 163.50
+  };
+  
+  const cleanSymbol = symbol.includes('/') ? symbol.replace('/', '') : symbol;
+  const basePrice = forexPrices[cleanSymbol] || 1.0800;
+  
+  // Only set if values are null/undefined
+  if (STATE.currentPrice === null || STATE.currentPrice === undefined) {
+    STATE.currentPrice = basePrice;
+  }
+  if (STATE.change24h === null || STATE.change24h === undefined) {
+    STATE.change24h = (Math.random() - 0.5) * 0.5;
+  }
+  if (STATE.high24h === null || STATE.high24h === undefined) {
+    STATE.high24h = (STATE.currentPrice || basePrice) * 1.005;
+  }
+  if (STATE.low24h === null || STATE.low24h === undefined) {
+    STATE.low24h = (STATE.currentPrice || basePrice) * 0.995;
+  }
+  
+  console.log(`📊 Forex fallback values set for ${cleanSymbol}`);
+},
+
+// ============================================
+// COMPLETE GENERAL FALLBACK VALUES
+// ============================================
+setFallbackValues() {
+  console.log('📊 Using general fallback values for market data');
+  
+  if (STATE.currentPrice === null || STATE.currentPrice === undefined) {
+    STATE.currentPrice = 81512.00;
+  }
+  if (STATE.change24h === null || STATE.change24h === undefined) {
+    STATE.change24h = (Math.random() - 0.5) * 2;
+  }
+  if (STATE.high24h === null || STATE.high24h === undefined) {
     STATE.high24h = STATE.currentPrice * 1.02;
   }
-  if (STATE.low24h === null) {
+  if (STATE.low24h === null || STATE.low24h === undefined) {
     STATE.low24h = STATE.currentPrice * 0.98;
   }
-  if (STATE.volume24h === null) {
+  if (STATE.volume24h === null || STATE.volume24h === undefined) {
     STATE.volume24h = Math.random() * 10000000000;
   }
+  
+  // Update stats immediately
   this.updateStats();
 },
     
@@ -8420,34 +8539,98 @@ setFallbackValues() {
   const highEl = document.getElementById('stat-high');
   const lowEl = document.getElementById('stat-low');
   const volumeEl = document.getElementById('stat-volume');
+  const changeEl = document.getElementById('price-change');
   
+  // Update 24h High
   if (highEl) {
-    highEl.textContent = STATE.high24h ? U.formatPrice(STATE.high24h) : '--';
-    console.log('Updated high:', STATE.high24h);
+    highEl.textContent = (STATE.high24h !== null && STATE.high24h !== undefined) 
+      ? U.formatPrice(STATE.high24h) 
+      : '--';
   }
+  
+  // Update 24h Low
   if (lowEl) {
-    lowEl.textContent = STATE.low24h ? U.formatPrice(STATE.low24h) : '--';
-    console.log('Updated low:', STATE.low24h);
+    lowEl.textContent = (STATE.low24h !== null && STATE.low24h !== undefined) 
+      ? U.formatPrice(STATE.low24h) 
+      : '--';
   }
+  
+  // Update 24h Volume
   if (volumeEl) {
     if (STATE.assetType === 'forex') {
       volumeEl.textContent = '--';
     } else {
-      volumeEl.textContent = STATE.volume24h ? U.formatVolume(STATE.volume24h) : '--';
+      volumeEl.textContent = (STATE.volume24h !== null && STATE.volume24h !== undefined) 
+        ? U.formatVolume(STATE.volume24h) 
+        : '--';
     }
-    console.log('Updated volume:', STATE.volume24h);
   }
   
-  // Also update the price change display
-  const changeEl = document.getElementById('price-change');
-  if (changeEl && STATE.change24h !== null) {
-    const pos = STATE.change24h >= 0;
-    changeEl.className = `price-change ${pos ? 'positive' : 'negative'}`;
+  // Update price change display (main header)
+  if (changeEl && STATE.change24h !== null && STATE.change24h !== undefined) {
+    const isPositive = STATE.change24h >= 0;
+    changeEl.className = `price-change ${isPositive ? 'positive' : 'negative'}`;
+    
     const changeValue = changeEl.querySelector('.change-value');
     const changePercent = changeEl.querySelector('.change-percent');
-    if (changeValue) changeValue.textContent = `${pos ? '+' : ''}${U.formatNum(STATE.change24h, 2)}`;
-    if (changePercent) changePercent.textContent = `(${pos ? '+' : ''}${U.formatNum(STATE.change24h, 2)}%)`;
+    
+    if (changeValue) {
+      changeValue.textContent = `${isPositive ? '+' : ''}${U.formatNum(Math.abs(STATE.change24h), 2)}`;
+    }
+    if (changePercent) {
+      changePercent.textContent = `(${isPositive ? '+' : ''}${U.formatNum(Math.abs(STATE.change24h), 2)}%)`;
+    }
   }
+  
+  // Update mobile stats panel
+  const mobileOpen = document.getElementById('ms-open');
+  const mobileHigh = document.getElementById('ms-high');
+  const mobileLow = document.getElementById('ms-low');
+  const mobileVolume = document.getElementById('ms-volume');
+  const mobileChange = document.getElementById('ms-change');
+  
+  if (mobileOpen && STATE.candles && STATE.candles.length > 0) {
+    const lastCandle = STATE.candles[STATE.candles.length - 1];
+    mobileOpen.textContent = U.formatPrice(lastCandle.open);
+    mobileHigh.textContent = U.formatPrice(lastCandle.high);
+    mobileLow.textContent = U.formatPrice(lastCandle.low);
+    mobileVolume.textContent = U.formatVolume(lastCandle.volume);
+  }
+  
+  if (mobileChange && STATE.change24h !== null) {
+    const isPositive = STATE.change24h >= 0;
+    mobileChange.textContent = `${isPositive ? '+' : ''}${U.formatNum(Math.abs(STATE.change24h), 2)}%`;
+    mobileChange.style.color = isPositive ? 'var(--up-color)' : 'var(--down-color)';
+  }
+  
+  // Update mobile header change badge
+  const mobileChangeBadge = document.getElementById('mobile-change-badge');
+  if (mobileChangeBadge && STATE.change24h !== null) {
+    const isPositive = STATE.change24h >= 0;
+    mobileChangeBadge.textContent = `${isPositive ? '+' : ''}${U.formatNum(Math.abs(STATE.change24h), 2)}%`;
+    mobileChangeBadge.className = `mobile-change-badge ${isPositive ? 'up' : 'down'}`;
+  }
+  
+  // Update interval stats (O, H, L, C)
+  const openEl = document.getElementById('stat-open');
+  const intervalHighEl = document.getElementById('stat-interval-high');
+  const intervalLowEl = document.getElementById('stat-interval-low');
+  const closeEl = document.getElementById('stat-interval-close');
+  
+  if (STATE.candles && STATE.candles.length > 0) {
+    const lastCandle = STATE.candles[STATE.candles.length - 1];
+    if (openEl) openEl.textContent = U.formatPrice(lastCandle.open);
+    if (intervalHighEl) intervalHighEl.textContent = U.formatPrice(lastCandle.high);
+    if (intervalLowEl) intervalLowEl.textContent = U.formatPrice(lastCandle.low);
+    if (closeEl) closeEl.textContent = U.formatPrice(lastCandle.close);
+  }
+  
+  console.log('📊 Stats updated:', {
+    high: STATE.high24h,
+    low: STATE.low24h,
+    volume: STATE.volume24h,
+    change: STATE.change24h
+  });
 },
 connectWS() {
   // ============================================
@@ -9461,83 +9644,282 @@ async searchAllSymbols(query) {
   const results = [];
   const q = query.toUpperCase();
   
-  // Crypto from local availableSymbols
+  console.log(`🔍 Starting symbol search for: "${query}"`);
+  
+  // ============================================
+  // 1. CRYPTO SEARCH - From availableSymbols
+  // ============================================
   if (STATE.availableSymbols && STATE.availableSymbols.length) {
     const cryptoMatches = STATE.availableSymbols
       .filter(s => s.symbol.includes(q))
-      .slice(0, 5)
-      .map(s => ({ symbol: s.symbol, name: s.baseAsset, type: 'crypto' }));
-    results.push(...cryptoMatches);
-  }
-  
- // Stocks - use STATE.stockSymbols which now has the full fallback
-  if (STATE.stockSymbols && STATE.stockSymbols.length) {
-    console.log('🔍 Searching ' + STATE.stockSymbols.length + ' stock symbols for: ' + q);
-    const stockMatches = STATE.stockSymbols
-      .filter(s => s.symbol.toUpperCase().includes(q) || (s.description && s.description.toUpperCase().includes(q)))
-      .slice(0, 10);
-    console.log('📊 Stock matches found: ' + stockMatches.length);
-    if (stockMatches.length > 0) {
-      console.log('   First match:', stockMatches[0].symbol, stockMatches[0].description);
+      .slice(0, 10)
+      .map(s => ({ 
+        symbol: s.symbol, 
+        name: s.baseAsset, 
+        type: 'crypto',
+        exchange: 'Binance'
+      }));
+    
+    if (cryptoMatches.length > 0) {
+      console.log(`✅ Found ${cryptoMatches.length} crypto matches`);
+      results.push(...cryptoMatches);
     }
-    const mapped = stockMatches.map(s => ({ symbol: s.symbol, name: s.description || s.symbol, type: 'stocks' }));
-    results.push(...mapped);
-  } else {
-    console.warn('⚠️ STATE.stockSymbols is empty or undefined');
   }
   
-  // Forex from hardcoded list
+  // ============================================
+  // 2. STOCKS SEARCH - From STOCK_SYMBOLS_FALLBACK
+  // ============================================
+  if (CONFIG.STOCK_SYMBOLS_FALLBACK && CONFIG.STOCK_SYMBOLS_FALLBACK.length) {
+    console.log(`🔍 Searching ${CONFIG.STOCK_SYMBOLS_FALLBACK.length} stock symbols for: ${q}`);
+    
+    const stockMatches = CONFIG.STOCK_SYMBOLS_FALLBACK
+      .filter(s => {
+        const symbolMatch = s.symbol && s.symbol.toUpperCase().includes(q);
+        const descMatch = s.description && s.description.toUpperCase().includes(q);
+        return symbolMatch || descMatch;
+      })
+      .slice(0, 10)
+      .map(s => ({ 
+        symbol: s.symbol, 
+        name: s.description || s.symbol, 
+        type: 'stocks',
+        exchange: s.exchange || 'NASDAQ/NYSE'
+      }));
+    
+    if (stockMatches.length > 0) {
+      console.log(`✅ Found ${stockMatches.length} stock matches`);
+      results.push(...stockMatches);
+    }
+  }
+  
+  // ============================================
+  // 3. FOREX SEARCH - From CONFIG.FOREX_SYMBOLS
+  // ============================================
   if (CONFIG.FOREX_SYMBOLS && CONFIG.FOREX_SYMBOLS.length) {
     const forexMatches = CONFIG.FOREX_SYMBOLS
       .filter(s => s.toUpperCase().includes(q))
-      .slice(0, 5)
-      .map(s => ({ symbol: s, name: s.replace(/([A-Z]{3})([A-Z]{3})/, '$1/$2'), type: 'forex' }));
-    results.push(...forexMatches);
+      .slice(0, 10)
+      .map(s => ({ 
+        symbol: s, 
+        name: s.replace(/([A-Z]{3})([A-Z]{3})/, '$1/$2'), 
+        type: 'forex',
+        exchange: 'FX Market'
+      }));
+    
+    if (forexMatches.length > 0) {
+      console.log(`✅ Found ${forexMatches.length} forex matches`);
+      results.push(...forexMatches);
+    }
   }
   
-  console.log('🔍 searchAllSymbols results for "' + query + '":', results.length, 'items');
-  return results.slice(0, 15);
-
-
-  // Fallback to Twelve Data symbol search if needed
-  if (results.length === 0 && query.length > 1) {
+  // ============================================
+  // 4. If No Results - Try Live API Search
+  // ============================================
+  if (results.length === 0 && query.length >= 2) {
+    console.log(`🔄 No local results, trying live API search for: ${query}`);
+    
+    // Try Twelve Data API for stocks/forex
     try {
-      const res = await fetch(`https://api.twelvedata.com/symbol_search?symbol=${query}&outputsize=10&apikey=${CONFIG.TWELVEDATA_API_KEY}`);
-      const data = await res.json();
-      if (data.data) {
-        const twelveResults = data.data.map(d => ({
-          symbol: d.symbol,
-          name: d.instrument_name || d.symbol,
-          type: d.instrument_type === 'Forex' ? 'forex' : 'stocks'
-        }));
-        results.push(...twelveResults);
+      const twelveUrl = `https://api.twelvedata.com/symbol_search?symbol=${encodeURIComponent(query)}&outputsize=15`;
+      const response = await fetch(twelveUrl);
+      
+      if (response.ok) {
+        const data = await response.json();
+        
+        if (data.data && Array.isArray(data.data)) {
+          const twelveResults = data.data
+            .filter(item => item.symbol && item.symbol.length <= 6)
+            .slice(0, 10)
+            .map(item => {
+              let type = 'stocks';
+              if (item.instrument_type === 'Forex' || item.symbol.length === 6) {
+                type = 'forex';
+              } else if (item.symbol.endsWith('USDT') || item.symbol.endsWith('USD')) {
+                type = 'crypto';
+              }
+              
+              return {
+                symbol: item.symbol,
+                name: item.instrument_name || item.symbol,
+                type: type,
+                exchange: item.exchange || 'Global',
+                source: 'twelvedata'
+              };
+            });
+          
+          results.push(...twelveResults);
+          console.log(`✅ Twelve Data added ${twelveResults.length} results`);
+        }
       }
-    } catch(e) {}
-  }
-// ADD THIS NEW BLOCK - Direct Binance symbol search for crypto
-if (results.length === 0 && query.length >= 2) {
-  try {
-    // Try fetching directly from Binance exchange info (via proxy)
-    const binanceRes = await fetch(`${CONFIG.BINANCE_REST}/exchangeInfo`);
-    if (binanceRes.ok) {
-      const binanceData = await binanceRes.json();
-      const matchingSymbols = binanceData.symbols
-        .filter(function(s) { 
-          return s.status === 'TRADING' && 
-                 s.quoteAsset === 'USDT' && 
-                 (s.symbol.includes(query.toUpperCase()) || s.baseAsset.includes(query.toUpperCase()));
-        })
-        .slice(0, 10)
-        .map(function(s) { 
-          return { symbol: s.symbol, name: s.baseAsset, type: 'crypto' }; 
-        });
-      results.push(...matchingSymbols);
+    } catch(e) {
+      console.warn('Twelve Data search failed:', e.message);
     }
-  } catch(e) {
-    console.warn('Binance symbol search failed:', e.message);
+    
+    // Try direct Binance API for crypto
+    if (results.length === 0) {
+      try {
+        const binanceUrl = `https://api.binance.com/api/v3/exchangeInfo`;
+        const response = await fetch(binanceUrl);
+        
+        if (response.ok) {
+          const binanceData = await response.json();
+          const matchingSymbols = binanceData.symbols
+            .filter(s => {
+              return s.status === 'TRADING' && 
+                     s.quoteAsset === 'USDT' && 
+                     (s.symbol.includes(q) || (s.baseAsset && s.baseAsset.includes(q)));
+            })
+            .slice(0, 10)
+            .map(s => ({ 
+              symbol: s.symbol, 
+              name: s.baseAsset, 
+              type: 'crypto',
+              exchange: 'Binance',
+              source: 'binance'
+            }));
+          
+          results.push(...matchingSymbols);
+          console.log(`✅ Binance added ${matchingSymbols.length} crypto results`);
+        }
+      } catch(e) {
+        console.warn('Binance symbol search failed:', e.message);
+      }
+    }
   }
-}
-  return results.slice(0, 12);
+  
+  // ============================================
+  // 5. FINAL FALLBACK - Common Symbols
+  // ============================================
+  if (results.length === 0 && query.length >= 1) {
+    console.log(`📋 Using fallback common symbols for: ${query}`);
+    
+    const commonSymbols = [
+      // Top Cryptocurrencies
+      { symbol: 'BTCUSDT', name: 'Bitcoin', type: 'crypto', exchange: 'Binance' },
+      { symbol: 'ETHUSDT', name: 'Ethereum', type: 'crypto', exchange: 'Binance' },
+      { symbol: 'BNBUSDT', name: 'BNB', type: 'crypto', exchange: 'Binance' },
+      { symbol: 'SOLUSDT', name: 'Solana', type: 'crypto', exchange: 'Binance' },
+      { symbol: 'XRPUSDT', name: 'Ripple', type: 'crypto', exchange: 'Binance' },
+      { symbol: 'ADAUSDT', name: 'Cardano', type: 'crypto', exchange: 'Binance' },
+      { symbol: 'DOGEUSDT', name: 'Dogecoin', type: 'crypto', exchange: 'Binance' },
+      { symbol: 'DOTUSDT', name: 'Polkadot', type: 'crypto', exchange: 'Binance' },
+      { symbol: 'MATICUSDT', name: 'Polygon', type: 'crypto', exchange: 'Binance' },
+      { symbol: 'LINKUSDT', name: 'Chainlink', type: 'crypto', exchange: 'Binance' },
+      { symbol: 'UNIUSDT', name: 'Uniswap', type: 'crypto', exchange: 'Binance' },
+      { symbol: 'AVAXUSDT', name: 'Avalanche', type: 'crypto', exchange: 'Binance' },
+      { symbol: 'LTCUSDT', name: 'Litecoin', type: 'crypto', exchange: 'Binance' },
+      { symbol: 'ATOMUSDT', name: 'Cosmos', type: 'crypto', exchange: 'Binance' },
+      { symbol: 'ETCUSDT', name: 'Ethereum Classic', type: 'crypto', exchange: 'Binance' },
+      { symbol: 'ALGOUSDT', name: 'Algorand', type: 'crypto', exchange: 'Binance' },
+      { symbol: 'VETUSDT', name: 'VeChain', type: 'crypto', exchange: 'Binance' },
+      { symbol: 'FILUSDT', name: 'Filecoin', type: 'crypto', exchange: 'Binance' },
+      { symbol: 'ICPUSDT', name: 'Internet Computer', type: 'crypto', exchange: 'Binance' },
+      { symbol: 'SANDUSDT', name: 'The Sandbox', type: 'crypto', exchange: 'Binance' },
+      { symbol: 'AAVEUSDT', name: 'Aave', type: 'crypto', exchange: 'Binance' },
+      { symbol: 'NEARUSDT', name: 'Near Protocol', type: 'crypto', exchange: 'Binance' },
+      { symbol: 'FTMUSDT', name: 'Fantom', type: 'crypto', exchange: 'Binance' },
+      { symbol: 'MANAUSDT', name: 'Decentraland', type: 'crypto', exchange: 'Binance' },
+      { symbol: 'SUIUSDT', name: 'Sui', type: 'crypto', exchange: 'Binance' },      // ← ADDED SUI
+      { symbol: 'APTUSDT', name: 'Aptos', type: 'crypto', exchange: 'Binance' },
+      { symbol: 'ARBUSDT', name: 'Arbitrum', type: 'crypto', exchange: 'Binance' },
+      { symbol: 'OPUSDT', name: 'Optimism', type: 'crypto', exchange: 'Binance' },
+      { symbol: 'SEIUSDT', name: 'Sei', type: 'crypto', exchange: 'Binance' },
+      { symbol: 'TIAUSDT', name: 'Celestia', type: 'crypto', exchange: 'Binance' },
+      { symbol: 'INJUSDT', name: 'Injective', type: 'crypto', exchange: 'Binance' },
+      
+      // Top US Stocks
+      { symbol: 'AAPL', name: 'Apple Inc.', type: 'stocks', exchange: 'NASDAQ' },
+      { symbol: 'MSFT', name: 'Microsoft Corp.', type: 'stocks', exchange: 'NASDAQ' },
+      { symbol: 'GOOGL', name: 'Alphabet Inc.', type: 'stocks', exchange: 'NASDAQ' },
+      { symbol: 'AMZN', name: 'Amazon.com Inc.', type: 'stocks', exchange: 'NASDAQ' },
+      { symbol: 'NVDA', name: 'NVIDIA Corp.', type: 'stocks', exchange: 'NASDAQ' },
+      { symbol: 'META', name: 'Meta Platforms Inc.', type: 'stocks', exchange: 'NASDAQ' },
+      { symbol: 'TSLA', name: 'Tesla Inc.', type: 'stocks', exchange: 'NASDAQ' },
+      { symbol: 'NFLX', name: 'Netflix Inc.', type: 'stocks', exchange: 'NASDAQ' },
+      { symbol: 'ADBE', name: 'Adobe Inc.', type: 'stocks', exchange: 'NASDAQ' },
+      { symbol: 'CRM', name: 'Salesforce Inc.', type: 'stocks', exchange: 'NYSE' },
+      { symbol: 'ORCL', name: 'Oracle Corp.', type: 'stocks', exchange: 'NYSE' },
+      { symbol: 'IBM', name: 'IBM', type: 'stocks', exchange: 'NYSE' },
+      { symbol: 'INTC', name: 'Intel Corp.', type: 'stocks', exchange: 'NASDAQ' },
+      { symbol: 'AMD', name: 'AMD', type: 'stocks', exchange: 'NASDAQ' },
+      { symbol: 'QCOM', name: 'Qualcomm', type: 'stocks', exchange: 'NASDAQ' },
+      { symbol: 'TXN', name: 'Texas Instruments', type: 'stocks', exchange: 'NASDAQ' },
+      { symbol: 'JPM', name: 'JPMorgan Chase', type: 'stocks', exchange: 'NYSE' },
+      { symbol: 'BAC', name: 'Bank of America', type: 'stocks', exchange: 'NYSE' },
+      { symbol: 'WMT', name: 'Walmart', type: 'stocks', exchange: 'NYSE' },
+      { symbol: 'PG', name: 'Procter & Gamble', type: 'stocks', exchange: 'NYSE' },
+      { symbol: 'JNJ', name: 'Johnson & Johnson', type: 'stocks', exchange: 'NYSE' },
+      { symbol: 'V', name: 'Visa', type: 'stocks', exchange: 'NYSE' },
+      { symbol: 'MA', name: 'Mastercard', type: 'stocks', exchange: 'NYSE' },
+      { symbol: 'PYPL', name: 'PayPal', type: 'stocks', exchange: 'NASDAQ' },
+      { symbol: 'COIN', name: 'Coinbase', type: 'stocks', exchange: 'NASDAQ' },
+      { symbol: 'SQ', name: 'Block Inc.', type: 'stocks', exchange: 'NYSE' },
+      { symbol: 'BA', name: 'Boeing', type: 'stocks', exchange: 'NYSE' },
+      { symbol: 'CAT', name: 'Caterpillar', type: 'stocks', exchange: 'NYSE' },
+      { symbol: 'GE', name: 'General Electric', type: 'stocks', exchange: 'NYSE' },
+      { symbol: 'F', name: 'Ford', type: 'stocks', exchange: 'NYSE' },
+      { symbol: 'GM', name: 'General Motors', type: 'stocks', exchange: 'NYSE' },
+      { symbol: 'NIO', name: 'NIO Inc.', type: 'stocks', exchange: 'NYSE' },
+      { symbol: 'XPEV', name: 'XPeng', type: 'stocks', exchange: 'NYSE' },
+      { symbol: 'RIVN', name: 'Rivian', type: 'stocks', exchange: 'NASDAQ' },
+      { symbol: 'LCID', name: 'Lucid', type: 'stocks', exchange: 'NASDAQ' },
+      
+      // Major Forex Pairs
+      { symbol: 'EURUSD', name: 'Euro / US Dollar', type: 'forex', exchange: 'FX' },
+      { symbol: 'GBPUSD', name: 'British Pound / US Dollar', type: 'forex', exchange: 'FX' },
+      { symbol: 'USDJPY', name: 'US Dollar / Japanese Yen', type: 'forex', exchange: 'FX' },
+      { symbol: 'USDCHF', name: 'US Dollar / Swiss Franc', type: 'forex', exchange: 'FX' },
+      { symbol: 'AUDUSD', name: 'Australian Dollar / US Dollar', type: 'forex', exchange: 'FX' },
+      { symbol: 'USDCAD', name: 'US Dollar / Canadian Dollar', type: 'forex', exchange: 'FX' },
+      { symbol: 'NZDUSD', name: 'New Zealand Dollar / US Dollar', type: 'forex', exchange: 'FX' },
+      { symbol: 'EURGBP', name: 'Euro / British Pound', type: 'forex', exchange: 'FX' },
+      { symbol: 'EURJPY', name: 'Euro / Japanese Yen', type: 'forex', exchange: 'FX' },
+      { symbol: 'GBPJPY', name: 'British Pound / Japanese Yen', type: 'forex', exchange: 'FX' }
+    ];
+    
+    const matchedSymbols = commonSymbols.filter(s => 
+      s.symbol.toUpperCase().includes(q) || 
+      s.name.toUpperCase().includes(q)
+    );
+    
+    if (matchedSymbols.length > 0) {
+      results.push(...matchedSymbols);
+      console.log(`✅ Fallback added ${matchedSymbols.length} common symbols`);
+    }
+  }
+  
+  // ============================================
+  // 6. DEDUPLICATE RESULTS
+  // ============================================
+  const uniqueResults = [];
+  const seenSymbols = new Set();
+  
+  for (const result of results) {
+    if (!seenSymbols.has(result.symbol)) {
+      seenSymbols.add(result.symbol);
+      uniqueResults.push(result);
+    }
+  }
+  
+  // ============================================
+  // 7. SORT RESULTS (Exact matches first)
+  // ============================================
+  uniqueResults.sort((a, b) => {
+    const aExact = a.symbol.toUpperCase() === q;
+    const bExact = b.symbol.toUpperCase() === q;
+    if (aExact && !bExact) return -1;
+    if (!aExact && bExact) return 1;
+    return a.symbol.localeCompare(b.symbol);
+  });
+  
+  const finalResults = uniqueResults.slice(0, 15);
+  
+  console.log(`🎯 Search complete for "${query}": ${finalResults.length} results`);
+  if (finalResults.length > 0) {
+    console.log('📋 Top results:', finalResults.slice(0, 5).map(r => `${r.symbol} (${r.type})`));
+  }
+  
+  return finalResults;
 },
 	
     async startMarketOverview() {
