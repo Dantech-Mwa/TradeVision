@@ -8090,6 +8090,7 @@ const DrawingToolsModal = {
   const DataManager = {
 _wsConnecting: false,
   _reconnecting: false,
+	   _restPollingActive: false, 
     async init() {
       await this.loadSymbols();
       await this.loadHistory(STATE.symbol, STATE.interval);
@@ -9099,40 +9100,55 @@ connectWS() {
       }
     };
     
-    // ============================================
-    // ON ERROR HANDLER
-    // ============================================
-    ws.onerror = (error) => {
-      console.error('🔴 WebSocket error:', error);
-      STATE._wsHealth.isHealthy = false;
-      this._wsConnecting = false;
-    };
-    
-    // ============================================
-    // ON CLOSE HANDLER
-    // ============================================
-    ws.onclose = (event) => {
-      console.log(`🔴 WebSocket closed: code=${event.code}, reason=${event.reason || 'none'}`);
-      STATE.isConnected = false;
-      STATE._wsHealth.isHealthy = false;
-      this._wsConnecting = false;
-      
-      // Clear intervals
-      if (STATE._wsHealth.pingIntervalId) {
-        IntervalManager.clear(STATE._wsHealth.pingIntervalId);
-        STATE._wsHealth.pingIntervalId = null;
-      }
-      if (STATE._wsHealth.healthIntervalId) {
-        IntervalManager.clear(STATE._wsHealth.healthIntervalId);
-        STATE._wsHealth.healthIntervalId = null;
-      }
-      
-      // Reconnect only for recoverable errors (not normal closure)
-      if (event.code !== 1000 && event.code !== 1001) {
-        console.log('🔄 Scheduling reconnect...');
-        this.reconnect(false);
-      }
-    };
+   // ============================================
+// REPLACE THE ONERROR HANDLER
+// ============================================
+ws.onerror = (error) => {
+  console.error('🔴 WebSocket error:', error);
+  STATE._wsHealth.isHealthy = false;
+  this._wsConnecting = false;
+  
+  // NEW: Immediately fall back to REST polling on error
+  if (!this._restPollingActive) {
+    console.log(`⚠️ WebSocket failed for ${STATE.symbol}, falling back to REST polling`);
+    this.startRestPolling();
+  }
+};
+
+// ============================================
+// REPLACE THE ONCLOSE HANDLER
+// ============================================
+ws.onclose = (event) => {
+  console.log(`🔴 WebSocket closed: code=${event.code}, reason=${event.reason || 'none'}`);
+  STATE.isConnected = false;
+  STATE._wsHealth.isHealthy = false;
+  this._wsConnecting = false;
+  
+  // Clear intervals
+  if (STATE._wsHealth.pingIntervalId) {
+    IntervalManager.clear(STATE._wsHealth.pingIntervalId);
+    STATE._wsHealth.pingIntervalId = null;
+  }
+  if (STATE._wsHealth.healthIntervalId) {
+    IntervalManager.clear(STATE._wsHealth.healthIntervalId);
+    STATE._wsHealth.healthIntervalId = null;
+  }
+  
+  // CRITICAL FIX: For code 1008 (invalid symbol), use REST polling immediately
+  if (event.code === 1008) {
+    console.log(`⚠️ WebSocket invalid for ${STATE.symbol} (code 1008), using REST polling`);
+    if (!this._restPollingActive) {
+      this.startRestPolling();
+    }
+    return;
+  }
+  
+  // Reconnect only for recoverable errors (not normal closure)
+  if (event.code !== 1000 && event.code !== 1001) {
+    console.log('🔄 Scheduling reconnect...');
+    this.reconnect(false);
+  }
+};
     
   } catch(e) {
     console.error('❌ Failed to create WebSocket:', e.message);
@@ -9417,6 +9433,8 @@ cleanupConnection() {
 // PHASE 1 FIX: REST Polling Fallback System
 // ============================================
 startRestPolling() {
+	 if (this._restPollingActive) return;  // <-- ADD THIS LINE
+  this._restPollingActive = true;       // <-- ADD THIS LINE
   console.log('📡 Starting REST polling fallback for ' + STATE.symbol);
   
   // Clear any existing REST polling
@@ -9579,6 +9597,7 @@ const proxyUrl = `${apiBase}/proxy?endpoint=klines&symbol=${STATE.symbol}&interv
 },
 
 stopRestPolling() {
+	this._restPollingActive = false; 
   if (STATE._restPolling && STATE._restPolling.isActive) {
     console.log('🛑 Stopping REST polling');
     
