@@ -2133,43 +2133,34 @@ createPriceChart() {
   const isMobile = window.innerWidth <= 768;
   
   // ============================================
-  // PHASE 2 FIX: Force container dimensions on mobile
+  // FORCE CONTAINER DIMENSIONS (FIXES MISSING CHART)
   // ============================================
-  if (isMobile) {
-    const mainPane = document.getElementById('main-chart-pane');
-    if (mainPane) {
-      // Ensure the main pane has proper dimensions
-      if (mainPane.clientHeight === 0 || mainPane.clientWidth === 0) {
-        console.warn('⚠️ Main chart pane has zero dimensions, forcing layout...');
-        mainPane.style.display = 'block';
-        mainPane.style.width = '100%';
-        mainPane.style.height = (window.innerHeight * 0.55) + 'px';
-        mainPane.style.minHeight = '300px';
-        mainPane.style.position = 'relative';
-        mainPane.style.overflow = 'hidden';
-        mainPane.style.flex = '1 1 auto';
-      }
+  const mainPane = document.getElementById('main-chart-pane');
+  if (mainPane) {
+    if (mainPane.clientHeight === 0 || mainPane.clientWidth === 0) {
+      console.warn('⚠️ Main chart pane has zero dimensions, forcing layout...');
+      mainPane.style.display = 'block';
+      mainPane.style.width = '100%';
+      mainPane.style.height = (window.innerHeight * 0.55) + 'px';
+      mainPane.style.minHeight = '300px';
+      mainPane.style.position = 'relative';
+      mainPane.style.overflow = 'hidden';
+      mainPane.style.flex = '1 1 auto';
     }
-    
-    // Force the chart canvas element to have dimensions
-    if (el.clientHeight === 0 || el.clientWidth === 0) {
-      console.warn('⚠️ Price chart canvas has zero dimensions, forcing...');
-      el.style.width = '100%';
-      el.style.height = '100%';
-      el.style.minHeight = '300px';
-      el.style.display = 'block';
-      el.style.position = 'absolute';
-      el.style.top = '0';
-      el.style.left = '0';
-      el.style.right = '0';
-      el.style.bottom = '0';
-    }
-    
-    // Hide the chart watermark on mobile for cleaner look
-    const watermark = document.querySelector('.chart-watermark');
-    if (watermark) {
-      watermark.style.display = 'none';
-    }
+  }
+  
+  // Force the chart canvas element to have dimensions
+  if (el.clientHeight === 0 || el.clientWidth === 0) {
+    console.warn('⚠️ Price chart canvas has zero dimensions, forcing...');
+    el.style.width = '100%';
+    el.style.height = '100%';
+    el.style.minHeight = '300px';
+    el.style.display = 'block';
+    el.style.position = 'absolute';
+    el.style.top = '0';
+    el.style.left = '0';
+    el.style.right = '0';
+    el.style.bottom = '0';
   }
   
   // ============================================
@@ -2178,7 +2169,6 @@ createPriceChart() {
   let chartWidth = el.clientWidth;
   let chartHeight = el.clientHeight;
   
-  // Apply fallback dimensions
   if (!chartWidth || chartWidth < 50) {
     chartWidth = isMobile ? (window.innerWidth || 375) : 800;
     console.warn('⚠️ Chart width fallback applied: ' + chartWidth + 'px');
@@ -2186,10 +2176,8 @@ createPriceChart() {
   
   if (!chartHeight || chartHeight < 50) {
     if (isMobile) {
-      // Mobile: Use 55% of viewport height
       chartHeight = Math.max(300, window.innerHeight * 0.55);
     } else {
-      // Desktop: Use reasonable default
       chartHeight = 450;
     }
     console.warn('⚠️ Chart height fallback applied: ' + chartHeight + 'px');
@@ -2202,22 +2190,17 @@ createPriceChart() {
   // ============================================
   if (this.charts.price) {
     try {
-      // Remove existing series first
       if (this.mainSeries) {
         this.charts.price.removeSeries(this.mainSeries);
       }
-      // Remove overlay series
       if (this.overlays) {
         Object.keys(this.overlays).forEach(key => {
           try {
             this.charts.price.removeSeries(this.overlays[key]);
-          } catch(e) {
-            // Ignore removal errors
-          }
+          } catch(e) {}
         });
         this.overlays = {};
       }
-      // Remove the chart
       this.charts.price.remove();
     } catch(e) {
       console.warn('Error cleaning up existing chart:', e.message);
@@ -2226,21 +2209,66 @@ createPriceChart() {
     this.mainSeries = null;
   }
   
-    const chartOptions = this._getCommonChartOptions({
+  // ============================================
+  // CRITICAL: Complete chart options with RIGHT PRICE SCALE
+  // ============================================
+  const chartOptions = {
+    layout: {
+      background: { type: 'solid', color: '#0d1117' },
+      textColor: '#c9d1d9',
+      fontSize: 11,
+      fontFamily: 'Inter, -apple-system, sans-serif'
+    },
+    grid: {
+      vertLines: { color: '#21262d', visible: true },
+      horzLines: { color: '#21262d', visible: true }
+    },
+    crosshair: {
+      mode: 1,
+      vertLine: {
+        color: '#8b949e',
+        width: 1,
+        style: 2,
+        labelBackgroundColor: '#1c2128',
+        visible: true,
+        labelVisible: true
+      },
+      horzLine: {
+        color: '#8b949e',
+        width: 1,
+        style: 2,
+        labelBackgroundColor: '#1c2128',
+        visible: true,
+        labelVisible: true
+      }
+    },
     rightPriceScale: {
+      visible: true,              // ← CRITICAL: Shows price axis
+      borderVisible: true,
+      borderColor: '#30363d',
       scaleMargins: { 
         top: isMobile ? 0.2 : 0.15,
         bottom: isMobile ? 0.1 : 0.2
-      }
+      },
+      autoScale: true,
+      mode: 0,                    // 0 = linear, 1 = logarithmic
+      drawTicks: true,
+      ticksVisible: true
     },
-    timeScale: isMobile ? {
-      tickMarkFormatter: function(time) {
+    leftPriceScale: {
+      visible: false
+    },
+    timeScale: {
+      borderColor: '#30363d',
+      timeVisible: true,
+      secondsVisible: false,
+      tickMarkFormatter: isMobile ? function(time) {
         const date = new Date(time * 1000);
         const hours = date.getHours().toString().padStart(2, '0');
         const minutes = date.getMinutes().toString().padStart(2, '0');
         return hours + ':' + minutes;
-      }
-    } : {},
+      } : undefined
+    },
     handleScroll: {
       vertTouchDrag: !isMobile,
       horzTouchDrag: true
@@ -2255,7 +2283,7 @@ createPriceChart() {
     },
     width: chartWidth,
     height: chartHeight
-  });
+  };
   
   const chart = LightweightCharts.createChart(el, chartOptions);
   
@@ -2269,9 +2297,12 @@ createPriceChart() {
     borderDownColor: '#ef5350',
     wickUpColor: '#26a69a',
     wickDownColor: '#ef5350',
-    // PHASE 2 FIX: Better visibility on mobile
     borderVisible: true,
-    wickVisible: true
+    wickVisible: true,
+    priceLineVisible: true,
+    priceLineWidth: 1,
+    priceLineColor: '#58a6ff',
+    lastValueVisible: true
   });
   
   // Store references
@@ -2289,37 +2320,27 @@ createPriceChart() {
   // ============================================
   // Store crosshair subscription for drawing engine
   // ============================================
+  const self = this;
+  
   chart.subscribeCrosshairMove((param) => {
     if (DrawingEngine && typeof DrawingEngine.handleCrosshairMove === 'function') {
       DrawingEngine.handleCrosshairMove(param);
     }
-        // ============================================
-  // PHASE 2 FIX: Redraw drawings when chart is zoomed or panned
-  // ============================================
+    // Update mobile tooltip on crosshair move
+    if (isMobile && param && param.point && param.time) {
+      self.updateMobileCrosshair(param);
+    }
+  });
+  
+  // Redraw drawings when chart is zoomed or panned
   chart.timeScale().subscribeVisibleTimeRangeChange(function() {
     if (DrawingEngine && typeof DrawingEngine.redraw === 'function') {
       DrawingEngine.redraw();
     }
   });
   
-  // Also redraw on any crosshair move (catches price scale changes)
-  chart.subscribeCrosshairMove(function(param) {
-    if (DrawingEngine && typeof DrawingEngine.handleCrosshairMove === 'function') {
-      DrawingEngine.handleCrosshairMove(param);
-    }
-    // Redraw drawings periodically during chart interaction
-    if (DrawingEngine && typeof DrawingEngine.redraw === 'function' && param.point) {
-      DrawingEngine.redraw();
-    }
-  });
-    // PHASE 2 FIX: Update mobile tooltip on crosshair move
-    if (isMobile && param.point && param.time) {
-      this.updateMobileCrosshair(param);
-    }
-  });
-  
   // ============================================
-  // PHASE 2 FIX: Store dimensions for resize
+  // Store dimensions for resize
   // ============================================
   chart._creationDimensions = {
     width: chartWidth,
@@ -2328,10 +2349,10 @@ createPriceChart() {
     createdAt: Date.now()
   };
   
-  console.log('✅ Price chart created successfully (' + chartWidth + 'x' + chartHeight + ', mobile optimized: ' + isMobile + ')');
+  console.log('✅ Price chart created successfully (' + chartWidth + 'x' + chartHeight + ')');
   
   // ============================================
-  // PHASE 2 FIX: Verify chart rendered correctly
+  // Verify chart rendered correctly
   // ============================================
   setTimeout(() => {
     const currentWidth = el.clientWidth;
@@ -2340,12 +2361,77 @@ createPriceChart() {
       console.log('✅ Chart verified: ' + currentWidth + 'x' + currentHeight);
     } else {
       console.warn('⚠️ Chart may not have rendered properly. Current dimensions: ' + currentWidth + 'x' + currentHeight);
-      // Force resize if needed
       if (currentWidth > 0 && currentHeight > 0) {
         chart.resize(currentWidth, currentHeight);
       }
     }
   }, 500);
+},
+
+// ============================================
+// REQUIRED HELPER METHODS (Add these if missing)
+// ============================================
+
+addMobilePriceLabel(chart) {
+  // Add a visible price label on the right side for mobile
+  const priceScale = chart.priceScale('right');
+  if (priceScale) {
+    priceScale.applyOptions({
+      borderVisible: true,
+      scaleMargins: {
+        top: 0.2,
+        bottom: 0.1
+      }
+    });
+  }
+},
+
+updateMobileCrosshair(param) {
+  const tooltip = document.getElementById('crosshair-tooltip');
+  if (!tooltip) return;
+  
+  if (param.point && param.time) {
+    const data = param.seriesData.get(this.mainSeries);
+    if (data) {
+      tooltip.classList.remove('hidden');
+      const rect = document.getElementById('main-chart-pane')?.getBoundingClientRect();
+      if (rect) {
+        tooltip.style.left = Math.min(param.point.x, rect.width - 180) + 'px';
+        tooltip.style.top = Math.max(10, param.point.y - 120) + 'px';
+      }
+      
+      tooltip.innerHTML = `
+        <div style="font-size:10px;color:var(--text-muted);">${new Date(param.time * 1000).toLocaleTimeString()}</div>
+        <div style="font-size:11px;margin-top:4px;">
+          <span style="color:var(--text-muted);">O</span> ${U.formatPrice(data.open)}
+          <span style="color:var(--text-muted);margin-left:8px;">H</span> ${U.formatPrice(data.high)}
+          <span style="color:var(--text-muted);margin-left:8px;">L</span> ${U.formatPrice(data.low)}
+          <span style="color:var(--text-muted);margin-left:8px;">C</span> ${U.formatPrice(data.close)}
+        </div>
+      `;
+    }
+  } else {
+    tooltip.classList.add('hidden');
+  }
+},
+
+setupMobileGestures(chart) {
+  const isMobile = window.innerWidth <= 768;
+  if (!isMobile) return;
+  
+  let lastTap = 0;
+  
+  const priceEl = document.getElementById('price-chart');
+  if (priceEl) {
+    priceEl.addEventListener('touchend', (e) => {
+      const now = Date.now();
+      if (now - lastTap < 300) {
+        e.preventDefault();
+        chart.timeScale().fitContent();
+      }
+      lastTap = now;
+    });
+  }
 },
 
 // ============================================
@@ -9422,15 +9508,13 @@ cleanupConnection() {
   
   STATE._wsHealth.reconnectTimeoutId = reconnectId;
 },
-	  
-  disconnect() {
-  // ============================================
-  // PHASE 1 FIX: Also clean up REST polling
-  // ============================================
-  this.cleanupConnection();
+
+disconnect() {
+  // Stop REST polling first
   this.stopRestPolling();
   
-  if(STATE.websockets.multi) {
+  // Close WebSocket connections
+  if (STATE.websockets.multi) {
     try {
       STATE.websockets.multi.close(1000, 'User disconnected');
     } catch(e) {
@@ -9438,7 +9522,8 @@ cleanupConnection() {
     }
     STATE.websockets.multi = null;
   }
-  if(STATE.websockets.ticker) {
+  
+  if (STATE.websockets.ticker) {
     try {
       STATE.websockets.ticker.close(1000, 'User disconnected');
     } catch(e) {
@@ -9447,231 +9532,315 @@ cleanupConnection() {
     STATE.websockets.ticker = null;
   }
   
-  STATE.isConnected = false;
+  // Reset connection flags
+  this._wsConnecting = false;
+  this._reconnecting = false;
   
-  //const statusDot = document.getElementById('status-dot');
-  //const statusText = document.getElementById('status-text');
-  //if(statusDot) statusDot.className = 'status-dot disconnected';
-  //if(statusText) statusText.textContent = 'Disconnected';
-	      // Production: Silent connection management
-    console.log('🔌 WebSocket: Connected');
-    
-    // Keep status elements hidden
-    const statusDot = document.getElementById('status-dot');
-    const statusText = document.getElementById('status-text');
-    if(statusDot) statusDot.style.display = 'none';
-    if(statusText) statusText.style.display = 'none';
-},
-    
-  // ============================================
-  // REPLACE WITH CODE BLOCK B (COMPLETE METHOD)
-  // ============================================
-  async switchSymbol(s) {
-    if (s === STATE.symbol && STATE.assetType === (STATE.assetType || 'crypto')) {
-      console.log('Same symbol, skipping');
-      return;
+  // Clear health intervals
+  if (STATE._wsHealth) {
+    if (STATE._wsHealth.pingIntervalId) {
+      IntervalManager.clear(STATE._wsHealth.pingIntervalId);
+      STATE._wsHealth.pingIntervalId = null;
     }
-    
-    console.log('🔄 Switching symbol from', STATE.symbol, 'to', s);
-    
-    // STEP 1: Show loading indicator
-    const chartContainer = document.getElementById('price-chart');
-    const mainPane = document.getElementById('main-chart-pane');
-    if (chartContainer) {
-      chartContainer.style.opacity = '0.4';
-      chartContainer.style.transition = 'opacity 0.2s';
+    if (STATE._wsHealth.reconnectTimeoutId) {
+      IntervalManager.clear(STATE._wsHealth.reconnectTimeoutId);
+      STATE._wsHealth.reconnectTimeoutId = null;
     }
-    
-    // STEP 2: FORCE CLEAR all chart data BEFORE fetching
-     // CRITICAL: Force clean chart before loading new data
-  if (ChartEngine && ChartEngine.charts && ChartEngine.charts.price) {
-    const container = document.getElementById('price-chart');
-    if (container) {
-      const canvases = container.querySelectorAll('canvas');
-      canvases.forEach(canvas => canvas.remove());
-    }
-    
-    // Force chart recreation
-    ChartEngine.createPriceChart();
-    ChartEngine.createVolumeChart();
   }
-    
-    // Clear all overlays
-    if (ChartEngine && ChartEngine.overlays) {
-      Object.keys(ChartEngine.overlays).forEach(key => {
-        try {
-          if (ChartEngine.charts.price) {
-            ChartEngine.charts.price.removeSeries(ChartEngine.overlays[key]);
-          }
-        } catch(e) {}
-      });
-      ChartEngine.overlays = {};
-    }
-    
-    // Clear indicator panes from DOM
-    const indContainer = document.getElementById('indicator-panes-container');
-    if (indContainer) {
-      while (indContainer.firstChild) {
-        indContainer.removeChild(indContainer.firstChild);
-      }
-      indContainer.style.display = 'none';
-    }
-    
-    // Clear indicator references
-    if (ChartEngine && ChartEngine.charts) {
-      ['rsi', 'macd', 'cci', 'williamsr', 'atr', 'stoch', 'obv', 'mfi', 'stochrsi', 'mom', 'roc', 'ad', 'cmf', 'volprof'].forEach(id => {
-        if (ChartEngine.charts[id]) {
-          try { ChartEngine.charts[id].remove(); } catch(e) {}
-          delete ChartEngine.charts[id];
+  
+  STATE.isConnected = false;
+  console.log('🔌 Disconnected from all data sources');
+},
+
+	  // Add this method RIGHT AFTER the disconnect() method
+stopRestPolling() {
+  console.log('🛑 Stopping REST polling...');
+  
+  if (this._restPollingInterval) {
+    clearInterval(this._restPollingInterval);
+    this._restPollingInterval = null;
+  }
+  
+  if (this._restPollingTimeout) {
+    clearTimeout(this._restPollingTimeout);
+    this._restPollingTimeout = null;
+  }
+  
+  this._restPollingActive = false;
+  console.log('✅ REST polling stopped');
+},
+async switchSymbol(s) {
+  if (s === STATE.symbol && STATE.assetType === (STATE.assetType || 'crypto')) {
+    console.log('Same symbol, skipping');
+    return;
+  }
+  
+  console.log('🔄 Switching symbol from', STATE.symbol, 'to', s);
+  
+  // ============================================
+  // STEP 1: Save current chart view state
+  // ============================================
+  let savedRange = null;
+  if (ChartEngine && ChartEngine.charts && ChartEngine.charts.price) {
+    try {
+      savedRange = ChartEngine.charts.price.timeScale().getVisibleRange();
+    } catch(e) {}
+  }
+  
+  // ============================================
+  // STEP 2: Show loading indicator
+  // ============================================
+  const chartContainer = document.getElementById('price-chart');
+  const mainPane = document.getElementById('main-chart-pane');
+  if (chartContainer) {
+    chartContainer.style.opacity = '0.4';
+    chartContainer.style.transition = 'opacity 0.2s';
+  }
+  
+  // ============================================
+  // STEP 3: Clear data WITHOUT destroying chart structure
+  // ============================================
+  if (ChartEngine && ChartEngine.mainSeries) {
+    try {
+      ChartEngine.mainSeries.setData([]);
+    } catch(e) {}
+  }
+  
+  if (ChartEngine && ChartEngine.series && ChartEngine.series.volume) {
+    try {
+      ChartEngine.series.volume.setData([]);
+    } catch(e) {}
+  }
+  
+  // Clear overlays but keep chart structure
+  if (ChartEngine && ChartEngine.overlays) {
+    Object.keys(ChartEngine.overlays).forEach(key => {
+      try {
+        if (ChartEngine.charts.price) {
+          ChartEngine.charts.price.removeSeries(ChartEngine.overlays[key]);
         }
-        if (ChartEngine.series && ChartEngine.series[id]) {
-          try { ChartEngine.series[id].setData([]); } catch(e) {}
-          delete ChartEngine.series[id];
-        }
-      });
+      } catch(e) {}
+    });
+    ChartEngine.overlays = {};
+  }
+  
+  // ============================================
+  // STEP 4: Store indicators to reapply later
+  // ============================================
+  if (STATE.activeIndicators && STATE.activeIndicators.size > 0) {
+    window._pendingIndicators = Array.from(STATE.activeIndicators);
+    STATE.activeIndicators.clear();
+  }
+  
+  // Clear indicator panes from DOM but keep container
+  const indContainer = document.getElementById('indicator-panes-container');
+  if (indContainer) {
+    while (indContainer.firstChild) {
+      indContainer.removeChild(indContainer.firstChild);
     }
-    
-    // Clear STATE candles
-    STATE.candles = [];
-    
-    // STEP 3: Disconnect old connections
-    if (STATE.assetType === 'crypto') {
-      if (DataManager.disconnect) DataManager.disconnect();
-      if (DataManager.stopRestPolling) DataManager.stopRestPolling();
-    } else {
-      if (StockDataManager && StockDataManager.stopPolling) StockDataManager.stopPolling();
-    }
-    
-    // STEP 4: Update STATE
-    STATE.symbol = s;
-    
-    // Auto-detect asset type if needed
-    if (!STATE.assetType || STATE.assetType === 'crypto') {
-      if (s.length === 6 && !s.endsWith('USDT')) {
-        STATE.assetType = 'forex';
-      } else if (/^[A-Z]{1,5}$/.test(s) && !s.endsWith('USDT')) {
-        STATE.assetType = 'stocks';
-      } else {
-        STATE.assetType = 'crypto';
+    indContainer.style.display = 'none';
+  }
+  
+  // Clear indicator references
+  if (ChartEngine && ChartEngine.charts) {
+    ['rsi', 'macd', 'cci', 'williamsr', 'atr', 'stoch', 'obv', 'mfi', 'stochrsi', 'mom', 'roc', 'ad', 'cmf', 'volprof'].forEach(id => {
+      if (ChartEngine.charts[id]) {
+        try { ChartEngine.charts[id].remove(); } catch(e) {}
+        delete ChartEngine.charts[id];
       }
-    }
-    
-    // STEP 5: Update UI
-    const symbolName = document.getElementById('symbol-name');
-    const symbolSearch = document.getElementById('symbol-search');
-    const symbolExchange = document.getElementById('symbol-exchange');
-    const mobileSymbolName = document.getElementById('mobile-symbol-name');
-    
-    if (symbolName) symbolName.textContent = s.includes('/') ? s : s.replace('USDT', '/USDT');
-    if (symbolSearch) symbolSearch.value = s;
-    if (mobileSymbolName) mobileSymbolName.textContent = s.includes('/') ? s : s.replace('USDT', '/USDT');
-    
-    if (symbolExchange) {
-      if (STATE.assetType === 'crypto') symbolExchange.textContent = 'Binance';
-      else if (STATE.assetType === 'stocks') symbolExchange.textContent = 'US Stocks';
-      else symbolExchange.textContent = 'Forex';
-    }
-    
-    // Update active asset type button
-    document.querySelectorAll('.asset-type-btn').forEach(btn => {
-      btn.style.background = 'transparent';
-      btn.style.color = 'var(--text-secondary)';
-      if (btn.dataset.asset === STATE.assetType) {
-        btn.style.background = 'var(--accent-primary)';
-        btn.style.color = 'white';
+      if (ChartEngine.series && ChartEngine.series[id]) {
+        delete ChartEngine.series[id];
       }
     });
-    
-    DataManager.updateWatchlistStar();
-    
-    // STEP 6: Load NEW data
-    try {
-      if (STATE.assetType === 'stocks' || STATE.assetType === 'forex') {
-        console.log('📈 Loading stock/forex data for', s);
+  }
+  
+  // Clear STATE candles
+  STATE.candles = [];
+  
+  // ============================================
+  // STEP 5: Disconnect old connections safely
+  // ============================================
+  if (STATE.assetType === 'crypto') {
+    if (DataManager.disconnect) {
+      DataManager.disconnect();
+    }
+  } else {
+    if (StockDataManager && typeof StockDataManager.stopPolling === 'function') {
+      StockDataManager.stopPolling();
+    }
+  }
+  
+  // ============================================
+  // STEP 6: Update STATE
+  // ============================================
+  STATE.symbol = s;
+  
+  // Auto-detect asset type
+  if (s.endsWith('USDT')) {
+    STATE.assetType = 'crypto';
+  } else if (s.length === 6 && !s.endsWith('USDT')) {
+    STATE.assetType = 'forex';
+  } else if (/^[A-Z]{1,5}$/.test(s) && !s.endsWith('USDT')) {
+    STATE.assetType = 'stocks';
+  } else {
+    STATE.assetType = 'crypto';
+  }
+  
+  // ============================================
+  // STEP 7: Update UI
+  // ============================================
+  const symbolName = document.getElementById('symbol-name');
+  const symbolSearch = document.getElementById('symbol-search');
+  const symbolExchange = document.getElementById('symbol-exchange');
+  const mobileSymbolName = document.getElementById('mobile-symbol-name');
+  
+  if (symbolName) symbolName.textContent = s.includes('/') ? s : s.replace('USDT', '/USDT');
+  if (symbolSearch) symbolSearch.value = s;
+  if (mobileSymbolName) mobileSymbolName.textContent = s.includes('/') ? s : s.replace('USDT', '/USDT');
+  
+  if (symbolExchange) {
+    if (STATE.assetType === 'crypto') symbolExchange.textContent = 'Binance';
+    else if (STATE.assetType === 'stocks') symbolExchange.textContent = 'US Stocks';
+    else symbolExchange.textContent = 'Forex';
+  }
+  
+  // Update active asset type button
+  document.querySelectorAll('.asset-type-btn').forEach(btn => {
+    btn.style.background = 'transparent';
+    btn.style.color = 'var(--text-secondary)';
+    if (btn.dataset.asset === STATE.assetType) {
+      btn.style.background = 'var(--accent-primary)';
+      btn.style.color = 'white';
+    }
+  });
+  
+  if (typeof WatchlistManager !== 'undefined' && WatchlistManager.updateWatchlistStar) {
+    WatchlistManager.updateWatchlistStar();
+  }
+  
+  // ============================================
+  // STEP 8: Load NEW data
+  // ============================================
+  try {
+    if (STATE.assetType === 'stocks' || STATE.assetType === 'forex') {
+      console.log('📈 Loading stock/forex data for', s);
+      
+      const candles = await StockDataManager.loadCandles(s, STATE.interval);
+      
+      if (candles && candles.length > 0) {
+        STATE.candles = candles;
         
-        const candles = await StockDataManager.loadCandles(s, STATE.interval);
-        
-        if (candles && candles.length > 0) {
-          STATE.candles = candles;
-          
-          if (ChartEngine && ChartEngine.updateMain) {
-            ChartEngine.updateMain(candles);
-          }
-          
-          setTimeout(() => {
-            if (ChartEngine && ChartEngine.updateVolume) {
-              ChartEngine.updateVolume(candles);
-            }
-            if (ChartEngine && ChartEngine.fitContent) {
-              ChartEngine.fitContent();
-            }
-          }, 100);
-          
-          const lastCandle = candles[candles.length - 1];
-          if (lastCandle && DataManager.updatePriceDisplay) {
-            DataManager.updatePriceDisplay(lastCandle);
-          }
-          
-          await DataManager.load24h(s);
+        if (ChartEngine && ChartEngine.updateMain) {
+          ChartEngine.updateMain(candles);
         }
         
-        StockDataManager.startPolling(s);
+        setTimeout(() => {
+          if (ChartEngine && ChartEngine.updateVolume) {
+            ChartEngine.updateVolume(candles);
+          }
+          if (ChartEngine && ChartEngine.fitContent) {
+            ChartEngine.fitContent();
+          }
+        }, 100);
         
-      } else {
-        console.log('📈 Loading crypto data for', s);
+        const lastCandle = candles[candles.length - 1];
+        if (lastCandle && DataManager.updatePriceDisplay) {
+          DataManager.updatePriceDisplay(lastCandle);
+        }
         
-        await DataManager.loadHistory(s, STATE.interval);
         await DataManager.load24h(s);
-        
-        setTimeout(() => {
-          DataManager.connectWS();
-        }, 300);
       }
       
-      // STEP 7: Refresh multi-chart system
-      if (typeof MultiChart !== 'undefined' && MultiChart.layout !== 'single') {
-        setTimeout(() => {
-          console.log('🔄 Refreshing multi-chart system...');
-          MultiChart.loadAllSecondaryCharts();
-        }, 1000);
+      if (StockDataManager && typeof StockDataManager.startPolling === 'function') {
+        StockDataManager.startPolling(s);
       }
       
-      // STEP 8: Refresh multi-timeframe bar
-      if (typeof MultiTimeframeMonitor !== 'undefined') {
-        setTimeout(() => {
-          MultiTimeframeMonitor.refresh();
-        }, 1500);
-      }
+    } else {
+      console.log('📈 Loading crypto data for', s);
       
-      // STEP 9: Recalculate indicators
+      await DataManager.loadHistory(s, STATE.interval);
+      await DataManager.load24h(s);
+      
       setTimeout(() => {
-        if (STATE.activeIndicators && STATE.activeIndicators.size > 0 && typeof IndicatorEngine !== 'undefined') {
+        DataManager.connectWS();
+      }, 300);
+    }
+    
+    // ============================================
+    // STEP 9: Reapply indicators
+    // ============================================
+    if (window._pendingIndicators && window._pendingIndicators.length > 0) {
+      setTimeout(() => {
+        window._pendingIndicators.forEach(ind => {
+          if (typeof IndicatorEngine !== 'undefined' && STATE.activeIndicators) {
+            STATE.activeIndicators.add(ind);
+          }
+        });
+        if (typeof IndicatorEngine !== 'undefined' && IndicatorEngine.calculateAll) {
           IndicatorEngine.calculateAll();
         }
-        if (ChartEngine && ChartEngine.resizeAll) {
-          ChartEngine.resizeAll();
-        }
-      }, 1200);
-      
-      // STEP 10: Hide loading indicator
-      setTimeout(() => {
-        if (chartContainer) chartContainer.style.opacity = '1';
-        if (mainPane) mainPane.style.opacity = '1';
+        window._pendingIndicators = null;
       }, 800);
-      
-    } catch(e) {
-      console.error('❌ Failed to load data for', s, ':', e.message);
-      if (chartContainer) chartContainer.style.opacity = '1';
     }
     
-    // Emit event
-    if (typeof Events !== 'undefined') {
-      Events.emit('symbol:changed', { symbol: s, assetType: STATE.assetType });
+    // ============================================
+    // STEP 10: Restore chart view
+    // ============================================
+    if (savedRange && ChartEngine && ChartEngine.charts && ChartEngine.charts.price) {
+      setTimeout(() => {
+        try {
+          ChartEngine.charts.price.timeScale().setVisibleRange(savedRange);
+        } catch(e) {}
+      }, 500);
     }
-  },
+    
+    // ============================================
+    // STEP 11: Refresh multi-chart system
+    // ============================================
+    if (typeof MultiChart !== 'undefined' && MultiChart.layout !== 'single') {
+      setTimeout(() => {
+        MultiChart.loadAllSecondaryCharts();
+      }, 1000);
+    }
+    
+    // ============================================
+    // STEP 12: Refresh multi-timeframe bar
+    // ============================================
+    if (typeof MultiTimeframeMonitor !== 'undefined') {
+      setTimeout(() => {
+        MultiTimeframeMonitor.refresh();
+      }, 1500);
+    }
+    
+    // ============================================
+    // STEP 13: Recalculate indicators and resize
+    // ============================================
+    setTimeout(() => {
+      if (STATE.activeIndicators && STATE.activeIndicators.size > 0 && typeof IndicatorEngine !== 'undefined') {
+        IndicatorEngine.calculateAll();
+      }
+      if (ChartEngine && ChartEngine.resizeAll) {
+        ChartEngine.resizeAll();
+      }
+    }, 1200);
+    
+  } catch(e) {
+    console.error('❌ Failed to load data for', s, ':', e.message);
+  }
+  
   // ============================================
-  // END OF CODE BLOCK B
+  // STEP 14: Hide loading indicator
   // ============================================
+  setTimeout(() => {
+    if (chartContainer) chartContainer.style.opacity = '1';
+    if (mainPane) mainPane.style.opacity = '1';
+  }, 800);
+  
+  // Emit event
+  if (typeof Events !== 'undefined') {
+    Events.emit('symbol:changed', { symbol: s, assetType: STATE.assetType });
+  }
+},
     
       async switchInterval(i) {
   if(i === STATE.interval) return;
