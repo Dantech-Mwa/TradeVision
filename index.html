@@ -5558,7 +5558,24 @@ button:active,.trade-type:active,.order-type-btn:active,.quick-amount-btn:active
 </script>
 
 <!-- Load Engine AFTER Firebase -->
-<script src="engine.js"></script>
+<script>
+// Load engine from Cloudflare Worker
+(function() {
+  const ENGINE_URL = 'https://tradevision-backend.wambuamwanza6.workers.dev/engine.js';
+  
+  const script = document.createElement('script');
+  script.src = ENGINE_URL;
+  script.onerror = () => {
+    console.error('Failed to load engine');
+    const errorDiv = document.createElement('div');
+    errorDiv.style.cssText = 'position:fixed;bottom:20px;right:20px;background:#ef5350;color:white;padding:10px;border-radius:5px;z-index:9999;font-size:12px;';
+    errorDiv.innerHTML = '⚠️ Trading engine loading. Please refresh if this persists.';
+    document.body.appendChild(errorDiv);
+    setTimeout(() => errorDiv.remove(), 5000);
+  };
+  document.head.appendChild(script);
+})();
+</script>
 <!-- Load Chart Libraries AFTER Engine if needed -->
 <script>
   // Final check that everything loaded
