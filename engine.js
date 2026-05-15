@@ -2121,7 +2121,7 @@ window.debugTimers = function() {
       
       return defaults;
     },
-
+createPriceChart() {
   const el = document.getElementById('price-chart');
   if(!el) {
     console.error('❌ Price chart element not found in DOM');
