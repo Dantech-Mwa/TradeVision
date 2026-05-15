@@ -3161,22 +3161,64 @@ setupCrosshair() {
       
       console.log('✅ P0 FIX: All charts, overlays, and indicator panes destroyed');
     },
-   // ============================================
-// UPDATE MAIN CHART - INSTITUTIONAL GRADE
-// Prevents rectangles and disappearing charts
+// ============================================
+// CODE BLOCK O: Complete replace of ChartEngine.updateMain
+// FIXES: Binance array format support + rectangles
 // ============================================
 updateMain(data) {
   // ============================================
-  // GUARD: Validate input
+  // STEP 1: Validate and CONVERT data format
   // ============================================
   if (!data || !data.length) {
     console.warn('⚠️ updateMain: No data provided');
     return;
   }
   
+  // DETECT DATA FORMAT and CONVERT if needed
+  let normalizedData = data;
+  const firstItem = data[0];
+  
+  // Check if data is in Binance array format [timestamp, open, high, low, close, volume]
+  if (Array.isArray(firstItem) && firstItem.length >= 6) {
+    console.log('🔄 Converting Binance array format to object format');
+    normalizedData = [];
+    for (let i = 0; i < data.length; i++) {
+      const k = data[i];
+      normalizedData.push({
+        time: Math.floor(k[0] / 1000),  // Convert ms to seconds
+        open: parseFloat(k[1]),
+        high: parseFloat(k[2]),
+        low: parseFloat(k[3]),
+        close: parseFloat(k[4]),
+        volume: parseFloat(k[5])
+      });
+    }
+    // Update STATE with converted data
+    STATE.candles = normalizedData;
+    console.log(`✅ Converted ${normalizedData.length} candles from array format`);
+  }
+  // Check if data is already in object format
+  else if (typeof firstItem === 'object' && firstItem !== null && 
+           typeof firstItem.time !== 'undefined' && typeof firstItem.close !== 'undefined') {
+    console.log('✅ Data already in object format');
+    normalizedData = data;
+  }
+  else {
+    console.error('❌ updateMain: Unknown data format', typeof firstItem, firstItem);
+    return;
+  }
+  
+  // ============================================
+  // STEP 2: Guard checks after conversion
+  // ============================================
+  if (!normalizedData || !normalizedData.length) {
+    console.warn('⚠️ updateMain: No data after normalization');
+    return;
+  }
+  
   if (!this.mainSeries || !this.charts.price) {
     console.warn('⚠️ updateMain: Chart not ready, queueing update');
-    this._pendingMainData = data;
+    this._pendingMainData = normalizedData;
     setTimeout(() => {
       if (this.mainSeries && this._pendingMainData) {
         this.updateMain(this._pendingMainData);
@@ -3186,23 +3228,23 @@ updateMain(data) {
     return;
   }
   
-  // Validate data integrity
-  const firstCandle = data[0];
+  // Validate first candle has required properties
+  const firstCandle = normalizedData[0];
   if (!firstCandle || typeof firstCandle.time !== 'number' || typeof firstCandle.close !== 'number') {
-    console.error('❌ updateMain: Invalid candle data structure');
+    console.error('❌ updateMain: Invalid candle after conversion', firstCandle);
     return;
   }
   
-  console.log(`📊 updateMain: Rendering ${data.length} candles (${STATE.chartType})`);
+  console.log(`📊 updateMain: Rendering ${normalizedData.length} candles (${STATE.chartType})`);
   
   // ============================================
-  // PREPARE DATA BASED ON CHART TYPE
+  // STEP 3: Prepare data based on chart type
   // ============================================
   let chartData;
   
   try {
     if (STATE.chartType === 'candlestick' || STATE.chartType === 'bar') {
-      chartData = data.map(d => ({
+      chartData = normalizedData.map(d => ({
         time: d.time,
         open: d.open,
         high: d.high,
@@ -3210,12 +3252,12 @@ updateMain(data) {
         close: d.close
       }));
     } else if (STATE.chartType === 'line' || STATE.chartType === 'area') {
-      chartData = data.map(d => ({
+      chartData = normalizedData.map(d => ({
         time: d.time,
         value: d.close
       }));
     } else if (STATE.chartType === 'heikinashi') {
-      const heikin = this.calculateHeikinAshi(data);
+      const heikin = this.calculateHeikinAshi(normalizedData);
       chartData = heikin.map(d => ({
         time: d.time,
         open: d.open,
@@ -3224,8 +3266,7 @@ updateMain(data) {
         close: d.close
       }));
     } else {
-      // Default to candlestick
-      chartData = data.map(d => ({
+      chartData = normalizedData.map(d => ({
         time: d.time,
         open: d.open,
         high: d.high,
@@ -3238,42 +3279,75 @@ updateMain(data) {
     return;
   }
   
+  if (!chartData || !chartData.length) {
+    console.error('❌ updateMain: No chart data prepared');
+    return;
+  }
+  
   // ============================================
-  // CLEAR EXISTING DATA FIRST (Prevents rectangles)
+  // STEP 4: Clear existing data (prevents rectangles)
   // ============================================
   try {
     this.mainSeries.setData([]);
+    console.log('🧹 Cleared existing chart data');
   } catch(e) {
     console.warn('Could not clear main series:', e.message);
   }
   
   // ============================================
-  // SET NEW DATA WITH DELAY FOR CLEAN RENDER
+  // STEP 5: Set new data with multiple retries
   // ============================================
-  setTimeout(() => {
+  const self = this;
+  let retryCount = 0;
+  const maxRetries = 3;
+  
+  function attemptSetData() {
     try {
-      this.mainSeries.setData(chartData);
+      self.mainSeries.setData(chartData);
       console.log(`✅ updateMain: Successfully rendered ${chartData.length} candles`);
-    } catch(e) {
-      console.error('❌ updateMain: Failed to set data:', e.message);
       
-      // Retry once with fallback
+      // Force fit content after successful render
       setTimeout(() => {
-        try {
-          // Simplified data as fallback
-          const fallbackData = chartData.slice(-100).map(d => ({
-            time: d.time,
-            value: d.close || d.value
-          }));
-          this.mainSeries.setData(fallbackData);
-          console.log('✅ updateMain: Fallback render successful');
-        } catch(e2) {
-          console.error('❌ updateMain: Fallback also failed:', e2.message);
+        if (self.charts.price && self.charts.price.timeScale) {
+          self.charts.price.timeScale().fitContent();
         }
       }, 100);
+      
+    } catch(e) {
+      console.error(`❌ updateMain: Failed to set data (attempt ${retryCount + 1}):`, e.message);
+      retryCount++;
+      
+      if (retryCount < maxRetries) {
+        // Exponential backoff
+        const delay = 100 * Math.pow(2, retryCount);
+        setTimeout(attemptSetData, delay);
+      } else {
+        // Final fallback - try simplified data
+        try {
+          const fallbackData = chartData.slice(-50).map(d => ({
+            time: d.time,
+            value: d.close || d.value || 0
+          }));
+          self.mainSeries.setData(fallbackData);
+          console.log('✅ updateMain: Fallback render successful with 50 candles');
+        } catch(e2) {
+          console.error('❌ updateMain: All rendering attempts failed:', e2.message);
+          
+          // Ultimate fallback - force chart recreation
+          if (typeof self.forceChartReset === 'function') {
+            self.forceChartReset();
+          }
+        }
+      }
     }
-  }, 30);
+  }
+  
+  // Start with a small delay to ensure clear completes
+  setTimeout(attemptSetData, 30);
 },
+// ============================================
+// END OF CODE BLOCK O
+// ============================================
     
     calculateHeikinAshi(data) {
       const result = [];
