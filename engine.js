@@ -8466,7 +8466,7 @@ _buildExtendedFallbackSymbols() {
   // ============================================
     
 
-     async loadHistory(symbol, interval) {
+    async loadHistory(symbol, interval) {
   ErrorHandler.clearInlineErrors();
   
   if (STATE.assetType !== 'crypto') return;
@@ -8615,7 +8615,7 @@ _buildExtendedFallbackSymbols() {
     }
     
     // Update charts - main first
-    ChartEngine.updateMainOptimized(STATE.candles);
+    ChartEngine.updateMain(STATE.candles);
     
     // Volume with delay to prevent render conflict
     setTimeout(function() {
@@ -8639,7 +8639,7 @@ _buildExtendedFallbackSymbols() {
       var cached = StorageManager.get('tvp_cached_candles_' + symbol, null);
       if (cached && cached.length > 0) {
         STATE.candles = cached;
-        ChartEngine.updateMainOptimized(STATE.candles);
+        ChartEngine.updateMain(STATE.candles);
         ChartEngine.updateVolume(STATE.candles);
       }
     });
@@ -10006,7 +10006,7 @@ stopRestPolling() {
     var cached = StorageManager.get('tvp_cached_candles_' + STATE.symbol, null);
     if (cached && cached.length > 0) {
       STATE.candles = cached;
-      ChartEngine.updateMainOptimized(STATE.candles);
+     ChartEngine.updateMain(STATE.candles);
       ChartEngine.updateVolume(STATE.candles);
     }
   }
