@@ -57,44 +57,188 @@ function switchToNextBackend() {
   return false;
 }
 
-// Main fetch function with automatic failover
-// Main fetch function with automatic failover
+// ============================================
+// COMPLETELY REWRITTEN fetchWithFailover
+// Crypto: Direct to Binance (NO WORKER)
+// Stocks/Forex: Through worker (API keys needed)
+// ============================================
 async function fetchWithFailover(endpoint, options = {}) {
   const startTime = Date.now();
   
-  // Initialize consistency tracker if not exists
-  if (typeof window._backendConsistency === 'undefined') {
-    window._backendConsistency = {};
-    BACKEND_ENDPOINTS.forEach(b => {
-      window._backendConsistency[b.name] = 0;
-    });
+  // ============================================
+  // STEP 1: DETECT REQUEST TYPE AND ASSET
+  // ============================================
+  const isKlinesRequest = endpoint && endpoint.includes('klines');
+  const isStockRequest = endpoint && endpoint.includes('finnhub');
+  const isForexRequest = endpoint && endpoint.includes('twelvedata');
+  const isCryptoRequest = isKlinesRequest && !isStockRequest && !isForexRequest;
+  
+  // Parse symbol from endpoint
+  let symbol = 'BTCUSDT';
+  let interval = '15m';
+  try {
+    const params = new URLSearchParams(endpoint);
+    symbol = params.get('symbol') || 'BTCUSDT';
+    interval = params.get('interval') || '15m';
+  } catch(e) {}
+  
+  // Get current asset type from STATE if available
+  const assetType = (typeof STATE !== 'undefined' && STATE.assetType) 
+    ? STATE.assetType 
+    : (symbol.endsWith('USDT') ? 'crypto' : (symbol.length === 6 ? 'forex' : 'stocks'));
+  
+  // ============================================
+  // STEP 2: CRYPTO - DIRECT BINANCE (NO WORKER)
+  // ============================================
+  if (assetType === 'crypto' && isKlinesRequest) {
+    const directUrl = `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=500`;
+    
+    try {
+      console.log(`🟢 CRYPTO DIRECT: ${directUrl}`);
+      
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      
+      const response = await fetch(directUrl, { signal: controller.signal });
+      clearTimeout(timeoutId);
+      
+      if (response.ok) {
+        const data = await response.json();
+        
+        // Validate Binance klines data
+        if (data && Array.isArray(data) && data.length > 0 && data[0] && data[0].length >= 6) {
+          console.log(`✅ Direct Binance: ${data.length} candles for ${symbol}`);
+          return data;
+        }
+        throw new Error('Invalid Binance response format');
+      }
+      throw new Error(`Binance HTTP ${response.status}`);
+      
+    } catch(error) {
+      console.warn(`⚠️ Direct Binance failed: ${error.message}`);
+      
+      // Fallback: Try public Binance mirror
+      try {
+        const mirrorUrl = `https://api1.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=500`;
+        const mirrorResponse = await fetch(mirrorUrl);
+        
+        if (mirrorResponse.ok) {
+          const data = await mirrorResponse.json();
+          console.log(`✅ Binance mirror success: ${data.length} candles`);
+          return data;
+        }
+      } catch(e) {}
+      
+      // Last resort: Return error (will trigger fallback data in loadHistory)
+      return { error: true, message: error.message, assetType: 'crypto' };
+    }
   }
   
-  // Try backends in order, starting from current index
+  // ============================================
+  // STEP 3: STOCKS - FINNHUB VIA WORKER
+  // ============================================
+  if (assetType === 'stocks' || isStockRequest) {
+    console.log(`🔵 STOCKS: Fetching via worker for ${symbol}`);
+    
+    const stockSymbol = symbol.replace('USDT', '');
+    const workerUrl = `${getApiBase()}/proxy?endpoint=finnhub&symbol=${stockSymbol}`;
+    
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
+      
+      const response = await fetch(workerUrl, { signal: controller.signal });
+      clearTimeout(timeoutId);
+      
+      if (response.ok) {
+        const data = await response.json();
+        
+        // For stock quotes, return as klines-compatible format
+        if (isKlinesRequest && data && data.c) {
+          // Convert quote to a simple candle array
+          const now = Math.floor(Date.now() / 1000);
+          return [{
+            time: now,
+            open: data.o || data.c,
+            high: data.h || data.c * 1.01,
+            low: data.l || data.c * 0.99,
+            close: data.c,
+            volume: data.v || 0
+          }];
+        }
+        return data;
+      }
+      throw new Error(`Worker HTTP ${response.status}`);
+      
+    } catch(error) {
+      console.error(`❌ Stock worker failed: ${error.message}`);
+      return { error: true, message: error.message, assetType: 'stocks', symbol: stockSymbol };
+    }
+  }
+  
+  // ============================================
+  // STEP 4: FOREX - TWELVE DATA VIA WORKER
+  // ============================================
+  if (assetType === 'forex' || isForexRequest) {
+    console.log(`🟡 FOREX: Fetching via worker for ${symbol}`);
+    
+    let forexSymbol = symbol;
+    if (symbol.length === 6 && !symbol.includes('/')) {
+      forexSymbol = symbol.slice(0, 3) + '/' + symbol.slice(3);
+    }
+    
+    const workerUrl = `${getApiBase()}/proxy?endpoint=twelvedata&symbol=${forexSymbol}&interval=${interval}&outputsize=200`;
+    
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      
+      const response = await fetch(workerUrl, { signal: controller.signal });
+      clearTimeout(timeoutId);
+      
+      if (response.ok) {
+        const data = await response.json();
+        
+        if (data.values && Array.isArray(data.values) && data.values.length > 0) {
+          // Convert Twelve Data format to klines format
+          const candles = data.values.map(v => ({
+            time: Math.floor(new Date(v.datetime).getTime() / 1000),
+            open: parseFloat(v.open),
+            high: parseFloat(v.high),
+            low: parseFloat(v.low),
+            close: parseFloat(v.close),
+            volume: 0
+          })).filter(c => !isNaN(c.time) && !isNaN(c.close));
+          
+          console.log(`✅ Forex data: ${candles.length} candles for ${forexSymbol}`);
+          return candles;
+        }
+      }
+      throw new Error(`Forex worker HTTP ${response.status}`);
+      
+    } catch(error) {
+      console.error(`❌ Forex worker failed: ${error.message}`);
+      return { error: true, message: error.message, assetType: 'forex', symbol: forexSymbol };
+    }
+  }
+  
+  // ============================================
+  // STEP 5: FALLBACK - Original backend chain for other requests
+  // ============================================
+  console.log(`🟠 FALLBACK: Using backend chain for ${endpoint}`);
+  
   for (let attempt = 0; attempt < BACKEND_ENDPOINTS.length; attempt++) {
     const idx = (currentBackendIndex + attempt) % BACKEND_ENDPOINTS.length;
     const backend = BACKEND_ENDPOINTS[idx];
     
-    // Skip if backend is marked unhealthy (unless it's the last resort)
     if (!backendHealth[backend.name].healthy && attempt < BACKEND_ENDPOINTS.length - 1) {
-      console.log(`⏭️ Skipping ${backend.name} (marked unhealthy)`);
       continue;
-    }
-    
-    // For klines requests, skip backends with poor consistency
-    if (endpoint && endpoint.includes('klines')) {
-      const consistencyScore = window._backendConsistency[backend.name] || 0;
-      if (consistencyScore < -2 && attempt < BACKEND_ENDPOINTS.length - 1) {
-        console.log(`⏭️ Skipping ${backend.name} (low consistency: ${consistencyScore})`);
-        continue;
-      }
     }
     
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), backend.timeout);
       
-      // Build the full URL
       let fullUrl;
       if (endpoint.startsWith('http')) {
         fullUrl = endpoint;
@@ -104,116 +248,41 @@ async function fetchWithFailover(endpoint, options = {}) {
         fullUrl = `${backend.url}/proxy?${endpoint}`;
       }
       
-      console.log(`🔄 Trying ${backend.name}: ${fullUrl.substring(0, 80)}...`);
-      
       const response = await fetch(fullUrl, {
         ...options,
         signal: controller.signal,
-        headers: {
-          ...options.headers,
-          'X-Backend-Source': backend.name,
-          'X-Request-Time': startTime.toString()
-        }
+        headers: { ...options.headers, 'X-Backend-Source': backend.name }
       });
       
       clearTimeout(timeoutId);
       
       if (response.ok) {
         const data = await response.json();
-        
-        // ============================================
-        // DATA VALIDATION FOR KLINES
-        // ============================================
-        if (endpoint && endpoint.includes('klines')) {
-          // Check if data is valid array
-          if (!data || !Array.isArray(data) || data.length === 0) {
-            console.warn(`⚠️ Invalid klines from ${backend.name}: empty or not array`);
-            window._backendConsistency[backend.name] = (window._backendConsistency[backend.name] || 0) - 1;
-            continue;
-          }
-          
-          // Check first candle has valid structure
-          const firstCandle = data[0];
-          if (!firstCandle || !Array.isArray(firstCandle) || firstCandle.length < 6) {
-            console.warn(`⚠️ Malformed candle from ${backend.name}, skipping`);
-            window._backendConsistency[backend.name] = (window._backendConsistency[backend.name] || 0) - 1;
-            continue;
-          }
-          
-          // Validate price values are numbers and positive
-          let hasValidData = false;
-          for (let i = 0; i < Math.min(data.length, 5); i++) {
-            const candle = data[i];
-            const open = parseFloat(candle[1]);
-            const high = parseFloat(candle[2]);
-            const low = parseFloat(candle[3]);
-            const close = parseFloat(candle[4]);
-            
-            if (!isNaN(open) && !isNaN(high) && !isNaN(low) && !isNaN(close) && 
-                open > 0 && high > 0 && low > 0 && close > 0) {
-              hasValidData = true;
-              break;
-            }
-          }
-          
-          if (!hasValidData) {
-            console.warn(`⚠️ Invalid price data from ${backend.name}, skipping`);
-            window._backendConsistency[backend.name] = (window._backendConsistency[backend.name] || 0) - 1;
-            continue;
-          }
-          
-          // Update consistency score on success
-          window._backendConsistency[backend.name] = Math.min(10, (window._backendConsistency[backend.name] || 0) + 1);
-        }
-        
-        // Success - mark backend as healthy
         backendHealth[backend.name].healthy = true;
         backendHealth[backend.name].failures = 0;
         
-        // If this isn't our current backend, switch to it
         if (idx !== currentBackendIndex) {
           currentBackendIndex = idx;
           lastBackendSwitch = Date.now();
-          console.log(`✅ Switched to ${backend.name} as active backend`);
         }
-        
         return data;
       }
+      throw new Error(`HTTP ${response.status}`);
       
-      // Response not OK
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      
-    } catch (error) {
+    } catch(error) {
       console.warn(`❌ ${backend.name} failed:`, error.message);
-      
-      // Update consistency on failure for klines
-      if (endpoint && endpoint.includes('klines')) {
-        window._backendConsistency[backend.name] = Math.max(-10, (window._backendConsistency[backend.name] || 0) - 1);
-      }
-      
-      // Mark failure
       backendHealth[backend.name].failures++;
       if (backendHealth[backend.name].failures >= 2) {
         backendHealth[backend.name].healthy = false;
-        console.warn(`⚠️ ${backend.name} marked unhealthy after ${backendHealth[backend.name].failures} failures`);
       }
-      
-      // Try next backend
       continue;
     }
   }
   
-  // All backends failed
-  console.error('🚨 All backends failed!');
-  
-  // Return fallback data to prevent UI breakage
-  return {
-    error: true,
-    message: 'All backends temporarily unavailable',
-    fallback: true,
-    timestamp: new Date().toISOString()
-  };
+  console.error('🚨 All data sources failed!');
+  return { error: true, message: 'All data sources unavailable', fallback: true };
 }
+
 
 // Health check all backends periodically
 async function healthCheckAllBackends() {
@@ -330,7 +399,7 @@ window.fetch = function(url, options) {
   const urlStr = typeof url === 'string' ? url : url.url;
   
   // Don't intercept our own proxy calls (already absolute)
-  if (urlStr.includes('tradevision-backend.vercel.app') || 
+  if (urlStr.includes('tradevision-backend.wambuamwanza6.workers.dev') || 
       urlStr.includes('workers.dev') ||
       urlStr.includes('pages.dev') ||
       urlStr.includes('/api/proxy')) {
@@ -404,7 +473,7 @@ window.fetch = function(url, options) {
   const urlStr = typeof url === 'string' ? url : url.url;
   
   // Don't intercept our own proxy calls (already absolute)
-  if (urlStr.includes('tradevision-backend.vercel.app') || urlStr.includes('/api/proxy')) {
+  if (urlStr.includes('tradevision-backend.wambuamwanza6.workers.dev') || urlStr.includes('/api')) {
     return __originalFetch(url, options);
   }
   
@@ -8294,7 +8363,22 @@ _buildExtendedFallbackSymbols() {
 async loadHistory(symbol, interval) {
   ErrorHandler.clearInlineErrors();
   
-  if (STATE.assetType !== 'crypto') return;
+    if (STATE.assetType === 'crypto') {
+    const directUrl = `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=500`;
+    
+    try {
+      const response = await fetch(directUrl);
+      if (response.ok) {
+        const data = await response.json();
+        // Process data...
+        STATE.candles = processedCandles;
+        ChartEngine.updateMain(STATE.candles);
+        return;
+      }
+    } catch(e) {
+      console.error('Direct Binance failed:', e);
+    }
+  }
   
   // Clear chart BEFORE fetching
   if (typeof ChartEngine !== 'undefined' && ChartEngine.mainSeries) {
@@ -11472,7 +11556,7 @@ startRestPolling() {
 },
 
 async updateTickerPrices() {
-  const apiBase = 'https://tradevision-backend.wambuamwanza6.workers.dev/api';
+  const apiBase = getApiBase();
   
   for (const symbol of CONFIG.TICKER_SYMBOLS) {
     try {
@@ -15152,7 +15236,7 @@ const StockFinancialData = {
       return getApiBase();
     }
     // Fallback in case getApiBase is not defined yet
-    return 'https://tradevision-backend.vercel.app/api';
+    return 'https://tradevision-backend.wambuamwanza6.workers.dev/api';
   },
   
   async fetchWithCache(key, endpoint, params = {}) {
@@ -15544,7 +15628,7 @@ async function initIncomeStatement() {
 // ============================================
 async function getBTCMetrics(period) {
   try {
-    const apiBase = (window.TRADEVISION_CONFIG && window.TRADEVISION_CONFIG.API_URL) || 'https://tradevision-backend.vercel.app/api';
+    const apiBase = (window.TRADEVISION_CONFIG && window.TRADEVISION_CONFIG.API_URL) || 'https://tradevision-backend.wambuamwanza6.workers.dev/api';
     const isQuarterly = period === 'quarterly';
     
     const statsRes = await fetch(`${apiBase}/proxy?endpoint=blockchain-stats`);
@@ -15615,7 +15699,7 @@ async function getBTCMetrics(period) {
 // ============================================
 async function getETHMetrics(period) {
   try {
-    const apiBase = (window.TRADEVISION_CONFIG && window.TRADEVISION_CONFIG.API_URL) || 'https://tradevision-backend.vercel.app/api';
+    const apiBase = (window.TRADEVISION_CONFIG && window.TRADEVISION_CONFIG.API_URL) || 'https://tradevision-backend.wambuamwanza6.workers.dev/api';
     const isQuarterly = period === 'quarterly';
     
     const supplyRes = await fetch(`${apiBase}/proxy?endpoint=etherscan&module=stats&action=ethsupply`);
@@ -15688,7 +15772,7 @@ async function getETHMetrics(period) {
 // ============================================
 async function getGenericMetrics(period) {
   try {
-    const apiBase = (window.TRADEVISION_CONFIG && window.TRADEVISION_CONFIG.API_URL) || 'https://tradevision-backend.vercel.app/api';
+    const apiBase = (window.TRADEVISION_CONFIG && window.TRADEVISION_CONFIG.API_URL) || 'https://tradevision-backend.wambuamwanza6.workers.dev/api';
     const coinId = STATE.symbol?.includes('BTC') ? 'bitcoin' : 
                    STATE.symbol?.includes('ETH') ? 'ethereum' : 'bitcoin';
     
@@ -16583,13 +16667,7 @@ async function initIVStructure() {
     </div>
   `;
   
-  // Get API base for proxy
-  const getApiBase = () => {
-    if (window.TRADEVISION_CONFIG && window.TRADEVISION_CONFIG.API_URL) {
-      return window.TRADEVISION_CONFIG.API_URL;
-    }
-    return 'https://tradevision-backend.vercel.app/api';
-  };
+
   
   const apiBase = getApiBase();
   const currency = STATE.symbol?.includes('BTC') ? 'BTC' : 
@@ -16699,11 +16777,8 @@ function renderIVFallback(container) {
 // ============================================
 async function getBinanceIVFallback(currency) {
   const getApiBase = () => {
-    if (window.TRADEVISION_CONFIG && window.TRADEVISION_CONFIG.API_URL) {
-      return window.TRADEVISION_CONFIG.API_URL;
-    }
-    return 'https://tradevision-backend.vercel.app/api';
-  };
+  return 'https://tradevision-backend.wambuamwanza6.workers.dev/api';
+};
   
   const apiBase = getApiBase();
   const symbol = currency === 'BTC' ? 'BTCUSDT' : 'ETHUSDT';
@@ -18447,7 +18522,8 @@ var chart = LightweightCharts.createChart(el, {
     // Load data
     try {
       var interval = STATE.interval || '15m';
-      var proxyUrl = 'https://tradevision-backend.vercel.app/api/proxy?endpoint=klines&symbol=' + symbol + '&interval=' + interval + '&limit=200';
+        var apiBase = getApiBase();  // ← ADD THIS LINE
+    var proxyUrl = `${apiBase}/proxy?endpoint=klines&symbol=${symbol}&interval=${interval}&limit=200`;
       var res = await fetch(proxyUrl);
       
       if (res.ok) {
@@ -24766,7 +24842,7 @@ async startTrial(tier) {
         if ((template === 'strategy_update' || template === 'trial_started' || template === 'trial_reminder') && !this.emailPreferences.marketing) return;
         
         try {
-            var apiBase = (window.TRADEVISION_CONFIG && window.TRADEVISION_CONFIG.API_URL) || 'https://tradevision-backend.vercel.app/api';
+            var apiBase = getApiBase(); 
             var response = await fetch(apiBase + '/send-email', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -26800,7 +26876,7 @@ try {
   // MULTI-BACKEND AI CALL WITH FALLBACK
   // ============================================
   const apiBase = (window.TRADEVISION_CONFIG && window.TRADEVISION_CONFIG.API_URL) 
-    || 'https://tradevision-backend.vercel.app/api';
+    || 'https://tradevision-backend.wambuamwanza6.workers.dev/api';
   
   // Try primary backend first
   let aiResponse = null;
@@ -26810,7 +26886,7 @@ try {
   const backends = [
     apiBase,
     'https://tradevision-backup.wambuamwanza6.workers.dev',
-    'https://tradevision-backend.vercel.app/api'
+    'https://tradevision-backend.wambuamwanza6.workers.dev/api',
   ];
   
   for (const backend of backends) {
