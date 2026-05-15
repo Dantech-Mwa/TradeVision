@@ -5559,42 +5559,23 @@ button:active,.trade-type:active,.order-type-btn:active,.quick-amount-btn:active
 
 <!-- Load Engine AFTER Firebase -->
 <script>
-// ============================================
-// TRIPLE FAILOVER FOR ENGINE.JS (SAME PATTERN AS YOUR API)
-// ============================================
-const ENGINE_URLS = [
-  'https://tradevision-backend.vercel.app/engine.js',
-  'https://tradevision-backend.workers.dev/engine.js',
-  'https://tradevision-backend.onrender.com/engine.js'
-];
-
-let currentUrlIndex = 0;
-
-function loadEngine() {
-  const url = ENGINE_URLS[currentUrlIndex];
-  console.log(`📥 Loading engine from: ${url}`);
-  
-  const script = document.createElement('script');
-  script.src = url;
-  script.onload = () => {
-    console.log(`✅ Engine loaded from ${url}`);
-  };
-  script.onerror = () => {
-    console.warn(`❌ Failed to load from ${url}`);
-    currentUrlIndex++;
-    if (currentUrlIndex < ENGINE_URLS.length) {
-      loadEngine(); // Try next
-    } else {
-      console.error('🚨 All engine sources failed!');
-      document.body.innerHTML = '<div style="padding:20px;text-align:center;"><h2>⚠️ Platform Maintenance</h2><p>Please refresh in a few minutes.</p></div>';
-    }
-  };
-  document.head.appendChild(script);
-}
-
-loadEngine();
+// Failover for engine.js - tries Vercel, then Cloudflare, then Render
+(function() {
+  const urls = [
+    'https://tradevision-backend.vercel.app/engine.js',
+    'https://tradevision-backend.workers.dev/engine.js',
+    'https://tradevision-backend.onrender.com/engine.js'
+  ];
+  let i = 0;
+  function load() {
+    const s = document.createElement('script');
+    s.src = urls[i];
+    s.onerror = () => { i++; if (i < urls.length) load(); };
+    document.head.appendChild(s);
+  }
+  load();
+})();
 </script>
-
 <!-- Load Chart Libraries AFTER Engine if needed -->
 <script>
   // Final check that everything loaded
