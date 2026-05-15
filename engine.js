@@ -2121,8 +2121,7 @@ window.debugTimers = function() {
       
       return defaults;
     },
-	  
-createPriceChart() {
+
   const el = document.getElementById('price-chart');
   if(!el) {
     console.error('❌ Price chart element not found in DOM');
@@ -2133,34 +2132,43 @@ createPriceChart() {
   const isMobile = window.innerWidth <= 768;
   
   // ============================================
-  // FORCE CONTAINER DIMENSIONS (FIXES MISSING CHART)
+  // PHASE 2 FIX: Force container dimensions on mobile
   // ============================================
-  const mainPane = document.getElementById('main-chart-pane');
-  if (mainPane) {
-    if (mainPane.clientHeight === 0 || mainPane.clientWidth === 0) {
-      console.warn('⚠️ Main chart pane has zero dimensions, forcing layout...');
-      mainPane.style.display = 'block';
-      mainPane.style.width = '100%';
-      mainPane.style.height = (window.innerHeight * 0.55) + 'px';
-      mainPane.style.minHeight = '300px';
-      mainPane.style.position = 'relative';
-      mainPane.style.overflow = 'hidden';
-      mainPane.style.flex = '1 1 auto';
+  if (isMobile) {
+    const mainPane = document.getElementById('main-chart-pane');
+    if (mainPane) {
+      // Ensure the main pane has proper dimensions
+      if (mainPane.clientHeight === 0 || mainPane.clientWidth === 0) {
+        console.warn('⚠️ Main chart pane has zero dimensions, forcing layout...');
+        mainPane.style.display = 'block';
+        mainPane.style.width = '100%';
+        mainPane.style.height = (window.innerHeight * 0.55) + 'px';
+        mainPane.style.minHeight = '300px';
+        mainPane.style.position = 'relative';
+        mainPane.style.overflow = 'hidden';
+        mainPane.style.flex = '1 1 auto';
+      }
     }
-  }
-  
-  // Force the chart canvas element to have dimensions
-  if (el.clientHeight === 0 || el.clientWidth === 0) {
-    console.warn('⚠️ Price chart canvas has zero dimensions, forcing...');
-    el.style.width = '100%';
-    el.style.height = '100%';
-    el.style.minHeight = '300px';
-    el.style.display = 'block';
-    el.style.position = 'absolute';
-    el.style.top = '0';
-    el.style.left = '0';
-    el.style.right = '0';
-    el.style.bottom = '0';
+    
+    // Force the chart canvas element to have dimensions
+    if (el.clientHeight === 0 || el.clientWidth === 0) {
+      console.warn('⚠️ Price chart canvas has zero dimensions, forcing...');
+      el.style.width = '100%';
+      el.style.height = '100%';
+      el.style.minHeight = '300px';
+      el.style.display = 'block';
+      el.style.position = 'absolute';
+      el.style.top = '0';
+      el.style.left = '0';
+      el.style.right = '0';
+      el.style.bottom = '0';
+    }
+    
+    // Hide the chart watermark on mobile for cleaner look
+    const watermark = document.querySelector('.chart-watermark');
+    if (watermark) {
+      watermark.style.display = 'none';
+    }
   }
   
   // ============================================
@@ -2169,6 +2177,7 @@ createPriceChart() {
   let chartWidth = el.clientWidth;
   let chartHeight = el.clientHeight;
   
+  // Apply fallback dimensions
   if (!chartWidth || chartWidth < 50) {
     chartWidth = isMobile ? (window.innerWidth || 375) : 800;
     console.warn('⚠️ Chart width fallback applied: ' + chartWidth + 'px');
@@ -2176,8 +2185,10 @@ createPriceChart() {
   
   if (!chartHeight || chartHeight < 50) {
     if (isMobile) {
+      // Mobile: Use 55% of viewport height
       chartHeight = Math.max(300, window.innerHeight * 0.55);
     } else {
+      // Desktop: Use reasonable default
       chartHeight = 450;
     }
     console.warn('⚠️ Chart height fallback applied: ' + chartHeight + 'px');
@@ -2190,17 +2201,22 @@ createPriceChart() {
   // ============================================
   if (this.charts.price) {
     try {
+      // Remove existing series first
       if (this.mainSeries) {
         this.charts.price.removeSeries(this.mainSeries);
       }
+      // Remove overlay series
       if (this.overlays) {
         Object.keys(this.overlays).forEach(key => {
           try {
             this.charts.price.removeSeries(this.overlays[key]);
-          } catch(e) {}
+          } catch(e) {
+            // Ignore removal errors
+          }
         });
         this.overlays = {};
       }
+      // Remove the chart
       this.charts.price.remove();
     } catch(e) {
       console.warn('Error cleaning up existing chart:', e.message);
@@ -2209,66 +2225,21 @@ createPriceChart() {
     this.mainSeries = null;
   }
   
-  // ============================================
-  // CRITICAL: Complete chart options with RIGHT PRICE SCALE
-  // ============================================
-  const chartOptions = {
-    layout: {
-      background: { type: 'solid', color: '#0d1117' },
-      textColor: '#c9d1d9',
-      fontSize: 11,
-      fontFamily: 'Inter, -apple-system, sans-serif'
-    },
-    grid: {
-      vertLines: { color: '#21262d', visible: true },
-      horzLines: { color: '#21262d', visible: true }
-    },
-    crosshair: {
-      mode: 1,
-      vertLine: {
-        color: '#8b949e',
-        width: 1,
-        style: 2,
-        labelBackgroundColor: '#1c2128',
-        visible: true,
-        labelVisible: true
-      },
-      horzLine: {
-        color: '#8b949e',
-        width: 1,
-        style: 2,
-        labelBackgroundColor: '#1c2128',
-        visible: true,
-        labelVisible: true
-      }
-    },
+    const chartOptions = this._getCommonChartOptions({
     rightPriceScale: {
-      visible: true,              // ← CRITICAL: Shows price axis
-      borderVisible: true,
-      borderColor: '#30363d',
       scaleMargins: { 
         top: isMobile ? 0.2 : 0.15,
         bottom: isMobile ? 0.1 : 0.2
-      },
-      autoScale: true,
-      mode: 0,                    // 0 = linear, 1 = logarithmic
-      drawTicks: true,
-      ticksVisible: true
+      }
     },
-    leftPriceScale: {
-      visible: false
-    },
-    timeScale: {
-      borderColor: '#30363d',
-      timeVisible: true,
-      secondsVisible: false,
-      tickMarkFormatter: isMobile ? function(time) {
+    timeScale: isMobile ? {
+      tickMarkFormatter: function(time) {
         const date = new Date(time * 1000);
         const hours = date.getHours().toString().padStart(2, '0');
         const minutes = date.getMinutes().toString().padStart(2, '0');
         return hours + ':' + minutes;
-      } : undefined
-    },
+      }
+    } : {},
     handleScroll: {
       vertTouchDrag: !isMobile,
       horzTouchDrag: true
@@ -2283,7 +2254,7 @@ createPriceChart() {
     },
     width: chartWidth,
     height: chartHeight
-  };
+  });
   
   const chart = LightweightCharts.createChart(el, chartOptions);
   
@@ -2297,12 +2268,9 @@ createPriceChart() {
     borderDownColor: '#ef5350',
     wickUpColor: '#26a69a',
     wickDownColor: '#ef5350',
+    // PHASE 2 FIX: Better visibility on mobile
     borderVisible: true,
-    wickVisible: true,
-    priceLineVisible: true,
-    priceLineWidth: 1,
-    priceLineColor: '#58a6ff',
-    lastValueVisible: true
+    wickVisible: true
   });
   
   // Store references
@@ -2320,27 +2288,37 @@ createPriceChart() {
   // ============================================
   // Store crosshair subscription for drawing engine
   // ============================================
-  const self = this;
-  
   chart.subscribeCrosshairMove((param) => {
     if (DrawingEngine && typeof DrawingEngine.handleCrosshairMove === 'function') {
       DrawingEngine.handleCrosshairMove(param);
     }
-    // Update mobile tooltip on crosshair move
-    if (isMobile && param && param.point && param.time) {
-      self.updateMobileCrosshair(param);
-    }
-  });
-  
-  // Redraw drawings when chart is zoomed or panned
+        // ============================================
+  // PHASE 2 FIX: Redraw drawings when chart is zoomed or panned
+  // ============================================
   chart.timeScale().subscribeVisibleTimeRangeChange(function() {
     if (DrawingEngine && typeof DrawingEngine.redraw === 'function') {
       DrawingEngine.redraw();
     }
   });
   
+  // Also redraw on any crosshair move (catches price scale changes)
+  chart.subscribeCrosshairMove(function(param) {
+    if (DrawingEngine && typeof DrawingEngine.handleCrosshairMove === 'function') {
+      DrawingEngine.handleCrosshairMove(param);
+    }
+    // Redraw drawings periodically during chart interaction
+    if (DrawingEngine && typeof DrawingEngine.redraw === 'function' && param.point) {
+      DrawingEngine.redraw();
+    }
+  });
+    // PHASE 2 FIX: Update mobile tooltip on crosshair move
+    if (isMobile && param.point && param.time) {
+      this.updateMobileCrosshair(param);
+    }
+  });
+  
   // ============================================
-  // Store dimensions for resize
+  // PHASE 2 FIX: Store dimensions for resize
   // ============================================
   chart._creationDimensions = {
     width: chartWidth,
@@ -2349,10 +2327,10 @@ createPriceChart() {
     createdAt: Date.now()
   };
   
-  console.log('✅ Price chart created successfully (' + chartWidth + 'x' + chartHeight + ')');
+  console.log('✅ Price chart created successfully (' + chartWidth + 'x' + chartHeight + ', mobile optimized: ' + isMobile + ')');
   
   // ============================================
-  // Verify chart rendered correctly
+  // PHASE 2 FIX: Verify chart rendered correctly
   // ============================================
   setTimeout(() => {
     const currentWidth = el.clientWidth;
@@ -2361,13 +2339,13 @@ createPriceChart() {
       console.log('✅ Chart verified: ' + currentWidth + 'x' + currentHeight);
     } else {
       console.warn('⚠️ Chart may not have rendered properly. Current dimensions: ' + currentWidth + 'x' + currentHeight);
+      // Force resize if needed
       if (currentWidth > 0 && currentHeight > 0) {
         chart.resize(currentWidth, currentHeight);
       }
     }
   }, 500);
 },
-
 // ============================================
 // REQUIRED HELPER METHODS (Add these if missing)
 // ============================================
