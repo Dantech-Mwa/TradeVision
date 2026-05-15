@@ -3412,123 +3412,6 @@ aggregateCandles(candles, maxVisible) {
   return aggregated;
 },
 
-// Update main chart with performance optimization
-// Update main chart with performance optimization
-updateMainOptimized(data) {
-  // CRITICAL: Validate data before ANY chart operation
-  if (!data || !Array.isArray(data) || data.length === 0) {
-    console.warn('⚠️ updateMainOptimized: No valid data, skipping chart update');
-    return;
-  }
-  
-  // Validate first candle has required properties
-  const firstCandle = data[0];
-  if (!firstCandle || typeof firstCandle.time !== 'number' || 
-      typeof firstCandle.close !== 'number' || isNaN(firstCandle.close) ||
-      typeof firstCandle.high !== 'number' || isNaN(firstCandle.high) ||
-      typeof firstCandle.low !== 'number' || isNaN(firstCandle.low) ||
-      typeof firstCandle.open !== 'number' || isNaN(firstCandle.open)) {
-    console.warn('⚠️ updateMainOptimized: Invalid candle structure, skipping');
-    return;
-  }
-  
-  // Check for reasonable price range (prevents rectangle artifacts)
-  let minPrice = Infinity, maxPrice = -Infinity;
-  let validCandles = 0;
-  for (let i = 0; i < Math.min(data.length, 50); i++) {
-    const c = data[i];
-    if (c.high && !isNaN(c.high) && c.high > 0) {
-      if (c.high > maxPrice) maxPrice = c.high;
-      validCandles++;
-    }
-    if (c.low && !isNaN(c.low) && c.low > 0) {
-      if (c.low < minPrice) minPrice = c.low;
-    }
-  }
-  
-  // If no valid candles found
-  if (validCandles === 0) {
-    console.warn('⚠️ updateMainOptimized: No valid candles found, skipping');
-    return;
-  }
-  
-  // If price range is unreasonable (all same price or extreme), skip
-  if (minPrice === maxPrice || minPrice <= 0 || maxPrice <= 0) {
-    console.warn('⚠️ updateMainOptimized: Invalid price range, skipping');
-    return;
-  }
-  
-  if (!this.mainSeries || !this.charts.price) {
-    console.warn('⚠️ updateMainOptimized: Chart not ready, skipping');
-    return;
-  }
-  
-  // Mobile: limit to 200 visible candles
-  const isMobile = window.innerWidth <= 768;
-  const maxCandles = isMobile ? 200 : 1000;
-  
-  let processedData = data;
-  if (data.length > maxCandles) {
-    processedData = this.aggregateCandles(data, maxCandles);
-    console.log('📊 Aggregated ' + data.length + ' → ' + processedData.length + ' candles');
-  }
-  
-  // Force clear existing data before setting new data
-  try {
-    this.mainSeries.setData([]);
-  } catch(e) {
-    console.warn('Could not clear main series:', e.message);
-  }
-  
-  // Use timeout to let chart clear before new data
-  const self = this;
-  setTimeout(function() {
-    try {
-      if (STATE.chartType === 'candlestick' || STATE.chartType === 'bar') {
-        self.mainSeries.setData(processedData.map(function(d) {
-          return {
-            time: d.time,
-            open: d.open,
-            high: d.high,
-            low: d.low,
-            close: d.close
-          };
-        }));
-      } else if (STATE.chartType === 'line' || STATE.chartType === 'area') {
-        self.mainSeries.setData(processedData.map(function(d) {
-          return { time: d.time, value: d.close };
-        }));
-      } else if (STATE.chartType === 'heikinashi') {
-        const heikin = self.calculateHeikinAshi(processedData);
-        self.mainSeries.setData(heikin.map(function(d) {
-          return {
-            time: d.time,
-            open: d.open,
-            high: d.high,
-            low: d.low,
-            close: d.close
-          };
-        }));
-      }
-      
-      // Force chart to fit content after update
-      setTimeout(function() {
-        if (self.charts.price) {
-          self.charts.price.timeScale().fitContent();
-        }
-      }, 150);
-      
-    } catch(e) {
-      console.error('Chart update failed:', e.message);
-    }
-  }, 50);
-  
-  // Store the processed data back
-  if (processedData !== data) {
-    STATE.candles = processedData;
-  }
-},
-
 // Batch price updates (reduce render calls)
 _pendingUpdates: [],
 _updateBatchTimeout: null,
@@ -3827,7 +3710,7 @@ forceHardReset() {
     if (STATE.candles && STATE.candles.length > 0) {
       setTimeout(function() {
         console.log('📊 Reloading ' + STATE.candles.length + ' candles after hard reset');
-        self.updateMainOptimized(STATE.candles);
+        self.updateMain(STATE.candles);
         self.updateVolume(STATE.candles);
         self.fitContent();
         
