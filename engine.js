@@ -2078,16 +2078,17 @@ createPriceChart() {
     this.charts.price = null;
   }
   
-  // Force DOM to settle
-  el.innerHTML = '';
-  el.style.width = '100%';
-  el.style.height = '100%';
-  el.style.position = 'relative';
-  el.style.display = 'block';
-  
-  // Small delay to ensure DOM is clean
-  await new Promise(resolve => setTimeout(resolve, 50));
-  
+  // Force DOM to settle - use setTimeout instead of await
+  const self = this;
+  setTimeout(function() {
+    self._createPriceChartInternal(el);
+  }, 50);
+},
+
+// ============================================
+// INTERNAL METHOD - Do the actual chart creation
+// ============================================
+_createPriceChartInternal(el) {
   // Detect mobile for touch handling
   const isMobile = window.innerWidth <= 768;
   
