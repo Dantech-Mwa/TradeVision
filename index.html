@@ -529,12 +529,23 @@ img { max-width: 100%; height: auto; }
 @media (max-width: 1000px) { .quick-stats { display: none; } #toggle-drawings-btn, #toggle-grid-btn, #log-scale-btn, #tools-dropdown-group { display: none; } }
 @media (max-width: 768px) { .chart-header { display: none; } }
 
-/* Chart Container */
-.chart-container { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-height: 0; position: relative; height: 100%; }
-.chart-pane { position: relative; min-height: 0; overflow: hidden; }
-#main-chart-pane { flex: 1 1 auto; min-height: 200px; position: relative; }
-#volume-chart-pane { flex: 0 0 80px; min-height: 60px; max-height: 100px; border-top: 1px solid var(--border-primary); border-bottom: 1px solid var(--border-primary); }
+/* Chart Container - FIXED: Allow price axis to show */
+.chart-container { flex: 1; display: flex; flex-direction: column; overflow: visible; min-height: 0; position: relative; height: 100%; }
+.chart-pane { position: relative; min-height: 0; overflow: visible; }
+#main-chart-pane { flex: 1 1 auto; min-height: 200px; position: relative; overflow: visible; }
+#volume-chart-pane { flex: 0 0 80px; min-height: 60px; max-height: 100px; border-top: 1px solid var(--border-primary); border-bottom: 1px solid var(--border-primary); overflow: hidden; }
 .chart-canvas { width: 100%; height: 100%; }
+
+/* Additional fix: Ensure Lightweight Charts price scale is visible */
+.tv-lightweight-charts {
+  overflow: visible !important;
+}
+
+.tv-lightweight-charts .price-scale-container--right {
+  right: 0 !important;
+  left: auto !important;
+  display: block !important;
+}
 
 .chart-watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 48px; font-weight: 900; color: var(--text-muted); opacity: 0.05; pointer-events: none; user-select: none; }
 
