@@ -2081,12 +2081,17 @@ window.debugTimers = function() {
           }
         },
         rightPriceScale: {
-          borderColor: '#30363d',
-          scaleMargins: { top: 0.05, bottom: 0.05 },
-          autoScale: true,
-          visible: true,
-          borderVisible: true
-        },
+  visible: true,
+  borderVisible: true,
+  borderColor: '#30363d',
+  scaleMargins: { top: 0.05, bottom: 0.05 },
+  autoScale: true,
+  drawTicks: true,
+  ticksVisible: true,
+  entireTextOnly: false,
+  mode: 0
+},
+      
         timeScale: {
           borderColor: '#30363d',
           timeVisible: true,
