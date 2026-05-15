@@ -9416,242 +9416,236 @@ stopRestPolling() {
     if(statusText) statusText.style.display = 'none';
 },
     
-        async switchSymbol(s) {
-      if (s === STATE.symbol && STATE.assetType === (STATE.assetType || 'crypto')) return;
-      
-      console.log('🔄 Switching symbol from', STATE.symbol, 'to', s, '| Asset type:', STATE.assetType);
-      
-    // ============================================
-// STEP 1: COMPLETELY RESET ALL CHARTS FIRST
-// Uses forceHardReset to eliminate "big rectangles"
-// ============================================
-console.log('🧹 P0 CRITICAL FIX: Force hard reset before loading', s);
-
-// Destroy all overlays first
-if (ChartEngine && ChartEngine.overlays) {
-    var overlayKeys = Object.keys(ChartEngine.overlays);
-    for (var oi = 0; oi < overlayKeys.length; oi++) {
-        try {
-            if (ChartEngine.charts.price && ChartEngine.overlays[overlayKeys[oi]]) {
-                ChartEngine.charts.price.removeSeries(ChartEngine.overlays[overlayKeys[oi]]);
-            }
-        } catch(e) {}
+async switchSymbol(s) {
+  if (s === STATE.symbol && STATE.assetType === (STATE.assetType || 'crypto')) return;
+  
+  console.log('🔄 Switching symbol from', STATE.symbol, 'to', s, '| Asset type:', STATE.assetType);
+  
+  // ============================================
+  // STEP 1: Show loading indicator
+  // ============================================
+  const chartContainer = document.getElementById('price-chart');
+  if (chartContainer) {
+    chartContainer.style.opacity = '0.4';
+    chartContainer.style.transition = 'opacity 0.2s';
+  }
+  
+  // ============================================
+  // STEP 2: PRESERVE ChartEngine reference but clear data
+  // ============================================
+  // Save reference to ChartEngine methods (don't nullify mainSeries)
+  const chartEngineRef = ChartEngine;
+  
+  // Clear chart data WITHOUT destroying the series
+  if (chartEngineRef && chartEngineRef.mainSeries) {
+    try {
+      chartEngineRef.mainSeries.setData([]);
+      console.log('🧹 Cleared main series data');
+    } catch(e) {
+      console.warn('Could not clear main series:', e.message);
     }
-    ChartEngine.overlays = {};
-}
-
-// Clear main series data
-if (ChartEngine && ChartEngine.mainSeries) {
-    try { ChartEngine.mainSeries.setData([]); } catch(e) {}
-    ChartEngine.mainSeries = null;
-}
-
-// Clear volume data
-if (ChartEngine && ChartEngine.series && ChartEngine.series.volume) {
-    try { ChartEngine.series.volume.setData([]); } catch(e) {}
-    ChartEngine.series.volume = null;
-}
-
-// Remove all indicator panes from DOM
-var indContainer = document.getElementById('indicator-panes-container');
-if (indContainer) {
+  }
+  
+  if (chartEngineRef && chartEngineRef.series && chartEngineRef.series.volume) {
+    try {
+      chartEngineRef.series.volume.setData([]);
+      console.log('🧹 Cleared volume series data');
+    } catch(e) {}
+  }
+  
+  // Clear overlays (don't destroy ChartEngine)
+  if (chartEngineRef && chartEngineRef.overlays) {
+    const overlayKeys = Object.keys(chartEngineRef.overlays);
+    for (let oi = 0; oi < overlayKeys.length; oi++) {
+      try {
+        if (chartEngineRef.charts.price && chartEngineRef.overlays[overlayKeys[oi]]) {
+          chartEngineRef.charts.price.removeSeries(chartEngineRef.overlays[overlayKeys[oi]]);
+        }
+      } catch(e) {}
+    }
+    chartEngineRef.overlays = {};
+  }
+  
+  // Remove indicator panes from DOM (keep ChartEngine intact)
+  const indContainer = document.getElementById('indicator-panes-container');
+  if (indContainer) {
     while (indContainer.firstChild) {
-        indContainer.removeChild(indContainer.firstChild);
+      indContainer.removeChild(indContainer.firstChild);
     }
     indContainer.style.display = 'none';
-}
-
-// Clear the chart references for all indicators
-var indicatorIds = ['rsi', 'macd', 'cci', 'clv', 'williamsr', 'atr', 'stoch', 'obv', 'mfi', 'stochrsi', 'mom', 'roc', 'ad', 'cmf', 'volprof'];
-for (var ii = 0; ii < indicatorIds.length; ii++) {
-    var cid = indicatorIds[ii];
-    if (ChartEngine && ChartEngine.charts && ChartEngine.charts[cid]) {
-        try { ChartEngine.charts[cid].remove(); } catch(e) {}
-        delete ChartEngine.charts[cid];
+  }
+  
+  // Clear indicator references in ChartEngine.series
+  const indicatorIds = ['rsi', 'macd', 'cci', 'clv', 'williamsr', 'atr', 'stoch', 'obv', 'mfi', 'stochrsi', 'mom', 'roc', 'ad', 'cmf', 'volprof'];
+  for (let ii = 0; ii < indicatorIds.length; ii++) {
+    const cid = indicatorIds[ii];
+    if (chartEngineRef && chartEngineRef.charts && chartEngineRef.charts[cid]) {
+      try { chartEngineRef.charts[cid].remove(); } catch(e) {}
+      delete chartEngineRef.charts[cid];
     }
-    if (ChartEngine && ChartEngine.series && ChartEngine.series[cid]) {
-        try { ChartEngine.series[cid].setData([]); } catch(e) {}
-        delete ChartEngine.series[cid];
+    if (chartEngineRef && chartEngineRef.series && chartEngineRef.series[cid]) {
+      try { chartEngineRef.series[cid].setData([]); } catch(e) {}
+      delete chartEngineRef.series[cid];
     }
-}
-
-// MACD special cleanup
-if (ChartEngine && ChartEngine.charts && ChartEngine.charts.macd) {
-    try { ChartEngine.charts.macd.remove(); } catch(e) {}
-    delete ChartEngine.charts.macd;
-}
-if (ChartEngine && ChartEngine.series) {
+  }
+  
+  // MACD special cleanup
+  if (chartEngineRef && chartEngineRef.charts && chartEngineRef.charts.macd) {
+    try { chartEngineRef.charts.macd.remove(); } catch(e) {}
+    delete chartEngineRef.charts.macd;
+  }
+  if (chartEngineRef && chartEngineRef.series) {
     ['macdLine', 'macdSignal', 'macdHist', 'stochD', 'stochrsiD'].forEach(function(sk) {
-        if (ChartEngine.series[sk]) {
-            try { ChartEngine.series[sk].setData([]); } catch(e) {}
-            delete ChartEngine.series[sk];
-        }
+      if (chartEngineRef.series[sk]) {
+        try { chartEngineRef.series[sk].setData([]); } catch(e) {}
+        delete chartEngineRef.series[sk];
+      }
     });
-}
-
-// Reset drawing canvas
-var drawingCanvas = document.getElementById('drawing-canvas');
-if (drawingCanvas) {
-    var ctx = drawingCanvas.getContext('2d');
-    if (ctx) ctx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
-}
-
-// Clear state candle data
-STATE.candles = [];
-
-// FORCE HARD RESET on the charts
-if (ChartEngine && ChartEngine.forceHardReset) {
-    ChartEngine.forceHardReset();
-    console.log('✅ P0 CRITICAL FIX: forceHardReset executed');
-} else {
-    console.warn('⚠️ forceHardReset not available, using fallback');
-    // Fallback: reset time scale
-    if (ChartEngine && ChartEngine.charts && ChartEngine.charts.price) {
-        try { ChartEngine.charts.price.timeScale().resetTimeScale(); } catch(e) {}
+  }
+  
+  // Clear state candles
+  STATE.candles = [];
+  
+  // ============================================
+  // STEP 3: DISCONNECT OLD DATA STREAMS
+  // ============================================
+  if (STATE.assetType === 'crypto') {
+    if (typeof DataManager !== 'undefined' && DataManager.disconnect) {
+      DataManager.disconnect();
     }
-}
+    if (typeof DataManager !== 'undefined' && DataManager.stopRestPolling) {
+      DataManager.stopRestPolling();
+    }
+  } else {
+    if (typeof StockDataManager !== 'undefined' && StockDataManager.stopPolling) {
+      StockDataManager.stopPolling();
+    }
+  }
+  
+  // ============================================
+  // STEP 4: UPDATE STATE
+  // ============================================
+  STATE.symbol = s;
+  
+  // ============================================
+  // STEP 5: UPDATE UI ELEMENTS
+  // ============================================
+  const symbolName = document.getElementById('symbol-name');
+  const symbolSearch = document.getElementById('symbol-search');
+  const symbolExchange = document.getElementById('symbol-exchange');
+  
+  if (symbolName) symbolName.textContent = s.includes('/') ? s : s.replace('USDT', '/USDT');
+  if (symbolSearch) symbolSearch.value = s;
+  if (symbolExchange) {
+    if (STATE.assetType === 'crypto') symbolExchange.textContent = 'Binance';
+    else if (STATE.assetType === 'stocks') symbolExchange.textContent = 'US Stocks';
+    else symbolExchange.textContent = 'Forex';
+  }
+  
+  const mobileSymbolName = document.getElementById('mobile-symbol-name');
+  if (mobileSymbolName) mobileSymbolName.textContent = s.includes('/') ? s : s.replace('USDT', '/USDT');
+  
+  const symbolInputEl = document.getElementById('symbol-input');
+  if (symbolInputEl) symbolInputEl.value = s;
+  
+  DataManager.updateWatchlistStar();
+  
+  // ============================================
+  // STEP 6: LOAD NEW DATA (NO DELAY - DATA FIRST)
+  // ============================================
+  const self = this;
+  
+  try {
+    if (STATE.assetType === 'stocks' || STATE.assetType === 'forex') {
+      console.log('📈 Loading stock/forex data for', s);
       
-      // ============================================
-      // STEP 2: DISCONNECT OLD DATA STREAMS
-      // ============================================
-      if (STATE.assetType === 'crypto') {
-        if (typeof DataManager !== 'undefined' && DataManager.disconnect) {
-          DataManager.disconnect();
+      const candles = await StockDataManager.loadCandles(s, STATE.interval);
+      
+      if (candles && candles.length > 0) {
+        STATE.candles = candles;
+        
+        // Update chart immediately (mainSeries still exists)
+        if (chartEngineRef && chartEngineRef.updateMain) {
+          chartEngineRef.updateMain(candles);
         }
-        if (typeof DataManager !== 'undefined' && DataManager.stopRestPolling) {
-          DataManager.stopRestPolling();
-        }
-      } else {
-        if (typeof StockDataManager !== 'undefined' && StockDataManager.stopPolling) {
-          StockDataManager.stopPolling();
-        }
-      }
-      
-      // ============================================
-      // STEP 3: UPDATE STATE
-      // ============================================
-      STATE.symbol = s;
-      
-      // ============================================
-      // STEP 4: UPDATE UI ELEMENTS
-      // ============================================
-      var symbolName = document.getElementById('symbol-name');
-      var symbolSearch = document.getElementById('symbol-search');
-      var symbolExchange = document.getElementById('symbol-exchange');
-      
-      if (symbolName) symbolName.textContent = s.includes('/') ? s : s.replace('USDT', '/USDT');
-      if (symbolSearch) symbolSearch.value = s;
-      if (symbolExchange) {
-        if (STATE.assetType === 'crypto') symbolExchange.textContent = 'Binance';
-        else if (STATE.assetType === 'stocks') symbolExchange.textContent = 'US Stocks';
-        else symbolExchange.textContent = 'Forex';
-      }
-      
-      // Update mobile header
-      var mobileSymbolName = document.getElementById('mobile-symbol-name');
-      if (mobileSymbolName) mobileSymbolName.textContent = s.includes('/') ? s : s.replace('USDT', '/USDT');
-      
-      // Update embedded search display
-      var symbolInputEl = document.getElementById('symbol-input');
-      if (symbolInputEl) symbolInputEl.value = s;
-      
-      DataManager.updateWatchlistStar();
-      
-      // ============================================
-      // STEP 5: LOAD NEW DATA WITH DELAY
-      // The delay ensures charts are fully reset before new data arrives
-      // ============================================
-      var self = this;
-      
-      setTimeout(async function() {
-        try {
-          if (STATE.assetType === 'stocks' || STATE.assetType === 'forex') {
-            // === STOCK/FOREX DATA ===
-            console.log('📈 Loading stock/forex data for', s);
-            
-            var candles = await StockDataManager.loadCandles(s, STATE.interval);
-            
-            if (candles && candles.length > 0) {
-              STATE.candles = candles;
-              
-              // Update main chart FIRST
-              if (ChartEngine && ChartEngine.updateMain) {
-                ChartEngine.updateMain(candles);
-              }
-              
-              // Then update volume with a slight delay
-              setTimeout(function() {
-                if (ChartEngine && ChartEngine.updateVolume) {
-                  ChartEngine.updateVolume(candles);
-                }
-                if (ChartEngine && ChartEngine.fitContent) {
-                  ChartEngine.fitContent();
-                }
-              }, 150);
-              
-              // Update price display
-              var lastCandle = candles[candles.length - 1];
-              if (lastCandle && DataManager.updatePriceDisplay) {
-                DataManager.updatePriceDisplay(lastCandle);
-              }
-            }
-            
-            // Start polling for live updates
-            StockDataManager.startPolling(s);
-            
-          } else {
-            // === CRYPTO DATA ===
-            console.log('📈 Loading crypto data for', s);
-            
-            await self.loadHistory(s, STATE.interval);
-            await self.load24h(s);
-            
-            // Small delay then reconnect WebSocket
-            setTimeout(function() {
-              self.connectWS();
-            }, 300);
+        
+        // Update volume with slight delay
+        setTimeout(() => {
+          if (chartEngineRef && chartEngineRef.updateVolume) {
+            chartEngineRef.updateVolume(candles);
           }
-          
-          // ============================================
-          // STEP 6: UPDATE PANELS AFTER DATA LOADS
-          // ============================================
-          setTimeout(function() {
-            if (typeof initAdvisoryGauge === 'function') initAdvisoryGauge();
-            if (typeof initForecast === 'function') initForecast();
-            if (typeof initKeyStats === 'function') initKeyStats();
-            if (typeof MarketOverview !== 'undefined' && MarketOverview.fetchMarketData) {
-              MarketOverview.fetchMarketData();
-            }
-          }, 500);
-          
-          // Recalculate indicators AFTER charts are fully ready
-          setTimeout(function() {
-            if (STATE.activeIndicators && STATE.activeIndicators.size > 0 && typeof IndicatorEngine !== 'undefined') {
-              console.log('📊 P0 FIX: Recalculating indicators for new symbol...');
-              IndicatorEngine.calculateAll();
-            }
-          }, 1200);
-          
-          // Secondary resize to fix any layout issues
-          setTimeout(function() {
-            if (typeof ChartEngine !== 'undefined' && ChartEngine.resizeAll) {
-              ChartEngine.resizeAll();
-            }
-          }, 1500);
-          
-        } catch(e) {
-          console.error('❌ Failed to load data for', s, ':', e.message);
-          // Silent error - no user-facing popup
+          if (chartEngineRef && chartEngineRef.fitContent) {
+            chartEngineRef.fitContent();
+          }
+        }, 100);
+        
+        // Update price display
+        const lastCandle = candles[candles.length - 1];
+        if (lastCandle && DataManager.updatePriceDisplay) {
+          DataManager.updatePriceDisplay(lastCandle);
         }
-      }, 400); // 400ms delay ensures charts are fully reset
-      
-      // ============================================
-      // STEP 7: EMIT EVENT FOR OTHER COMPONENTS
-      // ============================================
-      if (typeof Events !== 'undefined') {
-        Events.emit('symbol:changed', { symbol: s, assetType: STATE.assetType });
       }
-    },
+      
+      // Start polling for live updates
+      StockDataManager.startPolling(s);
+      
+    } else {
+      console.log('📈 Loading crypto data for', s);
+      
+      await self.loadHistory(s, STATE.interval);
+      await self.load24h(s);
+      
+      setTimeout(() => {
+        self.connectWS();
+      }, 300);
+    }
+    
+    // ============================================
+    // STEP 7: UPDATE PANELS AFTER DATA LOADS
+    // ============================================
+    setTimeout(() => {
+      if (typeof initAdvisoryGauge === 'function') initAdvisoryGauge();
+      if (typeof initForecast === 'function') initForecast();
+      if (typeof initKeyStats === 'function') initKeyStats();
+      if (typeof MarketOverview !== 'undefined' && MarketOverview.fetchMarketData) {
+        MarketOverview.fetchMarketData();
+      }
+      
+      // Hide loading indicator
+      if (chartContainer) {
+        chartContainer.style.opacity = '1';
+      }
+    }, 500);
+    
+    // Recalculate indicators
+    setTimeout(() => {
+      if (STATE.activeIndicators && STATE.activeIndicators.size > 0 && typeof IndicatorEngine !== 'undefined') {
+        console.log('📊 Recalculating indicators for new symbol...');
+        IndicatorEngine.calculateAll();
+      }
+    }, 1200);
+    
+    // Final resize
+    setTimeout(() => {
+      if (typeof ChartEngine !== 'undefined' && ChartEngine.resizeAll) {
+        ChartEngine.resizeAll();
+      }
+    }, 1500);
+    
+  } catch(e) {
+    console.error('❌ Failed to load data for', s, ':', e.message);
+    if (chartContainer) {
+      chartContainer.style.opacity = '1';
+    }
+  }
+  
+  // ============================================
+  // STEP 8: EMIT EVENT
+  // ============================================
+  if (typeof Events !== 'undefined') {
+    Events.emit('symbol:changed', { symbol: s, assetType: STATE.assetType });
+  }
+},
     
       async switchInterval(i) {
   if(i === STATE.interval) return;
@@ -11621,37 +11615,123 @@ async loadExchangeSymbols(exchangeKey) {
 },
     
     connectWS() {
-      const streams = CONFIG.TICKER_SYMBOLS.map(s => `${s.toLowerCase()}@ticker`).join('/');
-      const ws = new WebSocket(`${CONFIG.BINANCE_WS_STREAM}?streams=${streams}`);
-      STATE.websockets.ticker = ws;
-      
-      ws.onmessage = (e) => {
-        try {
-          const m = JSON.parse(e.data);
-          if(m.data) {
-            const { s: sym, c: price, P: change } = m.data;
-            const priceNum = parseFloat(price);
-            const changeNum = parseFloat(change);
-            
-            const priceElements = document.querySelectorAll(`#tp-${sym}`);
-            priceElements.forEach(el => {
-              el.textContent = '$' + U.formatPrice(priceNum);
-              el.style.color = changeNum >= 0 ? '#26a69a' : '#ef5350';
-            });
-            
-            const changeElements = document.querySelectorAll(`#tc-${sym}`);
-            changeElements.forEach(el => {
-              el.textContent = `${changeNum >= 0 ? '+' : ''}${U.formatNum(changeNum, 2)}%`;
-              el.className = `ticker-change ${changeNum >= 0 ? 'positive' : 'negative'}`;
-            });
-            
-            if (WatchlistManager.updatePrice) {
-  WatchlistManager.updatePrice(sym, priceNum, changeNum);
+  // For crypto - use WebSocket
+  if (STATE.assetType === 'crypto') {
+    const streams = CONFIG.TICKER_SYMBOLS.map(s => `${s.toLowerCase()}@ticker`).join('/');
+    const ws = new WebSocket(`${CONFIG.BINANCE_WS_STREAM}?streams=${streams}`);
+    STATE.websockets.ticker = ws;
+    
+    ws.onmessage = (e) => {
+      try {
+        const m = JSON.parse(e.data);
+        if(m.data) {
+          const { s: sym, c: price, P: change } = m.data;
+          const priceNum = parseFloat(price);
+          const changeNum = parseFloat(change);
+          
+          const priceElements = document.querySelectorAll(`#tp-${sym}`);
+          priceElements.forEach(el => {
+            el.textContent = '$' + U.formatPrice(priceNum);
+            el.style.color = changeNum >= 0 ? '#26a69a' : '#ef5350';
+          });
+          
+          const changeElements = document.querySelectorAll(`#tc-${sym}`);
+          changeElements.forEach(el => {
+            el.textContent = `${changeNum >= 0 ? '+' : ''}${U.formatNum(changeNum, 2)}%`;
+            el.className = `ticker-change ${changeNum >= 0 ? 'positive' : 'negative'}`;
+          });
+          
+          if (WatchlistManager.updatePrice) {
+            WatchlistManager.updatePrice(sym, priceNum, changeNum);
           }
-		  }
-        } catch(ex) {}
-      };
-    },
+        }
+      } catch(ex) {}
+    };
+    
+    ws.onerror = () => {
+      console.warn('Ticker WebSocket error, falling back to REST polling');
+      this.startRestPolling();
+    };
+    
+    ws.onclose = () => {
+      console.warn('Ticker WebSocket closed, falling back to REST polling');
+      this.startRestPolling();
+    };
+  } else {
+    // For Stocks/Forex - use REST polling
+    this.startRestPolling();
+  }
+},
+
+startRestPolling() {
+  // Clear existing interval
+  if (this._restInterval) {
+    clearInterval(this._restInterval);
+  }
+  
+  // Poll every 5 seconds for stocks/forex
+  this._restInterval = setInterval(async () => {
+    if (STATE.assetType === 'stocks' || STATE.assetType === 'forex') {
+      await this.updateTickerPrices();
+    }
+  }, 5000);
+  
+  // Initial update
+  this.updateTickerPrices();
+},
+
+async updateTickerPrices() {
+  const apiBase = 'https://tradevision-backend.wambuamwanza6.workers.dev/api';
+  
+  for (const symbol of CONFIG.TICKER_SYMBOLS) {
+    try {
+      let price = null;
+      let change = null;
+      
+      if (STATE.assetType === 'stocks') {
+        const stockSymbol = symbol.replace('USDT', '');
+        const response = await fetch(`${apiBase}/proxy?endpoint=finnhub&symbol=${stockSymbol}`);
+        if (response.ok) {
+          const data = await response.json();
+          price = data.c;
+          change = data.dp;
+        }
+      } else if (STATE.assetType === 'forex') {
+        let forexSymbol = symbol;
+        if (symbol.length === 6) forexSymbol = symbol.slice(0, 3) + '/' + symbol.slice(3);
+        const response = await fetch(`${apiBase}/proxy?endpoint=twelvedata&symbol=${forexSymbol}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.values && data.values[0]) {
+            price = parseFloat(data.values[0].close);
+            const prevClose = parseFloat(data.values[1]?.close || price);
+            change = ((price - prevClose) / prevClose) * 100;
+          }
+        }
+      }
+      
+      if (price) {
+        const priceElements = document.querySelectorAll(`#tp-${symbol}`);
+        priceElements.forEach(el => {
+          el.textContent = '$' + (typeof U !== 'undefined' ? U.formatPrice(price) : price.toFixed(2));
+          el.style.color = change >= 0 ? '#26a69a' : '#ef5350';
+        });
+        
+        const changeElements = document.querySelectorAll(`#tc-${symbol}`);
+        changeElements.forEach(el => {
+          el.textContent = `${change >= 0 ? '+' : ''}${(change || 0).toFixed(2)}%`;
+          el.className = `ticker-change ${change >= 0 ? 'positive' : 'negative'}`;
+        });
+        
+        if (WatchlistManager.updatePrice) {
+          WatchlistManager.updatePrice(symbol, price, change);
+        }
+      }
+    } catch(e) {
+      // Silent fail for individual symbols
+    }
+  }
+},
 	  
     setupControls() {
       const pauseBtn = document.getElementById('ticker-pause');
