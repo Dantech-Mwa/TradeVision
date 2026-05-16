@@ -2265,6 +2265,8 @@ createPriceChart() {
   });
   
   const chart = LightweightCharts.createChart(el, chartOptions);
+	// FORCE PRICE SCALE VISIBILITY
+chart.priceScale('right').applyOptions({ visible: true, borderVisible: true });
   
   // ============================================
   // Create main candlestick series
