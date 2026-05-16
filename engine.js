@@ -3311,21 +3311,7 @@ updateMain(data) {
   STATE.candles = sanitizedData;
   
   // ============================================
-  // STEP 3: Clear extra canvases
-  // ============================================
-  const priceContainer = document.getElementById('price-chart');
-  if (priceContainer) {
-    const canvases = priceContainer.querySelectorAll('canvas');
-    if (canvases.length > 1) {
-      console.log(`🧹 Removing ${canvases.length - 1} extra canvases`);
-      for (let i = 1; i < canvases.length; i++) {
-        canvases[i].remove();
-      }
-    }
-  }
-  
-  // ============================================
-  // STEP 4: Check if chart is ready (queue if not)
+  // STEP 3: Check if chart is ready (queue if not)
   // ============================================
   if (!this.mainSeries || !this.charts.price) {
     console.warn('⚠️ Chart not ready, queueing update');
@@ -3348,7 +3334,7 @@ updateMain(data) {
   }
   
   // ============================================
-  // STEP 5: Update precision based on actual price
+  // STEP 4: Update precision based on actual price
   // ============================================
   if (sanitizedData.length > 0) {
     const lastPrice = sanitizedData[sanitizedData.length - 1].close;
@@ -3390,7 +3376,7 @@ updateMain(data) {
   }
   
   // ============================================
-  // STEP 6: Prepare chart data based on chart type
+  // STEP 5: Prepare chart data based on chart type
   // ============================================
   let chartData;
   try {
@@ -3431,14 +3417,14 @@ updateMain(data) {
   }
   
   // ============================================
-  // STEP 7: Render the data
+  // STEP 6: Render the data
   // ============================================
   try {
     this.mainSeries.setData(chartData);
     console.log(`✅ Rendered ${chartData.length} candles`);
     
     // ============================================
-    // STEP 8: FORCE PRICE SCALE VISIBLE & AUTOSCALE
+    // STEP 7: FORCE PRICE SCALE VISIBLE & AUTOSCALE
     // ============================================
     if (this.charts.price) {
       const priceScale = this.charts.price.priceScale('right');
@@ -3454,7 +3440,7 @@ updateMain(data) {
     }
     
     // ============================================
-    // STEP 9: Update volume chart
+    // STEP 8: Update volume chart
     // ============================================
     if (this.series && this.series.volume) {
       try {
@@ -3469,7 +3455,7 @@ updateMain(data) {
     }
     
     // ============================================
-    // STEP 10: Fit content and resize
+    // STEP 9: Fit content and resize
     // ============================================
     setTimeout(() => {
       if (this.charts.price && this.charts.price.timeScale) {
