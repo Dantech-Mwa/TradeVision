@@ -2048,7 +2048,7 @@ window.debugTimers = function() {
      * @param {Object} overrides - Any overrides for specific chart type
      * @returns {Object} Chart options
      */
-    _getCommonChartOptions(overrides) {
+ _getCommonChartOptions(overrides) {
       const isMobile = window.innerWidth <= 768;
       const defaults = {
         layout: {
@@ -2076,15 +2076,15 @@ window.debugTimers = function() {
             labelBackgroundColor: '#1c2128',
             visible: true,
             labelVisible: true
-          },
-        
-       rightPriceScale: {
-      borderColor: '#30363d',
-      scaleMargins: { top: 0.05, bottom: 0.05 },
-      autoScale: true,
-      visible: true,        // ← ADD THIS
-      borderVisible: true   // ← ADD THIS
-    },
+          }
+        },
+        rightPriceScale: {
+          borderColor: '#30363d',
+          scaleMargins: { top: 0.05, bottom: 0.05 },
+          autoScale: true,
+          visible: true,
+          borderVisible: true
+        },
         timeScale: {
           borderColor: '#30363d',
           timeVisible: true,
