@@ -2469,9 +2469,7 @@ this.currentPrecision = symbolSettings;
       }
     }
   }, 500);
-},
-
-	  // FORCE PRICE SCALE VISIBILITY
+		  // FORCE PRICE SCALE VISIBILITY
 setTimeout(() => {
     if (this.charts && this.charts.price) {
         const scale = this.charts.price.priceScale('right');
@@ -2484,6 +2482,8 @@ setTimeout(() => {
         );
     }
 }, 100);
+},
+
 // ============================================
 // REQUIRED HELPER METHODS (Add these if missing)
 // ============================================
