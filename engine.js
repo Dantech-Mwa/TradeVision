@@ -2079,12 +2079,31 @@ window.debugTimers = function() {
           }
         },
         rightPriceScale: {
-          borderColor: '#30363d',
-          scaleMargins: { top: 0.05, bottom: 0.05 },
-          autoScale: true,
-          visible: true,
-          borderVisible: true
-        },
+    // Visibility
+    visible: true,
+    borderVisible: true,
+    
+    // Auto-scaling
+    autoScale: true,
+    
+    // Scale margins (leave 10% padding top and bottom)
+    scaleMargins: {
+        top: 0.1,
+        bottom: 0.1
+    },
+    
+    // Better text rendering
+    entireTextOnly: true,
+    
+    // Border styling
+    borderColor: '#30363d',
+    
+    // Invert scale if needed (for short positions)
+    invertScale: false,
+    
+    // Mode: 0 = normal, 1 = logarithmic
+    mode: 0
+},
         timeScale: {
           borderColor: '#30363d',
           timeVisible: true,
@@ -2261,17 +2280,110 @@ chart.priceScale('right').applyOptions({ visible: true, borderVisible: true });
   // ============================================
   // Create main candlestick series
   // ============================================
-  this.mainSeries = chart.addCandlestickSeries({
+// ============================================
+// INSTITUTIONAL PRICE SCALE CONFIGURATION
+// ============================================
+
+// Symbol-specific precision mapping
+const symbolPrecisionMap = {
+    // Crypto - USDT pairs
+    BTCUSDT: { precision: 2, minMove: 0.01 },
+    ETHUSDT: { precision: 2, minMove: 0.01 },
+    BNBUSDT: { precision: 2, minMove: 0.01 },
+    SOLUSDT: { precision: 2, minMove: 0.01 },
+    XRPUSDT: { precision: 4, minMove: 0.0001 },
+    ADAUSDT: { precision: 4, minMove: 0.0001 },
+    DOGEUSDT: { precision: 4, minMove: 0.0001 },
+    DOTUSDT: { precision: 3, minMove: 0.001 },
+    LINKUSDT: { precision: 3, minMove: 0.001 },
+    
+    // Crypto - USD pairs
+    BTCUSD: { precision: 2, minMove: 0.01 },
+    ETHUSD: { precision: 2, minMove: 0.01 },
+    
+    // Forex majors
+    EURUSD: { precision: 5, minMove: 0.00001 },
+    GBPUSD: { precision: 5, minMove: 0.00001 },
+    USDJPY: { precision: 3, minMove: 0.001 },
+    USDCHF: { precision: 5, minMove: 0.00001 },
+    AUDUSD: { precision: 5, minMove: 0.00001 },
+    NZDUSD: { precision: 5, minMove: 0.00001 },
+    USDCAD: { precision: 5, minMove: 0.00001 },
+    
+    // Forex crosses
+    EURGBP: { precision: 5, minMove: 0.00001 },
+    EURJPY: { precision: 3, minMove: 0.001 },
+    GBPJPY: { precision: 3, minMove: 0.001 },
+    
+    // Commodities
+    XAUUSD: { precision: 2, minMove: 0.01 },
+    XAGUSD: { precision: 3, minMove: 0.001 },
+    
+    // Indices
+    SPX: { precision: 2, minMove: 0.01 },
+    NDX: { precision: 2, minMove: 0.01 },
+    DJI: { precision: 2, minMove: 0.01 }
+};
+
+// Default settings for unknown symbols
+const defaultPrecision = { precision: 5, minMove: 0.00001 };
+
+// Get symbol-specific or dynamic precision
+const symbolSettings = (() => {
+    // Check static map first
+    if (symbolPrecisionMap[STATE.symbol]) {
+        return symbolPrecisionMap[STATE.symbol];
+    }
+    
+    // Auto-detect from price for crypto
+    if (STATE.assetType === 'crypto') {
+        const price = STATE.currentPrice || 60000;
+        if (price >= 10000) return { precision: 2, minMove: 0.01 };
+        if (price >= 1000) return { precision: 2, minMove: 0.01 };
+        if (price >= 100) return { precision: 3, minMove: 0.001 };
+        if (price >= 1) return { precision: 4, minMove: 0.0001 };
+        return { precision: 6, minMove: 0.000001 };
+    }
+    
+    // Auto-detect for stocks
+    if (STATE.assetType === 'stocks') {
+        const price = STATE.currentPrice || 100;
+        if (price >= 1000) return { precision: 2, minMove: 0.01 };
+        if (price >= 100) return { precision: 2, minMove: 0.01 };
+        if (price >= 1) return { precision: 3, minMove: 0.001 };
+        return { precision: 4, minMove: 0.0001 };
+    }
+    
+    return defaultPrecision;
+})();
+
+// Create main candlestick series with proper formatting
+this.mainSeries = chart.addCandlestickSeries({
+    // Colors
     upColor: '#26a69a',
     downColor: '#ef5350',
     borderUpColor: '#26a69a',
     borderDownColor: '#ef5350',
     wickUpColor: '#26a69a',
     wickDownColor: '#ef5350',
-    // PHASE 2 FIX: Better visibility on mobile
+    
+    // Visibility
     borderVisible: true,
-    wickVisible: true
-  });
+    wickVisible: true,
+    
+    // Price scale binding
+    priceScaleId: 'right',
+    
+    // CRITICAL: Price formatting
+    priceFormat: {
+        type: 'price',
+        precision: symbolSettings.precision,
+        minMove: symbolSettings.minMove
+    }
+});
+
+// Store precision settings for later use
+this.currentPrecision = symbolSettings;
   
   // Store references
   this.charts.price = chart;
@@ -3281,29 +3393,23 @@ resetAllCharts() {
 // ============================================
 updateMain(data) {
   // ============================================
-  // STRICT VALIDATION - NO FALLBACKS
+  // STEP 1: STRICT VALIDATION
   // ============================================
   if (!data || !Array.isArray(data) || data.length === 0) {
-    console.error('❌ updateMain REJECTED: No valid data array', {
-      hasData: !!data,
-      isArray: Array.isArray(data),
-      length: data?.length
-    });
-    return;  // DO NOTHING - WAIT FOR REAL DATA
+    console.error('❌ updateMain REJECTED: No valid data array');
+    return;
   }
   
   const firstItem = data[0];
   
-  // REJECT invalid data formats - NO FALLBACKS
+  // Normalize Binance array format to object format
+  let normalizedData = data;
   if (Array.isArray(firstItem) && firstItem.length >= 6) {
     console.log('🔄 Converting Binance array to object format');
-    const normalizedData = [];
+    normalizedData = [];
     for (let i = 0; i < data.length; i++) {
       const k = data[i];
-      if (!k || k.length < 6) {
-        console.warn('⚠️ Invalid candle at index', i, 'skipping');
-        continue;
-      }
+      if (!k || k.length < 6) continue;
       normalizedData.push({
         time: Math.floor(k[0] / 1000),
         open: parseFloat(k[1]),
@@ -3313,30 +3419,49 @@ updateMain(data) {
         volume: parseFloat(k[5])
       });
     }
-    
-    if (normalizedData.length === 0) {
-      console.error('❌ No valid candles after conversion');
-      return;
-    }
-    STATE.candles = normalizedData;
-    data = normalizedData;
   }
   
-  // REJECT object format if missing required fields
-  else if (typeof firstItem === 'object') {
-    if (!firstItem.time || typeof firstItem.close !== 'number') {
-      console.error('❌ updateMain REJECTED: Invalid candle object', firstItem);
-      return;
-    }
-  }
-  
-  // REJECT any other format
-  else {
-    console.error('❌ updateMain REJECTED: Unknown data format', typeof firstItem);
+  if (normalizedData.length === 0) {
+    console.error('❌ No valid candles after normalization');
     return;
   }
   
-  // CRITICAL: Clear ALL existing canvas elements before rendering
+  // ============================================
+  // STEP 2: DATA SANITIZATION - CRITICAL FIX
+  // ============================================
+  let sanitizedData = normalizedData.map(candle => ({
+    time: typeof candle.time === 'number' ? candle.time : Number(candle.time),
+    open: typeof candle.open === 'number' ? candle.open : Number(candle.open),
+    high: typeof candle.high === 'number' ? candle.high : Number(candle.high),
+    low: typeof candle.low === 'number' ? candle.low : Number(candle.low),
+    close: typeof candle.close === 'number' ? candle.close : Number(candle.close),
+    volume: typeof candle.volume === 'number' ? candle.volume : Number(candle.volume || 0)
+  }));
+  
+  // Filter out invalid candles
+  sanitizedData = sanitizedData.filter(candle => 
+    !isNaN(candle.time) && 
+    !isNaN(candle.open) && 
+    !isNaN(candle.high) && 
+    !isNaN(candle.low) && 
+    !isNaN(candle.close) &&
+    candle.open > 0 &&
+    candle.high > 0 &&
+    candle.low > 0 &&
+    candle.close > 0
+  );
+  
+  if (sanitizedData.length === 0) {
+    console.warn('No valid candles after sanitization');
+    return;
+  }
+  
+  // Store in STATE
+  STATE.candles = sanitizedData;
+  
+  // ============================================
+  // STEP 3: Clear extra canvases
+  // ============================================
   const priceContainer = document.getElementById('price-chart');
   if (priceContainer) {
     const canvases = priceContainer.querySelectorAll('canvas');
@@ -3348,9 +3473,12 @@ updateMain(data) {
     }
   }
   
+  // ============================================
+  // STEP 4: Check if chart is ready
+  // ============================================
   if (!this.mainSeries || !this.charts.price) {
     console.warn('⚠️ Chart not ready, queueing update');
-    this._pendingMainData = data;
+    this._pendingMainData = sanitizedData;
     setTimeout(() => {
       if (this.mainSeries && this._pendingMainData) {
         this.updateMain(this._pendingMainData);
@@ -3360,7 +3488,7 @@ updateMain(data) {
     return;
   }
   
-  // Force clear existing data
+  // Clear existing data
   try {
     this.mainSeries.setData([]);
     console.log('🧹 Cleared existing series data');
@@ -3368,11 +3496,13 @@ updateMain(data) {
     console.warn('Clear failed:', e.message);
   }
   
-  // Prepare chart data based on type
+  // ============================================
+  // STEP 5: Prepare chart data based on chart type
+  // ============================================
   let chartData;
   try {
     if (STATE.chartType === 'candlestick' || STATE.chartType === 'bar') {
-      chartData = data.map(d => ({
+      chartData = sanitizedData.map(d => ({
         time: d.time,
         open: d.open,
         high: d.high,
@@ -3380,12 +3510,12 @@ updateMain(data) {
         close: d.close
       }));
     } else if (STATE.chartType === 'line' || STATE.chartType === 'area') {
-      chartData = data.map(d => ({
+      chartData = sanitizedData.map(d => ({
         time: d.time,
         value: d.close
       }));
     } else if (STATE.chartType === 'heikinashi') {
-      const heikin = this.calculateHeikinAshi(data);
+      const heikin = this.calculateHeikinAshi(sanitizedData);
       chartData = heikin.map(d => ({
         time: d.time,
         open: d.open,
@@ -3394,7 +3524,7 @@ updateMain(data) {
         close: d.close
       }));
     } else {
-      chartData = data.map(d => ({
+      chartData = sanitizedData.map(d => ({
         time: d.time,
         open: d.open,
         high: d.high,
@@ -3407,19 +3537,46 @@ updateMain(data) {
     return;
   }
   
-  // Single render attempt - NO RETRIES, NO FALLBACKS
+  // ============================================
+  // STEP 6: Render and apply fixes
+  // ============================================
   try {
+    // Render the data
     this.mainSeries.setData(chartData);
     console.log(`✅ Rendered ${chartData.length} candles`);
     
+    // ============================================
+    // STEP 7: FORCE PRICE AUTOSCALE (CRITICAL FIX)
+    // ============================================
+    if (this.charts.price) {
+      const priceScale = this.charts.price.priceScale('right');
+      if (priceScale) {
+        priceScale.applyOptions({ 
+          autoScale: true,
+          scaleMargins: { top: 0.1, bottom: 0.1 }
+        });
+      }
+    }
+    
+    // Fit content to visible range
     setTimeout(() => {
       if (this.charts.price && this.charts.price.timeScale) {
         this.charts.price.timeScale().fitContent();
       }
     }, 100);
+    
+    // Force resize for proper rendering
+    setTimeout(() => {
+      if (this.charts.price) {
+        const container = document.getElementById('price-chart');
+        if (container && container.clientWidth > 0 && container.clientHeight > 0) {
+          this.charts.price.resize(container.clientWidth, container.clientHeight);
+        }
+      }
+    }, 200);
+    
   } catch(e) {
     console.error('❌ Render failed:', e.message);
-    // DO NOT use fallback data - chart remains blank until real data arrives
   }
 },
     
@@ -3447,16 +3604,224 @@ updateMain(data) {
       })));
     },
     
-    updateLastCandle(c) {
-      if(this.mainSeries) {
-        if(STATE.chartType === 'candlestick' || STATE.chartType === 'bar') {
-          this.mainSeries.update({time:c.time,open:c.open,high:c.high,low:c.low,close:c.close});
-        } else if(STATE.chartType === 'line' || STATE.chartType === 'area') {
-          this.mainSeries.update({time:c.time,value:c.close});
-        }
+   /**
+ * Update the last candle in real-time (WebSocket streaming)
+ * This is called for every price tick to update the current incomplete candle
+ * CRITICAL: Must sanitize data to prevent scale distortion
+ */
+updateLastCandle(candle) {
+  // ============================================
+  // STEP 1: VALIDATE INPUT
+  // ============================================
+  if (!candle || typeof candle !== 'object') {
+    console.warn('⚠️ updateLastCandle: Invalid candle data', candle);
+    return;
+  }
+  
+  // ============================================
+  // STEP 2: SANITIZE REALTIME CANDLE DATA
+  // Force numeric conversion to prevent string distortion
+  // ============================================
+  const sanitizedCandle = {
+    time: typeof candle.time === 'number' ? candle.time : Number(candle.time),
+    open: typeof candle.open === 'number' ? candle.open : Number(candle.open),
+    high: typeof candle.high === 'number' ? candle.high : Number(candle.high),
+    low: typeof candle.low === 'number' ? candle.low : Number(candle.low),
+    close: typeof candle.close === 'number' ? candle.close : Number(candle.close),
+    volume: typeof candle.volume === 'number' ? candle.volume : Number(candle.volume || 0)
+  };
+  
+  // ============================================
+  // STEP 3: VALIDATE SANITIZED VALUES
+  // ============================================
+  if (isNaN(sanitizedCandle.time) || sanitizedCandle.time <= 0) {
+    console.warn('⚠️ updateLastCandle: Invalid timestamp', sanitizedCandle.time);
+    return;
+  }
+  
+  if (isNaN(sanitizedCandle.open) || sanitizedCandle.open <= 0 ||
+      isNaN(sanitizedCandle.high) || sanitizedCandle.high <= 0 ||
+      isNaN(sanitizedCandle.low) || sanitizedCandle.low <= 0 ||
+      isNaN(sanitizedCandle.close) || sanitizedCandle.close <= 0) {
+    console.warn('⚠️ updateLastCandle: Invalid price values', {
+      open: sanitizedCandle.open,
+      high: sanitizedCandle.high,
+      low: sanitizedCandle.low,
+      close: sanitizedCandle.close
+    });
+    return;
+  }
+  
+  // Ensure high is truly the highest, low is truly the lowest
+  sanitizedCandle.high = Math.max(sanitizedCandle.high, sanitizedCandle.open, sanitizedCandle.close);
+  sanitizedCandle.low = Math.min(sanitizedCandle.low, sanitizedCandle.open, sanitizedCandle.close);
+  
+  // ============================================
+  // STEP 4: UPDATE MAIN SERIES (CANDLESTICK)
+  // ============================================
+  if (this.mainSeries) {
+    try {
+      // For candlestick/bar charts
+      if (STATE.chartType === 'candlestick' || STATE.chartType === 'bar') {
+        this.mainSeries.update({
+          time: sanitizedCandle.time,
+          open: sanitizedCandle.open,
+          high: sanitizedCandle.high,
+          low: sanitizedCandle.low,
+          close: sanitizedCandle.close
+        });
+      } 
+      // For line/area charts
+      else if (STATE.chartType === 'line' || STATE.chartType === 'area') {
+        this.mainSeries.update({
+          time: sanitizedCandle.time,
+          value: sanitizedCandle.close
+        });
+      } 
+      // For Heikin Ashi (recalculate)
+      else if (STATE.chartType === 'heikinashi') {
+        const heikinCandle = this.calculateHeikinAshiUpdate(sanitizedCandle);
+        this.mainSeries.update({
+          time: heikinCandle.time,
+          open: heikinCandle.open,
+          high: heikinCandle.high,
+          low: heikinCandle.low,
+          close: heikinCandle.close
+        });
+      } 
+      // Default to candlestick
+      else {
+        this.mainSeries.update({
+          time: sanitizedCandle.time,
+          open: sanitizedCandle.open,
+          high: sanitizedCandle.high,
+          low: sanitizedCandle.low,
+          close: sanitizedCandle.close
+        });
       }
-      if(this.series.volume) this.series.volume.update({time:c.time,value:c.volume,color:c.close>=c.open?CONFIG.COLORS.upMuted:CONFIG.COLORS.downMuted});
-    },
+      
+      // Debug log (optional - remove in production)
+      if (Math.random() < 0.01) {
+        console.log('📊 Real-time update:', {
+          time: new Date(sanitizedCandle.time * 1000).toLocaleTimeString(),
+          price: sanitizedCandle.close,
+          spread: (sanitizedCandle.high - sanitizedCandle.low).toFixed(8)
+        });
+      }
+    } catch(e) {
+      console.error('❌ Failed to update main series:', e.message);
+    }
+  }
+  
+  // ============================================
+  // STEP 5: UPDATE VOLUME SERIES
+  // ============================================
+  if (this.series && this.series.volume) {
+    try {
+      const volumeColor = sanitizedCandle.close >= sanitizedCandle.open 
+        ? CONFIG.COLORS.upMuted 
+        : CONFIG.COLORS.downMuted;
+      
+      this.series.volume.update({
+        time: sanitizedCandle.time,
+        value: sanitizedCandle.volume,
+        color: volumeColor
+      });
+    } catch(e) {
+      console.warn('Volume update failed:', e.message);
+    }
+  }
+  
+  // ============================================
+  // STEP 6: UPDATE LOCAL STATE
+  // ============================================
+  if (STATE.candles && STATE.candles.length > 0) {
+    const lastCandle = STATE.candles[STATE.candles.length - 1];
+    
+    // If this is the same candle (same timestamp), update it
+    if (lastCandle && lastCandle.time === sanitizedCandle.time) {
+      STATE.candles[STATE.candles.length - 1] = sanitizedCandle;
+    } 
+    // If this is a new candle, add it
+    else if (sanitizedCandle.time > lastCandle.time) {
+      STATE.candles.push(sanitizedCandle);
+      // Trim to max candles
+      if (STATE.candles.length > CONFIG.MAX_CANDLES) {
+        STATE.candles = STATE.candles.slice(-CONFIG.CANDLE_LIMIT);
+      }
+    }
+  }
+  
+  // ============================================
+  // STEP 7: UPDATE PRICE DISPLAY
+  // ============================================
+  STATE.currentPrice = sanitizedCandle.close;
+  this.updatePriceDisplay(sanitizedCandle);
+  
+  // ============================================
+  // STEP 8: FORCE PRICE SCALE TO STAY ALIGNED
+  // This prevents scale drift during high-frequency updates
+  // ============================================
+  if (this.charts && this.charts.price && Math.random() < 0.05) {
+    try {
+      const priceScale = this.charts.price.priceScale('right');
+      if (priceScale) {
+        priceScale.applyOptions({ autoScale: true });
+      }
+    } catch(e) {
+      // Silent fail - don't spam console
+    }
+  }
+  
+  // ============================================
+  // STEP 9: TRIGGER INDICATOR RECALCULATION
+  // Only recalc occasionally to save performance
+  // ============================================
+  if (STATE.activeIndicators && STATE.activeIndicators.size > 0) {
+    // Use requestAnimationFrame for smooth updates
+    if (!this._indicatorUpdatePending) {
+      this._indicatorUpdatePending = true;
+      requestAnimationFrame(() => {
+        if (typeof IndicatorEngine !== 'undefined' && IndicatorEngine.calculateAll) {
+          IndicatorEngine.calculateAll();
+        }
+        this._indicatorUpdatePending = false;
+      });
+    }
+  }
+}
+
+/**
+ * Helper for Heikin Ashi real-time updates
+ * Calculates Heikin Ashi values for the current candle
+ */
+calculateHeikinAshiUpdate(currentCandle, previousHaClose = null) {
+  // Get previous Heikin Ashi close if not provided
+  let prevHaClose = previousHaClose;
+  if (prevHaClose === null && STATE.candles && STATE.candles.length > 1) {
+    const prevCandle = STATE.candles[STATE.candles.length - 2];
+    if (prevCandle && prevCandle.haClose) {
+      prevHaClose = prevCandle.haClose;
+    } else {
+      prevHaClose = (currentCandle.open + currentCandle.close) / 2;
+    }
+  }
+  
+  // Calculate Heikin Ashi values
+  const haClose = (currentCandle.open + currentCandle.high + currentCandle.low + currentCandle.close) / 4;
+  const haOpen = prevHaClose ? (prevHaClose + haClose) / 2 : currentCandle.open;
+  const haHigh = Math.max(currentCandle.high, haOpen, haClose);
+  const haLow = Math.min(currentCandle.low, haOpen, haClose);
+  
+  return {
+    time: currentCandle.time,
+    open: haOpen,
+    high: haHigh,
+    low: haLow,
+    close: haClose,
+    volume: currentCandle.volume
+  };
+},
 
 	  // ============================================
 // PRIORITY #1: CHART PERFORMANCE OPTIMIZATION
@@ -9547,26 +9912,37 @@ stopRestPolling() {
   this._restPollingActive = false;
   console.log('✅ REST polling stopped');
 },
-async switchSymbol(s) {
-  if (s === STATE.symbol && STATE.assetType === (STATE.assetType || 'crypto')) {
-    console.log('Same symbol, skipping');
+/**
+ * Switch to a different symbol (crypto, stock, or forex)
+ * Handles precision changes, chart reset, and data reloading
+ */
+async switchSymbol(newSymbol) {
+  // ============================================
+  // STEP 1: VALIDATION
+  // ============================================
+  if (!newSymbol || newSymbol === STATE.symbol) {
+    console.log('Same symbol or invalid, skipping');
     return;
   }
   
-  console.log('🔄 Switching symbol from', STATE.symbol, 'to', s);
+  console.log('🔄 Switching symbol from', STATE.symbol, 'to', newSymbol);
   
   // ============================================
-  // STEP 1: Save current chart view state
+  // STEP 2: SAVE CURRENT CHART VIEW STATE
   // ============================================
   let savedRange = null;
+  let savedLogicalRange = null;
   if (ChartEngine && ChartEngine.charts && ChartEngine.charts.price) {
     try {
       savedRange = ChartEngine.charts.price.timeScale().getVisibleRange();
-    } catch(e) {}
+      savedLogicalRange = ChartEngine.charts.price.timeScale().getVisibleLogicalRange();
+    } catch(e) {
+      console.warn('Could not save chart range:', e.message);
+    }
   }
   
   // ============================================
-  // STEP 2: Show loading indicator
+  // STEP 3: SHOW LOADING INDICATOR
   // ============================================
   const chartContainer = document.getElementById('price-chart');
   const mainPane = document.getElementById('main-chart-pane');
@@ -9576,21 +9952,25 @@ async switchSymbol(s) {
   }
   
   // ============================================
-  // STEP 3: Clear data WITHOUT destroying chart structure
+  // STEP 4: CLEAR CURRENT DATA
   // ============================================
   if (ChartEngine && ChartEngine.mainSeries) {
     try {
       ChartEngine.mainSeries.setData([]);
-    } catch(e) {}
+    } catch(e) {
+      console.warn('Could not clear main series:', e.message);
+    }
   }
   
   if (ChartEngine && ChartEngine.series && ChartEngine.series.volume) {
     try {
       ChartEngine.series.volume.setData([]);
-    } catch(e) {}
+    } catch(e) {
+      console.warn('Could not clear volume series:', e.message);
+    }
   }
   
-  // Clear overlays but keep chart structure
+  // Clear overlays
   if (ChartEngine && ChartEngine.overlays) {
     Object.keys(ChartEngine.overlays).forEach(key => {
       try {
@@ -9603,14 +9983,16 @@ async switchSymbol(s) {
   }
   
   // ============================================
-  // STEP 4: Store indicators to reapply later
+  // STEP 5: STORE INDICATORS FOR REAPPLICATION
   // ============================================
-  if (STATE.activeIndicators && STATE.activeIndicators.size > 0) {
-    window._pendingIndicators = Array.from(STATE.activeIndicators);
+  const savedIndicators = STATE.activeIndicators ? Array.from(STATE.activeIndicators) : [];
+  const savedIndicatorSettings = STATE.indicatorSettings ? JSON.parse(JSON.stringify(STATE.indicatorSettings)) : {};
+  
+  if (STATE.activeIndicators) {
     STATE.activeIndicators.clear();
   }
   
-  // Clear indicator panes from DOM but keep container
+  // Clear indicator panes
   const indContainer = document.getElementById('indicator-panes-container');
   if (indContainer) {
     while (indContainer.firstChild) {
@@ -9619,9 +10001,10 @@ async switchSymbol(s) {
     indContainer.style.display = 'none';
   }
   
-  // Clear indicator references
+  // Clear indicator chart references
   if (ChartEngine && ChartEngine.charts) {
-    ['rsi', 'macd', 'cci', 'williamsr', 'atr', 'stoch', 'obv', 'mfi', 'stochrsi', 'mom', 'roc', 'ad', 'cmf', 'volprof'].forEach(id => {
+    const indicatorIds = ['rsi', 'macd', 'cci', 'williamsr', 'atr', 'stoch', 'obv', 'mfi', 'stochrsi', 'mom', 'roc', 'ad', 'cmf', 'volprof'];
+    indicatorIds.forEach(id => {
       if (ChartEngine.charts[id]) {
         try { ChartEngine.charts[id].remove(); } catch(e) {}
         delete ChartEngine.charts[id];
@@ -9636,10 +10019,10 @@ async switchSymbol(s) {
   STATE.candles = [];
   
   // ============================================
-  // STEP 5: Disconnect old connections safely
+  // STEP 6: DISCONNECT OLD CONNECTIONS
   // ============================================
   if (STATE.assetType === 'crypto') {
-    if (DataManager.disconnect) {
+    if (DataManager && DataManager.disconnect) {
       DataManager.disconnect();
     }
   } else {
@@ -9649,40 +10032,139 @@ async switchSymbol(s) {
   }
   
   // ============================================
-  // STEP 6: Update STATE
+  // STEP 7: UPDATE STATE WITH NEW SYMBOL
   // ============================================
-  STATE.symbol = s;
+  STATE.symbol = newSymbol;
   
   // Auto-detect asset type
-  if (s.endsWith('USDT')) {
+  if (newSymbol.endsWith('USDT')) {
     STATE.assetType = 'crypto';
-  } else if (s.length === 6 && !s.endsWith('USDT')) {
+  } else if (newSymbol.length === 6 && !newSymbol.endsWith('USDT') && /^[A-Z]{6}$/.test(newSymbol)) {
     STATE.assetType = 'forex';
-  } else if (/^[A-Z]{1,5}$/.test(s) && !s.endsWith('USDT')) {
+  } else if (/^[A-Z]{1,5}$/.test(newSymbol) && !newSymbol.endsWith('USDT')) {
     STATE.assetType = 'stocks';
   } else {
     STATE.assetType = 'crypto';
   }
   
   // ============================================
-  // STEP 7: Update UI
+  // STEP 8: UPDATE PRICE PRECISION FOR THE NEW SYMBOL
+  // This is the key TradingView-like feature
+  // ============================================
+  const getSymbolPrecision = (symbol, assetType, estimatedPrice) => {
+    // Static precision map for known symbols
+    const precisionMap = {
+      // Crypto
+      'BTCUSDT': { precision: 2, minMove: 0.01 },
+      'ETHUSDT': { precision: 2, minMove: 0.01 },
+      'BNBUSDT': { precision: 2, minMove: 0.01 },
+      'SOLUSDT': { precision: 2, minMove: 0.01 },
+      'XRPUSDT': { precision: 4, minMove: 0.0001 },
+      'ADAUSDT': { precision: 4, minMove: 0.0001 },
+      'DOGEUSDT': { precision: 5, minMove: 0.00001 },
+      'SHIBUSDT': { precision: 8, minMove: 0.00000001 },
+      'PEPEUSDT': { precision: 8, minMove: 0.00000001 },
+      
+      // Forex
+      'EURUSD': { precision: 5, minMove: 0.00001 },
+      'GBPUSD': { precision: 5, minMove: 0.00001 },
+      'USDJPY': { precision: 3, minMove: 0.001 },
+      'USDCHF': { precision: 5, minMove: 0.00001 },
+      'AUDUSD': { precision: 5, minMove: 0.00001 },
+      'USDCAD': { precision: 5, minMove: 0.00001 },
+      'NZDUSD': { precision: 5, minMove: 0.00001 },
+      'EURGBP': { precision: 5, minMove: 0.00001 },
+      'EURJPY': { precision: 3, minMove: 0.001 },
+      'GBPJPY': { precision: 3, minMove: 0.001 },
+      
+      // Commodities
+      'XAUUSD': { precision: 2, minMove: 0.01 },
+      'XAGUSD': { precision: 3, minMove: 0.001 },
+      
+      // Stocks (default to 2 decimals for dollar prices)
+      'AAPL': { precision: 2, minMove: 0.01 },
+      'MSFT': { precision: 2, minMove: 0.01 },
+      'GOOGL': { precision: 2, minMove: 0.01 },
+      'AMZN': { precision: 2, minMove: 0.01 },
+      'TSLA': { precision: 2, minMove: 0.01 },
+      'META': { precision: 2, minMove: 0.01 },
+      'NVDA': { precision: 2, minMove: 0.01 }
+    };
+    
+    // Check static map first
+    if (precisionMap[symbol]) {
+      return precisionMap[symbol];
+    }
+    
+    // Auto-detect based on estimated price
+    const price = estimatedPrice || 100;
+    
+    if (assetType === 'crypto') {
+      if (price >= 10000) return { precision: 2, minMove: 0.01 };
+      if (price >= 1000) return { precision: 2, minMove: 0.01 };
+      if (price >= 100) return { precision: 3, minMove: 0.001 };
+      if (price >= 10) return { precision: 4, minMove: 0.0001 };
+      if (price >= 1) return { precision: 5, minMove: 0.00001 };
+      if (price >= 0.1) return { precision: 6, minMove: 0.000001 };
+      return { precision: 8, minMove: 0.00000001 };
+    }
+    
+    if (assetType === 'forex') {
+      if (symbol.includes('JPY')) return { precision: 3, minMove: 0.001 };
+      return { precision: 5, minMove: 0.00001 };
+    }
+    
+    if (assetType === 'stocks') {
+      if (price >= 1000) return { precision: 2, minMove: 0.01 };
+      if (price >= 100) return { precision: 2, minMove: 0.01 };
+      if (price >= 10) return { precision: 3, minMove: 0.001 };
+      if (price >= 1) return { precision: 4, minMove: 0.0001 };
+      return { precision: 5, minMove: 0.00001 };
+    }
+    
+    return { precision: 5, minMove: 0.00001 };
+  };
+  
+  // Get initial price estimate (will be updated after load)
+  const initialPrecision = getSymbolPrecision(newSymbol, STATE.assetType, null);
+  
+  // Apply precision to the main series if chart exists
+  if (ChartEngine && ChartEngine.mainSeries) {
+    try {
+      ChartEngine.mainSeries.applyOptions({
+        priceFormat: {
+          type: 'price',
+          precision: initialPrecision.precision,
+          minMove: initialPrecision.minMove
+        }
+      });
+      console.log(`📊 Applied precision: ${initialPrecision.precision} decimals, minMove: ${initialPrecision.minMove}`);
+    } catch(e) {
+      console.warn('Could not apply precision:', e.message);
+    }
+  }
+  
+  // ============================================
+  // STEP 9: UPDATE UI ELEMENTS
   // ============================================
   const symbolName = document.getElementById('symbol-name');
   const symbolSearch = document.getElementById('symbol-search');
   const symbolExchange = document.getElementById('symbol-exchange');
   const mobileSymbolName = document.getElementById('mobile-symbol-name');
   
-  if (symbolName) symbolName.textContent = s.includes('/') ? s : s.replace('USDT', '/USDT');
-  if (symbolSearch) symbolSearch.value = s;
-  if (mobileSymbolName) mobileSymbolName.textContent = s.includes('/') ? s : s.replace('USDT', '/USDT');
+  const displaySymbol = newSymbol.includes('/') ? newSymbol : newSymbol.replace('USDT', '/USDT');
+  
+  if (symbolName) symbolName.textContent = displaySymbol;
+  if (symbolSearch) symbolSearch.value = newSymbol;
+  if (mobileSymbolName) mobileSymbolName.textContent = displaySymbol;
   
   if (symbolExchange) {
     if (STATE.assetType === 'crypto') symbolExchange.textContent = 'Binance';
-    else if (STATE.assetType === 'stocks') symbolExchange.textContent = 'US Stocks';
-    else symbolExchange.textContent = 'Forex';
+    else if (STATE.assetType === 'stocks') symbolExchange.textContent = 'NASDAQ/NYSE';
+    else symbolExchange.textContent = 'FX Market';
   }
   
-  // Update active asset type button
+  // Update asset type tabs
   document.querySelectorAll('.asset-type-btn').forEach(btn => {
     btn.style.background = 'transparent';
     btn.style.color = 'var(--text-secondary)';
@@ -9692,22 +10174,24 @@ async switchSymbol(s) {
     }
   });
   
+  // Update watchlist star
   if (typeof WatchlistManager !== 'undefined' && WatchlistManager.updateWatchlistStar) {
     WatchlistManager.updateWatchlistStar();
   }
   
   // ============================================
-  // STEP 8: Load NEW data
+  // STEP 10: LOAD NEW DATA
   // ============================================
   try {
     if (STATE.assetType === 'stocks' || STATE.assetType === 'forex') {
-      console.log('📈 Loading stock/forex data for', s);
+      console.log('📈 Loading stock/forex data for', newSymbol);
       
-      const candles = await StockDataManager.loadCandles(s, STATE.interval);
+      const candles = await StockDataManager.loadCandles(newSymbol, STATE.interval);
       
       if (candles && candles.length > 0) {
         STATE.candles = candles;
         
+        // Update chart with sanitized data
         if (ChartEngine && ChartEngine.updateMain) {
           ChartEngine.updateMain(candles);
         }
@@ -9722,22 +10206,38 @@ async switchSymbol(s) {
         }, 100);
         
         const lastCandle = candles[candles.length - 1];
-        if (lastCandle && DataManager.updatePriceDisplay) {
+        if (lastCandle && DataManager && DataManager.updatePriceDisplay) {
           DataManager.updatePriceDisplay(lastCandle);
         }
         
-        await DataManager.load24h(s);
+        await DataManager.load24h(newSymbol);
       }
       
       if (StockDataManager && typeof StockDataManager.startPolling === 'function') {
-        StockDataManager.startPolling(s);
+        StockDataManager.startPolling(newSymbol);
       }
       
     } else {
-      console.log('📈 Loading crypto data for', s);
+      console.log('📈 Loading crypto data for', newSymbol);
       
-      await DataManager.loadHistory(s, STATE.interval);
-      await DataManager.load24h(s);
+      await DataManager.loadHistory(newSymbol, STATE.interval);
+      await DataManager.load24h(newSymbol);
+      
+      // Update precision based on actual loaded price
+      if (STATE.currentPrice) {
+        const updatedPrecision = getSymbolPrecision(newSymbol, STATE.assetType, STATE.currentPrice);
+        if (ChartEngine && ChartEngine.mainSeries && 
+            (updatedPrecision.precision !== initialPrecision.precision)) {
+          ChartEngine.mainSeries.applyOptions({
+            priceFormat: {
+              type: 'price',
+              precision: updatedPrecision.precision,
+              minMove: updatedPrecision.minMove
+            }
+          });
+          console.log(`📊 Updated precision to ${updatedPrecision.precision} decimals based on price ${STATE.currentPrice}`);
+        }
+      }
       
       setTimeout(() => {
         DataManager.connectWS();
@@ -9745,35 +10245,45 @@ async switchSymbol(s) {
     }
     
     // ============================================
-    // STEP 9: Reapply indicators
+    // STEP 11: REAPPLY INDICATORS
     // ============================================
-    if (window._pendingIndicators && window._pendingIndicators.length > 0) {
+    if (savedIndicators && savedIndicators.length > 0) {
       setTimeout(() => {
-        window._pendingIndicators.forEach(ind => {
+        savedIndicators.forEach(ind => {
           if (typeof IndicatorEngine !== 'undefined' && STATE.activeIndicators) {
             STATE.activeIndicators.add(ind);
           }
         });
+        
+        // Restore indicator settings
+        if (savedIndicatorSettings && Object.keys(savedIndicatorSettings).length > 0) {
+          STATE.indicatorSettings = savedIndicatorSettings;
+          localStorage.setItem('tvp_indicator_settings', JSON.stringify(STATE.indicatorSettings));
+        }
+        
         if (typeof IndicatorEngine !== 'undefined' && IndicatorEngine.calculateAll) {
           IndicatorEngine.calculateAll();
         }
-        window._pendingIndicators = null;
       }, 800);
     }
     
     // ============================================
-    // STEP 10: Restore chart view
+    // STEP 12: RESTORE CHART VIEW
     // ============================================
     if (savedRange && ChartEngine && ChartEngine.charts && ChartEngine.charts.price) {
       setTimeout(() => {
         try {
           ChartEngine.charts.price.timeScale().setVisibleRange(savedRange);
-        } catch(e) {}
+        } catch(e) {
+          console.warn('Could not restore chart range:', e.message);
+          // Fallback to fit content
+          ChartEngine.charts.price.timeScale().fitContent();
+        }
       }, 500);
     }
     
     // ============================================
-    // STEP 11: Refresh multi-chart system
+    // STEP 13: REFRESH MULTI-CHART SYSTEM
     // ============================================
     if (typeof MultiChart !== 'undefined' && MultiChart.layout !== 'single') {
       setTimeout(() => {
@@ -9782,7 +10292,7 @@ async switchSymbol(s) {
     }
     
     // ============================================
-    // STEP 12: Refresh multi-timeframe bar
+    // STEP 14: REFRESH MULTI-TIMEFRAME MONITOR
     // ============================================
     if (typeof MultiTimeframeMonitor !== 'undefined') {
       setTimeout(() => {
@@ -9791,33 +10301,56 @@ async switchSymbol(s) {
     }
     
     // ============================================
-    // STEP 13: Recalculate indicators and resize
+    // STEP 15: FORCE PRICE SCALE UPDATE
     // ============================================
     setTimeout(() => {
-      if (STATE.activeIndicators && STATE.activeIndicators.size > 0 && typeof IndicatorEngine !== 'undefined') {
-        IndicatorEngine.calculateAll();
+      if (ChartEngine && ChartEngine.charts && ChartEngine.charts.price) {
+        try {
+          const priceScale = ChartEngine.charts.price.priceScale('right');
+          if (priceScale) {
+            priceScale.applyOptions({ 
+              autoScale: true,
+              scaleMargins: { top: 0.1, bottom: 0.1 }
+            });
+          }
+          ChartEngine.charts.price.timeScale().fitContent();
+        } catch(e) {
+          console.warn('Price scale update failed:', e.message);
+        }
       }
+      
       if (ChartEngine && ChartEngine.resizeAll) {
         ChartEngine.resizeAll();
       }
     }, 1200);
     
   } catch(e) {
-    console.error('❌ Failed to load data for', s, ':', e.message);
+    console.error('❌ Failed to load data for', newSymbol, ':', e.message);
+    if (typeof Toast !== 'undefined') {
+      Toast.error(`Failed to load ${newSymbol}: ${e.message}`);
+    }
   }
   
   // ============================================
-  // STEP 14: Hide loading indicator
+  // STEP 16: HIDE LOADING INDICATOR
   // ============================================
   setTimeout(() => {
     if (chartContainer) chartContainer.style.opacity = '1';
     if (mainPane) mainPane.style.opacity = '1';
   }, 800);
   
-  // Emit event
+  // ============================================
+  // STEP 17: EMIT EVENT FOR OTHER COMPONENTS
+  // ============================================
   if (typeof Events !== 'undefined') {
-    Events.emit('symbol:changed', { symbol: s, assetType: STATE.assetType });
+    Events.emit('symbol:changed', { 
+      symbol: newSymbol, 
+      assetType: STATE.assetType,
+      precision: ChartEngine?.mainSeries?.options()?.priceFormat?.precision || 5
+    });
   }
+  
+  console.log(`✅ Symbol switched to ${newSymbol} (${STATE.assetType}) with TradingView-style precision`);
 },
     
       async switchInterval(i) {
