@@ -3789,7 +3789,7 @@ updateLastCandle(candle) {
       });
     }
   }
-}
+},
 
 /**
  * Helper for Heikin Ashi real-time updates
