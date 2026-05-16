@@ -28897,21 +28897,21 @@ const OnboardingTour = {
 // ============================================
 // CRITICAL: EXPOSE MODULES GLOBALLY
 // ============================================
-(function exposeGlobally() {
+setTimeout(function exposeGlobally() {
   console.log('🔧 Exposing critical modules to window...');
   
   if (typeof ChartEngine !== 'undefined') {
     window.ChartEngine = ChartEngine;
     console.log('✅ ChartEngine exposed');
   } else {
-    console.error('❌ ChartEngine not found for exposure');
+    console.error('❌ ChartEngine not found for exposure - checking again in 500ms');
+    setTimeout(exposeGlobally, 500);
+    return;
   }
   
   if (typeof DataManager !== 'undefined') {
     window.DataManager = DataManager;
     console.log('✅ DataManager exposed');
-  } else {
-    console.error('❌ DataManager not found for exposure');
   }
   
   if (typeof STATE !== 'undefined') {
@@ -28937,4 +28937,16 @@ const OnboardingTour = {
   console.log('=== GLOBAL EXPOSURE COMPLETE ===');
   console.log('window.ChartEngine:', !!window.ChartEngine);
   console.log('window.DataManager:', !!window.DataManager);
-})();
+  
+  // Now fix the price scale
+  if (window.ChartEngine && window.ChartEngine.charts && window.ChartEngine.charts.price) {
+    var chart = window.ChartEngine.charts.price;
+    chart.applyOptions({
+      rightPriceScale: { visible: true, borderVisible: true, autoScale: true }
+    });
+    if (chart.priceScale) {
+      chart.priceScale('right').applyOptions({ visible: true });
+    }
+    console.log('✅ Price scale fixed!');
+  }
+}, 100);
