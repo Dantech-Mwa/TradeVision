@@ -2086,28 +2086,27 @@ window.debugTimers = function() {
             labelVisible: true
           }
         },
-       rightPriceScale: {
+     rightPriceScale: {
     visible: true,
-    borderVisible: true,
 
     autoScale: true,
+
+    borderVisible: true,
+
+    borderColor: this.isDarkTheme
+        ? '#30363d'
+        : '#d0d7de',
 
     scaleMargins: {
         top: 0.1,
         bottom: 0.1
     },
 
-    entireTextOnly: true,
+    minimumWidth: 70,
 
-    borderColor: '#30363d',
-
-    textColor: '#c9d1d9',
-
-    invertScale: false,
-
-    mode: 0,
-
-    minimumWidth: 60
+    textColor: this.isDarkTheme
+        ? '#c9d1d9'
+        : '#24292f'
 },
         timeScale: {
           borderColor: '#30363d',
@@ -2279,6 +2278,19 @@ createPriceChart() {
   });
   
   const chart = LightweightCharts.createChart(el, chartOptions);
+	const resizeChart = () => {
+    const rect =
+        this.mainChartContainer.getBoundingClientRect();
+
+    this.mainChart.applyOptions({
+        width: rect.width,
+        height: rect.height
+    });
+};
+
+window.addEventListener('resize', resizeChart);
+
+setTimeout(resizeChart, 100);
 	// FORCE PRICE SCALE VISIBILITY
 chart.priceScale('right').applyOptions({ visible: true, borderVisible: true });
   
@@ -2363,29 +2375,25 @@ const symbolSettings = (() => {
 })();
 
 // Create main candlestick series with proper formatting
-this.mainSeries = chart.addCandlestickSeries({
-    // Colors
-    upColor: '#26a69a',
-    downColor: '#ef5350',
-    borderUpColor: '#26a69a',
-    borderDownColor: '#ef5350',
-    wickUpColor: '#26a69a',
-    wickDownColor: '#ef5350',
-    
-    // Visibility
-    borderVisible: true,
-    wickVisible: true,
-    
-    // Price scale binding
-    priceScaleId: 'right',
-    
-    // CRITICAL: Price formatting
-    priceFormat: {
-        type: 'price',
-        precision: symbolSettings.precision,
-        minMove: symbolSettings.minMove
-    }
-});
+this.mainSeries =
+    this.mainChart.addCandlestickSeries({
+        priceScaleId: 'right',
+
+        upColor: '#26a69a',
+        downColor: '#ef5350',
+
+        borderUpColor: '#26a69a',
+        borderDownColor: '#ef5350',
+
+        wickUpColor: '#26a69a',
+        wickDownColor: '#ef5350',
+
+        priceFormat: {
+            type: 'price',
+            precision: 5,
+            minMove: 0.00001
+        }
+    });
 
 // Store precision settings for later use
 this.currentPrecision = symbolSettings;
