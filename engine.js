@@ -2580,8 +2580,8 @@ createVolumeChart() {
       background: { type: 'solid', color: isLightTheme ? '#ffffff' : '#0d1117' },
       textColor: isLightTheme ? '#1f2328' : '#c9d1d9'
     },
-    grid: { vertLines: { visible: false }, horzLines: { visible: false } },
-    rightPriceScale: { visible: false },  // ← Volume has NO price scale
+    grid: { vertLines: { visible: true }, horzLines: { visible: true } },
+    rightPriceScale: { visible: true },  // ← Volume has NO price scale
     leftPriceScale: { visible: false },
     timeScale: { borderColor: isLightTheme ? '#d0d7de' : '#30363d', visible: true },
     handleScroll: { vertTouchDrag: false, horzTouchDrag: true },
