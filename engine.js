@@ -1404,7 +1404,7 @@ const VolumeProfileEngine = {
         },
         rightPriceScale: {
           borderColor: '#30363d',
-          visible: false
+          visible: true
         },
         timeScale: {
           borderColor: '#30363d',
@@ -2086,31 +2086,28 @@ window.debugTimers = function() {
             labelVisible: true
           }
         },
-        rightPriceScale: {
-    // Visibility
+       rightPriceScale: {
     visible: true,
     borderVisible: true,
-    
-    // Auto-scaling
+
     autoScale: true,
-    minimumWidth: 60,
-    // Scale margins (leave 10% padding top and bottom)
+
     scaleMargins: {
         top: 0.1,
         bottom: 0.1
     },
-    
-    // Better text rendering
+
     entireTextOnly: true,
-    
-    // Border styling
+
     borderColor: '#30363d',
-    
-    // Invert scale if needed (for short positions)
+
+    textColor: '#c9d1d9',
+
     invertScale: false,
-    
-    // Mode: 0 = normal, 1 = logarithmic
-    mode: 0
+
+    mode: 0,
+
+    minimumWidth: 60
 },
         timeScale: {
           borderColor: '#30363d',
