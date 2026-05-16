@@ -2052,9 +2052,17 @@ window.debugTimers = function() {
       const isMobile = window.innerWidth <= 768;
       const defaults = {
         layout: {
-          background: { type: 'solid', color: 'transparent' },
-          textColor: '#c9d1d9'
-        },
+    background: {
+        type: 'solid',
+        color: '#0d1117'
+    },
+
+    textColor: '#c9d1d9',
+
+    fontSize: 12,
+
+    fontFamily: 'Trebuchet MS, sans-serif'
+},
         grid: {
           vertLines: { color: '#21262d' },
           horzLines: { color: '#21262d' }
@@ -2085,7 +2093,7 @@ window.debugTimers = function() {
     
     // Auto-scaling
     autoScale: true,
-    
+    minimumWidth: 60,
     // Scale margins (leave 10% padding top and bottom)
     scaleMargins: {
         top: 0.1,
