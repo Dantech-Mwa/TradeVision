@@ -2470,6 +2470,20 @@ this.currentPrecision = symbolSettings;
     }
   }, 500);
 },
+
+	  // FORCE PRICE SCALE VISIBILITY
+setTimeout(() => {
+    if (this.charts && this.charts.price) {
+        const scale = this.charts.price.priceScale('right');
+        if (scale) {
+            scale.applyOptions({ visible: true, borderVisible: true });
+        }
+        this.charts.price.resize(
+            document.getElementById('price-chart')?.clientWidth || 800,
+            document.getElementById('price-chart')?.clientHeight || 400
+        );
+    }
+}, 100);
 // ============================================
 // REQUIRED HELPER METHODS (Add these if missing)
 // ============================================
@@ -3560,15 +3574,17 @@ updateMain(data) {
     // ============================================
     // STEP 7: FORCE PRICE AUTOSCALE (CRITICAL FIX)
     // ============================================
-    if (this.charts.price) {
-      const priceScale = this.charts.price.priceScale('right');
-      if (priceScale) {
+   if (this.charts.price) {
+    const priceScale = this.charts.price.priceScale('right');
+    if (priceScale) {
         priceScale.applyOptions({ 
-          autoScale: true,
-          scaleMargins: { top: 0.1, bottom: 0.1 }
+            autoScale: true,
+            visible: true,        // ← ADD THIS
+            borderVisible: true,  // ← ADD THIS
+            scaleMargins: { top: 0.1, bottom: 0.1 }
         });
-      }
     }
+}
     
     // Fit content to visible range
     setTimeout(() => {
@@ -8848,9 +8864,9 @@ async loadHistory(symbol, interval) {
     this._loadQueueTimeout = null;
   }
   
-  if (typeof ChartEngine !== 'undefined' && ChartEngine.resetAllCharts) {
-    ChartEngine.resetAllCharts();
-  }
+  //if (typeof ChartEngine !== 'undefined' && ChartEngine.resetAllCharts) {
+   // ChartEngine.resetAllCharts();
+  //}
   
   this._loadingInProgress = true;
   
