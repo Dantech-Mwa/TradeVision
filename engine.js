@@ -2375,8 +2375,7 @@ const symbolSettings = (() => {
 })();
 
 // Create main candlestick series with proper formatting
-this.mainSeries =
-    this.mainChart.addCandlestickSeries({
+this.mainSeries = chart.addCandlestickSeries({
         priceScaleId: 'right',
 
         upColor: '#26a69a',
