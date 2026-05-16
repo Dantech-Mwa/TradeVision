@@ -1476,6 +1476,40 @@ button:active,.trade-type:active,.order-type-btn:active,.quick-amount-btn:active
 <!-- PAYPAL SUBSCRIPTION SDK (ONE TIME - PUT IN HEAD) -->
 <!-- ============================================ -->
 <script src="https://www.paypal.com/sdk/js?client-id=BAA4jslwzKt9dDq-J2L2J-Vjw1v3O0zU3FEB10HZ4Uj4hnPfhPAdGd3K7cy0S7pEbR9QjYbK4-CPhP7_M4&vault=true&intent=subscription&disable-funding=venmo&currency=USD&components=buttons"></script>
+<script>
+    // Force price scale visibility - MUST RUN BEFORE LIGHTWEIGHTCHARTS CREATES THE CHART
+    (function prePatchLightweightCharts() {
+        const originalCreateChart = LightweightCharts?.createChart;
+        if (originalCreateChart) {
+            LightweightCharts.createChart = function(element, options) {
+                if (!options.rightPriceScale) {
+                    options.rightPriceScale = {};
+                }
+                options.rightPriceScale.visible = true;
+                options.rightPriceScale.borderVisible = true;
+                options.rightPriceScale.autoScale = true;
+                console.log('🎯 Pre-patched chart creation with visible price scale');
+                return originalCreateChart.call(this, element, options);
+            };
+        } else {
+            console.log('⏳ Waiting for LightweightCharts to load...');
+            const checkInterval = setInterval(() => {
+                if (typeof LightweightCharts !== 'undefined') {
+                    clearInterval(checkInterval);
+                    const orig = LightweightCharts.createChart;
+                    LightweightCharts.createChart = function(element, options) {
+                        if (!options.rightPriceScale) options.rightPriceScale = {};
+                        options.rightPriceScale.visible = true;
+                        options.rightPriceScale.borderVisible = true;
+                        options.rightPriceScale.autoScale = true;
+                        return orig.call(this, element, options);
+                    };
+                    console.log('✅ LightweightCharts patched after load');
+                }
+            }, 100);
+        }
+    })();
+</script>
 </head>
 <body data-theme="dark">
 <noscript>
