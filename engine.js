@@ -2078,13 +2078,23 @@ window.debugTimers = function() {
             labelVisible: true
           }
         },
-        rightPriceScale: {
-          borderColor: '#30363d',
-          scaleMargins: { top: 0.05, bottom: 0.05 },
-          autoScale: true,
-          visible: true,
-          borderVisible: true
-        },
+       rightPriceScale: {
+  visible: true,
+  borderVisible: true,
+  borderColor: '#30363d',
+  scaleMargins: {
+    top: 0.08,
+    bottom: 0.08
+  },
+  autoScale: true,
+  mode: 0,
+  drawTicks: true,
+  ticksVisible: true,
+  invertScale: false,
+  alignLabels: true,
+  minWidth: 50,
+  maxWidth: 80
+},
         timeScale: {
           borderColor: '#30363d',
           timeVisible: true,
