@@ -2028,6 +2028,7 @@ window.debugTimers = function() {
       this.setupCrosshair();
       this.setupZoomHandlers();
 	  VolumeProfileEngine.init();
+	  _lastChartType: null,
       console.log('✅ All charts created');
     },
     
@@ -3241,7 +3242,260 @@ resetAllCharts() {
   
   console.log('✅ Complete chart reset finished');
 },
-
+updateMain(data) {
+  // ============================================
+  // STEP 1: STRICT VALIDATION
+  // ============================================
+  if (!data || !Array.isArray(data) || data.length === 0) {
+    console.error('❌ updateMain REJECTED: No valid data array');
+    return;
+  }
+  
+  const firstItem = data[0];
+  
+  // Normalize Binance array format to object format
+  let normalizedData = data;
+  if (Array.isArray(firstItem) && firstItem.length >= 6) {
+    console.log('🔄 Converting Binance array to object format');
+    normalizedData = [];
+    for (let i = 0; i < data.length; i++) {
+      const k = data[i];
+      if (!k || k.length < 6) continue;
+      normalizedData.push({
+        time: Math.floor(k[0] / 1000),
+        open: parseFloat(k[1]),
+        high: parseFloat(k[2]),
+        low: parseFloat(k[3]),
+        close: parseFloat(k[4]),
+        volume: parseFloat(k[5])
+      });
+    }
+  }
+  
+  if (normalizedData.length === 0) {
+    console.error('❌ No valid candles after normalization');
+    return;
+  }
+  
+  // ============================================
+  // STEP 2: DATA SANITIZATION
+  // ============================================
+  let sanitizedData = normalizedData.map(candle => ({
+    time: typeof candle.time === 'number' ? candle.time : Number(candle.time),
+    open: typeof candle.open === 'number' ? candle.open : Number(candle.open),
+    high: typeof candle.high === 'number' ? candle.high : Number(candle.high),
+    low: typeof candle.low === 'number' ? candle.low : Number(candle.low),
+    close: typeof candle.close === 'number' ? candle.close : Number(candle.close),
+    volume: typeof candle.volume === 'number' ? candle.volume : Number(candle.volume || 0)
+  }));
+  
+  // Filter out invalid candles
+  sanitizedData = sanitizedData.filter(candle => 
+    !isNaN(candle.time) && 
+    !isNaN(candle.open) && 
+    !isNaN(candle.high) && 
+    !isNaN(candle.low) && 
+    !isNaN(candle.close) &&
+    candle.open > 0 &&
+    candle.high > 0 &&
+    candle.low > 0 &&
+    candle.close > 0
+  );
+  
+  if (sanitizedData.length === 0) {
+    console.warn('No valid candles after sanitization');
+    return;
+  }
+  
+  // Store in STATE
+  STATE.candles = sanitizedData;
+  
+  // ============================================
+  // STEP 3: Clear extra canvases
+  // ============================================
+  const priceContainer = document.getElementById('price-chart');
+  if (priceContainer) {
+    const canvases = priceContainer.querySelectorAll('canvas');
+    if (canvases.length > 1) {
+      console.log(`🧹 Removing ${canvases.length - 1} extra canvases`);
+      for (let i = 1; i < canvases.length; i++) {
+        canvases[i].remove();
+      }
+    }
+  }
+  
+  // ============================================
+  // STEP 4: Check if chart is ready (queue if not)
+  // ============================================
+  if (!this.mainSeries || !this.charts.price) {
+    console.warn('⚠️ Chart not ready, queueing update');
+    this._pendingMainData = sanitizedData;
+    setTimeout(() => {
+      if (this.mainSeries && this._pendingMainData) {
+        this.updateMain(this._pendingMainData);
+        this._pendingMainData = null;
+      }
+    }, 200);
+    return;
+  }
+  
+  // Clear existing data
+  try {
+    this.mainSeries.setData([]);
+    console.log('🧹 Cleared existing series data');
+  } catch(e) {
+    console.warn('Clear failed:', e.message);
+  }
+  
+  // ============================================
+  // STEP 5: Update precision based on actual price
+  // ============================================
+  if (sanitizedData.length > 0) {
+    const lastPrice = sanitizedData[sanitizedData.length - 1].close;
+    let newPrecision = null;
+    
+    // Dynamic precision based on actual price
+    if (STATE.assetType === 'crypto') {
+      if (lastPrice >= 10000) newPrecision = { precision: 2, minMove: 0.01 };
+      else if (lastPrice >= 1000) newPrecision = { precision: 2, minMove: 0.01 };
+      else if (lastPrice >= 100) newPrecision = { precision: 3, minMove: 0.001 };
+      else if (lastPrice >= 10) newPrecision = { precision: 4, minMove: 0.0001 };
+      else if (lastPrice >= 1) newPrecision = { precision: 5, minMove: 0.00001 };
+      else newPrecision = { precision: 8, minMove: 0.00000001 };
+    } else if (STATE.assetType === 'stocks') {
+      if (lastPrice >= 1000) newPrecision = { precision: 2, minMove: 0.01 };
+      else if (lastPrice >= 100) newPrecision = { precision: 2, minMove: 0.01 };
+      else if (lastPrice >= 10) newPrecision = { precision: 3, minMove: 0.001 };
+      else newPrecision = { precision: 4, minMove: 0.0001 };
+    } else {
+      newPrecision = { precision: 5, minMove: 0.00001 };
+    }
+    
+    // Apply precision to series if changed
+    if (this.mainSeries && (!this.currentPrecision || this.currentPrecision.precision !== newPrecision.precision)) {
+      try {
+        this.mainSeries.applyOptions({
+          priceFormat: {
+            type: 'price',
+            precision: newPrecision.precision,
+            minMove: newPrecision.minMove
+          }
+        });
+        this.currentPrecision = newPrecision;
+        console.log('📊 Updated precision:', newPrecision.precision, 'decimals based on price', lastPrice);
+      } catch(e) {
+        console.warn('Precision update failed:', e.message);
+      }
+    }
+  }
+  
+  // ============================================
+  // STEP 6: Prepare chart data based on chart type
+  // ============================================
+  let chartData;
+  try {
+    if (STATE.chartType === 'candlestick' || STATE.chartType === 'bar') {
+      chartData = sanitizedData.map(d => ({
+        time: d.time,
+        open: d.open,
+        high: d.high,
+        low: d.low,
+        close: d.close
+      }));
+    } else if (STATE.chartType === 'line' || STATE.chartType === 'area') {
+      chartData = sanitizedData.map(d => ({
+        time: d.time,
+        value: d.close
+      }));
+    } else if (STATE.chartType === 'heikinashi') {
+      const heikin = this.calculateHeikinAshi(sanitizedData);
+      chartData = heikin.map(d => ({
+        time: d.time,
+        open: d.open,
+        high: d.high,
+        low: d.low,
+        close: d.close
+      }));
+    } else {
+      chartData = sanitizedData.map(d => ({
+        time: d.time,
+        open: d.open,
+        high: d.high,
+        low: d.low,
+        close: d.close
+      }));
+    }
+  } catch(e) {
+    console.error('❌ Data preparation failed:', e.message);
+    return;
+  }
+  
+  // ============================================
+  // STEP 7: Render the data
+  // ============================================
+  try {
+    this.mainSeries.setData(chartData);
+    console.log(`✅ Rendered ${chartData.length} candles`);
+    
+    // ============================================
+    // STEP 8: FORCE PRICE SCALE VISIBLE & AUTOSCALE
+    // ============================================
+    if (this.charts.price) {
+      const priceScale = this.charts.price.priceScale('right');
+      if (priceScale) {
+        priceScale.applyOptions({ 
+          autoScale: true,
+          visible: true,
+          borderVisible: true,
+          scaleMargins: { top: 0.1, bottom: 0.1 }
+        });
+        console.log('🔧 Price scale forced visible in updateMain');
+      }
+    }
+    
+    // ============================================
+    // STEP 9: Update volume chart
+    // ============================================
+    if (this.series && this.series.volume) {
+      try {
+        this.series.volume.setData(sanitizedData.map(d => ({
+          time: d.time,
+          value: d.volume,
+          color: d.close >= d.open ? CONFIG.COLORS.upMuted : CONFIG.COLORS.downMuted
+        })));
+      } catch(e) {
+        console.warn('Volume update failed:', e.message);
+      }
+    }
+    
+    // ============================================
+    // STEP 10: Fit content and resize
+    // ============================================
+    setTimeout(() => {
+      if (this.charts.price && this.charts.price.timeScale) {
+        this.charts.price.timeScale().fitContent();
+      }
+    }, 100);
+    
+    setTimeout(() => {
+      if (this.charts.price) {
+        const container = document.getElementById('price-chart');
+        if (container && container.clientWidth > 0 && container.clientHeight > 0) {
+          this.charts.price.resize(container.clientWidth, container.clientHeight);
+        }
+      }
+      if (this.charts.volume) {
+        const volumeContainer = document.getElementById('volume-chart');
+        if (volumeContainer && volumeContainer.clientWidth > 0) {
+          this.charts.volume.resize(volumeContainer.clientWidth, volumeContainer.clientHeight);
+        }
+      }
+    }, 200);
+    
+  } catch(e) {
+    console.error('❌ Render failed:', e.message);
+  }
+},
 // ============================================
 // COMPLETE REPLACEMENT: ChartEngine.updateMain()
 // NO FALLBACKS - ONLY LIVE DATA
