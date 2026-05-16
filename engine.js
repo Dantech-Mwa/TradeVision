@@ -2076,25 +2076,15 @@ window.debugTimers = function() {
             labelBackgroundColor: '#1c2128',
             visible: true,
             labelVisible: true
-          }
-        },
+          },
+        
        rightPriceScale: {
-  visible: true,
-  borderVisible: true,
-  borderColor: '#30363d',
-  scaleMargins: {
-    top: 0.08,
-    bottom: 0.08
-  },
-  autoScale: true,
-  mode: 0,
-  drawTicks: true,
-  ticksVisible: true,
-  invertScale: false,
-  alignLabels: true,
-  minWidth: 50,
-  maxWidth: 80
-},
+      borderColor: '#30363d',
+      scaleMargins: { top: 0.05, bottom: 0.05 },
+      autoScale: true,
+      visible: true,        // ← ADD THIS
+      borderVisible: true   // ← ADD THIS
+    },
         timeScale: {
           borderColor: '#30363d',
           timeVisible: true,
