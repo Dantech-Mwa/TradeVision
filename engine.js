@@ -2043,105 +2043,62 @@ window.debugTimers = function() {
       }, { passive: false });
     },
         
-	  /**
-     * Create common chart options (eliminates duplication)
-     * @param {Object} overrides - Any overrides for specific chart type
-     * @returns {Object} Chart options
-     */
- _getCommonChartOptions(overrides) {
-      const isMobile = window.innerWidth <= 768;
-      const defaults = {
-        layout: {
-    background: {
-        type: 'solid',
-        color: '#0d1117'
+	_getCommonChartOptions(overrides) {
+  const isMobile = window.innerWidth <= 768;
+  const isLightTheme = document.body.getAttribute('data-theme') === 'light';
+  
+  const defaults = {
+    layout: {
+      background: { type: 'solid', color: isLightTheme ? '#ffffff' : '#0d1117' },
+      textColor: isLightTheme ? '#1f2328' : '#c9d1d9',
+      fontSize: 12,
+      fontFamily: 'Trebuchet MS, sans-serif'
     },
-
-    textColor: '#c9d1d9',
-
-    fontSize: 12,
-
-    fontFamily: 'Trebuchet MS, sans-serif'
-},
-        grid: {
-          vertLines: { color: '#21262d' },
-          horzLines: { color: '#21262d' }
-        },
-        crosshair: {
-          mode: 1,
-          vertLine: {
-            color: '#8b949e',
-            width: 1,
-            style: 2,
-            labelBackgroundColor: '#1c2128',
-            visible: true,
-            labelVisible: true
-          },
-          horzLine: {
-            color: '#8b949e',
-            width: 1,
-            style: 2,
-            labelBackgroundColor: '#1c2128',
-            visible: true,
-            labelVisible: true
-          }
-        },
-     rightPriceScale: {
-    visible: true,
-
-    autoScale: true,
-
-    borderVisible: true,
-
-    borderColor: this.isDarkTheme
-        ? '#30363d'
-        : '#d0d7de',
-
-    scaleMargins: {
-        top: 0.1,
-        bottom: 0.1
+    grid: {
+      vertLines: { color: isLightTheme ? '#f0f2f5' : '#21262d' },
+      horzLines: { color: isLightTheme ? '#f0f2f5' : '#21262d' }
     },
-
-    minimumWidth: 70,
-
-    textColor: this.isDarkTheme
-        ? '#c9d1d9'
-        : '#24292f'
-},
-        timeScale: {
-          borderColor: '#30363d',
-          timeVisible: true,
-          secondsVisible: false
-        },
-        handleScroll: {
-          vertTouchDrag: !isMobile,
-          horzTouchDrag: true
-        },
-        handleScale: {
-          axisPressedMouseMove: {
-            time: true,
-            price: true
-          },
-          pinch: true,
-          mouseWheel: true
-        }
-      };
-      
-      // Merge overrides with defaults
-      if (overrides) {
-        for (const key in overrides) {
-          if (overrides.hasOwnProperty(key)) {
-            if (typeof overrides[key] === 'object' && defaults[key]) {
-              Object.assign(defaults[key], overrides[key]);
-            } else {
-              defaults[key] = overrides[key];
-            }
-          }
+    crosshair: {
+      mode: 1,
+      vertLine: { color: '#8b949e', width: 1, style: 2, labelBackgroundColor: '#1c2128', visible: true, labelVisible: true },
+      horzLine: { color: '#8b949e', width: 1, style: 2, labelBackgroundColor: '#1c2128', visible: true, labelVisible: true }
+    },
+    rightPriceScale: {
+      visible: true,        // ← ADD THIS
+      borderVisible: true,  // ← ADD THIS
+      autoScale: true,
+      scaleMargins: { top: 0.1, bottom: 0.1 },
+      entireTextOnly: true,
+      borderColor: isLightTheme ? '#d0d7de' : '#30363d',
+      textColor: isLightTheme ? '#1f2328' : '#c9d1d9',
+      invertScale: false,
+      mode: 0,
+      minimumWidth: 60
+    },
+    timeScale: {
+      borderColor: isLightTheme ? '#d0d7de' : '#30363d',
+      timeVisible: true,
+      secondsVisible: false
+    },
+    handleScroll: { vertTouchDrag: !isMobile, horzTouchDrag: true },
+    handleScale: { axisPressedMouseMove: { time: true, price: true }, pinch: true, mouseWheel: true }
+  };
+  
+  // Merge overrides
+  if (overrides) {
+    for (const key in overrides) {
+      if (overrides.hasOwnProperty(key)) {
+        if (typeof overrides[key] === 'object' && defaults[key]) {
+          Object.assign(defaults[key], overrides[key]);
+        } else {
+          defaults[key] = overrides[key];
         }
       }
-      
-      return defaults;
-    },
+    }
+  }
+  
+  return defaults;
+},
 createPriceChart() {
   const el = document.getElementById('price-chart');
   if(!el) {
@@ -2149,161 +2106,13 @@ createPriceChart() {
     return;
   }
   
-  // Detect mobile for touch handling
   const isMobile = window.innerWidth <= 768;
+  const isLightTheme = document.body.getAttribute('data-theme') === 'light';
   
   // ============================================
-  // PHASE 2 FIX: Force container dimensions on mobile
+  // YOUR PRECISION MAPPING - PRESERVED
   // ============================================
-  if (isMobile) {
-    const mainPane = document.getElementById('main-chart-pane');
-    if (mainPane) {
-      // Ensure the main pane has proper dimensions
-      if (mainPane.clientHeight === 0 || mainPane.clientWidth === 0) {
-        console.warn('⚠️ Main chart pane has zero dimensions, forcing layout...');
-        mainPane.style.display = 'block';
-        mainPane.style.width = '100%';
-        mainPane.style.height = (window.innerHeight * 0.55) + 'px';
-        mainPane.style.minHeight = '300px';
-        mainPane.style.position = 'relative';
-        mainPane.style.overflow = 'hidden';
-        mainPane.style.flex = '1 1 auto';
-      }
-    }
-    
-    // Force the chart canvas element to have dimensions
-    if (el.clientHeight === 0 || el.clientWidth === 0) {
-      console.warn('⚠️ Price chart canvas has zero dimensions, forcing...');
-      el.style.width = '100%';
-      el.style.height = '100%';
-      el.style.minHeight = '300px';
-      el.style.display = 'block';
-      el.style.position = 'absolute';
-      el.style.top = '0';
-      el.style.left = '0';
-      el.style.right = '0';
-      el.style.bottom = '0';
-    }
-    
-    // Hide the chart watermark on mobile for cleaner look
-    const watermark = document.querySelector('.chart-watermark');
-    if (watermark) {
-      watermark.style.display = 'none';
-    }
-  }
-  
-  // ============================================
-  // Get final dimensions (with fallbacks)
-  // ============================================
-  let chartWidth = el.clientWidth;
-  let chartHeight = el.clientHeight;
-  
-  // Apply fallback dimensions
-  if (!chartWidth || chartWidth < 50) {
-    chartWidth = isMobile ? (window.innerWidth || 375) : 800;
-    console.warn('⚠️ Chart width fallback applied: ' + chartWidth + 'px');
-  }
-  
-  if (!chartHeight || chartHeight < 50) {
-    if (isMobile) {
-      // Mobile: Use 55% of viewport height
-      chartHeight = Math.max(300, window.innerHeight * 0.55);
-    } else {
-      // Desktop: Use reasonable default
-      chartHeight = 450;
-    }
-    console.warn('⚠️ Chart height fallback applied: ' + chartHeight + 'px');
-  }
-  
-  console.log('📊 Creating price chart: ' + chartWidth + 'x' + chartHeight + ' (mobile: ' + isMobile + ')');
-  
-  // ============================================
-  // Dispose existing chart if it exists
-  // ============================================
-  if (this.charts.price) {
-    try {
-      // Remove existing series first
-      if (this.mainSeries) {
-        this.charts.price.removeSeries(this.mainSeries);
-      }
-      // Remove overlay series
-      if (this.overlays) {
-        Object.keys(this.overlays).forEach(key => {
-          try {
-            this.charts.price.removeSeries(this.overlays[key]);
-          } catch(e) {
-            // Ignore removal errors
-          }
-        });
-        this.overlays = {};
-      }
-      // Remove the chart
-      this.charts.price.remove();
-    } catch(e) {
-      console.warn('Error cleaning up existing chart:', e.message);
-    }
-    this.charts.price = null;
-    this.mainSeries = null;
-  }
-  
-    const chartOptions = this._getCommonChartOptions({
-    rightPriceScale: {
-      scaleMargins: { 
-        top: isMobile ? 0.2 : 0.15,
-        bottom: isMobile ? 0.1 : 0.2
-      }
-    },
-    timeScale: isMobile ? {
-      tickMarkFormatter: function(time) {
-        const date = new Date(time * 1000);
-        const hours = date.getHours().toString().padStart(2, '0');
-        const minutes = date.getMinutes().toString().padStart(2, '0');
-        return hours + ':' + minutes;
-      }
-    } : {},
-    handleScroll: {
-      vertTouchDrag: !isMobile,
-      horzTouchDrag: true
-    },
-    handleScale: {
-      axisPressedMouseMove: {
-        time: true,
-        price: !isMobile
-      },
-      pinch: true,
-      mouseWheel: !isMobile
-    },
-    width: chartWidth,
-    height: chartHeight
-  });
-  
-  const chart = LightweightCharts.createChart(el, chartOptions);
-	const resizeChart = () => {
-    const rect =
-        this.mainChartContainer.getBoundingClientRect();
-
-    this.mainChart.applyOptions({
-        width: rect.width,
-        height: rect.height
-    });
-};
-
-window.addEventListener('resize', resizeChart);
-
-setTimeout(resizeChart, 100);
-	// FORCE PRICE SCALE VISIBILITY
-chart.priceScale('right').applyOptions({ visible: true, borderVisible: true });
-  
-  // ============================================
-  // Create main candlestick series
-  // ============================================
-// ============================================
-// INSTITUTIONAL PRICE SCALE CONFIGURATION
-// ============================================
-
-// Symbol-specific precision mapping
-const symbolPrecisionMap = {
-    // Crypto - USDT pairs
+  const symbolPrecisionMap = {
     BTCUSDT: { precision: 2, minMove: 0.01 },
     ETHUSDT: { precision: 2, minMove: 0.01 },
     BNBUSDT: { precision: 2, minMove: 0.01 },
@@ -2313,12 +2122,6 @@ const symbolPrecisionMap = {
     DOGEUSDT: { precision: 4, minMove: 0.0001 },
     DOTUSDT: { precision: 3, minMove: 0.001 },
     LINKUSDT: { precision: 3, minMove: 0.001 },
-    
-    // Crypto - USD pairs
-    BTCUSD: { precision: 2, minMove: 0.01 },
-    ETHUSD: { precision: 2, minMove: 0.01 },
-    
-    // Forex majors
     EURUSD: { precision: 5, minMove: 0.00001 },
     GBPUSD: { precision: 5, minMove: 0.00001 },
     USDJPY: { precision: 3, minMove: 0.001 },
@@ -2326,162 +2129,220 @@ const symbolPrecisionMap = {
     AUDUSD: { precision: 5, minMove: 0.00001 },
     NZDUSD: { precision: 5, minMove: 0.00001 },
     USDCAD: { precision: 5, minMove: 0.00001 },
-    
-    // Forex crosses
     EURGBP: { precision: 5, minMove: 0.00001 },
     EURJPY: { precision: 3, minMove: 0.001 },
     GBPJPY: { precision: 3, minMove: 0.001 },
-    
-    // Commodities
     XAUUSD: { precision: 2, minMove: 0.01 },
     XAGUSD: { precision: 3, minMove: 0.001 },
-    
-    // Indices
     SPX: { precision: 2, minMove: 0.01 },
     NDX: { precision: 2, minMove: 0.01 },
     DJI: { precision: 2, minMove: 0.01 }
-};
-
-// Default settings for unknown symbols
-const defaultPrecision = { precision: 5, minMove: 0.00001 };
-
-// Get symbol-specific or dynamic precision
-const symbolSettings = (() => {
-    // Check static map first
-    if (symbolPrecisionMap[STATE.symbol]) {
-        return symbolPrecisionMap[STATE.symbol];
-    }
-    
-    // Auto-detect from price for crypto
-    if (STATE.assetType === 'crypto') {
-        const price = STATE.currentPrice || 60000;
-        if (price >= 10000) return { precision: 2, minMove: 0.01 };
-        if (price >= 1000) return { precision: 2, minMove: 0.01 };
-        if (price >= 100) return { precision: 3, minMove: 0.001 };
-        if (price >= 1) return { precision: 4, minMove: 0.0001 };
-        return { precision: 6, minMove: 0.000001 };
-    }
-    
-    // Auto-detect for stocks
-    if (STATE.assetType === 'stocks') {
-        const price = STATE.currentPrice || 100;
-        if (price >= 1000) return { precision: 2, minMove: 0.01 };
-        if (price >= 100) return { precision: 2, minMove: 0.01 };
-        if (price >= 1) return { precision: 3, minMove: 0.001 };
-        return { precision: 4, minMove: 0.0001 };
-    }
-    
-    return defaultPrecision;
-})();
-
-// Create main candlestick series with proper formatting
-this.mainSeries = chart.addCandlestickSeries({
-        priceScaleId: 'right',
-
-        upColor: '#26a69a',
-        downColor: '#ef5350',
-
-        borderUpColor: '#26a69a',
-        borderDownColor: '#ef5350',
-
-        wickUpColor: '#26a69a',
-        wickDownColor: '#ef5350',
-
-        priceFormat: {
-            type: 'price',
-            precision: 5,
-            minMove: 0.00001
-        }
-    });
-
-// Store precision settings for later use
-this.currentPrecision = symbolSettings;
+  };
   
-  // Store references
+  const defaultPrecision = { precision: 5, minMove: 0.00001 };
+  
+  // Get symbol-specific precision
+  const symbolSettings = (() => {
+    if (symbolPrecisionMap[STATE.symbol]) {
+      return symbolPrecisionMap[STATE.symbol];
+    }
+    if (STATE.assetType === 'crypto') {
+      const price = STATE.currentPrice || 60000;
+      if (price >= 10000) return { precision: 2, minMove: 0.01 };
+      if (price >= 1000) return { precision: 2, minMove: 0.01 };
+      if (price >= 100) return { precision: 3, minMove: 0.001 };
+      if (price >= 1) return { precision: 4, minMove: 0.0001 };
+      return { precision: 6, minMove: 0.000001 };
+    }
+    if (STATE.assetType === 'stocks') {
+      const price = STATE.currentPrice || 100;
+      if (price >= 1000) return { precision: 2, minMove: 0.01 };
+      if (price >= 100) return { precision: 2, minMove: 0.01 };
+      if (price >= 1) return { precision: 3, minMove: 0.001 };
+      return { precision: 4, minMove: 0.0001 };
+    }
+    return defaultPrecision;
+  })();
+  
+  // Force container dimensions on mobile
+  if (isMobile) {
+    const mainPane = document.getElementById('main-chart-pane');
+    if (mainPane) {
+      if (mainPane.clientHeight === 0 || mainPane.clientWidth === 0) {
+        mainPane.style.display = 'block';
+        mainPane.style.width = '100%';
+        mainPane.style.height = (window.innerHeight * 0.55) + 'px';
+        mainPane.style.minHeight = '300px';
+        mainPane.style.position = 'relative';
+        mainPane.style.overflow = 'visible';
+        mainPane.style.flex = '1 1 auto';
+      }
+    }
+    if (el.clientHeight === 0 || el.clientWidth === 0) {
+      el.style.width = '100%';
+      el.style.height = '100%';
+      el.style.minHeight = '300px';
+      el.style.display = 'block';
+      el.style.position = 'relative';
+    }
+    const watermark = document.querySelector('.chart-watermark');
+    if (watermark) watermark.style.display = 'none';
+  }
+  
+  // Get dimensions
+  let chartWidth = el.clientWidth;
+  let chartHeight = el.clientHeight;
+  
+  if (!chartWidth || chartWidth < 50) {
+    chartWidth = isMobile ? (window.innerWidth || 375) : 800;
+  }
+  if (!chartHeight || chartHeight < 50) {
+    chartHeight = isMobile ? Math.max(300, window.innerHeight * 0.55) : 450;
+  }
+  
+  console.log('📊 Creating price chart:', chartWidth + 'x' + chartHeight);
+  console.log('📊 Using precision:', symbolSettings.precision, 'minMove:', symbolSettings.minMove);
+  
+  // Dispose existing chart
+  if (this.charts.price) {
+    try {
+      if (this.mainSeries) this.charts.price.removeSeries(this.mainSeries);
+      if (this.overlays) {
+        Object.keys(this.overlays).forEach(key => {
+          try { this.charts.price.removeSeries(this.overlays[key]); } catch(e) {}
+        });
+        this.overlays = {};
+      }
+      this.charts.price.remove();
+    } catch(e) {}
+    this.charts.price = null;
+    this.mainSeries = null;
+  }
+  
+  // ============================================
+  // CREATE CHART WITH FORCED PRICE SCALE
+  // ============================================
+  const chart = LightweightCharts.createChart(el, {
+    width: chartWidth,
+    height: chartHeight,
+    layout: {
+      background: { type: 'solid', color: isLightTheme ? '#ffffff' : '#0d1117' },
+      textColor: isLightTheme ? '#1f2328' : '#c9d1d9',
+      fontSize: 12,
+      fontFamily: 'Inter, sans-serif'
+    },
+    grid: {
+      vertLines: { color: isLightTheme ? '#f0f2f5' : '#21262d' },
+      horzLines: { color: isLightTheme ? '#f0f2f5' : '#21262d' }
+    },
+    crosshair: {
+      mode: 1,
+      vertLine: { color: '#8b949e', width: 1, style: 2, labelBackgroundColor: '#1c2128', visible: true, labelVisible: true },
+      horzLine: { color: '#8b949e', width: 1, style: 2, labelBackgroundColor: '#1c2128', visible: true, labelVisible: true }
+    },
+    rightPriceScale: {
+      visible: true,
+      borderVisible: true,
+      autoScale: true,
+      scaleMargins: { top: 0.1, bottom: 0.1 },
+      entireTextOnly: false,
+      borderColor: isLightTheme ? '#d0d7de' : '#30363d',
+      textColor: isLightTheme ? '#1f2328' : '#c9d1d9',
+      invertScale: false,
+      mode: 0,
+      minimumWidth: 50
+    },
+    leftPriceScale: { visible: false },
+    timeScale: {
+      borderColor: isLightTheme ? '#d0d7de' : '#30363d',
+      timeVisible: true,
+      secondsVisible: false,
+      tickMarkFormatter: isMobile ? function(time) {
+        const date = new Date(time * 1000);
+        return date.getHours().toString().padStart(2, '0') + ':' + date.getMinutes().toString().padStart(2, '0');
+      } : undefined
+    },
+    handleScroll: { vertTouchDrag: !isMobile, horzTouchDrag: true },
+    handleScale: { axisPressedMouseMove: { time: true, price: true }, pinch: true, mouseWheel: !isMobile }
+  });
+  
+  // FORCE PRICE SCALE VISIBLE IMMEDIATELY
+  chart.priceScale('right').applyOptions({ visible: true, borderVisible: true, autoScale: true });
+  
+  // ============================================
+  // CREATE SERIES WITH YOUR PRECISION SETTINGS
+  // ============================================
+  this.mainSeries = chart.addCandlestickSeries({
+    priceScaleId: 'right',
+    upColor: '#26a69a',
+    downColor: '#ef5350',
+    borderUpColor: '#26a69a',
+    borderDownColor: '#ef5350',
+    wickUpColor: '#26a69a',
+    wickDownColor: '#ef5350',
+    borderVisible: true,
+    wickVisible: true,
+    priceFormat: {
+      type: 'price',
+      precision: symbolSettings.precision,
+      minMove: symbolSettings.minMove
+    }
+  });
+  
   this.charts.price = chart;
   this.series.main = this.mainSeries;
+  this.currentPrecision = symbolSettings;
   
-  // ============================================
-  // Setup mobile-specific features
-  // ============================================
+  // Setup mobile features
   if (isMobile) {
     this.setupMobileGestures(chart);
     this.addMobilePriceLabel(chart);
   }
   
-  // ============================================
-  // Store crosshair subscription for drawing engine
-  // ============================================
+  // Crosshair handlers
+  const self = this;
   chart.subscribeCrosshairMove((param) => {
     if (DrawingEngine && typeof DrawingEngine.handleCrosshairMove === 'function') {
       DrawingEngine.handleCrosshairMove(param);
     }
-        // ============================================
-  // PHASE 2 FIX: Redraw drawings when chart is zoomed or panned
-  // ============================================
+    if (isMobile && param && param.point && param.time) {
+      self.updateMobileCrosshair(param);
+    }
+  });
+  
   chart.timeScale().subscribeVisibleTimeRangeChange(function() {
     if (DrawingEngine && typeof DrawingEngine.redraw === 'function') {
       DrawingEngine.redraw();
     }
   });
   
-  // Also redraw on any crosshair move (catches price scale changes)
-  chart.subscribeCrosshairMove(function(param) {
-    if (DrawingEngine && typeof DrawingEngine.handleCrosshairMove === 'function') {
-      DrawingEngine.handleCrosshairMove(param);
-    }
-    // Redraw drawings periodically during chart interaction
-    if (DrawingEngine && typeof DrawingEngine.redraw === 'function' && param.point) {
-      DrawingEngine.redraw();
-    }
-  });
-    // PHASE 2 FIX: Update mobile tooltip on crosshair move
-    if (isMobile && param.point && param.time) {
-      this.updateMobileCrosshair(param);
-    }
-  });
+  chart._creationDimensions = { width: chartWidth, height: chartHeight, isMobile: isMobile, createdAt: Date.now() };
+  
+  console.log('✅ Price chart created with scale, precision:', symbolSettings.precision);
   
   // ============================================
-  // PHASE 2 FIX: Store dimensions for resize
+  // FORCE PRICE SCALE AFTER DELAYS
   // ============================================
-  chart._creationDimensions = {
-    width: chartWidth,
-    height: chartHeight,
-    isMobile: isMobile,
-    createdAt: Date.now()
-  };
-  
-  console.log('✅ Price chart created successfully (' + chartWidth + 'x' + chartHeight + ', mobile optimized: ' + isMobile + ')');
-  
-  // ============================================
-  // PHASE 2 FIX: Verify chart rendered correctly
-  // ============================================
-  setTimeout(() => {
-    const currentWidth = el.clientWidth;
-    const currentHeight = el.clientHeight;
-    if (currentWidth > 0 && currentHeight > 0) {
-      console.log('✅ Chart verified: ' + currentWidth + 'x' + currentHeight);
-    } else {
-      console.warn('⚠️ Chart may not have rendered properly. Current dimensions: ' + currentWidth + 'x' + currentHeight);
-      // Force resize if needed
-      if (currentWidth > 0 && currentHeight > 0) {
-        chart.resize(currentWidth, currentHeight);
+  setTimeout(function() {
+    if (self.charts && self.charts.price) {
+      const scale = self.charts.price.priceScale('right');
+      if (scale) {
+        scale.applyOptions({ visible: true, borderVisible: true, autoScale: true });
+      }
+      const container = document.getElementById('price-chart');
+      if (container && container.clientWidth > 0) {
+        self.charts.price.resize(container.clientWidth, container.clientHeight);
       }
     }
-  }, 500);
-		  // FORCE PRICE SCALE VISIBILITY
-setTimeout(() => {
-    if (this.charts && this.charts.price) {
-        const scale = this.charts.price.priceScale('right');
-        if (scale) {
-            scale.applyOptions({ visible: true, borderVisible: true });
-        }
-        this.charts.price.resize(
-            document.getElementById('price-chart')?.clientWidth || 800,
-            document.getElementById('price-chart')?.clientHeight || 400
-        );
+  }, 100);
+  
+  setTimeout(function() {
+    if (self.charts && self.charts.price) {
+      const scale = self.charts.price.priceScale('right');
+      if (scale) scale.applyOptions({ visible: true, borderVisible: true });
+      self.charts.price.timeScale().fitContent();
     }
-}, 100);
+  }, 500);
 },
 
 // ============================================
@@ -2712,62 +2573,30 @@ createVolumeChart() {
   if(!el) return;
   
   const isMobile = window.innerWidth <= 768;
+  const isLightTheme = document.body.getAttribute('data-theme') === 'light';
   
-  // ============================================
-  // PHASE 1 FIX: Dynamic volume chart sizing
-  // ============================================
-  const calculateHeight = () => {
-    if (isMobile) {
-      // Mobile: Use percentage-based height, minimum 60px
-      const containerHeight = document.getElementById('chart-container')?.clientHeight || 600;
-      const mobileHeight = Math.max(60, Math.min(100, containerHeight * 0.12));
-      return mobileHeight;
-    }
-    // Desktop: Use container height or default
-    return el.clientHeight || 100;
+  const chartOptions = {
+    layout: {
+      background: { type: 'solid', color: isLightTheme ? '#ffffff' : '#0d1117' },
+      textColor: isLightTheme ? '#1f2328' : '#c9d1d9'
+    },
+    grid: { vertLines: { visible: false }, horzLines: { visible: false } },
+    rightPriceScale: { visible: false },  // ← Volume has NO price scale
+    leftPriceScale: { visible: false },
+    timeScale: { borderColor: isLightTheme ? '#d0d7de' : '#30363d', visible: true },
+    handleScroll: { vertTouchDrag: false, horzTouchDrag: true },
+    handleScale: { axisPressedMouseMove: { time: true, price: false }, pinch: true, mouseWheel: !isMobile },
+    width: el.clientWidth || 300,
+    height: isMobile ? 80 : 100
   };
   
-  const chartHeight = calculateHeight();
-  
-    const chartOptions = this._getCommonChartOptions({
-    grid: {
-      vertLines: { visible: false },
-      horzLines: { visible: false }
-    },
-    handleScroll: {
-      vertTouchDrag: false,
-      horzTouchDrag: true
-    },
-    handleScale: {
-      axisPressedMouseMove: {
-        time: true,
-        price: false
-      },
-      pinch: true,
-      mouseWheel: !isMobile
-    },
-    width: el.clientWidth || 300,
-    height: chartHeight
-  });
-  
   const chart = LightweightCharts.createChart(el, chartOptions);
-  
-  const series = chart.addHistogramSeries({
-    priceFormat: { type: 'volume' }
-  });
+  const series = chart.addHistogramSeries({ priceFormat: { type: 'volume' } });
   
   this.charts.volume = chart;
   this.series.volume = series;
   
-  // ============================================
-  // PHASE 1 FIX: Store dimensions for resize
-  // ============================================
-  chart._volumeDimensions = {
-    isMobile: isMobile,
-    lastContainerHeight: 0
-  };
-  
-  console.log('✅ Volume chart created (' + chartHeight + 'px height, mobile: ' + isMobile + ')');
+  console.log('✅ Volume chart created');
 },
 	  _waitForDimensions(containerId, timeout = 3000) {
   return new Promise((resolve) => {
@@ -3417,195 +3246,49 @@ resetAllCharts() {
 // COMPLETE REPLACEMENT: ChartEngine.updateMain()
 // NO FALLBACKS - ONLY LIVE DATA
 // ============================================
-updateMain(data) {
-  // ============================================
-  // STEP 1: STRICT VALIDATION
-  // ============================================
-  if (!data || !Array.isArray(data) || data.length === 0) {
-    console.error('❌ updateMain REJECTED: No valid data array');
-    return;
-  }
+updateChartTheme: function() {
+  if (!this.charts || !this.charts.price) return;
   
-  const firstItem = data[0];
+  const isLightTheme = document.body.getAttribute('data-theme') === 'light';
   
-  // Normalize Binance array format to object format
-  let normalizedData = data;
-  if (Array.isArray(firstItem) && firstItem.length >= 6) {
-    console.log('🔄 Converting Binance array to object format');
-    normalizedData = [];
-    for (let i = 0; i < data.length; i++) {
-      const k = data[i];
-      if (!k || k.length < 6) continue;
-      normalizedData.push({
-        time: Math.floor(k[0] / 1000),
-        open: parseFloat(k[1]),
-        high: parseFloat(k[2]),
-        low: parseFloat(k[3]),
-        close: parseFloat(k[4]),
-        volume: parseFloat(k[5])
-      });
+  // Update main chart theme without recreating
+  this.charts.price.applyOptions({
+    layout: {
+      background: { type: 'solid', color: isLightTheme ? '#ffffff' : '#0d1117' },
+      textColor: isLightTheme ? '#1f2328' : '#c9d1d9'
+    },
+    grid: {
+      vertLines: { color: isLightTheme ? '#f0f2f5' : '#21262d' },
+      horzLines: { color: isLightTheme ? '#f0f2f5' : '#21262d' }
+    },
+    rightPriceScale: {
+      borderColor: isLightTheme ? '#d0d7de' : '#30363d',
+      textColor: isLightTheme ? '#1f2328' : '#c9d1d9',
+      visible: true,
+      borderVisible: true
+    },
+    timeScale: {
+      borderColor: isLightTheme ? '#d0d7de' : '#30363d'
     }
+  });
+  
+  // Force price scale visible after theme change
+  const scale = this.charts.price.priceScale('right');
+  if (scale) {
+    scale.applyOptions({ visible: true, borderVisible: true });
   }
   
-  if (normalizedData.length === 0) {
-    console.error('❌ No valid candles after normalization');
-    return;
-  }
-  
-  // ============================================
-  // STEP 2: DATA SANITIZATION - CRITICAL FIX
-  // ============================================
-  let sanitizedData = normalizedData.map(candle => ({
-    time: typeof candle.time === 'number' ? candle.time : Number(candle.time),
-    open: typeof candle.open === 'number' ? candle.open : Number(candle.open),
-    high: typeof candle.high === 'number' ? candle.high : Number(candle.high),
-    low: typeof candle.low === 'number' ? candle.low : Number(candle.low),
-    close: typeof candle.close === 'number' ? candle.close : Number(candle.close),
-    volume: typeof candle.volume === 'number' ? candle.volume : Number(candle.volume || 0)
-  }));
-  
-  // Filter out invalid candles
-  sanitizedData = sanitizedData.filter(candle => 
-    !isNaN(candle.time) && 
-    !isNaN(candle.open) && 
-    !isNaN(candle.high) && 
-    !isNaN(candle.low) && 
-    !isNaN(candle.close) &&
-    candle.open > 0 &&
-    candle.high > 0 &&
-    candle.low > 0 &&
-    candle.close > 0
-  );
-  
-  if (sanitizedData.length === 0) {
-    console.warn('No valid candles after sanitization');
-    return;
-  }
-  
-  // Store in STATE
-  STATE.candles = sanitizedData;
-  
-  // ============================================
-  // STEP 3: Clear extra canvases
-  // ============================================
-  const priceContainer = document.getElementById('price-chart');
-  if (priceContainer) {
-    const canvases = priceContainer.querySelectorAll('canvas');
-    if (canvases.length > 1) {
-      console.log(`🧹 Removing ${canvases.length - 1} extra canvases`);
-      for (let i = 1; i < canvases.length; i++) {
-        canvases[i].remove();
+  // Update volume chart theme
+  if (this.charts.volume) {
+    this.charts.volume.applyOptions({
+      layout: {
+        background: { type: 'solid', color: isLightTheme ? '#ffffff' : '#0d1117' },
+        textColor: isLightTheme ? '#1f2328' : '#c9d1d9'
       }
-    }
+    });
   }
   
-  // ============================================
-  // STEP 4: Check if chart is ready
-  // ============================================
-  if (!this.mainSeries || !this.charts.price) {
-    console.warn('⚠️ Chart not ready, queueing update');
-    this._pendingMainData = sanitizedData;
-    setTimeout(() => {
-      if (this.mainSeries && this._pendingMainData) {
-        this.updateMain(this._pendingMainData);
-        this._pendingMainData = null;
-      }
-    }, 200);
-    return;
-  }
-  
-  // Clear existing data
-  try {
-    this.mainSeries.setData([]);
-    console.log('🧹 Cleared existing series data');
-  } catch(e) {
-    console.warn('Clear failed:', e.message);
-  }
-  
-  // ============================================
-  // STEP 5: Prepare chart data based on chart type
-  // ============================================
-  let chartData;
-  try {
-    if (STATE.chartType === 'candlestick' || STATE.chartType === 'bar') {
-      chartData = sanitizedData.map(d => ({
-        time: d.time,
-        open: d.open,
-        high: d.high,
-        low: d.low,
-        close: d.close
-      }));
-    } else if (STATE.chartType === 'line' || STATE.chartType === 'area') {
-      chartData = sanitizedData.map(d => ({
-        time: d.time,
-        value: d.close
-      }));
-    } else if (STATE.chartType === 'heikinashi') {
-      const heikin = this.calculateHeikinAshi(sanitizedData);
-      chartData = heikin.map(d => ({
-        time: d.time,
-        open: d.open,
-        high: d.high,
-        low: d.low,
-        close: d.close
-      }));
-    } else {
-      chartData = sanitizedData.map(d => ({
-        time: d.time,
-        open: d.open,
-        high: d.high,
-        low: d.low,
-        close: d.close
-      }));
-    }
-  } catch(e) {
-    console.error('❌ Data preparation failed:', e.message);
-    return;
-  }
-  
-  // ============================================
-  // STEP 6: Render and apply fixes
-  // ============================================
-  try {
-    // Render the data
-    this.mainSeries.setData(chartData);
-    console.log(`✅ Rendered ${chartData.length} candles`);
-    
-    // ============================================
-    // STEP 7: FORCE PRICE AUTOSCALE (CRITICAL FIX)
-    // ============================================
-   if (this.charts.price) {
-    const priceScale = this.charts.price.priceScale('right');
-    if (priceScale) {
-        priceScale.applyOptions({ 
-            autoScale: true,
-            visible: true,        // ← ADD THIS
-            borderVisible: true,  // ← ADD THIS
-            scaleMargins: { top: 0.1, bottom: 0.1 }
-        });
-    }
-}
-    
-    // Fit content to visible range
-    setTimeout(() => {
-      if (this.charts.price && this.charts.price.timeScale) {
-        this.charts.price.timeScale().fitContent();
-      }
-    }, 100);
-    
-    // Force resize for proper rendering
-    setTimeout(() => {
-      if (this.charts.price) {
-        const container = document.getElementById('price-chart');
-        if (container && container.clientWidth > 0 && container.clientHeight > 0) {
-          this.charts.price.resize(container.clientWidth, container.clientHeight);
-        }
-      }
-    }, 200);
-    
-  } catch(e) {
-    console.error('❌ Render failed:', e.message);
-  }
+  console.log('🎨 Chart theme updated to', isLightTheme ? 'light' : 'dark');
 },
     
     calculateHeikinAshi(data) {
@@ -4168,30 +3851,19 @@ forceHardReset() {
   this.series.volume = null;
   
   // 5. RECREATE FRESH CHARTS with delay for DOM to settle
-  const self = this;
+const self = this;
   setTimeout(function() {
-    self.createPriceChart();
+    self.createPriceChart();  // This now has the price scale fix
     self.createVolumeChart();
     
-    // 6. RELOAD DATA IF AVAILABLE
     if (STATE.candles && STATE.candles.length > 0) {
       setTimeout(function() {
-        console.log('📊 Reloading ' + STATE.candles.length + ' candles after hard reset');
         self.updateMain(STATE.candles);
         self.updateVolume(STATE.candles);
         self.fitContent();
-        
-        // Force resize after data load
-        setTimeout(function() {
-          self.resizeAll();
-        }, 200);
       }, 150);
-    } else {
-      console.warn('⚠️ No candle data available after hard reset');
     }
   }, 100);
-  
-  console.log('✅ Hard reset complete - charts recreated');
 },
   fitContent() { 
     if(this.charts.price) this.charts.price.timeScale().fitContent(); 
