@@ -27812,46 +27812,42 @@ const AIAssistant = {
   },
   
   setupTriggers() {
-    var self = this;
-    
-    // Add AI button to desktop header
-    setTimeout(function() {
-      var headerActions = document.querySelector('.header-actions');
-      if (headerActions && !document.getElementById('ai-assist-btn')) {
-        var btn = document.createElement('button');
-        btn.id = 'ai-assist-btn';
-        btn.className = 'action-btn';
-        btn.setAttribute('data-tooltip', 'AI Assistant (PRO/ULTIMATE)');
-        btn.innerHTML = '<i class="fas fa-robot"></i>';
-        btn.addEventListener('click', function() { self.open(); });
-        
-        var settingsBtn = document.getElementById('settings-btn');
-        if (settingsBtn) headerActions.insertBefore(btn, settingsBtn);
-        else headerActions.appendChild(btn);
-      }
-    }, 500);
-
-	  document.getElementById('ai-report-btn').addEventListener('click', function() {
-  self.generateReport();
-});
-    
-    // Add to mobile More sheet
-    setTimeout(function() {
-      var sheetMore = document.querySelector('#sheet-more > div');
-      if (sheetMore && !document.getElementById('mobile-ai-btn')) {
-        var mobBtn = document.createElement('button');
-        mobBtn.id = 'mobile-ai-btn';
-        mobBtn.className = 'mob-action-btn';
-        mobBtn.innerHTML = '<i class="fas fa-robot"></i> AI Assistant';
-        mobBtn.addEventListener('click', function() {
-          self.open();
-          var sheet = document.getElementById('mobile-bottom-sheet');
-          if (sheet) sheet.style.transform = 'translateY(calc(100% - 52px))';
-        });
-        sheetMore.appendChild(mobBtn);
-      }
-    }, 800);
-  },
+  var self = this;
+  
+  // Desktop AI button
+  setTimeout(function() {
+    var headerActions = document.querySelector('.header-actions');
+    if (headerActions && !document.getElementById('ai-assist-btn')) {
+      var btn = document.createElement('button');
+      btn.id = 'ai-assist-btn';
+      btn.className = 'action-btn';
+      btn.setAttribute('data-tooltip', 'AI Assistant (PRO/ULTIMATE)');
+      btn.innerHTML = '<i class="fas fa-robot"></i>';
+      btn.addEventListener('click', function() { self.open(); });
+      
+      var settingsBtn = document.getElementById('settings-btn');
+      if (settingsBtn) headerActions.insertBefore(btn, settingsBtn);
+      else headerActions.appendChild(btn);
+    }
+  }, 500);
+  
+  // Mobile AI button
+  setTimeout(function() {
+    var sheetMore = document.querySelector('#sheet-more > div');
+    if (sheetMore && !document.getElementById('mobile-ai-btn')) {
+      var mobBtn = document.createElement('button');
+      mobBtn.id = 'mobile-ai-btn';
+      mobBtn.className = 'mob-action-btn';
+      mobBtn.innerHTML = '<i class="fas fa-robot"></i> AI Assistant';
+      mobBtn.addEventListener('click', function() {
+        self.open();
+        var sheet = document.getElementById('mobile-bottom-sheet');
+        if (sheet) sheet.style.transform = 'translateY(calc(100% - 52px))';
+      });
+      sheetMore.appendChild(mobBtn);
+    }
+  }, 800);
+},
   
   open() {
     console.log('🤖 AI Assistant open() called');
