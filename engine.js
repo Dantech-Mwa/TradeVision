@@ -2402,13 +2402,20 @@ setupMobileGestures(chart) {
   const priceEl = document.getElementById('price-chart');
   if (priceEl) {
     priceEl.addEventListener('touchend', (e) => {
-      const now = Date.now();
-      if (now - lastTap < 300) {
-        e.preventDefault();
-        chart.timeScale().fitContent();
-      }
-      lastTap = now;
-    });
+  const now = Date.now();
+  if (now - lastTap < 300) {
+    e.preventDefault();
+    // REMOVED: chart.timeScale().fitContent();
+    // Show hint instead
+    const hint = document.createElement('div');
+    hint.className = 'double-tap-hint';
+    hint.textContent = '🔍 Use two fingers to zoom';
+    hint.style.cssText = 'position:absolute;bottom:100px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.8);color:white;padding:6px 12px;border-radius:20px;font-size:11px;z-index:100;pointer-events:none;animation:fadeOut 2s forwards;';
+    priceEl.parentElement.appendChild(hint);
+    setTimeout(() => hint.remove(), 2000);
+  }
+  lastTap = now;
+});
   }
 },
 
@@ -3422,6 +3429,12 @@ updateMain(data) {
   try {
     this.mainSeries.setData(chartData);
     console.log(`✅ Rendered ${chartData.length} candles`);
+
+	   if (this._savedZoomRange) {
+      setTimeout(() => {
+        this.restoreZoomState();
+      }, 50);
+    }
     
     // ============================================
     // STEP 7: FORCE PRICE SCALE VISIBLE & AUTOSCALE
@@ -3457,11 +3470,11 @@ updateMain(data) {
     // ============================================
     // STEP 9: Fit content and resize
     // ============================================
-    setTimeout(() => {
-      if (this.charts.price && this.charts.price.timeScale) {
-        this.charts.price.timeScale().fitContent();
-      }
-    }, 100);
+    //setTimeout(() => {
+      //if (this.charts.price && this.charts.price.timeScale) {
+        //this.charts.price.timeScale().fitContent();
+      //}
+    //}, 100);
     
     setTimeout(() => {
       if (this.charts.price) {
@@ -4391,7 +4404,37 @@ const self = this;
       const b = r.to - r.from; 
       c.timeScale().setVisibleLogicalRange({from: r.from - b * 0.1, to: r.to + b * 0.1}); 
     }
-  }
+  },
+
+  // ============================================
+  // ADD THESE METHODS RIGHT HERE
+  // ============================================
+  _savedZoomRange: null,
+
+  saveZoomState: function() {
+    if (!this.charts || !this.charts.price) return;
+    try {
+      const range = this.charts.price.timeScale().getVisibleLogicalRange();
+      if (range && range.from && range.to) {
+        this._savedZoomRange = range;
+        console.log('📊 Zoom state saved:', range);
+      }
+    } catch(e) {}
+  },
+
+  restoreZoomState: function() {
+    if (!this.charts || !this.charts.price || !this._savedZoomRange) return;
+    try {
+      this.charts.price.timeScale().setVisibleLogicalRange(this._savedZoomRange);
+      console.log('📊 Zoom state restored');
+    } catch(e) {}
+  },
+
+  // Call this after data updates to preserve zoom
+  preserveZoom: function() {
+    this.saveZoomState();
+    setTimeout(() => this.restoreZoomState(), 50);
+  },
   };
   
     // Wire up screenshot dropdown item
@@ -13654,6 +13697,423 @@ if (tpPrice && this.tradeType === 'sell' && tpPrice >= execPrice) {
     }
   }
 };
+// ============================================
+// SMART ORDER SYSTEM - FULLY INTEGRATED with TradeManager
+// Place this AFTER your existing TradeManager object
+// ============================================
+const SmartOrderSystem = {
+  activeTimers: [],
+  timerInterval: null,
+  
+  init: function() {
+    this.loadTimers();
+    this.startTimerMonitor();
+    this.setupButtons();
+    this.injectTimerButtons();
+    console.log('⏰ Smart Order System fully integrated');
+  },
+  
+  // Helper to use existing U.formatPrice
+  _formatPrice: function(p) {
+    if (typeof U !== 'undefined' && U.formatPrice) {
+      return U.formatPrice(p);
+    }
+    if (p == null) return '--';
+    if (p >= 1000) return p.toFixed(2);
+    if (p >= 100) return p.toFixed(2);
+    if (p >= 10) return p.toFixed(3);
+    if (p >= 1) return p.toFixed(4);
+    return p.toFixed(6);
+  },
+  
+  setupButtons: function() {
+    var self = this;
+    setTimeout(function() {
+      var timedBtn = document.getElementById('timed-order-btn');
+      if (timedBtn) {
+        timedBtn.addEventListener('click', function() { self.showTimedOrderModal(); });
+      }
+    }, 1500);
+  },
+  
+  injectTimerButtons: function() {
+    var self = this;
+    var originalRender = TradeManager.renderPositions;
+    if (originalRender) {
+      TradeManager.renderPositions = function() {
+        originalRender.call(TradeManager);
+        
+        document.querySelectorAll('.position-item').forEach(function(item) {
+          if (item.querySelector('.position-timer-btn')) return;
+          var positionId = item.getAttribute('data-id');
+          if (!positionId) return;
+          
+          var closeBtn = item.querySelector('.position-close-btn');
+          if (closeBtn) {
+            var timerBtn = document.createElement('button');
+            timerBtn.className = 'position-timer-btn';
+            timerBtn.innerHTML = '<i class="fas fa-hourglass-start"></i>';
+            timerBtn.title = 'Set auto-close timer';
+            timerBtn.style.cssText = 'background:none;border:none;color:var(--text-muted);cursor:pointer;padding:6px;border-radius:4px;margin-left:4px;';
+            timerBtn.addEventListener('click', function(e) {
+              e.stopPropagation();
+              self.showPositionTimerModal(positionId);
+            });
+            closeBtn.parentNode.insertBefore(timerBtn, closeBtn);
+          }
+        });
+      };
+    }
+  },
+  
+  showTimedOrderModal: function() {
+    var self = this;
+    var currentPrice = STATE.currentPrice;
+    var symbol = STATE.symbol.replace('USDT', '');
+    
+    var modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.style.cssText = 'display:flex;align-items:center;justify-content:center;z-index:10000;';
+    modal.innerHTML = `
+      <div class="modal-container modal-md" style="max-width:380px;">
+        <div class="modal-header">
+          <div class="modal-title">
+            <i class="fas fa-hourglass-half" style="color:#ff9800;"></i>
+            <div><h3>Timed Order</h3><p class="modal-subtitle">Auto-execute after X seconds</p></div>
+          </div>
+          <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">✕</button>
+        </div>
+        <div class="modal-body" style="padding:20px;">
+          <div class="form-group">
+            <label>Side</label>
+            <div style="display:flex;gap:8px;">
+              <button id="timed-buy-btn" style="flex:1;padding:10px;background:var(--up-color);color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600;">BUY</button>
+              <button id="timed-sell-btn" style="flex:1;padding:10px;background:var(--down-color);color:white;border:none;border-radius:6px;cursor:pointer;font-weight:600;">SELL</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Amount (${symbol})</label>
+            <input type="number" id="timed-amount" class="trade-input" placeholder="0.00" step="any" value="0.01">
+          </div>
+          <div class="form-group">
+            <label>Duration (seconds)</label>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
+              <button class="timed-dur-btn" data-dur="30">30s</button>
+              <button class="timed-dur-btn" data-dur="60">1 min</button>
+              <button class="timed-dur-btn" data-dur="300">5 min</button>
+              <button class="timed-dur-btn" data-dur="600">10 min</button>
+            </div>
+            <input type="number" id="timed-duration" class="trade-input" placeholder="Custom seconds">
+          </div>
+          <div class="info-box" style="background:var(--bg-tertiary);border-radius:8px;padding:12px;font-size:11px;">
+            <div>Current Price: <strong>$${this._formatPrice(currentPrice)}</strong></div>
+            <div id="timed-preview">Order will execute after selected duration at market price</div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
+          <button id="confirm-timed-order" class="btn btn-primary">Create Timed Order</button>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    var selectedSide = 'buy';
+    var selectedDur = 60;
+    
+    modal.querySelector('#timed-buy-btn').addEventListener('click', function() {
+      selectedSide = 'buy';
+      this.style.opacity = '1';
+      modal.querySelector('#timed-sell-btn').style.opacity = '0.6';
+    });
+    modal.querySelector('#timed-sell-btn').addEventListener('click', function() {
+      selectedSide = 'sell';
+      this.style.opacity = '1';
+      modal.querySelector('#timed-buy-btn').style.opacity = '0.6';
+    });
+    
+    modal.querySelectorAll('.timed-dur-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        selectedDur = parseInt(this.dataset.dur);
+        modal.querySelectorAll('.timed-dur-btn').forEach(function(b) { b.style.background = 'var(--bg-tertiary)'; });
+        this.style.background = 'var(--accent-primary)';
+        modal.querySelector('#timed-duration').value = '';
+        var preview = modal.querySelector('#timed-preview');
+        if (preview) preview.innerHTML = 'Order will execute after ' + selectedDur + ' seconds';
+      });
+    });
+    
+    modal.querySelector('#timed-duration').addEventListener('input', function() {
+      if (this.value) {
+        selectedDur = parseInt(this.value);
+        modal.querySelectorAll('.timed-dur-btn').forEach(function(b) { b.style.background = 'var(--bg-tertiary)'; });
+        var preview = modal.querySelector('#timed-preview');
+        if (preview) preview.innerHTML = 'Order will execute after ' + selectedDur + ' seconds';
+      }
+    });
+    
+    modal.querySelector('#confirm-timed-order').addEventListener('click', function() {
+      var amount = parseFloat(modal.querySelector('#timed-amount').value);
+      if (!amount || amount <= 0) {
+        if (typeof Toast !== 'undefined') Toast.error('Please enter a valid amount');
+        return;
+      }
+      self.createTimedOrder(selectedSide, amount, selectedDur);
+      modal.remove();
+    });
+  },
+  
+  showPositionTimerModal: function(positionId) {
+    var self = this;
+    var modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.style.cssText = 'display:flex;align-items:center;justify-content:center;z-index:10000;';
+    modal.innerHTML = `
+      <div class="modal-container modal-sm" style="max-width:320px;">
+        <div class="modal-header">
+          <div class="modal-title">
+            <i class="fas fa-hourglass-half" style="color:#ff9800;"></i>
+            <div><h3>Auto-Close Position</h3></div>
+          </div>
+          <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">✕</button>
+        </div>
+        <div class="modal-body" style="padding:20px;text-align:center;">
+          <p>Position will automatically close after selected time</p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:16px 0;">
+            <button class="pos-timer-btn" data-dur="30">30 sec</button>
+            <button class="pos-timer-btn" data-dur="60">1 min</button>
+            <button class="pos-timer-btn" data-dur="300">5 min</button>
+            <button class="pos-timer-btn" data-dur="600">10 min</button>
+          </div>
+          <input type="number" id="pos-timer-custom" class="trade-input" placeholder="Custom seconds" style="width:100%;">
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
+          <button id="confirm-pos-timer" class="btn btn-primary">Set Timer</button>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    var selectedDur = 60;
+    
+    modal.querySelectorAll('.pos-timer-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        selectedDur = parseInt(this.dataset.dur);
+        modal.querySelectorAll('.pos-timer-btn').forEach(function(b) { b.style.background = 'var(--bg-tertiary)'; });
+        this.style.background = 'var(--accent-primary)';
+        modal.querySelector('#pos-timer-custom').value = '';
+      });
+    });
+    
+    modal.querySelector('#pos-timer-custom').addEventListener('input', function() {
+      if (this.value) {
+        selectedDur = parseInt(this.value);
+        modal.querySelectorAll('.pos-timer-btn').forEach(function(b) { b.style.background = 'var(--bg-tertiary)'; });
+      }
+    });
+    
+    modal.querySelector('#confirm-pos-timer').addEventListener('click', function() {
+      self.createTimedClose(positionId, selectedDur);
+      modal.remove();
+      if (typeof Toast !== 'undefined') Toast.info('Position will auto-close in ' + selectedDur + ' seconds');
+    });
+  },
+  
+  createTimedOrder: function(side, amount, durationSeconds) {
+    var currentPrice = STATE.currentPrice;
+    if (!currentPrice) {
+      if (typeof Toast !== 'undefined') Toast.error('No price available');
+      return null;
+    }
+    
+    var expiryTime = Date.now() + (durationSeconds * 1000);
+    var timer = {
+      id: 'timer_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
+      type: 'new_order',
+      side: side,
+      amount: amount,
+      duration: durationSeconds,
+      expiresAt: expiryTime,
+      status: 'active'
+    };
+    
+    this.activeTimers.push(timer);
+    this.saveTimers();
+    this.renderTimers();
+    
+    if (typeof Toast !== 'undefined') {
+      Toast.success('⏰ ' + side.toUpperCase() + ' order scheduled for ' + durationSeconds + ' seconds');
+    }
+    return timer;
+  },
+  
+  createTimedClose: function(positionId, durationSeconds) {
+    var position = STATE.positions.find(function(p) { return p.id === positionId; });
+    if (!position) {
+      if (typeof Toast !== 'undefined') Toast.error('Position not found');
+      return null;
+    }
+    
+    var expiryTime = Date.now() + (durationSeconds * 1000);
+    var timer = {
+      id: 'timer_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
+      type: 'close_position',
+      positionId: positionId,
+      side: position.side,
+      amount: position.amount,
+      duration: durationSeconds,
+      expiresAt: expiryTime,
+      status: 'active'
+    };
+    
+    this.activeTimers.push(timer);
+    this.saveTimers();
+    this.renderTimers();
+    
+    if (typeof Toast !== 'undefined') {
+      Toast.info('⏰ Position will auto-close in ' + durationSeconds + ' seconds');
+    }
+    return timer;
+  },
+  
+  startTimerMonitor: function() {
+    var self = this;
+    if (this.timerInterval) clearInterval(this.timerInterval);
+    this.timerInterval = setInterval(function() {
+      self.checkTimers();
+      self.renderTimers();
+    }, 500);
+  },
+  
+  checkTimers: function() {
+    var now = Date.now();
+    var self = this;
+    
+    this.activeTimers.forEach(function(timer) {
+      if (timer.status !== 'active') return;
+      if (now >= timer.expiresAt) {
+        self.executeTimer(timer);
+      }
+    });
+  },
+  
+  executeTimer: function(timer) {
+    var self = this;
+    timer.status = 'executed';
+    
+    if (timer.type === 'close_position') {
+      var position = STATE.positions.find(function(p) { return p.id === timer.positionId; });
+      if (position && typeof TradeManager !== 'undefined') {
+        var currentPrice = STATE.currentPrice;
+        var pnl = 0;
+        if (position.side === 'long') {
+          pnl = (currentPrice - position.entryPrice) * position.amount * (position.leverage || 1);
+        } else {
+          pnl = (position.entryPrice - currentPrice) * position.amount * (position.leverage || 1);
+        }
+        
+        TradeManager.closePosition(timer.positionId);
+        
+        var pnlText = pnl >= 0 ? '+' : '';
+        var pnlColor = pnl >= 0 ? 'var(--up-color)' : 'var(--down-color)';
+        
+        if (typeof Toast !== 'undefined') {
+          Toast.info('⏰ Timed close executed! PnL: <span style="color:' + pnlColor + ';">' + pnlText + '$' + Math.abs(pnl).toFixed(2) + '</span>', 5000);
+        }
+        
+        this.playSound(pnl >= 0);
+      }
+    } else if (timer.type === 'new_order') {
+      if (typeof TradeManager !== 'undefined') {
+        TradeManager.tradeType = timer.side;
+        var amountInput = document.getElementById('trade-amount-input');
+        if (amountInput) amountInput.value = timer.amount;
+        TradeManager.placeOrder();
+        
+        if (typeof Toast !== 'undefined') {
+          Toast.success('⏰ Timed ' + timer.side.toUpperCase() + ' executed!', 5000);
+        }
+        this.playSound(true);
+      }
+    }
+    
+    this.activeTimers = this.activeTimers.filter(function(t) { return t.id !== timer.id; });
+    this.saveTimers();
+  },
+  
+  playSound: function(isProfit) {
+    try {
+      var ctx = new (window.AudioContext || window.webkitAudioContext)();
+      var osc = ctx.createOscillator();
+      var gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = isProfit ? 880 : 440;
+      gain.gain.value = 0.2;
+      osc.start();
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+      osc.stop(ctx.currentTime + 0.4);
+    } catch(e) {}
+  },
+  
+  renderTimers: function() {
+    var container = document.getElementById('active-timers-container');
+    if (!container) return;
+    
+    if (this.activeTimers.length === 0) {
+      container.innerHTML = '<div style="padding:12px;text-align:center;color:var(--text-muted);font-size:10px;">No active timed orders</div>';
+      return;
+    }
+    
+    var now = Date.now();
+    var html = '';
+    for (var i = 0; i < this.activeTimers.length; i++) {
+      var timer = this.activeTimers[i];
+      var remaining = Math.max(0, timer.expiresAt - now);
+      var seconds = Math.ceil(remaining / 1000);
+      
+      if (timer.type === 'close_position') {
+        html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-bottom:1px solid rgba(48,54,61,0.3);font-size:11px;">' +
+          '<div><span style="color:#ff9800;">⏰</span> Close position</div>' +
+          '<div><span style="font-family:monospace;">' + seconds + 's</span>' +
+          '<button onclick="SmartOrderSystem.cancelTimer(\'' + timer.id + '\')" style="background:none;border:none;color:var(--danger);cursor:pointer;margin-left:8px;">✕</button></div>' +
+          '</div>';
+      } else {
+        var sideColor = timer.side === 'buy' ? '#26a69a' : '#ef5350';
+        html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-bottom:1px solid rgba(48,54,61,0.3);font-size:11px;">' +
+          '<div><span style="color:' + sideColor + ';">⏰</span> ' + timer.side.toUpperCase() + ' ' + timer.amount + '</div>' +
+          '<div><span style="font-family:monospace;">' + seconds + 's</span>' +
+          '<button onclick="SmartOrderSystem.cancelTimer(\'' + timer.id + '\')" style="background:none;border:none;color:var(--danger);cursor:pointer;margin-left:8px;">✕</button></div>' +
+          '</div>';
+      }
+    }
+    container.innerHTML = html;
+  },
+  
+  cancelTimer: function(timerId) {
+    this.activeTimers = this.activeTimers.filter(function(t) { return t.id !== timerId; });
+    this.saveTimers();
+    this.renderTimers();
+    if (typeof Toast !== 'undefined') Toast.info('Timed order cancelled');
+  },
+  
+  saveTimers: function() {
+    localStorage.setItem('tvp_smart_timers', JSON.stringify({ active: this.activeTimers }));
+  },
+  
+  loadTimers: function() {
+    var saved = localStorage.getItem('tvp_smart_timers');
+    if (saved) {
+      try {
+        var data = JSON.parse(saved);
+        this.activeTimers = data.active || [];
+      } catch(e) {}
+    }
+  }
+};
   // ============================================
   // RISK MANAGER - Professional Risk Analytics
   // Institutional-grade position sizing and risk metrics
@@ -22508,6 +22968,12 @@ async function main() {
     IndicatorsModal.init();
     PineEditor.init();
     TradeManager.init();
+	  // Initialize Smart Order System (after TradeManager is ready)
+if (typeof SmartOrderSystem !== 'undefined') {
+  setTimeout(function() {
+    SmartOrderSystem.init();
+  }, 1000);
+}
     TickerManager.init();
     initTVPanels();
     NewsManager.init();
@@ -27183,6 +27649,7 @@ const AIAssistant = {
     this.loadDailyCount();
     this.createModal();
     this.setupTriggers();
+	this.addAIChatButton(); 
     console.log('✅ AI Assistant ready (PRO/ULTIMATE)');
   },
   
@@ -27689,6 +28156,486 @@ async generateReport() {
     if (typeof Toast !== 'undefined') Toast.error('Failed to generate report');
   }
 }
+	// ============================================
+// ADD THESE METHODS TO YOUR EXISTING AIAssistant
+// Place them before the final closing } of AIAssistant
+// ============================================
+
+  // ============================================
+  // LOCAL CHART ANALYSIS (No API call)
+  // ============================================
+  analyzeLocalChart: function() {
+    var candles = STATE.candles;
+    if (!candles || candles.length < 30) {
+      return "⚠️ Not enough chart data. Please wait for more candles to load.";
+    }
+    
+    var closes = candles.map(function(c) { return c.close; });
+    var currentPrice = closes[closes.length - 1];
+    var change24h = STATE.change24h || 0;
+    var symbol = STATE.symbol.replace('USDT', '/USDT');
+    var interval = STATE.interval;
+    
+    // ============================================
+    // 1. TREND ANALYSIS
+    // ============================================
+    var sma20 = this._calcSMA(closes, 20);
+    var sma50 = this._calcSMA(closes, 50);
+    var sma200 = this._calcSMA(closes, Math.min(200, closes.length));
+    var priceAbove20 = currentPrice > sma20;
+    var priceAbove50 = currentPrice > sma50;
+    var priceAbove200 = currentPrice > sma200;
+    
+    var trend = "";
+    var trendDesc = "";
+    if (priceAbove20 && priceAbove50 && priceAbove200) {
+      trend = "🟢 STRONG BULLISH";
+      trendDesc = "Price is trading above all major moving averages. Strong upward momentum.";
+    } else if (priceAbove20 && priceAbove50) {
+      trend = "🟢 BULLISH";
+      trendDesc = "Price above short-term MAs but below long-term. Uptrend in progress.";
+    } else if (!priceAbove20 && !priceAbove50 && !priceAbove200) {
+      trend = "🔴 STRONG BEARISH";
+      trendDesc = "Price is trading below all major moving averages. Strong downward pressure.";
+    } else if (!priceAbove20 && !priceAbove50) {
+      trend = "🔴 BEARISH";
+      trendDesc = "Price below short-term MAs. Downtrend in progress.";
+    } else {
+      trend = "🟡 NEUTRAL / RANGING";
+      trendDesc = "Mixed signals. Price is consolidating. Wait for breakout.";
+    }
+    
+    // ============================================
+    // 2. MOMENTUM (RSI)
+    // ============================================
+    var rsi = this._calcRSI(closes, 14);
+    var rsiStatus = "";
+    var rsiAdvice = "";
+    if (rsi > 80) {
+      rsiStatus = "🔴 EXTREME OVERBOUGHT";
+      rsiAdvice = "Strong reversal risk. Consider taking profits or tightening stops.";
+    } else if (rsi > 70) {
+      rsiStatus = "⚠️ OVERBOUGHT";
+      rsiAdvice = "Potential pullback soon. Avoid new longs.";
+    } else if (rsi < 20) {
+      rsiStatus = "🟢 EXTREME OVERSOLD";
+      rsiAdvice = "Strong bounce potential. Watch for reversal patterns.";
+    } else if (rsi < 30) {
+      rsiStatus = "✅ OVERSOLD";
+      rsiAdvice = "Buying opportunity may be near.";
+    } else if (rsi > 50) {
+      rsiStatus = "📈 BULLISH MOMENTUM";
+      rsiAdvice = "Positive momentum. Uptrend likely to continue.";
+    } else {
+      rsiStatus = "📉 BEARISH MOMENTUM";
+      rsiAdvice = "Negative pressure. Downtrend likely to continue.";
+    }
+    
+    // ============================================
+    // 3. SUPPORT & RESISTANCE
+    // ============================================
+    var levels = this._findKeyLevels(candles);
+    var nearestSupport = levels.support.length > 0 ? levels.support[0] : null;
+    var nearestResistance = levels.resistance.length > 0 ? levels.resistance[0] : null;
+    var supportDistance = nearestSupport ? ((currentPrice - nearestSupport) / currentPrice * 100).toFixed(2) : null;
+    var resistanceDistance = nearestResistance ? ((nearestResistance - currentPrice) / currentPrice * 100).toFixed(2) : null;
+    
+    // ============================================
+    // 4. VOLUME ANALYSIS
+    // ============================================
+    var volumes = candles.map(function(c) { return c.volume; });
+    var avgVolume = this._calcSMA(volumes, 20);
+    var lastVolume = volumes[volumes.length - 1];
+    var volumeRatio = lastVolume / avgVolume;
+    var volumeStatus = "";
+    if (volumeRatio > 2) {
+      volumeStatus = "🔥 EXTREME VOLUME SPIKE - High conviction move";
+    } else if (volumeRatio > 1.5) {
+      volumeStatus = "📊 ABOVE AVERAGE VOLUME - Confirmation";
+    } else if (volumeRatio < 0.5) {
+      volumeStatus = "😴 LOW VOLUME - Breakout may lack conviction";
+    } else {
+      volumeStatus = "📈 NORMAL VOLUME - Stable conditions";
+    }
+    
+    // ============================================
+    // 5. VOLATILITY (ATR)
+    // ============================================
+    var atr = this._calcATR(candles, 14);
+    var atrPercent = (atr / currentPrice * 100).toFixed(2);
+    var volatilityStatus = atrPercent > 3 ? "HIGH VOLATILITY" : (atrPercent < 1 ? "LOW VOLATILITY" : "NORMAL VOLATILITY");
+    
+    // ============================================
+    // 6. PATTERN DETECTION
+    // ============================================
+    var patterns = this._detectPatterns(candles);
+    var patternText = patterns.length > 0 ? patterns.map(function(p) { return "• " + p.name + " (" + p.type + "): " + p.description; }).join("\n") : "No significant patterns detected";
+    
+    // ============================================
+    // 7. GENERATE RECOMMENDATION
+    // ============================================
+    var recommendation = this._generateRecommendation({
+      trend: trend,
+      rsi: rsi,
+      volumeRatio: volumeRatio,
+      patterns: patterns,
+      priceAboveMA20: priceAbove20,
+      priceAboveMA50: priceAbove50
+    });
+    
+    // ============================================
+    // 8. BUILD COMPLETE REPORT
+    // ============================================
+    var report = "";
+    report += "╔═══════════════════════════════════════════════════════════════════════╗\n";
+    report += "║                    🤖 AI CHART ANALYSIS REPORT                        ║\n";
+    report += "╠═══════════════════════════════════════════════════════════════════════╣\n";
+    report += "║                                                                       ║\n";
+    report += "║  📊 SYMBOL: " + symbol.padEnd(55) + "║\n";
+    report += "║  💰 PRICE: $" + this._formatPrice(currentPrice).padEnd(54) + "║\n";
+    report += "║  📈 24h CHANGE: " + (change24h >= 0 ? "+" : "") + change24h.toFixed(2) + "%".padEnd(54) + "║\n";
+    report += "║  ⏱️ TIMEFRAME: " + interval.padEnd(53) + "║\n";
+    report += "║                                                                       ║\n";
+    report += "╠═══════════════════════════════════════════════════════════════════════╣\n";
+    report += "║                                                                       ║\n";
+    report += "║  📈 TREND ANALYSIS:                                                   ║\n";
+    report += "║     " + trend.padEnd(60) + "║\n";
+    report += "║     " + trendDesc.substring(0, 60).padEnd(60) + "║\n";
+    report += "║                                                                       ║\n";
+    report += "║  ⚡ RSI (14): " + rsi.toFixed(1) + " - " + rsiStatus.padEnd(45) + "║\n";
+    report += "║     " + rsiAdvice.substring(0, 60).padEnd(60) + "║\n";
+    report += "║                                                                       ║\n";
+    report += "║  🛡️ KEY LEVELS:                                                       ║\n";
+    if (nearestSupport) report += "║     SUPPORT: $" + this._formatPrice(nearestSupport) + " (" + supportDistance + "% below)".padEnd(55) + "║\n";
+    if (nearestResistance) report += "║     RESISTANCE: $" + this._formatPrice(nearestResistance) + " (" + resistanceDistance + "% above)".padEnd(55) + "║\n";
+    report += "║                                                                       ║\n";
+    report += "║  📊 VOLUME: " + volumeStatus.padEnd(53) + "║\n";
+    report += "║     Volume ratio: " + volumeRatio.toFixed(2) + "x average".padEnd(52) + "║\n";
+    report += "║                                                                       ║\n";
+    report += "║  🌊 VOLATILITY: " + volatilityStatus + " (ATR: " + atrPercent + "%)".padEnd(48) + "║\n";
+    report += "║                                                                       ║\n";
+    report += "║  🔍 PATTERNS DETECTED:                                                ║\n";
+    var patternLines = patternText.split('\n');
+    for (var i = 0; i < Math.min(patternLines.length, 3); i++) {
+      report += "║     " + patternLines[i].substring(0, 60).padEnd(60) + "║\n";
+    }
+    report += "║                                                                       ║\n";
+    report += "╠═══════════════════════════════════════════════════════════════════════╣\n";
+    report += "║                                                                       ║\n";
+    report += "║  🎯 RECOMMENDATION: " + recommendation.action.padEnd(45) + "║\n";
+    report += "║     Confidence: " + recommendation.confidence + "%".padEnd(52) + "║\n";
+    report += "║     " + recommendation.reason.substring(0, 60).padEnd(60) + "║\n";
+    if (recommendation.entry) report += "║     Entry: $" + recommendation.entry.padEnd(55) + "║\n";
+    if (recommendation.stop) report += "║     Stop Loss: $" + recommendation.stop.padEnd(51) + "║\n";
+    if (recommendation.target) report += "║     Take Profit: $" + recommendation.target.padEnd(48) + "║\n";
+    if (recommendation.riskReward) report += "║     Risk:Reward: 1:" + recommendation.riskReward.padEnd(48) + "║\n";
+    report += "║                                                                       ║\n";
+    report += "╠═══════════════════════════════════════════════════════════════════════╣\n";
+    report += "║  ⚠️ DISCLAIMER: This analysis is generated by AI using technical      ║\n";
+    report += "║  indicators and is for informational purposes only. Always do your   ║\n";
+    report += "║  own research and manage your risk. Never trade more than you can    ║\n";
+    report += "║  afford to lose.                                                      ║\n";
+    report += "╚═══════════════════════════════════════════════════════════════════════╝";
+    
+    return report;
+  },
+  
+  // ============================================
+  // HELPER METHODS FOR CHART ANALYSIS
+  // ============================================
+  
+  _calcSMA: function(data, period) {
+    if (data.length < period) return data[data.length - 1] || 0;
+    var sum = 0;
+    for (var i = data.length - period; i < data.length; i++) sum += data[i];
+    return sum / period;
+  },
+  
+  _calcRSI: function(closes, period) {
+    if (closes.length < period + 1) return 50;
+    var gains = 0, losses = 0;
+    for (var i = closes.length - period; i < closes.length; i++) {
+      var change = closes[i] - closes[i - 1];
+      if (change >= 0) gains += change;
+      else losses -= change;
+    }
+    var avgGain = gains / period;
+    var avgLoss = losses / period;
+    if (avgLoss === 0) return 100;
+    var rs = avgGain / avgLoss;
+    return 100 - (100 / (1 + rs));
+  },
+  
+  _calcATR: function(candles, period) {
+    if (candles.length < period + 1) return 0;
+    var trSum = 0;
+    for (var i = candles.length - period; i < candles.length; i++) {
+      var tr = Math.max(
+        candles[i].high - candles[i].low,
+        Math.abs(candles[i].high - candles[i - 1].close),
+        Math.abs(candles[i].low - candles[i - 1].close)
+      );
+      trSum += tr;
+    }
+    return trSum / period;
+  },
+  
+  _findKeyLevels: function(candles) {
+    var highs = [], lows = [];
+    var lookback = Math.min(10, Math.floor(candles.length / 10));
+    
+    for (var i = lookback; i < candles.length - lookback; i++) {
+      var isHigh = true;
+      for (var j = -lookback; j <= lookback; j++) {
+        if (j === 0) continue;
+        if (candles[i].high <= candles[i + j].high) { isHigh = false; break; }
+      }
+      if (isHigh) highs.push(candles[i].high);
+      
+      var isLow = true;
+      for (var k = -lookback; k <= lookback; k++) {
+        if (k === 0) continue;
+        if (candles[i].low >= candles[i + k].low) { isLow = false; break; }
+      }
+      if (isLow) lows.push(candles[i].low);
+    }
+    
+    var groupedHighs = this._groupLevels(highs);
+    var groupedLows = this._groupLevels(lows);
+    
+    var currentPrice = candles[candles.length - 1].close;
+    
+    // Find nearest support (below price)
+    var supports = groupedLows.filter(function(l) { return l < currentPrice; }).sort(function(a, b) { return b - a; });
+    // Find nearest resistance (above price)
+    var resistances = groupedHighs.filter(function(h) { return h > currentPrice; }).sort(function(a, b) { return a - b; });
+    
+    return {
+      support: supports.slice(0, 3),
+      resistance: resistances.slice(0, 3)
+    };
+  },
+  
+  _groupLevels: function(levels) {
+    if (levels.length === 0) return [];
+    var grouped = [];
+    var used = {};
+    var tolerance = 0.005;
+    
+    for (var i = 0; i < levels.length; i++) {
+      if (used[i]) continue;
+      var group = [levels[i]];
+      for (var j = i + 1; j < levels.length; j++) {
+        if (used[j]) continue;
+        if (Math.abs(levels[i] - levels[j]) / levels[i] < tolerance) {
+          group.push(levels[j]);
+          used[j] = true;
+        }
+      }
+      var sum = 0;
+      for (var g = 0; g < group.length; g++) sum += group[g];
+      grouped.push(sum / group.length);
+    }
+    return grouped;
+  },
+  
+  _detectPatterns: function(candles) {
+    var patterns = [];
+    var last = candles[candles.length - 1];
+    var prev = candles[candles.length - 2];
+    var bodySize = Math.abs(last.close - last.open);
+    var range = last.high - last.low;
+    var lowerWick = Math.min(last.open, last.close) - last.low;
+    var upperWick = last.high - Math.max(last.open, last.close);
+    
+    // Doji
+    if (range > 0 && bodySize / range < 0.1) {
+      patterns.push({ name: "Doji", type: "neutral", description: "Indecision - potential reversal" });
+    }
+    // Hammer
+    if (lowerWick > bodySize * 2 && upperWick < bodySize) {
+      patterns.push({ name: "Hammer", type: "bullish", description: "Potential bottom reversal" });
+    }
+    // Shooting Star
+    if (upperWick > bodySize * 2 && lowerWick < bodySize) {
+      patterns.push({ name: "Shooting Star", type: "bearish", description: "Potential top reversal" });
+    }
+    // Bullish Engulfing
+    if (last.close > last.open && prev.close < prev.open && last.close > prev.open && last.open < prev.close) {
+      patterns.push({ name: "Bullish Engulfing", type: "bullish", description: "Strong buying pressure" });
+    }
+    // Bearish Engulfing
+    if (last.close < last.open && prev.close > prev.open && last.close < prev.open && last.open > prev.close) {
+      patterns.push({ name: "Bearish Engulfing", type: "bearish", description: "Strong selling pressure" });
+    }
+    
+    return patterns;
+  },
+  
+  _generateRecommendation: function(data) {
+    var score = 50;
+    var reasons = [];
+    
+    // Trend contribution
+    if (data.trend === "🟢 STRONG BULLISH") { score += 25; reasons.push("Strong bullish trend"); }
+    else if (data.trend === "🟢 BULLISH") { score += 15; reasons.push("Bullish trend"); }
+    else if (data.trend === "🔴 STRONG BEARISH") { score -= 25; reasons.push("Strong bearish trend"); }
+    else if (data.trend === "🔴 BEARISH") { score -= 15; reasons.push("Bearish trend"); }
+    
+    // RSI contribution
+    if (data.rsi < 25) { score += 15; reasons.push("Extreme oversold - bounce likely"); }
+    else if (data.rsi < 35) { score += 10; reasons.push("Oversold conditions"); }
+    else if (data.rsi > 75) { score -= 15; reasons.push("Extreme overbought - pullback likely"); }
+    else if (data.rsi > 65) { score -= 10; reasons.push("Overbought conditions"); }
+    else if (data.rsi > 55) { score += 5; reasons.push("Bullish momentum"); }
+    else if (data.rsi < 45) { score -= 5; reasons.push("Bearish momentum"); }
+    
+    // Volume contribution
+    if (data.volumeRatio > 2) {
+      if (score > 50) { score += 10; reasons.push("Volume spike confirms move"); }
+      else { score -= 10; reasons.push("Volume spike confirms selling"); }
+    } else if (data.volumeRatio > 1.5) {
+      if (score > 50) score += 5;
+      else score -= 5;
+    }
+    
+    // Pattern contribution
+    for (var i = 0; i < data.patterns.length; i++) {
+      if (data.patterns[i].type === "bullish") { score += 10; reasons.push(data.patterns[i].name + " pattern detected"); }
+      else if (data.patterns[i].type === "bearish") { score -= 10; reasons.push(data.patterns[i].name + " pattern detected"); }
+    }
+    
+    score = Math.max(0, Math.min(100, score));
+    
+    var action = "";
+    var confidence = "";
+    var reason = "";
+    var entry = null;
+    var stop = null;
+    var target = null;
+    var riskReward = null;
+    
+    if (score >= 75) {
+      action = "🟢 STRONG BUY / LONG";
+      confidence = "75-85";
+      reason = reasons.join(". ") + ". Multiple bullish signals aligned.";
+      entry = "$" + this._formatPrice(STATE.currentPrice);
+      stop = "$" + this._formatPrice(STATE.currentPrice * 0.98);
+      target = "$" + this._formatPrice(STATE.currentPrice * 1.04);
+      riskReward = "2:1";
+    } else if (score >= 60) {
+      action = "🟢 BUY / LONG";
+      confidence = "60-75";
+      reason = reasons.join(". ") + ". Bullish bias with favorable risk-reward.";
+      entry = "$" + this._formatPrice(STATE.currentPrice);
+      stop = "$" + this._formatPrice(STATE.currentPrice * 0.99);
+      target = "$" + this._formatPrice(STATE.currentPrice * 1.02);
+      riskReward = "2:1";
+    } else if (score <= 25) {
+      action = "🔴 STRONG SELL / SHORT";
+      confidence = "75-85";
+      reason = reasons.join(". ") + ". Multiple bearish signals aligned.";
+      entry = "$" + this._formatPrice(STATE.currentPrice);
+      stop = "$" + this._formatPrice(STATE.currentPrice * 1.02);
+      target = "$" + this._formatPrice(STATE.currentPrice * 0.96);
+      riskReward = "2:1";
+    } else if (score <= 40) {
+      action = "🔴 SELL / SHORT";
+      confidence = "60-75";
+      reason = reasons.join(". ") + ". Bearish pressure increasing.";
+      entry = "$" + this._formatPrice(STATE.currentPrice);
+      stop = "$" + this._formatPrice(STATE.currentPrice * 1.01);
+      target = "$" + this._formatPrice(STATE.currentPrice * 0.98);
+      riskReward = "2:1";
+    } else {
+      action = "🟡 HOLD / OBSERVE";
+      confidence = "40-60";
+      reason = reasons.join(". ") + ". Mixed signals. Wait for clearer direction.";
+    }
+    
+    return {
+      action: action,
+      confidence: confidence,
+      reason: reason.substring(0, 120),
+      entry: entry,
+      stop: stop,
+      target: target,
+      riskReward: riskReward
+    };
+  },
+  
+  _formatPrice: function(p) {
+    if (p == null || isNaN(p)) return '--';
+    if (p >= 1000) return p.toFixed(2);
+    if (p >= 100) return p.toFixed(2);
+    if (p >= 10) return p.toFixed(3);
+    if (p >= 1) return p.toFixed(4);
+    if (p >= 0.1) return p.toFixed(5);
+    return p.toFixed(8);
+  },
+  
+  // ============================================
+  // SEND ANALYSIS TO CHAT (Modified for your chat system)
+  // ============================================
+  sendAnalysisToChat: function() {
+    var analysis = this.analyzeLocalChart();
+    
+    // Try to send to your existing chat system
+    var container = document.getElementById('chat-messages');
+    if (container) {
+      var aiDiv = document.createElement('div');
+      aiDiv.style.cssText = 'display:flex;gap:8px;margin-bottom:10px;';
+      aiDiv.innerHTML = '<span style="font-size:20px;">🤖</span>' +
+        '<div style="background:linear-gradient(135deg,rgba(88,166,255,0.1),rgba(155,108,255,0.05));padding:12px 16px;border-radius:12px;font-size:11px;color:var(--text-primary);max-width:90%;line-height:1.5;border-left:3px solid #9b6cff;font-family:monospace;white-space:pre-wrap;">' + 
+        analysis.replace(/\n/g, '<br>') + 
+        '</div>';
+      container.appendChild(aiDiv);
+      container.scrollTop = container.scrollHeight;
+    }
+    
+    // Also show toast notification
+    if (typeof ProToast !== 'undefined') {
+      ProToast.ai('Chart analysis complete! Check the chat for full report.', 4000);
+    } else if (typeof Toast !== 'undefined') {
+      Toast.success('🤖 AI Analysis: Check the chat for complete report!');
+    }
+  },
+  
+  // ============================================
+  // ADD AI BUTTON TO CHAT (Desktop + Mobile)
+  // ============================================
+  addAIChatButton: function() {
+    var self = this;
+    setTimeout(function() {
+      // Desktop chat modal
+      var chatHeader = document.querySelector('#community-modal .modal-header');
+      if (chatHeader && !document.getElementById('ai-chat-analysis-btn')) {
+        var aiBtn = document.createElement('button');
+        aiBtn.id = 'ai-chat-analysis-btn';
+        aiBtn.className = 'modal-action-btn';
+        aiBtn.setAttribute('data-tooltip', 'Analyze Current Chart (Local AI)');
+        aiBtn.innerHTML = '<i class="fas fa-robot" style="color:#9b6cff;"></i>';
+        aiBtn.style.cssText = 'margin-left:auto;margin-right:8px;';
+        aiBtn.addEventListener('click', function() {
+          self.sendAnalysisToChat();
+        });
+        chatHeader.appendChild(aiBtn);
+      }
+      
+      // Mobile chat
+      var mobileChatHeader = document.querySelector('#community-modal .mobile-chat-header');
+      if (mobileChatHeader && !document.getElementById('mobile-ai-chat-btn')) {
+        var mobAiBtn = document.createElement('button');
+        mobAiBtn.id = 'mobile-ai-chat-btn';
+        mobAiBtn.innerHTML = '<i class="fas fa-robot"></i> Analyze';
+        mobAiBtn.style.cssText = 'padding:6px 12px;background:#9b6cff;color:white;border:none;border-radius:6px;font-size:10px;margin-left:auto;cursor:pointer;';
+        mobAiBtn.addEventListener('click', function() {
+          self.sendAnalysisToChat();
+        });
+        mobileChatHeader.appendChild(mobAiBtn);
+      }
+    }, 2000);
+  },
 };
 
 // ============================================
