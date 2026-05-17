@@ -2028,8 +2028,8 @@ window.debugTimers = function() {
       this.setupCrosshair();
       this.setupZoomHandlers();
 	  VolumeProfileEngine.init();
-		this.barReplay.init();
-		this.multiTimeframeOverlay.init();
+	  if (this.barReplay && this.barReplay.init) this.barReplay.init();
+      if (this.multiTimeframeOverlay && this.multiTimeframeOverlay.init) this.multiTimeframeOverlay.init();
 	  _lastChartType: null,
       console.log('✅ All charts created');
     },
@@ -4154,13 +4154,13 @@ removeAllOverlays() {
     }
   },
 // ============================================
-// CODE A: BAR REPLAY SYSTEM - Insert between resizeAll() and forceHardReset()
+// FIXED CODE A: BAR REPLAY SYSTEM
+// Insert between resizeAll() and forceHardReset()
 // ============================================
 
 // ============================================
 // INSTITUTIONAL BAR REPLAY MODULE
-// Allows traders to replay historical price action candle by candle
-// Essential for backtesting strategies in real-time
+// Fixed: Button now appears correctly in chart controls
 // ============================================
 
 barReplay: {
@@ -4168,21 +4168,17 @@ barReplay: {
   isPlaying: false,
   currentIndex: null,
   intervalId: null,
-  speed: 1000, // ms per bar (1x)
+  speed: 1000,
   originalCandles: [],
   originalVolume: [],
-  originalIndicators: {},
   controlPanel: null,
-  speedOptions: [500, 1000, 2000, 3000, 5000],
   
-  // Initialize replay system
   init() {
     this.createControlPanel();
     this.addReplayButton();
     console.log('✅ Bar Replay System initialized');
   },
   
-  // Create the replay control panel UI
   createControlPanel() {
     if (document.getElementById('replay-control-panel')) return;
     
@@ -4190,18 +4186,18 @@ barReplay: {
     panel.id = 'replay-control-panel';
     panel.style.cssText = `
       position: absolute;
-      bottom: 20px;
+      bottom: 80px;
       left: 50%;
       transform: translateX(-50%) translateY(100px);
       z-index: 1000;
       background: var(--bg-card);
       border: 1px solid var(--border-primary);
-      border-radius: 40px;
-      padding: 8px 20px;
+      border-radius: 48px;
+      padding: 6px 16px;
       display: flex;
-      gap: 16px;
+      gap: 12px;
       align-items: center;
-      backdrop-filter: blur(10px);
+      backdrop-filter: blur(12px);
       box-shadow: 0 4px 20px rgba(0,0,0,0.4);
       transition: transform 0.3s ease;
       opacity: 0;
@@ -4209,34 +4205,26 @@ barReplay: {
     `;
     
     panel.innerHTML = `
-      <div style="display:flex;align-items:center;gap:4px;">
-        <span style="font-size:10px;color:var(--text-muted);">⏪</span>
-        <button id="replay-rewind-btn" class="replay-btn" style="background:var(--bg-tertiary);border:none;color:var(--text-primary);width:32px;height:32px;border-radius:20px;cursor:pointer;">
-          <i class="fas fa-backward-step"></i>
-        </button>
-      </div>
+      <button id="replay-rewind-btn" class="replay-btn" style="background:var(--bg-tertiary);border:none;color:var(--text-primary);width:34px;height:34px;border-radius:34px;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+        <i class="fas fa-backward-step"></i>
+      </button>
       
-      <button id="replay-play-pause" class="replay-btn replay-play" style="background:var(--accent-primary);border:none;color:white;width:40px;height:40px;border-radius:40px;cursor:pointer;">
+      <button id="replay-play-pause" class="replay-btn" style="background:var(--accent-primary);border:none;color:white;width:42px;height:42px;border-radius:42px;cursor:pointer;display:flex;align-items:center;justify-content:center;">
         <i class="fas fa-play"></i>
       </button>
       
-      <div style="display:flex;align-items:center;gap:4px;">
-        <button id="replay-forward-btn" class="replay-btn" style="background:var(--bg-tertiary);border:none;color:var(--text-primary);width:32px;height:32px;border-radius:20px;cursor:pointer;">
-          <i class="fas fa-forward-step"></i>
-        </button>
-        <span style="font-size:10px;color:var(--text-muted);">⏩</span>
-      </div>
+      <button id="replay-forward-btn" class="replay-btn" style="background:var(--bg-tertiary);border:none;color:var(--text-primary);width:34px;height:34px;border-radius:34px;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+        <i class="fas fa-forward-step"></i>
+      </button>
       
       <div style="border-left:1px solid var(--border-primary);height:30px;margin:0 4px;"></div>
       
-      <div id="replay-bar-info" style="font-family:monospace;font-size:11px;min-width:180px;text-align:center;">
+      <div id="replay-bar-info" style="font-family:monospace;font-size:11px;min-width:160px;text-align:center;">
         <div><span id="replay-current-bar">0</span>/<span id="replay-total-bars">0</span></div>
         <div id="replay-bar-date" style="font-size:9px;color:var(--text-muted);"></div>
       </div>
       
-      <div style="border-left:1px solid var(--border-primary);height:30px;margin:0 4px;"></div>
-      
-      <select id="replay-speed-select" style="background:var(--bg-tertiary);border:1px solid var(--border-primary);border-radius:16px;padding:4px 8px;font-size:10px;color:var(--text-primary);cursor:pointer;">
+      <select id="replay-speed-select" style="background:var(--bg-tertiary);border:1px solid var(--border-primary);border-radius:20px;padding:6px 10px;font-size:10px;color:var(--text-primary);cursor:pointer;">
         <option value="500">2x</option>
         <option value="1000" selected>1x</option>
         <option value="2000">0.5x</option>
@@ -4244,7 +4232,7 @@ barReplay: {
         <option value="5000">0.2x</option>
       </select>
       
-      <button id="replay-exit-btn" class="replay-btn" style="background:none;border:none;color:var(--danger);width:32px;height:32px;border-radius:20px;cursor:pointer;">
+      <button id="replay-exit-btn" class="replay-btn" style="background:none;border:none;color:var(--danger);width:34px;height:34px;border-radius:34px;cursor:pointer;display:flex;align-items:center;justify-content:center;">
         <i class="fas fa-times"></i>
       </button>
     `;
@@ -4259,7 +4247,6 @@ barReplay: {
     this.attachPanelEvents();
   },
   
-  // Attach event listeners to control panel
   attachPanelEvents() {
     var self = this;
     
@@ -4280,88 +4267,90 @@ barReplay: {
     }
   },
   
-  // Add replay button to chart controls
   addReplayButton() {
-    setTimeout(() => {
+    // Use multiple attempts to ensure button gets added
+    var self = this;
+    var attemptCount = 0;
+    var maxAttempts = 10;
+    
+    function tryAddButton() {
+      attemptCount++;
       var chartControls = document.querySelector('.chart-controls');
-      if (!chartControls || document.getElementById('replay-toggle-btn')) return;
       
-      var btn = document.createElement('button');
-      btn.id = 'replay-toggle-btn';
-      btn.className = 'chart-ctrl-btn';
-      btn.setAttribute('data-tooltip', 'Bar Replay (Backtest Mode)');
-      btn.innerHTML = '<i class="fas fa-history" style="font-size:12px;"></i>';
-      
-      var self = this;
-      btn.addEventListener('click', () => {
-        if (this.enabled) {
-          this.exit();
+      if (chartControls && !document.getElementById('replay-toggle-btn')) {
+        var btn = document.createElement('button');
+        btn.id = 'replay-toggle-btn';
+        btn.className = 'chart-ctrl-btn';
+        btn.setAttribute('data-tooltip', 'Bar Replay (Backtest Mode)');
+        btn.innerHTML = '<i class="fas fa-history" style="font-size:12px;"></i>';
+        
+        btn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          if (self.enabled) {
+            self.exit();
+          } else {
+            self.start();
+          }
+        });
+        
+        // Find best position to insert
+        var indicatorsBtn = document.getElementById('indicators-btn');
+        if (indicatorsBtn && indicatorsBtn.parentNode) {
+          indicatorsBtn.parentNode.insertBefore(btn, indicatorsBtn);
         } else {
-          this.start();
+          chartControls.appendChild(btn);
         }
-      });
-      
-      var ctrlDivider = chartControls.querySelector('.ctrl-divider');
-      if (ctrlDivider) {
-        chartControls.insertBefore(btn, ctrlDivider);
-      } else {
-        chartControls.appendChild(btn);
+        
+        console.log('✅ Replay button added to chart controls');
+        return true;
       }
       
-      console.log('✅ Replay button added to chart controls');
-    }, 1500);
+      if (attemptCount < maxAttempts) {
+        setTimeout(tryAddButton, 500);
+      } else {
+        console.warn('⚠️ Could not add replay button - chart controls not found');
+      }
+      return false;
+    }
+    
+    setTimeout(tryAddButton, 1000);
   },
   
-  // Start replay mode
   start(symbol, interval) {
     if (!STATE.candles || STATE.candles.length === 0) {
       if (typeof Toast !== 'undefined') Toast.warning('No chart data available for replay');
       return false;
     }
     
-    // Save original data
     this.originalCandles = [...STATE.candles];
-    this.originalVolume = [...(STATE.candles.map(c => ({ time: c.time, value: c.volume })))];
-    
-    // Save indicator states
-    if (STATE.activeIndicators && STATE.activeIndicators.size > 0) {
-      this.originalIndicators = {
-        active: Array.from(STATE.activeIndicators),
-        settings: JSON.parse(JSON.stringify(STATE.indicatorSettings || {}))
-      };
-    }
+    this.originalVolume = [...STATE.candles.map(c => ({ time: c.time, value: c.volume }))];
     
     this.enabled = true;
     this.currentIndex = Math.max(0, this.originalCandles.length - 100);
     this.isPlaying = false;
     
-    // Show control panel with animation
     if (this.controlPanel) {
       this.controlPanel.style.transform = 'translateX(-50%) translateY(0)';
       this.controlPanel.style.opacity = '1';
       this.controlPanel.style.pointerEvents = 'auto';
     }
     
-    // Update replay button style
     var replayBtn = document.getElementById('replay-toggle-btn');
     if (replayBtn) {
-      replayBtn.classList.add('active');
-      replayBtn.style.color = 'var(--accent-primary)';
       replayBtn.style.background = 'var(--accent-muted)';
+      replayBtn.style.color = 'var(--accent-primary)';
     }
     
-    // Update display
     this.updateBarInfo();
     this.updateChart();
     
     if (typeof Toast !== 'undefined') {
-      Toast.success('🎬 Bar Replay Mode ON - Replaying from ' + this.getDateString(this.currentIndex));
+      Toast.success('🎬 Bar Replay: Playing from ' + this.getDateString(this.currentIndex));
     }
     
     return true;
   },
   
-  // Toggle play/pause
   togglePlay() {
     if (this.isPlaying) {
       this.stop();
@@ -4391,7 +4380,7 @@ barReplay: {
       } else {
         this.stop();
         if (typeof Toast !== 'undefined') {
-          Toast.info('🏁 Replay completed - End of data reached');
+          Toast.info('🏁 Replay completed');
         }
       }
     }, this.speed);
@@ -4417,8 +4406,6 @@ barReplay: {
       this.currentIndex++;
       this.updateChart();
       this.updateBarInfo();
-    } else {
-      if (typeof Toast !== 'undefined') Toast.info('Already at latest bar');
     }
   },
   
@@ -4427,7 +4414,7 @@ barReplay: {
     this.currentIndex = 0;
     this.updateChart();
     this.updateBarInfo();
-    if (typeof Toast !== 'undefined') Toast.info('⏪ Rewound to start of data');
+    if (typeof Toast !== 'undefined') Toast.info('⏪ Rewound to start');
   },
   
   updateChart() {
@@ -4435,12 +4422,10 @@ barReplay: {
     
     var partialData = this.originalCandles.slice(0, this.currentIndex + 1);
     
-    // Update main chart
     if (ChartEngine && ChartEngine.mainSeries) {
       ChartEngine.updateMain(partialData);
     }
     
-    // Update volume
     if (ChartEngine && ChartEngine.series && ChartEngine.series.volume) {
       var volumeData = partialData.map(function(c) {
         return {
@@ -4452,12 +4437,10 @@ barReplay: {
       ChartEngine.series.volume.setData(volumeData);
     }
     
-    // Trigger indicator recalculation
     if (typeof IndicatorEngine !== 'undefined' && IndicatorEngine.calculateAll) {
       IndicatorEngine.calculateAll();
     }
     
-    // Update crosshair sync
     if (ChartEngine && ChartEngine.charts && ChartEngine.charts.price) {
       ChartEngine.charts.price.timeScale().fitContent();
     }
@@ -4492,53 +4475,35 @@ barReplay: {
     this.enabled = false;
     this.stop();
     
-    // Hide control panel
     if (this.controlPanel) {
       this.controlPanel.style.transform = 'translateX(-50%) translateY(100px)';
       this.controlPanel.style.opacity = '0';
       this.controlPanel.style.pointerEvents = 'none';
     }
     
-    // Restore original chart data
     if (this.originalCandles.length) {
       ChartEngine.updateMain(this.originalCandles);
       ChartEngine.updateVolume(this.originalCandles);
     }
     
-    // Restore original indicators if any were removed
-    if (this.originalIndicators.active && this.originalIndicators.active.length > 0) {
-      STATE.activeIndicators = new Set(this.originalIndicators.active);
-      STATE.indicatorSettings = this.originalIndicators.settings;
-      if (typeof IndicatorEngine !== 'undefined') {
-        IndicatorEngine.calculateAll();
-      }
-    }
-    
-    // Update replay button style
     var replayBtn = document.getElementById('replay-toggle-btn');
     if (replayBtn) {
-      replayBtn.classList.remove('active');
-      replayBtn.style.color = '';
       replayBtn.style.background = '';
+      replayBtn.style.color = '';
     }
     
     this.currentIndex = null;
     this.originalCandles = [];
     
     if (typeof Toast !== 'undefined') {
-      Toast.info('🎬 Bar Replay Mode OFF - Chart restored');
+      Toast.info('🎬 Bar Replay: Exit');
     }
   }
 },
 	  // ============================================
-// CODE B: MULTI-TIMEFRAME OVERLAY SYSTEM
+// FIXED CODE B: MULTI-TIMEFRAME OVERLAY
+// Uses SEPARATE price scale - Does NOT block main chart view
 // Insert after barReplay closing brace (})
-// ============================================
-
-// ============================================
-// INSTITUTIONAL MULTI-TIMEFRAME OVERLAY
-// Displays higher timeframe data directly on current chart
-// Essential for professional confluence analysis
 // ============================================
 
 multiTimeframeOverlay: {
@@ -4546,6 +4511,7 @@ multiTimeframeOverlay: {
   timeframes: ['1h', '4h', '1d'],
   overlayData: {},
   overlaySeries: {},
+  overlayPriceScales: {}, // Separate price scales for each overlay
   colors: {
     '1h': '#ff9800',
     '4h': '#9b6cff',
@@ -4571,39 +4537,46 @@ multiTimeframeOverlay: {
       z-index: 100;
       background: var(--bg-card);
       border: 1px solid var(--border-primary);
-      border-radius: 8px;
-      padding: 10px;
-      display: flex;
+      border-radius: 12px;
+      padding: 12px;
+      display: none;
       flex-direction: column;
       gap: 8px;
       backdrop-filter: blur(8px);
       box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      min-width: 140px;
+      min-width: 160px;
     `;
     
     panel.innerHTML = `
-      <div style="font-size: 10px; font-weight: 600; color: var(--text-muted); padding-bottom: 6px; border-bottom: 1px solid var(--border-primary);">
+      <div style="font-size: 10px; font-weight: 600; color: var(--text-muted); padding-bottom: 8px; border-bottom: 1px solid var(--border-primary);">
         <i class="fas fa-chart-line"></i> Higher Timeframes
+        <span style="font-size: 8px; color: var(--text-muted); margin-left: 4px;">(Separate Scale)</span>
       </div>
-      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 4px 0;">
         <input type="checkbox" id="mtf-1h-toggle" data-tf="1h" style="cursor: pointer;">
-        <span style="font-size: 11px;">1 Hour <span style="color: #ff9800;">●</span></span>
-        <span id="mtf-1h-price" style="font-size: 9px; margin-left: auto; font-family: monospace;">--</span>
+        <span style="font-size: 11px;">1 Hour</span>
+        <span style="display:inline-block;width:12px;height:12px;background:#ff9800;border-radius:2px;margin-left:auto;"></span>
+        <span id="mtf-1h-price" style="font-size: 9px; font-family: monospace; min-width: 60px; text-align: right;">--</span>
       </label>
-      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 4px 0;">
         <input type="checkbox" id="mtf-4h-toggle" data-tf="4h" style="cursor: pointer;">
-        <span style="font-size: 11px;">4 Hour <span style="color: #9b6cff;">●</span></span>
-        <span id="mtf-4h-price" style="font-size: 9px; margin-left: auto; font-family: monospace;">--</span>
+        <span style="font-size: 11px;">4 Hour</span>
+        <span style="display:inline-block;width:12px;height:12px;background:#9b6cff;border-radius:2px;margin-left:auto;"></span>
+        <span id="mtf-4h-price" style="font-size: 9px; font-family: monospace; min-width: 60px; text-align: right;">--</span>
       </label>
-      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 4px 0;">
         <input type="checkbox" id="mtf-1d-toggle" data-tf="1d" style="cursor: pointer;">
-        <span style="font-size: 11px;">Daily <span style="color: #26a69a;">●</span></span>
-        <span id="mtf-1d-price" style="font-size: 9px; margin-left: auto; font-family: monospace;">--</span>
+        <span style="font-size: 11px;">Daily</span>
+        <span style="display:inline-block;width:12px;height:12px;background:#26a69a;border-radius:2px;margin-left:auto;"></span>
+        <span id="mtf-1d-price" style="font-size: 9px; font-family: monospace; min-width: 60px; text-align: right;">--</span>
       </label>
-      <div style="border-top: 1px solid var(--border-primary); margin-top: 4px; padding-top: 6px;">
-        <button id="mtf-clear-all" style="width:100%; padding:4px; background:var(--bg-tertiary); border:1px solid var(--border-primary); border-radius:4px; color:var(--text-muted); font-size:9px; cursor:pointer;">
+      <div style="border-top: 1px solid var(--border-primary); margin-top: 6px; padding-top: 8px;">
+        <button id="mtf-clear-all" style="width:100%; padding:6px; background:var(--bg-tertiary); border:1px solid var(--border-primary); border-radius:6px; color:var(--text-muted); font-size:9px; cursor:pointer;">
           Clear All
         </button>
+      </div>
+      <div style="font-size: 8px; color: var(--text-muted); text-align: center; margin-top: 4px;">
+        Lines use separate scale - no price compression
       </div>
     `;
     
@@ -4642,36 +4615,47 @@ multiTimeframeOverlay: {
   },
   
   addToggleButton() {
-    setTimeout(() => {
+    var self = this;
+    var attemptCount = 0;
+    var maxAttempts = 10;
+    
+    function tryAddButton() {
+      attemptCount++;
       var chartControls = document.querySelector('.chart-controls');
-      if (!chartControls || document.getElementById('mtf-overlay-btn')) return;
       
-      var btn = document.createElement('button');
-      btn.id = 'mtf-overlay-btn';
-      btn.className = 'chart-ctrl-btn';
-      btn.setAttribute('data-tooltip', 'Higher Timeframes (MTF)');
-      btn.innerHTML = '<span style="font-size:10px;font-weight:700;">MTF</span>';
-      
-      var self = this;
-      btn.addEventListener('click', function() {
-        if (self.panel) {
-          var isVisible = self.panel.style.display !== 'none';
-          self.panel.style.display = isVisible ? 'none' : 'flex';
+      if (chartControls && !document.getElementById('mtf-overlay-btn')) {
+        var btn = document.createElement('button');
+        btn.id = 'mtf-overlay-btn';
+        btn.className = 'chart-ctrl-btn';
+        btn.setAttribute('data-tooltip', 'Higher Timeframes (MTF)');
+        btn.innerHTML = '<span style="font-size:10px;font-weight:700;">MTF</span>';
+        
+        btn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          if (self.panel) {
+            var isVisible = self.panel.style.display === 'flex';
+            self.panel.style.display = isVisible ? 'none' : 'flex';
+          }
+        });
+        
+        var replayBtn = document.getElementById('replay-toggle-btn');
+        if (replayBtn && replayBtn.parentNode) {
+          replayBtn.parentNode.insertBefore(btn, replayBtn);
+        } else {
+          chartControls.appendChild(btn);
         }
-      });
-      
-      var ctrlDivider = chartControls.querySelector('.ctrl-divider');
-      if (ctrlDivider) {
-        chartControls.insertBefore(btn, ctrlDivider);
-      } else {
-        chartControls.appendChild(btn);
+        
+        console.log('✅ MTF Overlay button added');
+        return true;
       }
       
-      // Initially hide panel
-      if (this.panel) this.panel.style.display = 'none';
-      
-      console.log('✅ MTF Overlay button added');
-    }, 1500);
+      if (attemptCount < maxAttempts) {
+        setTimeout(tryAddButton, 500);
+      }
+      return false;
+    }
+    
+    setTimeout(tryAddButton, 1500);
   },
   
   async addTimeframe(timeframe) {
@@ -4692,14 +4676,13 @@ multiTimeframeOverlay: {
       this.renderTimeframe(timeframe, candles);
       
       if (typeof Toast !== 'undefined') {
-        Toast.success(timeframe + ' overlay added');
+        Toast.success(timeframe + ' overlay added (separate scale)');
       }
       
     } catch(e) {
       console.error('Failed to load ' + timeframe + ':', e);
       if (typeof Toast !== 'undefined') Toast.error('Failed to load ' + timeframe);
       
-      // Uncheck the toggle
       var toggle = document.getElementById('mtf-' + timeframe + '-toggle');
       if (toggle) toggle.checked = false;
     }
@@ -4720,11 +4703,7 @@ multiTimeframeOverlay: {
       return data.map(function(k) {
         return {
           time: Math.floor(k[0] / 1000),
-          open: parseFloat(k[1]),
-          high: parseFloat(k[2]),
-          low: parseFloat(k[3]),
-          close: parseFloat(k[4]),
-          volume: parseFloat(k[5])
+          close: parseFloat(k[4])
         };
       });
     } catch(e) {
@@ -4735,33 +4714,49 @@ multiTimeframeOverlay: {
   renderTimeframe(timeframe, candles) {
     if (!ChartEngine || !ChartEngine.charts || !ChartEngine.charts.price) return;
     
-    // Convert to line series format (connect closes for continuous line)
+    // ============================================
+    // CRITICAL FIX: Use SEPARATE price scale (scaleId: 'left')
+    // This prevents the overlay from compressing the main chart
+    // ============================================
+    
     var lineData = candles.map(function(c) {
       return { time: c.time, value: c.close };
     });
     
-    // Create line series with timeframe-specific color
+    // Create line series on LEFT scale (separate from main chart's RIGHT scale)
     var series = ChartEngine.charts.price.addLineSeries({
       color: this.colors[timeframe],
       lineWidth: 1,
-      lineStyle: 2, // Dotted line for higher timeframes
+      lineStyle: 2,
       priceLineVisible: false,
       lastValueVisible: true,
       crosshairMarkerVisible: false,
-      title: timeframe,
+      title: timeframe + ' MTF',
+      priceScaleId: 'left',  // ← KEY FIX: Use left scale, NOT right
       priceFormat: { type: 'price', precision: 2 }
     });
     
     series.setData(lineData);
     
     this.overlaySeries[timeframe] = series;
+    this.overlayPriceScales[timeframe] = 'left';
     
-    // Update price display
+    // Make left scale visible but minimal
+    try {
+      ChartEngine.charts.price.priceScale('left').applyOptions({
+        visible: true,
+        borderVisible: true,
+        autoScale: true,
+        scaleMargins: { top: 0.05, bottom: 0.05 },
+        textColor: this.colors[timeframe],
+        fontSize: 8
+      });
+    } catch(e) {}
+    
     var lastPrice = lineData[lineData.length - 1].value;
     var priceEl = document.getElementById('mtf-' + timeframe + '-price');
     if (priceEl) {
-      priceEl.textContent = '$' + (typeof U !== 'undefined' ? U.formatPrice(lastPrice) : lastPrice.toFixed(2));
-      priceEl.style.color = this.colors[timeframe];
+      priceEl.textContent = (typeof U !== 'undefined' ? U.formatPrice(lastPrice) : lastPrice.toFixed(2));
     }
   },
   
@@ -4772,16 +4767,22 @@ multiTimeframeOverlay: {
       } catch(e) {}
       delete this.overlaySeries[timeframe];
       delete this.overlayData[timeframe];
+      delete this.overlayPriceScales[timeframe];
       
       var priceEl = document.getElementById('mtf-' + timeframe + '-price');
-      if (priceEl) {
-        priceEl.textContent = '--';
-        priceEl.style.color = '';
-      }
+      if (priceEl) priceEl.textContent = '--';
       
       if (typeof Toast !== 'undefined') {
         Toast.info(timeframe + ' overlay removed');
       }
+    }
+    
+    // Hide left scale if no overlays remain
+    var hasOverlays = Object.keys(this.overlaySeries).length > 0;
+    if (!hasOverlays && ChartEngine && ChartEngine.charts && ChartEngine.charts.price) {
+      try {
+        ChartEngine.charts.price.priceScale('left').applyOptions({ visible: false });
+      } catch(e) {}
     }
   },
   
@@ -4802,10 +4803,6 @@ multiTimeframeOverlay: {
     });
   }
 },
-// ============================================
-// FORCE HARD RESET - FIXES "BIG RECTANGLES" ISSUE
-// Completely destroys and recreates charts cleanly
-// ============================================
 // ============================================
 // FORCE HARD RESET - FIXES "BIG RECTANGLES" ISSUE
 // Completely destroys and recreates charts cleanly
