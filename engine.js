@@ -2100,6 +2100,10 @@ window.debugTimers = function() {
   
   return defaults;
 },
+// ============================================
+// REPLACE THIS ENTIRE METHOD IN ChartEngine
+// Line ~1030: createPriceChart() function
+// ============================================
 createPriceChart() {
   const el = document.getElementById('price-chart');
   if(!el) {
@@ -2258,6 +2262,14 @@ createPriceChart() {
       borderColor: isLightTheme ? '#d0d7de' : '#30363d',
       timeVisible: true,
       secondsVisible: false,
+	      // ============================================
+      // ADD THESE 4 LINES ↓↓↓
+      // ============================================
+      visible: true,        // ← ADD THIS
+      fixLeftEdge: true,    // ← ADD THIS
+      fixRightEdge: true,   // ← ADD THIS
+      rightOffset: 10,      // ← ADD THIS
+      // ===========================================
       tickMarkFormatter: isMobile ? function(time) {
         const date = new Date(time * 1000);
         return date.getHours().toString().padStart(2, '0') + ':' + date.getMinutes().toString().padStart(2, '0');
@@ -2341,6 +2353,7 @@ createPriceChart() {
     if (self.charts && self.charts.price) {
       const scale = self.charts.price.priceScale('right');
       if (scale) scale.applyOptions({ visible: true, borderVisible: true });
+	  self.charts.price.timeScale().applyOptions({ visible: true, timeVisible: true });
       self.charts.price.timeScale().fitContent();
     }
   }, 500);
@@ -3099,6 +3112,10 @@ removeIndicatorPane(id, name) {
 },
 	
     
+// ============================================
+// REPLACE THIS METHOD IN ChartEngine
+// Line ~1400: setupCrosshair() {
+// ============================================
 setupCrosshair() {
   const chart = this.charts.price;
   if (!chart) return;
@@ -3123,16 +3140,95 @@ setupCrosshair() {
     }
   });
   
+  // ============================================
+  // FIX #4: SYNC CROSSHAIR TO ALL PANES
+  // This makes horizontal/vertical lines follow
+  // across volume chart and indicator panes
+  // ============================================
+  const self = this;
+  
   chart.subscribeCrosshairMove((param) => {
-    if (param.point && param.time) {
-      if (DrawingEngine && typeof DrawingEngine.handleCrosshairMove === 'function') {
-        DrawingEngine.handleCrosshairMove(param);
-      }
-    } else {
-      if (DrawingEngine && typeof DrawingEngine.hideCrosshair === 'function') {
-        DrawingEngine.hideCrosshair();
-      }
+    // Update drawing engine crosshair
+    if (DrawingEngine && typeof DrawingEngine.handleCrosshairMove === 'function') {
+      DrawingEngine.handleCrosshairMove(param);
     }
+    
+    if (!param || !param.point || !param.time) {
+      // Hide crosshair on all panes
+      if (self.charts.volume) {
+        self.charts.volume.applyOptions({
+          crosshair: { mode: 0, vertLine: { visible: false }, horzLine: { visible: false } }
+        });
+      }
+      const indicatorIds = ['rsi', 'macd', 'cci', 'williamsr', 'atr', 'stoch', 'obv', 'mfi'];
+      indicatorIds.forEach(function(id) {
+        if (self.charts[id]) {
+          try {
+            self.charts[id].applyOptions({
+              crosshair: { mode: 0, vertLine: { visible: false }, horzLine: { visible: false } }
+            });
+          } catch(e) {}
+        }
+      });
+      return;
+    }
+    
+    // Get the price at the crosshair position for horizontal line
+    const priceScale = chart.priceScale('right');
+    const price = priceScale.coordinateToPrice(param.point.y);
+    
+    // Update crosshair on all panes with the same price level
+    if (self.charts.volume && self.series.volume) {
+      self.charts.volume.applyOptions({
+        crosshair: {
+          mode: 1,
+          vertLine: { color: '#8b949e', width: 1, style: 2, labelVisible: true, visible: true },
+          horzLine: { color: '#8b949e', width: 1, style: 2, labelVisible: true, visible: true }
+        }
+      });
+      // Force the horizontal line to the same price coordinate
+      try {
+        self.charts.volume.priceScale('right').applyOptions({ autoScale: true });
+      } catch(e) {}
+    }
+    
+    // Update crosshair on RSI pane
+    if (self.charts.rsi) {
+      self.charts.rsi.applyOptions({
+        crosshair: {
+          mode: 1,
+          vertLine: { color: '#8b949e', width: 1, style: 2, labelVisible: true, visible: true },
+          horzLine: { color: '#8b949e', width: 1, style: 2, labelVisible: true, visible: true }
+        }
+      });
+    }
+    
+    // Update crosshair on MACD pane
+    if (self.charts.macd) {
+      self.charts.macd.applyOptions({
+        crosshair: {
+          mode: 1,
+          vertLine: { color: '#8b949e', width: 1, style: 2, labelVisible: true, visible: true },
+          horzLine: { color: '#8b949e', width: 1, style: 2, labelVisible: true, visible: true }
+        }
+      });
+    }
+    
+    // Update crosshair on all indicator panes
+    const indicatorIds = ['cci', 'williamsr', 'atr', 'stoch', 'obv', 'mfi'];
+    indicatorIds.forEach(function(id) {
+      if (self.charts[id]) {
+        try {
+          self.charts[id].applyOptions({
+            crosshair: {
+              mode: 1,
+              vertLine: { color: '#8b949e', width: 1, style: 2, labelVisible: true, visible: true },
+              horzLine: { color: '#8b949e', width: 1, style: 2, labelVisible: true, visible: true }
+            }
+          });
+        } catch(e) {}
+      }
+    });
   });
 },
     
@@ -3495,16 +3591,17 @@ updateMain(data) {
     console.error('❌ Render failed:', e.message);
   }
 },
+
 // ============================================
-// COMPLETE REPLACEMENT: ChartEngine.updateMain()
-// NO FALLBACKS - ONLY LIVE DATA
+// REPLACE THIS METHOD IN ChartEngine
+// Line ~1380: updateChartTheme: function() {
 // ============================================
 updateChartTheme: function() {
   if (!this.charts || !this.charts.price) return;
   
   const isLightTheme = document.body.getAttribute('data-theme') === 'light';
   
-  // Update main chart theme without recreating
+  // Update main chart theme
   this.charts.price.applyOptions({
     layout: {
       background: { type: 'solid', color: isLightTheme ? '#ffffff' : '#0d1117' },
@@ -3525,23 +3622,63 @@ updateChartTheme: function() {
     }
   });
   
+  // ============================================
+  // FIX #3: UPDATE VOLUME CHART THEME
+  // ============================================
+  if (this.charts.volume) {
+    try {
+      this.charts.volume.applyOptions({
+        layout: {
+          background: { type: 'solid', color: isLightTheme ? '#ffffff' : '#0d1117' },
+          textColor: isLightTheme ? '#1f2328' : '#c9d1d9'
+        },
+        grid: {
+          vertLines: { color: isLightTheme ? '#f0f2f5' : '#21262d' },
+          horzLines: { color: isLightTheme ? '#f0f2f5' : '#21262d' }
+        },
+        rightPriceScale: {
+          borderColor: isLightTheme ? '#d0d7de' : '#30363d',
+          visible: true
+        },
+        timeScale: {
+          borderColor: isLightTheme ? '#d0d7de' : '#30363d'
+        }
+      });
+      console.log('🎨 Volume chart theme updated to', isLightTheme ? 'light' : 'dark');
+    } catch(e) {
+      console.warn('Volume chart theme update failed:', e.message);
+    }
+  }
+  
+  // Update all indicator panes
+  const indicatorIds = ['rsi', 'macd', 'cci', 'williamsr', 'atr', 'stoch', 'obv', 'mfi'];
+  indicatorIds.forEach(function(id) {
+    if (ChartEngine.charts && ChartEngine.charts[id]) {
+      try {
+        ChartEngine.charts[id].applyOptions({
+          layout: {
+            background: { type: 'solid', color: isLightTheme ? '#ffffff' : '#0d1117' },
+            textColor: isLightTheme ? '#1f2328' : '#c9d1d9'
+          },
+          grid: {
+            vertLines: { color: isLightTheme ? '#f0f2f5' : '#21262d' },
+            horzLines: { color: isLightTheme ? '#f0f2f5' : '#21262d' }
+          },
+          rightPriceScale: {
+            borderColor: isLightTheme ? '#d0d7de' : '#30363d'
+          }
+        });
+      } catch(e) {}
+    }
+  });
+  
   // Force price scale visible after theme change
   const scale = this.charts.price.priceScale('right');
   if (scale) {
     scale.applyOptions({ visible: true, borderVisible: true });
   }
   
-  // Update volume chart theme
-  if (this.charts.volume) {
-    this.charts.volume.applyOptions({
-      layout: {
-        background: { type: 'solid', color: isLightTheme ? '#ffffff' : '#0d1117' },
-        textColor: isLightTheme ? '#1f2328' : '#c9d1d9'
-      }
-    });
-  }
-  
-  console.log('🎨 Chart theme updated to', isLightTheme ? 'light' : 'dark');
+  console.log('🎨 All charts theme updated to', isLightTheme ? 'light' : 'dark');
 },
     
     calculateHeikinAshi(data) {
@@ -27637,19 +27774,23 @@ window.TradeVisionEngine = {
 console.log('🚀 TradeVision Engine loaded from Vercel');
 
 // ============================================
-// AI TRADING ASSISTANT ( - PRO/ULTIMATE only)
+// REPLACE THE ENTIRE AIAssistant OBJECT
+// Line ~11300: const AIAssistant = {
 // ============================================
 const AIAssistant = {
   messages: [],
   isProcessing: false,
   dailyCount: 0,
   dailyDate: '',
+  useLocalAnalysis: false,  // Fallback to local analysis if API fails
+  apiEndpoint: 'https://tradevision-backend.wambuamwanza6.workers.dev/api',
   
   init() {
     this.loadDailyCount();
     this.createModal();
     this.setupTriggers();
-	this.addAIChatButton(); 
+    this.addAIChatButton();
+    this.addLocalAnalysisTab();
     console.log('✅ AI Assistant ready (PRO/ULTIMATE)');
   },
   
@@ -27665,10 +27806,8 @@ const AIAssistant = {
     }
   },
   
-    getLimit() {
-    // P0 FIX: Read tier from multiple sources
+  getLimit() {
     var tier = 'free';
-    
     if (typeof UserSystem !== 'undefined' && UserSystem.subscription) {
       tier = UserSystem.subscription;
     } else {
@@ -27677,44 +27816,25 @@ const AIAssistant = {
         if (session && session.subscription) tier = session.subscription;
       } catch(e) {}
     }
-    
     if (tier === 'ultimate') return 200;
     if (tier === 'pro') return 50;
-    return 0; // FREE tier
+    return 0;
   },
   
-   canUse() {
-    // P0 FIX: Read tier directly from localStorage session as fallback
+  canUse() {
     var tier = 'free';
-    
-    // Method 1: Check UserSystem (most reliable when loaded)
     if (typeof UserSystem !== 'undefined' && UserSystem.subscription) {
       tier = UserSystem.subscription;
     }
+    try {
+      var session = JSON.parse(localStorage.getItem('tvp_session'));
+      if (session && session.subscription) tier = session.subscription;
+    } catch(e) {}
     
-    // Method 2: Fallback - read directly from localStorage session
-    if (tier === 'free') {
-      try {
-        var session = JSON.parse(localStorage.getItem('tvp_session'));
-        if (session && session.subscription) {
-          tier = session.subscription;
-        }
-      } catch(e) {}
-    }
-    
-    // Method 3: Fallback - read from current user object
-    if (tier === 'free' && typeof UserSystem !== 'undefined' && UserSystem.currentUser) {
-      tier = UserSystem.currentUser.subscription || 'free';
-    }
-    
-    console.log('🤖 AI canUse() - Detected tier:', tier);
-    
-    // FREE tier check
     if (tier === 'free' || !tier) {
       return { allowed: false, reason: 'AI Assistant requires PRO or ULTIMATE subscription.' };
     }
     
-    // Check daily limit
     var limit = this.getLimit();
     if (this.dailyCount >= limit) {
       return { allowed: false, reason: 'Daily AI limit reached (' + limit + ' requests). Resets at midnight UTC.' };
@@ -27730,20 +27850,24 @@ const AIAssistant = {
     modal.id = 'ai-assistant-modal';
     modal.className = 'modal-overlay';
     modal.innerHTML = `
-      <div class="modal-container modal-lg" style="max-width:600px;height:70vh;">
+      <div class="modal-container modal-lg" style="max-width:700px;height:75vh;display:flex;flex-direction:column;">
         <div class="modal-header" style="border-bottom:1px solid var(--border-primary);">
           <div class="modal-title">
             <span style="font-size:22px;">🤖</span>
             <div>
               <h3 style="margin:0;">AI Trading Assistant</h3>
-              <p class="modal-subtitle" id="ai-context-bar" style="margin:2px 0 0 0;">Ask about charts & indicators</p>
+              <p class="modal-subtitle" id="ai-context-bar" style="margin:2px 0 0 0;">DeepSeek AI + Local Analysis</p>
             </div>
           </div>
           <div style="display:flex;gap:6px;">
+            <div id="ai-mode-selector" style="display:flex;gap:4px;background:var(--bg-tertiary);border-radius:20px;padding:2px;">
+              <button id="ai-mode-deepseek" class="ai-mode-btn active" style="padding:4px 12px;border-radius:16px;font-size:10px;background:var(--accent-primary);color:white;border:none;cursor:pointer;">🌐 DeepSeek AI</button>
+              <button id="ai-mode-local" class="ai-mode-btn" style="padding:4px 12px;border-radius:16px;font-size:10px;background:transparent;color:var(--text-muted);border:none;cursor:pointer;">📊 Local Analysis</button>
+            </div>
             <span id="ai-usage-counter" style="font-size:9px;color:var(--text-muted);align-self:center;"></span>
             <button class="btn btn-sm btn-secondary" id="ai-clear-chat" style="font-size:10px;">Clear</button>
             <button class="modal-close" onclick="document.getElementById('ai-assistant-modal').classList.remove('visible')">✕</button>
-			<button class="btn btn-sm btn-secondary" id="ai-report-btn" style="font-size:10px;">📄 Report</button>
+            <button class="btn btn-sm btn-secondary" id="ai-report-btn" style="font-size:10px;">📄 Report</button>
           </div>
         </div>
         
@@ -27751,11 +27875,12 @@ const AIAssistant = {
           <div style="display:flex;gap:8px;">
             <span style="font-size:20px;">🤖</span>
             <div style="background:var(--bg-tertiary);padding:10px 14px;border-radius:12px;font-size:12px;color:var(--text-primary);max-width:85%;line-height:1.5;">
-              Hey! I'm your AI trading assistant. Ask me about:<br><br>
+              <strong>Welcome to TradeVision AI!</strong><br><br>
+              <span id="ai-welcome-text">I can help with:<br><br>
               📊 <b>Chart analysis</b> — trends, patterns, support/resistance<br>
               📈 <b>Indicators</b> — RSI, MACD, Bollinger Bands explained<br>
               💡 <b>Strategy</b> — entry/exit insights<br>
-              📰 <b>Market context</b> — what's driving price action
+              📰 <b>Market context</b> — what's driving price action</span>
             </div>
           </div>
         </div>
@@ -27771,6 +27896,7 @@ const AIAssistant = {
             <button class="ai-quick-btn">Explain my indicators</button>
             <button class="ai-quick-btn">Key support/resistance?</button>
             <button class="ai-quick-btn">Volume analysis</button>
+            <button class="ai-quick-btn">Generate trade setup</button>
           </div>
         </div>
       </div>
@@ -27783,20 +27909,56 @@ const AIAssistant = {
     document.head.appendChild(style);
     
     this.setupModalEvents();
+    this.setupModeSwitching();
+  },
+  
+  setupModeSwitching() {
+    var self = this;
+    var deepseekBtn = document.getElementById('ai-mode-deepseek');
+    var localBtn = document.getElementById('ai-mode-local');
+    var welcomeText = document.getElementById('ai-welcome-text');
+    
+    if (deepseekBtn && localBtn) {
+      deepseekBtn.addEventListener('click', function() {
+        self.useLocalAnalysis = false;
+        deepseekBtn.classList.add('active');
+        deepseekBtn.style.background = 'var(--accent-primary)';
+        deepseekBtn.style.color = 'white';
+        localBtn.classList.remove('active');
+        localBtn.style.background = 'transparent';
+        localBtn.style.color = 'var(--text-muted)';
+        if (welcomeText) {
+          welcomeText.innerHTML = `DeepSeek AI Mode - Ask anything about trading, crypto, stocks, or forex!<br><br>
+          I can analyze charts, explain indicators, and provide market insights based on current data.`;
+        }
+        if (typeof Toast !== 'undefined') Toast.info('Switched to DeepSeek AI mode');
+      });
+      
+      localBtn.addEventListener('click', function() {
+        self.useLocalAnalysis = true;
+        localBtn.classList.add('active');
+        localBtn.style.background = 'var(--accent-primary)';
+        localBtn.style.color = 'white';
+        deepseekBtn.classList.remove('active');
+        deepseekBtn.style.background = 'transparent';
+        deepseekBtn.style.color = 'var(--text-muted)';
+        if (welcomeText) {
+          welcomeText.innerHTML = `📊 Local Analysis Mode - Technical analysis based on current chart data.<br><br>
+          I can analyze trends, RSI, support/resistance, volume, and detect patterns without internet connection.`;
+        }
+        if (typeof Toast !== 'undefined') Toast.info('Switched to Local Analysis mode');
+      });
+    }
   },
   
   setupModalEvents() {
     var self = this;
     
-    // Send button
     document.getElementById('ai-send-btn').addEventListener('click', function() { self.send(); });
-    
-    // Enter key
     document.getElementById('ai-chat-input').addEventListener('keydown', function(e) {
       if (e.key === 'Enter') { e.preventDefault(); self.send(); }
     });
     
-    // Quick buttons
     document.querySelectorAll('.ai-quick-btn').forEach(function(btn) {
       btn.addEventListener('click', function() {
         document.getElementById('ai-chat-input').value = this.textContent;
@@ -27804,115 +27966,91 @@ const AIAssistant = {
       });
     });
     
-    // Clear chat
     document.getElementById('ai-clear-chat').addEventListener('click', function() {
       self.messages = [];
       document.getElementById('ai-messages').innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:20px;font-size:11px;">Chat cleared. Ask me anything!</div>';
     });
+    
+    document.getElementById('ai-report-btn').addEventListener('click', function() {
+      self.generateReport();
+    });
   },
   
   setupTriggers() {
-  var self = this;
+    var self = this;
+    
+    setTimeout(function() {
+      var aiBtn = document.getElementById('ai-assist-btn');
+      if (aiBtn) {
+        var newBtn = aiBtn.cloneNode(true);
+        aiBtn.parentNode.replaceChild(newBtn, aiBtn);
+        
+        newBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          self.open();
+        });
+        console.log('✅ AI button click handler attached');
+      }
+    }, 1000);
+    
+    setTimeout(function() {
+      var mobileAiBtn = document.getElementById('mobile-ai-btn');
+      if (mobileAiBtn) {
+        var newMobileBtn = mobileAiBtn.cloneNode(true);
+        mobileAiBtn.parentNode.replaceChild(newMobileBtn, mobileAiBtn);
+        
+        newMobileBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          self.open();
+          var sheet = document.getElementById('mobile-bottom-sheet');
+          if (sheet) sheet.style.transform = 'translateY(calc(100% - 52px))';
+        });
+      }
+    }, 1000);
+  },
   
-  // ============================================
-  // DIRECT HANDLER FOR EXISTING AI BUTTON
-  // ============================================
-  setTimeout(function() {
-    var aiBtn = document.getElementById('ai-assist-btn');
-    if (aiBtn) {
-      // Remove any existing listeners by cloning
-      var newBtn = aiBtn.cloneNode(true);
-      aiBtn.parentNode.replaceChild(newBtn, aiBtn);
-      
-      newBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        console.log('🤖 AI button clicked - opening modal');
-        self.open();
-      });
-      console.log('✅ AI button click handler attached');
-    } else {
-      console.warn('⚠️ AI button not found in DOM, will retry...');
-      // Retry after delay
-      setTimeout(arguments.callee, 500);
-    }
-  }, 1000);
-  
-  // ============================================
-  // ALSO HANDLE MOBILE AI BUTTON
-  // ============================================
-  setTimeout(function() {
-    var mobileAiBtn = document.getElementById('mobile-ai-btn');
-    if (mobileAiBtn) {
-      var newMobileBtn = mobileAiBtn.cloneNode(true);
-      mobileAiBtn.parentNode.replaceChild(newMobileBtn, mobileAiBtn);
-      
-      newMobileBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        console.log('🤖 Mobile AI button clicked');
-        self.open();
-        // Close the bottom sheet
-        var sheet = document.getElementById('mobile-bottom-sheet');
-        if (sheet) sheet.style.transform = 'translateY(calc(100% - 52px))';
-      });
-      console.log('✅ Mobile AI button click handler attached');
-    }
-  }, 1000);
-},
+  addLocalAnalysisTab() {
+    // This is handled by mode switching now
+  },
   
   open() {
-  console.log('🤖 AI Assistant open() called');
-  
-  var check = this.canUse();
-  console.log('🤖 canUse() result:', check);
-  
-  if (!check.allowed) {
-    console.warn('🤖 AI access denied:', check.reason);
+    console.log('🤖 AI Assistant open() called');
     
-    var tier = 'free';
-    try {
-      var session = JSON.parse(localStorage.getItem('tvp_session'));
-      if (session && session.subscription) tier = session.subscription;
-    } catch(e) {}
-    if (typeof UserSystem !== 'undefined' && UserSystem.subscription) {
-      tier = UserSystem.subscription;
+    var check = this.canUse();
+    if (!check.allowed) {
+      var tier = 'free';
+      try {
+        var session = JSON.parse(localStorage.getItem('tvp_session'));
+        if (session && session.subscription) tier = session.subscription;
+      } catch(e) {}
+      
+      if (tier === 'free') {
+        var upgradeModal = document.getElementById('upgrade-modal');
+        if (upgradeModal) upgradeModal.classList.add('visible');
+      } else {
+        if (typeof Toast !== 'undefined') Toast.warning('Daily AI limit reached. ' + this.dailyCount + '/' + this.getLimit());
+      }
+      return;
     }
     
-    if (tier === 'free') {
-      var upgradeModal = document.getElementById('upgrade-modal');
-      if (upgradeModal) {
-        upgradeModal.classList.add('visible');
-        console.log('📢 Showing upgrade modal for free user');
-      }
+    var modal = document.getElementById('ai-assistant-modal');
+    if (modal) {
+      modal.classList.add('visible');
+      this.updateContext();
+      this.updateUsageCounter();
+      setTimeout(function() {
+        var input = document.getElementById('ai-chat-input');
+        if (input) input.focus();
+      }, 300);
     } else {
-      console.log('🔔 Daily limit reached for ' + tier + ' user');
-      if (typeof Toast !== 'undefined') {
-        Toast.warning('Daily AI limit reached. ' + this.dailyCount + '/' + this.getLimit());
-      }
+      this.createModal();
+      setTimeout(function() {
+        document.getElementById('ai-assistant-modal').classList.add('visible');
+      }, 100);
     }
-    return;
-  }
-  
-  var modal = document.getElementById('ai-assistant-modal');
-  if (modal) {
-    modal.classList.add('visible');
-    this.updateContext();
-    this.updateUsageCounter();
-    console.log('✅ AI modal opened');
-    setTimeout(function() {
-      var input = document.getElementById('ai-chat-input');
-      if (input) input.focus();
-    }, 300);
-  } else {
-    console.error('❌ AI modal element #ai-assistant-modal not found in DOM');
-    // Create modal if it doesn't exist
-    this.createModal();
-    setTimeout(function() {
-      document.getElementById('ai-assistant-modal').classList.add('visible');
-    }, 100);
-  }
-},
+  },
   
   updateContext() {
     var bar = document.getElementById('ai-context-bar');
@@ -27921,7 +28059,7 @@ const AIAssistant = {
     var price = STATE.currentPrice ? '$' + U.formatPrice(STATE.currentPrice) : '--';
     var change = STATE.change24h !== null ? (STATE.change24h >= 0 ? '+' : '') + STATE.change24h.toFixed(2) + '%' : '--';
     var inds = STATE.activeIndicators.size > 0 ? Array.from(STATE.activeIndicators).join(', ') : 'None';
-    bar.textContent = sym + ' | ' + price + ' (' + change + ') | ' + STATE.interval + ' | ' + inds;
+    bar.textContent = (this.useLocalAnalysis ? '📊 LOCAL MODE · ' : '🌐 DEEPSEEK · ') + sym + ' | ' + price + ' (' + change + ') | ' + STATE.interval + ' | ' + inds;
   },
   
   updateUsageCounter() {
@@ -27960,113 +28098,102 @@ const AIAssistant = {
     messagesEl.appendChild(typingDiv);
     messagesEl.scrollTop = messagesEl.scrollHeight;
     
-    // ============================================
-// AI ASSISTANT SEND METHOD - INSTITUTIONAL GRADE
-// Place this between "this.isProcessing = true;" and "try {" 
-// ============================================
-
-this.isProcessing = true;
-
-try {
-  var systemPrompt = this.buildSystemPrompt();
-  this.messages.push({ role: 'user', content: text });
-  
-  var allMessages = [{ role: 'system', content: systemPrompt }].concat(this.messages.slice(-8));
-  
-  // ============================================
-  // MULTI-BACKEND AI CALL WITH FALLBACK
-  // ============================================
-  const apiBase = (window.TRADEVISION_CONFIG && window.TRADEVISION_CONFIG.API_URL) 
-    || 'https://tradevision-backend.wambuamwanza6.workers.dev/api';
-  
-  // Try primary backend first
-  let aiResponse = null;
-  let lastError = null;
-  
-  // Backend list for failover
-  const backends = [
-    apiBase,
-    'https://tradevision-backup.wambuamwanza6.workers.dev',
-    'https://tradevision-backend.wambuamwanza6.workers.dev/api',
-  ];
-  
-  for (const backend of backends) {
+    this.isProcessing = true;
+    
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000);
+      var aiResponse;
       
-      const res = await fetch(`${backend}/proxy?endpoint=deepseek`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: allMessages }),
-        signal: controller.signal
-      });
-      
-      clearTimeout(timeoutId);
-      
-      if (res.ok) {
-        const data = await res.json();
-        aiResponse = data.choices?.[0]?.message?.content;
-        if (aiResponse) {
-          console.log(`✅ AI response from: ${backend}`);
-          // Save working backend for future requests
-          sessionStorage.setItem('working_ai_backend', backend);
-          break;
+      if (this.useLocalAnalysis) {
+        // Use local chart analysis (works offline)
+        aiResponse = this.analyzeLocalChartWithQuery(text);
+      } else {
+        // Use DeepSeek API via backend
+        var systemPrompt = this.buildSystemPrompt();
+        this.messages.push({ role: 'user', content: text });
+        
+        var allMessages = [{ role: 'system', content: systemPrompt }].concat(this.messages.slice(-8));
+        
+        // Try multiple backends
+        const backends = [
+          this.apiEndpoint,
+          'https://tradevision-backend.wambuamwanza6.workers.dev/api',
+        ];
+        
+        var response = null;
+        for (const backend of backends) {
+          try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 15000);
+            
+            const res = await fetch(`${backend}/proxy?endpoint=deepseek`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ messages: allMessages }),
+              signal: controller.signal
+            });
+            
+            clearTimeout(timeoutId);
+            
+            if (res.ok) {
+              const data = await res.json();
+              response = data.choices?.[0]?.message?.content;
+              if (response) break;
+            }
+          } catch (err) {
+            console.warn(`AI backend failed: ${backend}`, err.message);
+          }
+        }
+        
+        if (!response) {
+          // Fallback to local analysis if API fails
+          aiResponse = this.analyzeLocalChartWithQuery(text);
+          aiResponse = "⚠️ DeepSeek API temporarily unavailable. Using local analysis instead:\n\n" + aiResponse;
+        } else {
+          aiResponse = response;
+          this.messages.push({ role: 'assistant', content: aiResponse });
         }
       }
-    } catch (err) {
-      lastError = err;
-      console.warn(`⚠️ AI backend failed: ${backend}`, err.message);
-      continue;
+      
+      // Remove typing indicator
+      var typing = document.getElementById('ai-typing');
+      if (typing) typing.remove();
+      
+      // Increment counter
+      this.dailyCount++;
+      localStorage.setItem('tvp_ai_count', this.dailyCount);
+      this.updateUsageCounter();
+      
+      // Add assistant message to UI
+      var aiDiv = document.createElement('div');
+      aiDiv.style.cssText = 'display:flex;gap:8px;margin-bottom:10px;';
+      aiDiv.innerHTML = '<span style="font-size:20px;">🤖</span><div style="background:var(--bg-tertiary);padding:10px 14px;border-radius:12px;font-size:12px;color:var(--text-primary);max-width:85%;line-height:1.6;">' + 
+        aiResponse.replace(/\*\*(.*?)\*\*/g,'<b>$1</b>').replace(/\n/g,'<br>') + 
+        '</div>';
+      messagesEl.appendChild(aiDiv);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+      
+      if (this.messages.length > 16) this.messages = this.messages.slice(-8);
+      
+    } catch(e) {
+      var typing = document.getElementById('ai-typing');
+      if (typing) typing.remove();
+      
+      var errDiv = document.createElement('div');
+      errDiv.style.cssText = 'display:flex;gap:8px;margin-bottom:10px;';
+      errDiv.innerHTML = '<span style="font-size:20px;">⚠️</span><div style="background:var(--danger-muted);padding:10px 14px;border-radius:12px;font-size:12px;color:var(--danger);">' +
+        'AI service temporarily unavailable. Please try again in a few moments.' +
+        '</div>';
+      document.getElementById('ai-messages').appendChild(errDiv);
+      console.error('AI error:', e.message);
     }
-  }
+    
+    this.isProcessing = false;
+  },
   
-  // Remove typing indicator
-  var typing = document.getElementById('ai-typing');
-  if (typing) typing.remove();
-  
-  // Check if we got a response
-  if (!aiResponse) {
-    throw new Error(lastError || 'No AI response received');
-  }
-  
-  // Add to messages
-  this.messages.push({ role: 'assistant', content: aiResponse });
-  
-  // Increment counter
-  this.dailyCount++;
-  localStorage.setItem('tvp_ai_count', this.dailyCount);
-  this.updateUsageCounter();
-  
-  // Add assistant message to UI
-  var messagesEl = document.getElementById('ai-messages');
-  var aiDiv = document.createElement('div');
-  aiDiv.style.cssText = 'display:flex;gap:8px;margin-bottom:10px;';
-  aiDiv.innerHTML = '<span style="font-size:20px;">🤖</span><div style="background:var(--bg-tertiary);padding:10px 14px;border-radius:12px;font-size:12px;color:var(--text-primary);max-width:85%;line-height:1.6;">' + 
-    aiResponse.replace(/\*\*(.*?)\*\*/g,'<b>$1</b>').replace(/\n/g,'<br>') + 
-    '</div>';
-  messagesEl.appendChild(aiDiv);
-  messagesEl.scrollTop = messagesEl.scrollHeight;
-  
-  if (this.messages.length > 16) this.messages = this.messages.slice(-8);
-  
-} catch(e) {
-  // Remove typing indicator
-  var typing = document.getElementById('ai-typing');
-  if (typing) typing.remove();
-  
-  // Show user-friendly error
-  var errDiv = document.createElement('div');
-  errDiv.style.cssText = 'display:flex;gap:8px;margin-bottom:10px;';
-  errDiv.innerHTML = '<span style="font-size:20px;">⚠️</span><div style="background:var(--danger-muted);padding:10px 14px;border-radius:12px;font-size:12px;color:var(--danger);">' +
-    'AI service temporarily unavailable. Please try again in a few moments.' +
-    '</div>';
-  document.getElementById('ai-messages').appendChild(errDiv);
-  
-  console.error('AI error:', e.message);
-}
-
-this.isProcessing = false;
+  analyzeLocalChartWithQuery(query) {
+    var analysis = this.analyzeLocalChart();
+    // Return the full analysis since it's comprehensive
+    return analysis;
   },
   
   buildSystemPrompt() {
@@ -28077,107 +28204,9 @@ this.isProcessing = false;
     var candleStr = last ? 'O=' + U.formatPrice(last.open) + ' H=' + U.formatPrice(last.high) + ' L=' + U.formatPrice(last.low) + ' C=' + U.formatPrice(last.close) : '';
     var inds = STATE.activeIndicators.size > 0 ? Array.from(STATE.activeIndicators).join(', ') : 'None';
     
-    return 'You are a crypto trading assistant in TradeVision Pro. Be concise (2-3 paragraphs max). Current data: ' + sym + ' at $' + price + ' (' + change + '), ' + STATE.interval + ' timeframe. Latest candle: ' + candleStr + '. Active indicators: ' + inds + '. Include: this is not financial advice.';
+    return 'You are a professional crypto/stocks/forex trading assistant in TradeVision Pro. Be concise (2-3 paragraphs max). Current data: ' + sym + ' at $' + price + ' (' + change + '), ' + STATE.interval + ' timeframe. Latest candle: ' + candleStr + '. Active indicators: ' + inds + '. Provide actionable trading insights. Include: this is not financial advice.';
   },
-	// ============================================
-// PRIORITY #9: PDF REPORT GENERATION
-// ============================================
-async generateReport() {
-  if (!this.messages || this.messages.length === 0) {
-    if (typeof Toast !== 'undefined') Toast.warning('Ask the AI something first to generate a report');
-    return;
-  }
   
-  if (typeof Toast !== 'undefined') Toast.info('📄 Generating report...');
-  
-  try {
-    // Collect report data
-    var lastAiMessage = '';
-    for (var i = this.messages.length - 1; i >= 0; i--) {
-      if (this.messages[i].role === 'assistant') {
-        lastAiMessage = this.messages[i].content;
-        break;
-      }
-    }
-    
-    var symbol = STATE.symbol.replace('USDT', '/USDT');
-    var price = STATE.currentPrice ? '$' + U.formatPrice(STATE.currentPrice) : 'N/A';
-    var change = STATE.change24h !== null ? (STATE.change24h >= 0 ? '+' : '') + STATE.change24h.toFixed(2) + '%' : 'N/A';
-    var activeInds = activeIndicators.size > 0 ? Array.from(activeIndicators).join(', ') : 'None';
-    var interval = STATE.interval;
-    
-    // Capture chart screenshot
-    var chartCanvas = document.querySelector('#main-chart-pane canvas');
-    var chartImage = '';
-    if (chartCanvas) {
-      chartImage = chartCanvas.toDataURL('image/png');
-    }
-    
-    // Build report HTML
-    var reportHTML = 
-      '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>TradeVision Report - ' + symbol + '</title>' +
-      '<style>body{font-family:Arial,sans-serif;max-width:800px;margin:0 auto;padding:20px;color:#333;}' +
-      'h1{color:#1a73e8;border-bottom:2px solid #1a73e8;padding-bottom:10px;}' +
-      '.section{margin:20px 0;padding:15px;background:#f5f5f5;border-radius:8px;}' +
-      '.label{font-weight:bold;color:#666;font-size:12px;}' +
-      '.value{font-size:16px;color:#333;}' +
-      'img{max-width:100%;border:1px solid #ddd;border-radius:4px;}' +
-      '.disclaimer{font-size:11px;color:#999;margin-top:30px;border-top:1px solid #ddd;padding-top:15px;}' +
-      '</style></head><body>' +
-      '<h1>📊 TradeVision Pro - Trading Report</h1>' +
-      '<p style="color:#666;">Generated: ' + new Date().toLocaleString() + '</p>' +
-      '<div class="section">' +
-        '<h3>📈 Market Overview</h3>' +
-        '<table style="width:100%;">' +
-          '<tr><td class="label">Symbol:</td><td class="value">' + symbol + '</td></tr>' +
-          '<tr><td class="label">Current Price:</td><td class="value" style="color:' + (STATE.change24h >= 0 ? '#26a69a' : '#ef5350') + ';">' + price + ' (' + change + ')</td></tr>' +
-          '<tr><td class="label">Timeframe:</td><td class="value">' + interval + '</td></tr>' +
-          '<tr><td class="label">Active Indicators:</td><td class="value">' + activeInds + '</td></tr>' +
-        '</table>' +
-      '</div>' +
-      (chartImage ? '<div class="section"><h3>📉 Chart Screenshot</h3><img src="' + chartImage + '" alt="Chart"/></div>' : '') +
-      '<div class="section">' +
-        '<h3>🤖 AI Analysis</h3>' +
-        '<p style="line-height:1.6;">' + lastAiMessage.replace(/\n/g, '<br>') + '</p>' +
-      '</div>' +
-      '<div class="disclaimer">' +
-        '<strong>⚠️ Disclaimer:</strong> This report is generated by AI and is for informational purposes only. ' +
-        'It does not constitute financial advice. Trading cryptocurrencies involves substantial risk of loss. ' +
-        'Past performance is not indicative of future results. Always do your own research before trading.' +
-      '</div>' +
-      '</body></html>';
-    
-    // Open in new window for printing
-    var reportWindow = window.open('', '_blank', 'width=900,height=700');
-    reportWindow.document.write(reportHTML);
-    reportWindow.document.close();
-    
-    // Also trigger download
-    setTimeout(() => {
-      var blob = new Blob([reportHTML], { type: 'text/html' });
-      var url = URL.createObjectURL(blob);
-      var a = document.createElement('a');
-      a.href = url;
-      a.download = 'TradeVision_Report_' + symbol.replace('/', '_') + '_' + new Date().toISOString().slice(0,10) + '.html';
-      a.click();
-      URL.revokeObjectURL(url);
-    }, 500);
-    
-    if (typeof Toast !== 'undefined') Toast.success('✅ Report generated!');
-    
-  } catch(e) {
-    console.error('Report generation error:', e);
-    if (typeof Toast !== 'undefined') Toast.error('Failed to generate report');
-  }
-},
-	// ============================================
-// ADD THESE METHODS TO YOUR EXISTING AIAssistant
-// Place them before the final closing } of AIAssistant
-// ============================================
-
-  // ============================================
-  // LOCAL CHART ANALYSIS (No API call)
-  // ============================================
   analyzeLocalChart: function() {
     var candles = STATE.candles;
     if (!candles || candles.length < 30) {
@@ -28190,9 +28219,7 @@ async generateReport() {
     var symbol = STATE.symbol.replace('USDT', '/USDT');
     var interval = STATE.interval;
     
-    // ============================================
     // 1. TREND ANALYSIS
-    // ============================================
     var sma20 = this._calcSMA(closes, 20);
     var sma50 = this._calcSMA(closes, 50);
     var sma200 = this._calcSMA(closes, Math.min(200, closes.length));
@@ -28219,9 +28246,7 @@ async generateReport() {
       trendDesc = "Mixed signals. Price is consolidating. Wait for breakout.";
     }
     
-    // ============================================
     // 2. MOMENTUM (RSI)
-    // ============================================
     var rsi = this._calcRSI(closes, 14);
     var rsiStatus = "";
     var rsiAdvice = "";
@@ -28245,18 +28270,14 @@ async generateReport() {
       rsiAdvice = "Negative pressure. Downtrend likely to continue.";
     }
     
-    // ============================================
     // 3. SUPPORT & RESISTANCE
-    // ============================================
     var levels = this._findKeyLevels(candles);
     var nearestSupport = levels.support.length > 0 ? levels.support[0] : null;
     var nearestResistance = levels.resistance.length > 0 ? levels.resistance[0] : null;
     var supportDistance = nearestSupport ? ((currentPrice - nearestSupport) / currentPrice * 100).toFixed(2) : null;
     var resistanceDistance = nearestResistance ? ((nearestResistance - currentPrice) / currentPrice * 100).toFixed(2) : null;
     
-    // ============================================
     // 4. VOLUME ANALYSIS
-    // ============================================
     var volumes = candles.map(function(c) { return c.volume; });
     var avgVolume = this._calcSMA(volumes, 20);
     var lastVolume = volumes[volumes.length - 1];
@@ -28272,22 +28293,16 @@ async generateReport() {
       volumeStatus = "📈 NORMAL VOLUME - Stable conditions";
     }
     
-    // ============================================
     // 5. VOLATILITY (ATR)
-    // ============================================
     var atr = this._calcATR(candles, 14);
     var atrPercent = (atr / currentPrice * 100).toFixed(2);
     var volatilityStatus = atrPercent > 3 ? "HIGH VOLATILITY" : (atrPercent < 1 ? "LOW VOLATILITY" : "NORMAL VOLATILITY");
     
-    // ============================================
     // 6. PATTERN DETECTION
-    // ============================================
     var patterns = this._detectPatterns(candles);
     var patternText = patterns.length > 0 ? patterns.map(function(p) { return "• " + p.name + " (" + p.type + "): " + p.description; }).join("\n") : "No significant patterns detected";
     
-    // ============================================
     // 7. GENERATE RECOMMENDATION
-    // ============================================
     var recommendation = this._generateRecommendation({
       trend: trend,
       rsi: rsi,
@@ -28297,12 +28312,10 @@ async generateReport() {
       priceAboveMA50: priceAbove50
     });
     
-    // ============================================
     // 8. BUILD COMPLETE REPORT
-    // ============================================
     var report = "";
     report += "╔═══════════════════════════════════════════════════════════════════════╗\n";
-    report += "║                    🤖 AI CHART ANALYSIS REPORT                        ║\n";
+    report += "║                    📊 AI CHART ANALYSIS REPORT                        ║\n";
     report += "╠═══════════════════════════════════════════════════════════════════════╣\n";
     report += "║                                                                       ║\n";
     report += "║  📊 SYMBOL: " + symbol.padEnd(55) + "║\n";
@@ -28345,19 +28358,14 @@ async generateReport() {
     if (recommendation.riskReward) report += "║     Risk:Reward: 1:" + recommendation.riskReward.padEnd(48) + "║\n";
     report += "║                                                                       ║\n";
     report += "╠═══════════════════════════════════════════════════════════════════════╣\n";
-    report += "║  ⚠️ DISCLAIMER: This analysis is generated by AI using technical      ║\n";
-    report += "║  indicators and is for informational purposes only. Always do your   ║\n";
-    report += "║  own research and manage your risk. Never trade more than you can    ║\n";
-    report += "║  afford to lose.                                                      ║\n";
+    report += "║  ⚠️ DISCLAIMER: This analysis is for informational purposes only.    ║\n";
+    report += "║  Always do your own research and manage your risk.                   ║\n";
     report += "╚═══════════════════════════════════════════════════════════════════════╝";
     
     return report;
   },
   
-  // ============================================
-  // HELPER METHODS FOR CHART ANALYSIS
-  // ============================================
-  
+  // Helper methods
   _calcSMA: function(data, period) {
     if (data.length < period) return data[data.length - 1] || 0;
     var sum = 0;
@@ -28419,9 +28427,7 @@ async generateReport() {
     
     var currentPrice = candles[candles.length - 1].close;
     
-    // Find nearest support (below price)
     var supports = groupedLows.filter(function(l) { return l < currentPrice; }).sort(function(a, b) { return b - a; });
-    // Find nearest resistance (above price)
     var resistances = groupedHighs.filter(function(h) { return h > currentPrice; }).sort(function(a, b) { return a - b; });
     
     return {
@@ -28462,23 +28468,18 @@ async generateReport() {
     var lowerWick = Math.min(last.open, last.close) - last.low;
     var upperWick = last.high - Math.max(last.open, last.close);
     
-    // Doji
     if (range > 0 && bodySize / range < 0.1) {
       patterns.push({ name: "Doji", type: "neutral", description: "Indecision - potential reversal" });
     }
-    // Hammer
     if (lowerWick > bodySize * 2 && upperWick < bodySize) {
       patterns.push({ name: "Hammer", type: "bullish", description: "Potential bottom reversal" });
     }
-    // Shooting Star
     if (upperWick > bodySize * 2 && lowerWick < bodySize) {
       patterns.push({ name: "Shooting Star", type: "bearish", description: "Potential top reversal" });
     }
-    // Bullish Engulfing
     if (last.close > last.open && prev.close < prev.open && last.close > prev.open && last.open < prev.close) {
       patterns.push({ name: "Bullish Engulfing", type: "bullish", description: "Strong buying pressure" });
     }
-    // Bearish Engulfing
     if (last.close < last.open && prev.close > prev.open && last.close < prev.open && last.open > prev.close) {
       patterns.push({ name: "Bearish Engulfing", type: "bearish", description: "Strong selling pressure" });
     }
@@ -28490,13 +28491,11 @@ async generateReport() {
     var score = 50;
     var reasons = [];
     
-    // Trend contribution
     if (data.trend === "🟢 STRONG BULLISH") { score += 25; reasons.push("Strong bullish trend"); }
     else if (data.trend === "🟢 BULLISH") { score += 15; reasons.push("Bullish trend"); }
     else if (data.trend === "🔴 STRONG BEARISH") { score -= 25; reasons.push("Strong bearish trend"); }
     else if (data.trend === "🔴 BEARISH") { score -= 15; reasons.push("Bearish trend"); }
     
-    // RSI contribution
     if (data.rsi < 25) { score += 15; reasons.push("Extreme oversold - bounce likely"); }
     else if (data.rsi < 35) { score += 10; reasons.push("Oversold conditions"); }
     else if (data.rsi > 75) { score -= 15; reasons.push("Extreme overbought - pullback likely"); }
@@ -28504,7 +28503,6 @@ async generateReport() {
     else if (data.rsi > 55) { score += 5; reasons.push("Bullish momentum"); }
     else if (data.rsi < 45) { score -= 5; reasons.push("Bearish momentum"); }
     
-    // Volume contribution
     if (data.volumeRatio > 2) {
       if (score > 50) { score += 10; reasons.push("Volume spike confirms move"); }
       else { score -= 10; reasons.push("Volume spike confirms selling"); }
@@ -28513,7 +28511,6 @@ async generateReport() {
       else score -= 5;
     }
     
-    // Pattern contribution
     for (var i = 0; i < data.patterns.length; i++) {
       if (data.patterns[i].type === "bullish") { score += 10; reasons.push(data.patterns[i].name + " pattern detected"); }
       else if (data.patterns[i].type === "bearish") { score -= 10; reasons.push(data.patterns[i].name + " pattern detected"); }
@@ -28588,68 +28585,109 @@ async generateReport() {
     return p.toFixed(8);
   },
   
-  // ============================================
-  // SEND ANALYSIS TO CHAT (Modified for your chat system)
-  // ============================================
-  sendAnalysisToChat: function() {
-    var analysis = this.analyzeLocalChart();
-    
-    // Try to send to your existing chat system
-    var container = document.getElementById('chat-messages');
-    if (container) {
-      var aiDiv = document.createElement('div');
-      aiDiv.style.cssText = 'display:flex;gap:8px;margin-bottom:10px;';
-      aiDiv.innerHTML = '<span style="font-size:20px;">🤖</span>' +
-        '<div style="background:linear-gradient(135deg,rgba(88,166,255,0.1),rgba(155,108,255,0.05));padding:12px 16px;border-radius:12px;font-size:11px;color:var(--text-primary);max-width:90%;line-height:1.5;border-left:3px solid #9b6cff;font-family:monospace;white-space:pre-wrap;">' + 
-        analysis.replace(/\n/g, '<br>') + 
-        '</div>';
-      container.appendChild(aiDiv);
-      container.scrollTop = container.scrollHeight;
-    }
-    
-    // Also show toast notification
-    if (typeof ProToast !== 'undefined') {
-      ProToast.ai('Chart analysis complete! Check the chat for full report.', 4000);
-    } else if (typeof Toast !== 'undefined') {
-      Toast.success('🤖 AI Analysis: Check the chat for complete report!');
-    }
-  },
-  
-  // ============================================
-  // ADD AI BUTTON TO CHAT (Desktop + Mobile)
-  // ============================================
   addAIChatButton: function() {
     var self = this;
     setTimeout(function() {
-      // Desktop chat modal
       var chatHeader = document.querySelector('#community-modal .modal-header');
       if (chatHeader && !document.getElementById('ai-chat-analysis-btn')) {
         var aiBtn = document.createElement('button');
         aiBtn.id = 'ai-chat-analysis-btn';
         aiBtn.className = 'modal-action-btn';
-        aiBtn.setAttribute('data-tooltip', 'Analyze Current Chart (Local AI)');
+        aiBtn.setAttribute('data-tooltip', 'Analyze Current Chart');
         aiBtn.innerHTML = '<i class="fas fa-robot" style="color:#9b6cff;"></i>';
         aiBtn.style.cssText = 'margin-left:auto;margin-right:8px;';
         aiBtn.addEventListener('click', function() {
-          self.sendAnalysisToChat();
+          self.open();
         });
         chatHeader.appendChild(aiBtn);
       }
-      
-      // Mobile chat
-      var mobileChatHeader = document.querySelector('#community-modal .mobile-chat-header');
-      if (mobileChatHeader && !document.getElementById('mobile-ai-chat-btn')) {
-        var mobAiBtn = document.createElement('button');
-        mobAiBtn.id = 'mobile-ai-chat-btn';
-        mobAiBtn.innerHTML = '<i class="fas fa-robot"></i> Analyze';
-        mobAiBtn.style.cssText = 'padding:6px 12px;background:#9b6cff;color:white;border:none;border-radius:6px;font-size:10px;margin-left:auto;cursor:pointer;';
-        mobAiBtn.addEventListener('click', function() {
-          self.sendAnalysisToChat();
-        });
-        mobileChatHeader.appendChild(mobAiBtn);
-      }
     }, 2000);
   },
+  
+  async generateReport() {
+    if (!this.messages || this.messages.length === 0) {
+      if (typeof Toast !== 'undefined') Toast.warning('Ask the AI something first to generate a report');
+      return;
+    }
+    
+    if (typeof Toast !== 'undefined') Toast.info('📄 Generating report...');
+    
+    try {
+      var lastAiMessage = '';
+      for (var i = this.messages.length - 1; i >= 0; i--) {
+        if (this.messages[i].role === 'assistant') {
+          lastAiMessage = this.messages[i].content;
+          break;
+        }
+      }
+      
+      var symbol = STATE.symbol.replace('USDT', '/USDT');
+      var price = STATE.currentPrice ? '$' + U.formatPrice(STATE.currentPrice) : 'N/A';
+      var change = STATE.change24h !== null ? (STATE.change24h >= 0 ? '+' : '') + STATE.change24h.toFixed(2) + '%' : 'N/A';
+      var activeInds = STATE.activeIndicators.size > 0 ? Array.from(STATE.activeIndicators).join(', ') : 'None';
+      var interval = STATE.interval;
+      
+      var chartCanvas = document.querySelector('#main-chart-pane canvas');
+      var chartImage = '';
+      if (chartCanvas) {
+        chartImage = chartCanvas.toDataURL('image/png');
+      }
+      
+      var reportHTML = 
+        '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>TradeVision Report - ' + symbol + '</title>' +
+        '<style>' +
+          'body{font-family:Arial,sans-serif;max-width:800px;margin:0 auto;padding:20px;color:#333;}' +
+          'h1{color:#1a73e8;border-bottom:2px solid #1a73e8;padding-bottom:10px;}' +
+          '.section{margin:20px 0;padding:15px;background:#f5f5f5;border-radius:8px;}' +
+          '.label{font-weight:bold;color:#666;font-size:12px;}' +
+          '.value{font-size:16px;color:#333;}' +
+          'img{max-width:100%;border:1px solid #ddd;border-radius:4px;}' +
+          '.disclaimer{font-size:11px;color:#999;margin-top:30px;border-top:1px solid #ddd;padding-top:15px;}' +
+        '</style></head><body>' +
+        '<h1>📊 TradeVision Pro - Trading Report</h1>' +
+        '<p style="color:#666;">Generated: ' + new Date().toLocaleString() + '</p>' +
+        '<div class="section">' +
+          '<h3>📈 Market Overview</h3>' +
+          '<table style="width:100%;">' +
+            '<tr><td class="label">Symbol:</td><td class="value">' + symbol + '</td></tr>' +
+            '<tr><td class="label">Current Price:</td><td class="value" style="color:' + (STATE.change24h >= 0 ? '#26a69a' : '#ef5350') + ';">' + price + ' (' + change + ')</td></tr>' +
+            '<tr><td class="label">Timeframe:</td><td class="value">' + interval + '</td></tr>' +
+            '<tr><td class="label">Active Indicators:</td><td class="value">' + activeInds + '</td></tr>' +
+          '</table>' +
+        '</div>' +
+        (chartImage ? '<div class="section"><h3>📉 Chart Screenshot</h3><img src="' + chartImage + '" alt="Chart"/></div>' : '') +
+        '<div class="section">' +
+          '<h3>🤖 AI Analysis</h3>' +
+          '<p style="line-height:1.6;">' + lastAiMessage.replace(/\n/g, '<br>') + '</p>' +
+        '</div>' +
+        '<div class="disclaimer">' +
+          '<strong>⚠️ Disclaimer:</strong> This report is generated by AI and is for informational purposes only. ' +
+          'It does not constitute financial advice. Trading involves substantial risk of loss. ' +
+          'Always do your own research before trading.' +
+        '</div>' +
+        '</body></html>';
+      
+      var reportWindow = window.open('', '_blank', 'width=900,height=700');
+      if (reportWindow) {
+        reportWindow.document.write(reportHTML);
+        reportWindow.document.close();
+      }
+      
+      var blob = new Blob([reportHTML], { type: 'text/html' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'TradeVision_Report_' + symbol.replace('/', '_') + '_' + new Date().toISOString().slice(0,10) + '.html';
+      a.click();
+      URL.revokeObjectURL(url);
+      
+      if (typeof Toast !== 'undefined') Toast.success('✅ Report generated!');
+      
+    } catch(e) {
+      console.error('Report generation error:', e);
+      if (typeof Toast !== 'undefined') Toast.error('Failed to generate report');
+    }
+  }
 };
 
 // ============================================
