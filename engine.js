@@ -28155,7 +28155,7 @@ async generateReport() {
     console.error('Report generation error:', e);
     if (typeof Toast !== 'undefined') Toast.error('Failed to generate report');
   }
-}
+},
 	// ============================================
 // ADD THESE METHODS TO YOUR EXISTING AIAssistant
 // Place them before the final closing } of AIAssistant
