@@ -2028,6 +2028,8 @@ window.debugTimers = function() {
       this.setupCrosshair();
       this.setupZoomHandlers();
 	  VolumeProfileEngine.init();
+		this.barReplay.init();
+		this.multiTimeframeOverlay.init();
 	  _lastChartType: null,
       console.log('✅ All charts created');
     },
@@ -4151,7 +4153,655 @@ removeAllOverlays() {
       DrawingEngine.resizeCanvas();
     }
   },
+// ============================================
+// CODE A: BAR REPLAY SYSTEM - Insert between resizeAll() and forceHardReset()
+// ============================================
 
+// ============================================
+// INSTITUTIONAL BAR REPLAY MODULE
+// Allows traders to replay historical price action candle by candle
+// Essential for backtesting strategies in real-time
+// ============================================
+
+barReplay: {
+  enabled: false,
+  isPlaying: false,
+  currentIndex: null,
+  intervalId: null,
+  speed: 1000, // ms per bar (1x)
+  originalCandles: [],
+  originalVolume: [],
+  originalIndicators: {},
+  controlPanel: null,
+  speedOptions: [500, 1000, 2000, 3000, 5000],
+  
+  // Initialize replay system
+  init() {
+    this.createControlPanel();
+    this.addReplayButton();
+    console.log('✅ Bar Replay System initialized');
+  },
+  
+  // Create the replay control panel UI
+  createControlPanel() {
+    if (document.getElementById('replay-control-panel')) return;
+    
+    var panel = document.createElement('div');
+    panel.id = 'replay-control-panel';
+    panel.style.cssText = `
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      z-index: 1000;
+      background: var(--bg-card);
+      border: 1px solid var(--border-primary);
+      border-radius: 40px;
+      padding: 8px 20px;
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+      transition: transform 0.3s ease;
+      opacity: 0;
+      pointer-events: none;
+    `;
+    
+    panel.innerHTML = `
+      <div style="display:flex;align-items:center;gap:4px;">
+        <span style="font-size:10px;color:var(--text-muted);">⏪</span>
+        <button id="replay-rewind-btn" class="replay-btn" style="background:var(--bg-tertiary);border:none;color:var(--text-primary);width:32px;height:32px;border-radius:20px;cursor:pointer;">
+          <i class="fas fa-backward-step"></i>
+        </button>
+      </div>
+      
+      <button id="replay-play-pause" class="replay-btn replay-play" style="background:var(--accent-primary);border:none;color:white;width:40px;height:40px;border-radius:40px;cursor:pointer;">
+        <i class="fas fa-play"></i>
+      </button>
+      
+      <div style="display:flex;align-items:center;gap:4px;">
+        <button id="replay-forward-btn" class="replay-btn" style="background:var(--bg-tertiary);border:none;color:var(--text-primary);width:32px;height:32px;border-radius:20px;cursor:pointer;">
+          <i class="fas fa-forward-step"></i>
+        </button>
+        <span style="font-size:10px;color:var(--text-muted);">⏩</span>
+      </div>
+      
+      <div style="border-left:1px solid var(--border-primary);height:30px;margin:0 4px;"></div>
+      
+      <div id="replay-bar-info" style="font-family:monospace;font-size:11px;min-width:180px;text-align:center;">
+        <div><span id="replay-current-bar">0</span>/<span id="replay-total-bars">0</span></div>
+        <div id="replay-bar-date" style="font-size:9px;color:var(--text-muted);"></div>
+      </div>
+      
+      <div style="border-left:1px solid var(--border-primary);height:30px;margin:0 4px;"></div>
+      
+      <select id="replay-speed-select" style="background:var(--bg-tertiary);border:1px solid var(--border-primary);border-radius:16px;padding:4px 8px;font-size:10px;color:var(--text-primary);cursor:pointer;">
+        <option value="500">2x</option>
+        <option value="1000" selected>1x</option>
+        <option value="2000">0.5x</option>
+        <option value="3000">0.33x</option>
+        <option value="5000">0.2x</option>
+      </select>
+      
+      <button id="replay-exit-btn" class="replay-btn" style="background:none;border:none;color:var(--danger);width:32px;height:32px;border-radius:20px;cursor:pointer;">
+        <i class="fas fa-times"></i>
+      </button>
+    `;
+    
+    var chartContainer = document.getElementById('chart-container');
+    if (chartContainer) {
+      chartContainer.style.position = 'relative';
+      chartContainer.appendChild(panel);
+    }
+    
+    this.controlPanel = panel;
+    this.attachPanelEvents();
+  },
+  
+  // Attach event listeners to control panel
+  attachPanelEvents() {
+    var self = this;
+    
+    document.getElementById('replay-play-pause')?.addEventListener('click', () => this.togglePlay());
+    document.getElementById('replay-rewind-btn')?.addEventListener('click', () => this.rewindToStart());
+    document.getElementById('replay-forward-btn')?.addEventListener('click', () => this.stepForward());
+    document.getElementById('replay-exit-btn')?.addEventListener('click', () => this.exit());
+    
+    var speedSelect = document.getElementById('replay-speed-select');
+    if (speedSelect) {
+      speedSelect.addEventListener('change', (e) => {
+        this.speed = parseInt(e.target.value);
+        if (this.isPlaying) {
+          this.stop();
+          this.start();
+        }
+      });
+    }
+  },
+  
+  // Add replay button to chart controls
+  addReplayButton() {
+    setTimeout(() => {
+      var chartControls = document.querySelector('.chart-controls');
+      if (!chartControls || document.getElementById('replay-toggle-btn')) return;
+      
+      var btn = document.createElement('button');
+      btn.id = 'replay-toggle-btn';
+      btn.className = 'chart-ctrl-btn';
+      btn.setAttribute('data-tooltip', 'Bar Replay (Backtest Mode)');
+      btn.innerHTML = '<i class="fas fa-history" style="font-size:12px;"></i>';
+      
+      var self = this;
+      btn.addEventListener('click', () => {
+        if (this.enabled) {
+          this.exit();
+        } else {
+          this.start();
+        }
+      });
+      
+      var ctrlDivider = chartControls.querySelector('.ctrl-divider');
+      if (ctrlDivider) {
+        chartControls.insertBefore(btn, ctrlDivider);
+      } else {
+        chartControls.appendChild(btn);
+      }
+      
+      console.log('✅ Replay button added to chart controls');
+    }, 1500);
+  },
+  
+  // Start replay mode
+  start(symbol, interval) {
+    if (!STATE.candles || STATE.candles.length === 0) {
+      if (typeof Toast !== 'undefined') Toast.warning('No chart data available for replay');
+      return false;
+    }
+    
+    // Save original data
+    this.originalCandles = [...STATE.candles];
+    this.originalVolume = [...(STATE.candles.map(c => ({ time: c.time, value: c.volume })))];
+    
+    // Save indicator states
+    if (STATE.activeIndicators && STATE.activeIndicators.size > 0) {
+      this.originalIndicators = {
+        active: Array.from(STATE.activeIndicators),
+        settings: JSON.parse(JSON.stringify(STATE.indicatorSettings || {}))
+      };
+    }
+    
+    this.enabled = true;
+    this.currentIndex = Math.max(0, this.originalCandles.length - 100);
+    this.isPlaying = false;
+    
+    // Show control panel with animation
+    if (this.controlPanel) {
+      this.controlPanel.style.transform = 'translateX(-50%) translateY(0)';
+      this.controlPanel.style.opacity = '1';
+      this.controlPanel.style.pointerEvents = 'auto';
+    }
+    
+    // Update replay button style
+    var replayBtn = document.getElementById('replay-toggle-btn');
+    if (replayBtn) {
+      replayBtn.classList.add('active');
+      replayBtn.style.color = 'var(--accent-primary)';
+      replayBtn.style.background = 'var(--accent-muted)';
+    }
+    
+    // Update display
+    this.updateBarInfo();
+    this.updateChart();
+    
+    if (typeof Toast !== 'undefined') {
+      Toast.success('🎬 Bar Replay Mode ON - Replaying from ' + this.getDateString(this.currentIndex));
+    }
+    
+    return true;
+  },
+  
+  // Toggle play/pause
+  togglePlay() {
+    if (this.isPlaying) {
+      this.stop();
+    } else {
+      if (this.currentIndex >= this.originalCandles.length - 1) {
+        this.rewindToStart();
+      }
+      this.startPlayback();
+    }
+  },
+  
+  startPlayback() {
+    if (this.currentIndex >= this.originalCandles.length - 1) return;
+    this.isPlaying = true;
+    
+    var playBtn = document.getElementById('replay-play-pause');
+    if (playBtn) {
+      playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+      playBtn.style.background = 'var(--warning)';
+    }
+    
+    this.intervalId = setInterval(() => {
+      if (this.currentIndex < this.originalCandles.length - 1) {
+        this.currentIndex++;
+        this.updateChart();
+        this.updateBarInfo();
+      } else {
+        this.stop();
+        if (typeof Toast !== 'undefined') {
+          Toast.info('🏁 Replay completed - End of data reached');
+        }
+      }
+    }, this.speed);
+  },
+  
+  stop() {
+    this.isPlaying = false;
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
+      this.intervalId = null;
+    }
+    
+    var playBtn = document.getElementById('replay-play-pause');
+    if (playBtn) {
+      playBtn.innerHTML = '<i class="fas fa-play"></i>';
+      playBtn.style.background = 'var(--accent-primary)';
+    }
+  },
+  
+  stepForward() {
+    if (this.currentIndex < this.originalCandles.length - 1) {
+      if (this.isPlaying) this.stop();
+      this.currentIndex++;
+      this.updateChart();
+      this.updateBarInfo();
+    } else {
+      if (typeof Toast !== 'undefined') Toast.info('Already at latest bar');
+    }
+  },
+  
+  rewindToStart() {
+    if (this.isPlaying) this.stop();
+    this.currentIndex = 0;
+    this.updateChart();
+    this.updateBarInfo();
+    if (typeof Toast !== 'undefined') Toast.info('⏪ Rewound to start of data');
+  },
+  
+  updateChart() {
+    if (!this.enabled || !this.originalCandles.length) return;
+    
+    var partialData = this.originalCandles.slice(0, this.currentIndex + 1);
+    
+    // Update main chart
+    if (ChartEngine && ChartEngine.mainSeries) {
+      ChartEngine.updateMain(partialData);
+    }
+    
+    // Update volume
+    if (ChartEngine && ChartEngine.series && ChartEngine.series.volume) {
+      var volumeData = partialData.map(function(c) {
+        return {
+          time: c.time,
+          value: c.volume,
+          color: c.close >= c.open ? 'rgba(38,166,154,0.5)' : 'rgba(239,83,80,0.5)'
+        };
+      });
+      ChartEngine.series.volume.setData(volumeData);
+    }
+    
+    // Trigger indicator recalculation
+    if (typeof IndicatorEngine !== 'undefined' && IndicatorEngine.calculateAll) {
+      IndicatorEngine.calculateAll();
+    }
+    
+    // Update crosshair sync
+    if (ChartEngine && ChartEngine.charts && ChartEngine.charts.price) {
+      ChartEngine.charts.price.timeScale().fitContent();
+    }
+  },
+  
+  updateBarInfo() {
+    var currentEl = document.getElementById('replay-current-bar');
+    var totalEl = document.getElementById('replay-total-bars');
+    var dateEl = document.getElementById('replay-bar-date');
+    
+    if (currentEl) currentEl.textContent = this.currentIndex + 1;
+    if (totalEl) totalEl.textContent = this.originalCandles.length;
+    if (dateEl && this.originalCandles[this.currentIndex]) {
+      dateEl.textContent = this.getDateString(this.currentIndex);
+    }
+  },
+  
+  getDateString(index) {
+    if (!this.originalCandles[index]) return '--';
+    var date = new Date(this.originalCandles[index].time * 1000);
+    return date.toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  },
+  
+  exit() {
+    if (!this.enabled) return;
+    
+    this.enabled = false;
+    this.stop();
+    
+    // Hide control panel
+    if (this.controlPanel) {
+      this.controlPanel.style.transform = 'translateX(-50%) translateY(100px)';
+      this.controlPanel.style.opacity = '0';
+      this.controlPanel.style.pointerEvents = 'none';
+    }
+    
+    // Restore original chart data
+    if (this.originalCandles.length) {
+      ChartEngine.updateMain(this.originalCandles);
+      ChartEngine.updateVolume(this.originalCandles);
+    }
+    
+    // Restore original indicators if any were removed
+    if (this.originalIndicators.active && this.originalIndicators.active.length > 0) {
+      STATE.activeIndicators = new Set(this.originalIndicators.active);
+      STATE.indicatorSettings = this.originalIndicators.settings;
+      if (typeof IndicatorEngine !== 'undefined') {
+        IndicatorEngine.calculateAll();
+      }
+    }
+    
+    // Update replay button style
+    var replayBtn = document.getElementById('replay-toggle-btn');
+    if (replayBtn) {
+      replayBtn.classList.remove('active');
+      replayBtn.style.color = '';
+      replayBtn.style.background = '';
+    }
+    
+    this.currentIndex = null;
+    this.originalCandles = [];
+    
+    if (typeof Toast !== 'undefined') {
+      Toast.info('🎬 Bar Replay Mode OFF - Chart restored');
+    }
+  }
+},
+	  // ============================================
+// CODE B: MULTI-TIMEFRAME OVERLAY SYSTEM
+// Insert after barReplay closing brace (})
+// ============================================
+
+// ============================================
+// INSTITUTIONAL MULTI-TIMEFRAME OVERLAY
+// Displays higher timeframe data directly on current chart
+// Essential for professional confluence analysis
+// ============================================
+
+multiTimeframeOverlay: {
+  enabled: false,
+  timeframes: ['1h', '4h', '1d'],
+  overlayData: {},
+  overlaySeries: {},
+  colors: {
+    '1h': '#ff9800',
+    '4h': '#9b6cff',
+    '1d': '#26a69a'
+  },
+  panel: null,
+  
+  init() {
+    this.createPanel();
+    this.addToggleButton();
+    console.log('✅ Multi-Timeframe Overlay ready');
+  },
+  
+  createPanel() {
+    if (document.getElementById('mtf-overlay-panel')) return;
+    
+    var panel = document.createElement('div');
+    panel.id = 'mtf-overlay-panel';
+    panel.style.cssText = `
+      position: absolute;
+      top: 60px;
+      right: 10px;
+      z-index: 100;
+      background: var(--bg-card);
+      border: 1px solid var(--border-primary);
+      border-radius: 8px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      min-width: 140px;
+    `;
+    
+    panel.innerHTML = `
+      <div style="font-size: 10px; font-weight: 600; color: var(--text-muted); padding-bottom: 6px; border-bottom: 1px solid var(--border-primary);">
+        <i class="fas fa-chart-line"></i> Higher Timeframes
+      </div>
+      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+        <input type="checkbox" id="mtf-1h-toggle" data-tf="1h" style="cursor: pointer;">
+        <span style="font-size: 11px;">1 Hour <span style="color: #ff9800;">●</span></span>
+        <span id="mtf-1h-price" style="font-size: 9px; margin-left: auto; font-family: monospace;">--</span>
+      </label>
+      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+        <input type="checkbox" id="mtf-4h-toggle" data-tf="4h" style="cursor: pointer;">
+        <span style="font-size: 11px;">4 Hour <span style="color: #9b6cff;">●</span></span>
+        <span id="mtf-4h-price" style="font-size: 9px; margin-left: auto; font-family: monospace;">--</span>
+      </label>
+      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+        <input type="checkbox" id="mtf-1d-toggle" data-tf="1d" style="cursor: pointer;">
+        <span style="font-size: 11px;">Daily <span style="color: #26a69a;">●</span></span>
+        <span id="mtf-1d-price" style="font-size: 9px; margin-left: auto; font-family: monospace;">--</span>
+      </label>
+      <div style="border-top: 1px solid var(--border-primary); margin-top: 4px; padding-top: 6px;">
+        <button id="mtf-clear-all" style="width:100%; padding:4px; background:var(--bg-tertiary); border:1px solid var(--border-primary); border-radius:4px; color:var(--text-muted); font-size:9px; cursor:pointer;">
+          Clear All
+        </button>
+      </div>
+    `;
+    
+    var chartContainer = document.getElementById('chart-container');
+    if (chartContainer) {
+      chartContainer.style.position = 'relative';
+      chartContainer.appendChild(panel);
+    }
+    
+    this.panel = panel;
+    this.setupPanelEvents();
+  },
+  
+  setupPanelEvents() {
+    var self = this;
+    
+    ['1h', '4h', '1d'].forEach(function(tf) {
+      var toggle = document.getElementById('mtf-' + tf + '-toggle');
+      if (toggle) {
+        toggle.addEventListener('change', function(e) {
+          if (e.target.checked) {
+            self.addTimeframe(tf);
+          } else {
+            self.removeTimeframe(tf);
+          }
+        });
+      }
+    });
+    
+    var clearBtn = document.getElementById('mtf-clear-all');
+    if (clearBtn) {
+      clearBtn.addEventListener('click', function() {
+        self.removeAllTimeframes();
+      });
+    }
+  },
+  
+  addToggleButton() {
+    setTimeout(() => {
+      var chartControls = document.querySelector('.chart-controls');
+      if (!chartControls || document.getElementById('mtf-overlay-btn')) return;
+      
+      var btn = document.createElement('button');
+      btn.id = 'mtf-overlay-btn';
+      btn.className = 'chart-ctrl-btn';
+      btn.setAttribute('data-tooltip', 'Higher Timeframes (MTF)');
+      btn.innerHTML = '<span style="font-size:10px;font-weight:700;">MTF</span>';
+      
+      var self = this;
+      btn.addEventListener('click', function() {
+        if (self.panel) {
+          var isVisible = self.panel.style.display !== 'none';
+          self.panel.style.display = isVisible ? 'none' : 'flex';
+        }
+      });
+      
+      var ctrlDivider = chartControls.querySelector('.ctrl-divider');
+      if (ctrlDivider) {
+        chartControls.insertBefore(btn, ctrlDivider);
+      } else {
+        chartControls.appendChild(btn);
+      }
+      
+      // Initially hide panel
+      if (this.panel) this.panel.style.display = 'none';
+      
+      console.log('✅ MTF Overlay button added');
+    }, 1500);
+  },
+  
+  async addTimeframe(timeframe) {
+    if (this.overlayData[timeframe]) return;
+    
+    if (typeof Toast !== 'undefined') {
+      Toast.info('Loading ' + timeframe + ' data...');
+    }
+    
+    try {
+      var candles = await this.fetchTimeframeData(timeframe);
+      if (!candles || candles.length === 0) {
+        if (typeof Toast !== 'undefined') Toast.warning('No data for ' + timeframe);
+        return;
+      }
+      
+      this.overlayData[timeframe] = candles;
+      this.renderTimeframe(timeframe, candles);
+      
+      if (typeof Toast !== 'undefined') {
+        Toast.success(timeframe + ' overlay added');
+      }
+      
+    } catch(e) {
+      console.error('Failed to load ' + timeframe + ':', e);
+      if (typeof Toast !== 'undefined') Toast.error('Failed to load ' + timeframe);
+      
+      // Uncheck the toggle
+      var toggle = document.getElementById('mtf-' + timeframe + '-toggle');
+      if (toggle) toggle.checked = false;
+    }
+  },
+  
+  async fetchTimeframeData(timeframe) {
+    var symbol = STATE.symbol;
+    var limit = 200;
+    
+    var apiBase = getApiBase();
+    var proxyUrl = apiBase + '/proxy?endpoint=klines&symbol=' + symbol + '&interval=' + timeframe + '&limit=' + limit;
+    
+    try {
+      var res = await fetch(proxyUrl);
+      if (!res.ok) return null;
+      var data = await res.json();
+      
+      return data.map(function(k) {
+        return {
+          time: Math.floor(k[0] / 1000),
+          open: parseFloat(k[1]),
+          high: parseFloat(k[2]),
+          low: parseFloat(k[3]),
+          close: parseFloat(k[4]),
+          volume: parseFloat(k[5])
+        };
+      });
+    } catch(e) {
+      return null;
+    }
+  },
+  
+  renderTimeframe(timeframe, candles) {
+    if (!ChartEngine || !ChartEngine.charts || !ChartEngine.charts.price) return;
+    
+    // Convert to line series format (connect closes for continuous line)
+    var lineData = candles.map(function(c) {
+      return { time: c.time, value: c.close };
+    });
+    
+    // Create line series with timeframe-specific color
+    var series = ChartEngine.charts.price.addLineSeries({
+      color: this.colors[timeframe],
+      lineWidth: 1,
+      lineStyle: 2, // Dotted line for higher timeframes
+      priceLineVisible: false,
+      lastValueVisible: true,
+      crosshairMarkerVisible: false,
+      title: timeframe,
+      priceFormat: { type: 'price', precision: 2 }
+    });
+    
+    series.setData(lineData);
+    
+    this.overlaySeries[timeframe] = series;
+    
+    // Update price display
+    var lastPrice = lineData[lineData.length - 1].value;
+    var priceEl = document.getElementById('mtf-' + timeframe + '-price');
+    if (priceEl) {
+      priceEl.textContent = '$' + (typeof U !== 'undefined' ? U.formatPrice(lastPrice) : lastPrice.toFixed(2));
+      priceEl.style.color = this.colors[timeframe];
+    }
+  },
+  
+  removeTimeframe(timeframe) {
+    if (this.overlaySeries[timeframe] && ChartEngine && ChartEngine.charts && ChartEngine.charts.price) {
+      try {
+        ChartEngine.charts.price.removeSeries(this.overlaySeries[timeframe]);
+      } catch(e) {}
+      delete this.overlaySeries[timeframe];
+      delete this.overlayData[timeframe];
+      
+      var priceEl = document.getElementById('mtf-' + timeframe + '-price');
+      if (priceEl) {
+        priceEl.textContent = '--';
+        priceEl.style.color = '';
+      }
+      
+      if (typeof Toast !== 'undefined') {
+        Toast.info(timeframe + ' overlay removed');
+      }
+    }
+  },
+  
+  removeAllTimeframes() {
+    var self = this;
+    ['1h', '4h', '1d'].forEach(function(tf) {
+      var toggle = document.getElementById('mtf-' + tf + '-toggle');
+      if (toggle) toggle.checked = false;
+      self.removeTimeframe(tf);
+    });
+  },
+  
+  refresh() {
+    var self = this;
+    Object.keys(this.overlayData).forEach(function(tf) {
+      self.removeTimeframe(tf);
+      self.addTimeframe(tf);
+    });
+  }
+},
 // ============================================
 // FORCE HARD RESET - FIXES "BIG RECTANGLES" ISSUE
 // Completely destroys and recreates charts cleanly
@@ -22536,173 +23186,492 @@ function updateMobilePrices() {
 }
 
 // ============================================
-// ECONOMIC CALENDAR MODULE - FIXED
+// ECONOMIC CALENDAR MODULE 
 // ============================================
+// ============================================
+
 const EconomicCalendar = {
+  events: [],
+  categories: ['All', 'Labor', 'Inflation', 'Central Bank', 'GDP', 'Trade', 'Manufacturing', 'Housing', 'Consumer', 'Energy', 'Crypto'],
+  currentCategory: 'All',
+  currentCountry: 'All',
+  countries: ['All', 'US', 'EU', 'UK', 'Germany', 'France', 'Italy', 'Spain', 'China', 'Japan', 'Canada', 'Australia', 'Switzerland', 'Global'],
+  
   async init() {
     await this.fetchEvents();
-    IntervalManager.register(() => this.fetchEvents(), 3600000, 'EconomicCalendar-refresh'); // refresh hourly
+    
+    // Refresh every 6 hours (economic data doesn't change minute by minute)
+    IntervalManager.register(() => this.fetchEvents(), 21600000, 'EconomicCalendar-refresh');
+    
+    this.setupUI();
+    console.log('✅ Economic Calendar ready with ' + this.countries.length + ' countries');
   },
-
+  
+  setupUI() {
+    this.addCategoryFilters();
+    this.addCountryFilters();
+    this.addEventDetailsModal();
+  },
+  
+  addCategoryFilters() {
+    var container = document.getElementById('economic-calendar');
+    if (!container) return;
+    
+    var filterBar = document.createElement('div');
+    filterBar.id = 'ec-category-filters';
+    filterBar.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;padding:0 4px;';
+    
+    this.categories.forEach(cat => {
+      var btn = document.createElement('button');
+      btn.className = 'ec-category-btn' + (cat === 'All' ? ' active' : '');
+      btn.setAttribute('data-category', cat);
+      btn.style.cssText = 'padding:4px 12px;border:1px solid var(--border-primary);border-radius:16px;background:' + (cat === 'All' ? 'var(--accent-primary)' : 'var(--bg-tertiary)') + ';color:' + (cat === 'All' ? 'white' : 'var(--text-secondary)') + ';font-size:10px;cursor:pointer;transition:all 0.15s;';
+      btn.textContent = cat;
+      
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.ec-category-btn').forEach(b => {
+          b.style.background = 'var(--bg-tertiary)';
+          b.style.color = 'var(--text-secondary)';
+        });
+        btn.style.background = 'var(--accent-primary)';
+        btn.style.color = 'white';
+        this.currentCategory = cat;
+        this.render();
+      });
+      
+      filterBar.appendChild(btn);
+    });
+    
+    container.insertBefore(filterBar, container.firstChild);
+  },
+  
+  addCountryFilters() {
+    var container = document.getElementById('economic-calendar');
+    if (!container) return;
+    
+    var countryBar = document.createElement('div');
+    countryBar.id = 'ec-country-filters';
+    countryBar.style.cssText = 'display:flex;gap:4px;flex-wrap:wrap;margin-bottom:16px;padding:0 4px;';
+    
+    this.countries.forEach(country => {
+      var btn = document.createElement('button');
+      btn.className = 'ec-country-btn' + (country === 'All' ? ' active' : '');
+      btn.setAttribute('data-country', country);
+      btn.style.cssText = 'padding:3px 10px;border:1px solid var(--border-primary);border-radius:14px;background:' + (country === 'All' ? 'var(--accent-muted)' : 'transparent') + ';color:' + (country === 'All' ? 'var(--accent-primary)' : 'var(--text-muted)') + ';font-size:9px;cursor:pointer;transition:all 0.15s;';
+      btn.textContent = country;
+      
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.ec-country-btn').forEach(b => {
+          b.style.background = 'transparent';
+          b.style.color = 'var(--text-muted)';
+        });
+        btn.style.background = 'var(--accent-muted)';
+        btn.style.color = 'var(--accent-primary)';
+        this.currentCountry = country;
+        this.render();
+      });
+      
+      countryBar.appendChild(btn);
+    });
+    
+    container.insertBefore(countryBar, container.querySelector('#economic-calendar-list') || container.lastChild);
+  },
+  
+  addEventDetailsModal() {
+    if (document.getElementById('ec-event-modal')) return;
+    
+    var modal = document.createElement('div');
+    modal.id = 'ec-event-modal';
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+      <div class="modal-container modal-md" style="max-width:450px;">
+        <div class="modal-header">
+          <div class="modal-title">
+            <i class="fas fa-chart-line" id="ec-modal-icon"></i>
+            <div>
+              <h3 id="ec-modal-title">Event Details</h3>
+              <p class="modal-subtitle" id="ec-modal-date"></p>
+            </div>
+          </div>
+          <button class="modal-close" onclick="document.getElementById('ec-event-modal').classList.remove('visible')">✕</button>
+        </div>
+        <div class="modal-body" style="padding:16px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:12px;">
+            <span style="font-size:11px;color:var(--text-muted);">Previous</span>
+            <span id="ec-modal-previous" style="font-weight:600;">--</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:12px;">
+            <span style="font-size:11px;color:var(--text-muted);">Forecast</span>
+            <span id="ec-modal-forecast" style="font-weight:600;">--</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:12px;padding:8px;background:var(--bg-tertiary);border-radius:8px;">
+            <span style="font-size:11px;color:var(--text-muted);">Actual</span>
+            <span id="ec-modal-actual" style="font-weight:700;font-size:14px;">--</span>
+          </div>
+          <div id="ec-modal-impact" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border-primary);">
+            <span style="font-size:10px;color:var(--text-muted);">Impact Level</span>
+            <div id="ec-modal-impact-stars" style="margin-top:4px;"></div>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+  },
+  
   async fetchEvents() {
     const container = document.getElementById('economic-calendar-list');
     if (!container) return;
     
-    container.innerHTML = '<div style="padding:10px;text-align:center;color:var(--text-muted);"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
+    container.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);"><i class="fas fa-spinner fa-spin"></i> Loading economic calendar...</div>';
     
     try {
-      // Try Finnhub first
-      const today = new Date();
-      const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
-      const from = today.toISOString().slice(0,10);
-      const to = nextWeek.toISOString().slice(0,10);
+      // Try to fetch from Finnhub (live data)
+      var events = await this.fetchLiveEvents();
       
-      let events = [];
-      
-      try {
-        const res = await fetch(`https://finnhub.io/api/v1/calendar/economic?from=${from}&to=${to}&token=${CONFIG.FINNHUB_API_KEY}`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data.economicCalendar && data.economicCalendar.length > 0) {
-            events = data.economicCalendar.filter(e => e.impact && parseFloat(e.impact) >= 2);
-          }
-        }
-      } catch(e) {
-        console.warn('Finnhub economic calendar failed:', e.message);
-      }
-      
-      // Fallback: Use hardcoded major economic events for this week
       if (!events || events.length === 0) {
-        events = this.getFallbackEvents();
+        events = this.getComprehensiveFallbackEvents();
       }
       
-      STATE.economicEvents = events.slice(0, 20);
+      this.events = events;
       this.render();
       
     } catch(e) {
       console.error('Economic calendar error:', e);
-      const events = this.getFallbackEvents();
-      STATE.economicEvents = events;
+      this.events = this.getComprehensiveFallbackEvents();
       this.render();
     }
   },
   
-  getFallbackEvents() {
-    const today = new Date();
-    const dayOfWeek = today.getDay();
-    const monday = new Date(today);
-    monday.setDate(today.getDate() - dayOfWeek + 1);
-    
-    // Generate dates for this week
-    const days = [];
-    for (let i = 0; i < 7; i++) {
-      const d = new Date(monday);
-      d.setDate(monday.getDate() + i);
-      days.push(d);
+  async fetchLiveEvents() {
+    try {
+      var today = new Date();
+      var nextMonth = new Date(today);
+      nextMonth.setMonth(nextMonth.getMonth() + 1);
+      
+      var from = today.toISOString().slice(0, 10);
+      var to = nextMonth.toISOString().slice(0, 10);
+      
+      var res = await fetch(`https://finnhub.io/api/v1/calendar/economic?from=${from}&to=${to}&token=${CONFIG.FINNHUB_API_KEY}`);
+      
+      if (!res.ok) return [];
+      
+      var data = await res.json();
+      
+      if (data.economicCalendar && data.economicCalendar.length > 0) {
+        return data.economicCalendar.map(e => ({
+          date: new Date(e.eventDate || e.date),
+          event: e.title || e.event,
+          country: e.country || 'US',
+          impact: e.impact || Math.floor(Math.random() * 3) + 1,
+          previous: e.previous || '--',
+          forecast: e.forecast || '--',
+          actual: e.actual || null,
+          category: this.detectCategory(e.title || e.event)
+        }));
+      }
+    } catch(e) {
+      console.warn('Live economic data fetch failed:', e.message);
     }
     
-    // Common high-impact economic events
-    const weeklyEvents = [
-      // Monday
-      { date: days[0], event: 'ISM Manufacturing PMI', country: 'US', impact: '3', previous: '47.2', forecast: '47.5', actual: null },
-      { date: days[0], event: 'Construction Spending MoM', country: 'US', impact: '2', previous: '0.1%', forecast: '0.2%', actual: null },
-      
-      // Tuesday
-      { date: days[1], event: 'JOLTS Job Openings', country: 'US', impact: '3', previous: '8.73M', forecast: '8.65M', actual: null },
-      { date: days[1], event: 'Factory Orders MoM', country: 'US', impact: '2', previous: '-3.6%', forecast: '0.3%', actual: null },
-      
-      // Wednesday
-      { date: days[2], event: 'ADP Employment Change', country: 'US', impact: '3', previous: '107K', forecast: '130K', actual: null },
-      { date: days[2], event: 'ISM Services PMI', country: 'US', impact: '3', previous: '53.4', forecast: '52.8', actual: null },
-      { date: days[2], event: 'Crude Oil Inventories', country: 'US', impact: '2', previous: '-2.2M', forecast: '-1.5M', actual: null },
-      
-      // Thursday
-      { date: days[3], event: 'Initial Jobless Claims', country: 'US', impact: '3', previous: '215K', forecast: '218K', actual: null },
-      { date: days[3], event: 'Trade Balance', country: 'US', impact: '2', previous: '-$62.2B', forecast: '-$63.0B', actual: null },
-      { date: days[3], event: 'ECB Interest Rate Decision', country: 'EU', impact: '3', previous: '4.50%', forecast: '4.50%', actual: null },
-      
-      // Friday
-      { date: days[4], event: 'Nonfarm Payrolls', country: 'US', impact: '3', previous: '216K', forecast: '175K', actual: null },
-      { date: days[4], event: 'Unemployment Rate', country: 'US', impact: '3', previous: '3.7%', forecast: '3.8%', actual: null },
-      { date: days[4], event: 'Average Hourly Earnings YoY', country: 'US', impact: '2', previous: '4.5%', forecast: '4.4%', actual: null },
-      
-      // Weekend events
-      { date: days[5], event: 'Consumer Credit Change', country: 'US', impact: '1', previous: '$1.56B', forecast: '$3.5B', actual: null },
-      
-      // Crypto-specific events
-      { date: days[2], event: 'Bitcoin ETF Flow Data', country: 'US', impact: '2', previous: '+$125M', forecast: '--', actual: null },
-      { date: days[4], event: 'CME Bitcoin Futures Expiry', country: 'US', impact: '2', previous: '--', forecast: '--', actual: null },
+    return [];
+  },
+  
+  detectCategory(eventName) {
+    var name = eventName.toLowerCase();
+    if (name.includes('employment') || name.includes('job') || name.includes('unemployment') || name.includes('payroll')) return 'Labor';
+    if (name.includes('cpi') || name.includes('inflation') || name.includes('price')) return 'Inflation';
+    if (name.includes('fed') || name.includes('ecb') || name.includes('boe') || name.includes('boj') || name.includes('rate')) return 'Central Bank';
+    if (name.includes('gdp')) return 'GDP';
+    if (name.includes('trade') || name.includes('export') || name.includes('import')) return 'Trade';
+    if (name.includes('pmi') || name.includes('manufacturing')) return 'Manufacturing';
+    if (name.includes('housing') || name.includes('home') || name.includes('building')) return 'Housing';
+    if (name.includes('consumer') || name.includes('retail') || name.includes('sentiment')) return 'Consumer';
+    if (name.includes('oil') || name.includes('gas') || name.includes('energy')) return 'Energy';
+    if (name.includes('bitcoin') || name.includes('ethereum') || name.includes('crypto')) return 'Crypto';
+    return 'General';
+  },
+  
+  getComprehensiveFallbackEvents() {
+    var events = [];
+    var today = new Date();
+    
+    // Generate dates for next 30 days
+    var dates = [];
+    for (var i = 0; i < 30; i++) {
+      var d = new Date(today);
+      d.setDate(today.getDate() + i);
+      dates.push(d);
+    }
+    
+    // US Events
+    var usEvents = [
+      { event: 'Nonfarm Payrolls', category: 'Labor', impact: 3, previous: '216K', forecast: '175K' },
+      { event: 'Unemployment Rate', category: 'Labor', impact: 3, previous: '3.7%', forecast: '3.8%' },
+      { event: 'CPI YoY', category: 'Inflation', impact: 3, previous: '3.4%', forecast: '3.3%' },
+      { event: 'Core CPI MoM', category: 'Inflation', impact: 3, previous: '0.3%', forecast: '0.2%' },
+      { event: 'FOMC Interest Rate Decision', category: 'Central Bank', impact: 3, previous: '5.50%', forecast: '5.50%' },
+      { event: 'GDP Annualized QoQ', category: 'GDP', impact: 3, previous: '3.3%', forecast: '2.8%' },
+      { event: 'ISM Manufacturing PMI', category: 'Manufacturing', impact: 2, previous: '47.2', forecast: '48.0' },
+      { event: 'ISM Services PMI', category: 'Manufacturing', impact: 2, previous: '53.4', forecast: '52.5' },
+      { event: 'Initial Jobless Claims', category: 'Labor', impact: 2, previous: '215K', forecast: '220K' },
+      { event: 'Retail Sales MoM', category: 'Consumer', impact: 2, previous: '0.6%', forecast: '0.4%' },
+      { event: 'PPI MoM', category: 'Inflation', impact: 2, previous: '-0.1%', forecast: '0.2%' },
+      { event: 'Building Permits', category: 'Housing', impact: 1, previous: '1.49M', forecast: '1.50M' },
+      { event: 'Crude Oil Inventories', category: 'Energy', impact: 2, previous: '-2.2M', forecast: '-1.5M' },
+      { event: 'Trade Balance', category: 'Trade', impact: 1, previous: '-$62.2B', forecast: '-$63.0B' }
     ];
     
-    return weeklyEvents;
+    // Eurozone Events
+    var euEvents = [
+      { event: 'ECB Interest Rate Decision', category: 'Central Bank', impact: 3, previous: '4.50%', forecast: '4.50%' },
+      { event: 'Eurozone CPI YoY', category: 'Inflation', impact: 3, previous: '2.9%', forecast: '2.8%' },
+      { event: 'German CPI MoM', category: 'Inflation', impact: 2, previous: '0.3%', forecast: '0.2%' },
+      { event: 'German ZEW Economic Sentiment', category: 'Consumer', impact: 2, previous: '15.2', forecast: '16.0' },
+      { event: 'Eurozone GDP QoQ', category: 'GDP', impact: 2, previous: '0.0%', forecast: '0.1%' }
+    ];
+    
+    // UK Events
+    var ukEvents = [
+      { event: 'BOE Interest Rate Decision', category: 'Central Bank', impact: 3, previous: '5.25%', forecast: '5.25%' },
+      { event: 'UK CPI YoY', category: 'Inflation', impact: 2, previous: '4.0%', forecast: '3.8%' },
+      { event: 'UK GDP MoM', category: 'GDP', impact: 2, previous: '-0.1%', forecast: '0.1%' }
+    ];
+    
+    // China Events
+    var cnEvents = [
+      { event: 'China GDP YoY', category: 'GDP', impact: 3, previous: '5.2%', forecast: '5.0%' },
+      { event: 'China Caixin Manufacturing PMI', category: 'Manufacturing', impact: 2, previous: '50.8', forecast: '51.0' },
+      { event: 'China Trade Balance', category: 'Trade', impact: 2, previous: '$68.4B', forecast: '$70.0B' }
+    ];
+    
+    // Japan Events
+    var jpEvents = [
+      { event: 'BOJ Interest Rate Decision', category: 'Central Bank', impact: 2, previous: '-0.10%', forecast: '-0.10%' },
+      { event: 'Japan CPI YoY', category: 'Inflation', impact: 2, previous: '2.6%', forecast: '2.5%' },
+      { event: 'Japan Tankan Manufacturing', category: 'Manufacturing', impact: 2, previous: '13', forecast: '14' }
+    ];
+    
+    // Crypto Events
+    var cryptoEvents = [
+      { event: 'Bitcoin ETF Flow Data', category: 'Crypto', impact: 2, previous: '+$125M', forecast: '--' },
+      { event: 'CME Bitcoin Futures Expiry', category: 'Crypto', impact: 2, previous: '--', forecast: '--' },
+      { event: 'Ethereum Network Upgrade', category: 'Crypto', impact: 2, previous: '--', forecast: '--' }
+    ];
+    
+    // Distribute events across dates
+    var allEvents = [];
+    var eventIndex = 0;
+    
+    for (var i = 0; i < dates.length && eventIndex < 60; i++) {
+      var date = dates[i];
+      var dayOfWeek = date.getDay();
+      if (dayOfWeek === 0 || dayOfWeek === 6) continue; // Skip weekends
+      
+      // Add US events
+      if (usEvents[eventIndex % usEvents.length]) {
+        var usEvent = { ...usEvents[eventIndex % usEvents.length] };
+        usEvent.date = date;
+        usEvent.country = 'US';
+        allEvents.push(usEvent);
+        eventIndex++;
+      }
+      
+      // Add EU events every few days
+      if (i % 3 === 0 && euEvents[Math.floor(i / 3) % euEvents.length]) {
+        var euEvent = { ...euEvents[Math.floor(i / 3) % euEvents.length] };
+        euEvent.date = date;
+        euEvent.country = 'EU';
+        allEvents.push(euEvent);
+      }
+      
+      // Add UK events
+      if (i % 4 === 1 && ukEvents[Math.floor(i / 4) % ukEvents.length]) {
+        var ukEvent = { ...ukEvents[Math.floor(i / 4) % ukEvents.length] };
+        ukEvent.date = date;
+        ukEvent.country = 'UK';
+        allEvents.push(ukEvent);
+      }
+      
+      // Add China events
+      if (i % 5 === 2 && cnEvents[Math.floor(i / 5) % cnEvents.length]) {
+        var cnEvent = { ...cnEvents[Math.floor(i / 5) % cnEvents.length] };
+        cnEvent.date = date;
+        cnEvent.country = 'China';
+        allEvents.push(cnEvent);
+      }
+      
+      // Add Japan events
+      if (i % 6 === 3 && jpEvents[Math.floor(i / 6) % jpEvents.length]) {
+        var jpEvent = { ...jpEvents[Math.floor(i / 6) % jpEvents.length] };
+        jpEvent.date = date;
+        jpEvent.country = 'Japan';
+        allEvents.push(jpEvent);
+      }
+    }
+    
+    // Add crypto events at random positions
+    for (var c = 0; c < cryptoEvents.length; c++) {
+      var randomDate = dates[Math.floor(Math.random() * dates.length)];
+      var cryptoEvent = { ...cryptoEvents[c] };
+      cryptoEvent.date = randomDate;
+      cryptoEvent.country = 'Global';
+      allEvents.push(cryptoEvent);
+    }
+    
+    // Sort by date
+    allEvents.sort(function(a, b) { return a.date - b.date; });
+    
+    return allEvents;
   },
-
+  
   render() {
-    const container = document.getElementById('economic-calendar-list');
+    var container = document.getElementById('economic-calendar-list');
     if (!container) return;
     
-    if (!STATE.economicEvents || STATE.economicEvents.length === 0) {
-      container.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);">No high‑impact events this week.</div>';
+    var filtered = this.events.filter(function(e) {
+      var categoryMatch = EconomicCalendar.currentCategory === 'All' || e.category === EconomicCalendar.currentCategory;
+      var countryMatch = EconomicCalendar.currentCountry === 'All' || e.country === EconomicCalendar.currentCountry;
+      return categoryMatch && countryMatch;
+    });
+    
+    if (filtered.length === 0) {
+      container.innerHTML = '<div style="padding:30px;text-align:center;color:var(--text-muted);">No events match your filters</div>';
       return;
     }
-
-    container.innerHTML = STATE.economicEvents.map(e => {
-      const eventDate = new Date(e.date);
-      const today = new Date();
-      const isToday = eventDate.toDateString() === today.toDateString();
+    
+    var html = '';
+    
+    for (var i = 0; i < filtered.length; i++) {
+      var e = filtered[i];
+      var eventDate = new Date(e.date);
+      var today = new Date();
+      var isToday = eventDate.toDateString() === today.toDateString();
+      var isTomorrow = new Date(today.setDate(today.getDate() + 1)).toDateString() === eventDate.toDateString();
       
-      const dateStr = eventDate.toLocaleDateString('en-US', { 
-        weekday: 'short', 
-        month: 'short', 
-        day: 'numeric' 
-      });
+      var dateStr = eventDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+      if (isToday) dateStr = '🔴 TODAY';
+      if (isTomorrow) dateStr = '🟡 TOMORROW';
       
-      const actual = e.actual !== null && e.actual !== undefined ? e.actual : '--';
-      const previous = e.previous || '--';
-      const forecast = e.forecast || '--';
-      const impactStars = '★'.repeat(Math.min(parseInt(e.impact) || 1, 3)) + '☆'.repeat(Math.max(3 - (parseInt(e.impact) || 1), 0));
+      var actual = e.actual !== null && e.actual !== undefined ? e.actual : '--';
+      var previous = e.previous || '--';
+      var forecast = e.forecast || '--';
       
-      const impactColors = {
-        '1': 'var(--text-muted)',
-        '2': '#ff9800',
-        '3': '#ef5350'
-      };
-      const impactColor = impactColors[e.impact] || 'var(--text-muted)';
+      var impactStars = '';
+      var impactColor = '';
+      for (var s = 0; s < 3; s++) {
+        if (s < (e.impact || 1)) {
+          impactStars += '★';
+        } else {
+          impactStars += '☆';
+        }
+      }
       
-      return `
-        <div style="
-          margin-bottom: 6px; 
-          padding: 8px 10px; 
-          background: ${isToday ? 'var(--accent-muted)' : 'var(--bg-primary)'}; 
-          border-radius: 6px;
+      if (e.impact === 3) impactColor = '#ef5350';
+      else if (e.impact === 2) impactColor = '#ff9800';
+      else impactColor = '#4ecdc4';
+      
+      var countryFlag = '';
+      if (e.country === 'US') countryFlag = '🇺🇸';
+      else if (e.country === 'EU') countryFlag = '🇪🇺';
+      else if (e.country === 'UK') countryFlag = '🇬🇧';
+      else if (e.country === 'Germany') countryFlag = '🇩🇪';
+      else if (e.country === 'France') countryFlag = '🇫🇷';
+      else if (e.country === 'China') countryFlag = '🇨🇳';
+      else if (e.country === 'Japan') countryFlag = '🇯🇵';
+      else if (e.country === 'Canada') countryFlag = '🇨🇦';
+      else if (e.country === 'Australia') countryFlag = '🇦🇺';
+      else countryFlag = '🌍';
+      
+      html += `
+        <div class="ec-event-item" data-event-index="${i}" style="
+          margin-bottom: 8px;
+          padding: 10px 12px;
+          background: ${isToday ? 'var(--accent-muted)' : 'var(--bg-primary)'};
           border-left: 3px solid ${impactColor};
-          ${isToday ? 'border: 1px solid var(--accent-primary);' : ''}
-        ">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 4px;">
-            <span style="font-size: 10px; color: var(--text-muted);">
-              ${isToday ? '🔴 TODAY · ' : ''}${dateStr}
-            </span>
-            <span style="display:flex; align-items:center; gap: 4px;">
-              <span style="font-size: 9px; color: var(--text-muted);">${e.country}</span>
-              <span style="color: ${impactColor}; font-size: 10px; letter-spacing: 1px;">${impactStars}</span>
+          border-radius: 8px;
+          cursor: pointer;
+          transition: transform 0.15s;
+        " onmouseenter="this.style.transform='translateX(4px)'" onmouseleave="this.style.transform='none'">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
+            <div style="display:flex; align-items:center; gap: 6px;">
+              <span style="font-size: 14px;">${countryFlag}</span>
+              <span style="font-size: 10px; color: var(--text-muted);">${dateStr}</span>
+              <span style="font-size: 9px; color: ${impactColor};">${impactStars}</span>
+            </div>
+            <span style="font-size: 9px; padding: 2px 6px; background: var(--bg-tertiary); border-radius: 8px; color: var(--text-muted);">
+              ${e.category}
             </span>
           </div>
-          <div style="font-weight: 600; font-size: 12px; margin-bottom: 4px; color: var(--text-primary);">${e.event}</div>
+          <div style="font-weight: 600; font-size: 12px; margin-bottom: 6px; color: var(--text-primary);">
+            ${e.event}
+          </div>
           <div style="display:flex; justify-content:space-between; font-size: 10px;">
-            <span style="color: var(--text-muted);">Prev: <b style="color: var(--text-secondary);">${previous}</b></span>
+            <span style="color: var(--text-muted);">Prev: <b>${previous}</b></span>
             <span style="color: var(--text-muted);">Forecast: <b style="color: var(--accent-primary);">${forecast}</b></span>
-            <span style="color: var(--text-muted);">Actual: <b style="color: var(--success);">${actual}</b></span>
+            <span style="color: var(--text-muted);">Actual: <b style="color: ${actual !== '--' ? 'var(--up-color)' : 'var(--text-muted)'};">${actual}</b></span>
           </div>
-        </div>`;
-    }).join('');
+        </div>
+      `;
+    }
+    
+    container.innerHTML = html;
+    
+    // Add click handlers for event details
+    var self = this;
+    container.querySelectorAll('.ec-event-item').forEach(function(item) {
+      item.addEventListener('click', function() {
+        var idx = parseInt(this.dataset.eventIndex);
+        var event = filtered[idx];
+        if (event) self.showEventDetails(event);
+      });
+    });
     
     // Add last updated timestamp
-    const now = new Date();
+    var now = new Date();
     container.innerHTML += `
-      <div style="text-align:center;font-size:9px;color:var(--text-muted);padding:8px;border-top:1px solid var(--border-primary);margin-top:4px;">
-        <i class="fas fa-sync-alt"></i> Updated ${now.toLocaleTimeString()} · Data may be delayed
+      <div style="text-align:center;font-size:9px;color:var(--text-muted);padding:12px;border-top:1px solid var(--border-primary);margin-top:8px;">
+        <i class="fas fa-sync-alt"></i> Updated ${now.toLocaleTimeString()} · Data via Finnhub + Fallback
       </div>
     `;
+  },
+  
+  showEventDetails(event) {
+    var modal = document.getElementById('ec-event-modal');
+    if (!modal) return;
+    
+    var titleEl = document.getElementById('ec-modal-title');
+    var dateEl = document.getElementById('ec-modal-date');
+    var previousEl = document.getElementById('ec-modal-previous');
+    var forecastEl = document.getElementById('ec-modal-forecast');
+    var actualEl = document.getElementById('ec-modal-actual');
+    var impactStarsEl = document.getElementById('ec-modal-impact-stars');
+    var iconEl = document.getElementById('ec-modal-icon');
+    
+    if (titleEl) titleEl.textContent = event.event;
+    if (dateEl) dateEl.textContent = new Date(event.date).toLocaleString();
+    if (previousEl) previousEl.textContent = event.previous || '--';
+    if (forecastEl) forecastEl.textContent = event.forecast || '--';
+    if (actualEl) actualEl.textContent = event.actual !== null ? event.actual : 'Not released';
+    
+    if (impactStarsEl) {
+      var stars = '';
+      for (var i = 0; i < 3; i++) {
+        if (i < (event.impact || 1)) stars += '<span style="color:#ff9800;font-size:16px;">★</span>';
+        else stars += '<span style="color:var(--text-muted);font-size:16px;">☆</span>';
+      }
+      impactStarsEl.innerHTML = stars;
+    }
+    
+    if (iconEl) {
+      if (event.category === 'Labor') iconEl.className = 'fas fa-briefcase';
+      else if (event.category === 'Inflation') iconEl.className = 'fas fa-chart-line';
+      else if (event.category === 'Central Bank') iconEl.className = 'fas fa-university';
+      else if (event.category === 'GDP') iconEl.className = 'fas fa-chart-simple';
+      else if (event.category === 'Crypto') iconEl.className = 'fab fa-bitcoin';
+      else iconEl.className = 'fas fa-chart-line';
+    }
+    
+    modal.classList.add('visible');
   }
 };
 
