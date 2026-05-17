@@ -2332,6 +2332,9 @@ button:active,.trade-type:active,.order-type-btn:active,.quick-amount-btn:active
     
     <!-- Place Order -->
     <button id="quick-trade-btn" class="place-order-btn buy">Place Buy Order</button>
+	    <button id="timed-order-btn" style="width: 100%; margin-top: 8px; padding: 10px; background: linear-gradient(135deg, #ff9800, #f57c00); color: white; border: none; border-radius: 8px; font-weight: 700; font-size: 12px; cursor: pointer;">
+      <i class="fas fa-hourglass-half"></i> Timed Order (Auto-close)
+    </button>
   </div>
 </div>
 
@@ -2390,7 +2393,24 @@ button:active,.trade-type:active,.order-type-btn:active,.quick-amount-btn:active
 <div id="positions-container" style="max-height: 300px; overflow-y: auto;">
   <!-- Dynamically populated -->
 </div>
-
+<!-- ============================================ -->
+<!-- SMART ORDERS (TIMED TRADES) - ADD THIS SECTION -->
+<!-- ============================================ -->
+<div class="right-section" style="border-bottom: 1px solid var(--border-primary);">
+  <div class="right-section-header">
+    <span class="section-title">
+      <i class="fas fa-hourglass-half" style="color: #ff9800;"></i> Timed Orders
+    </span>
+    <button class="section-btn" id="refresh-smart-orders" data-tooltip="Refresh" onclick="if(typeof SmartOrderSystem !== 'undefined') SmartOrderSystem.renderTimers();">
+      <i class="fas fa-sync-alt"></i>
+    </button>
+  </div>
+  <div id="active-timers-container" style="padding: 8px; max-height: 150px; overflow-y: auto;">
+    <div style="padding: 12px; text-align: center; color: var(--text-muted); font-size: 10px;">
+      No active timed orders
+    </div>
+  </div>
+</div>
 		<!-- ============================================ -->
 <!-- PORTFOLIO ANALYTICS PANEL -->
 <!-- ============================================ -->
