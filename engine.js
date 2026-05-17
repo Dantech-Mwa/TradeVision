@@ -27814,87 +27814,105 @@ const AIAssistant = {
   setupTriggers() {
   var self = this;
   
-  // Desktop AI button
+  // ============================================
+  // DIRECT HANDLER FOR EXISTING AI BUTTON
+  // ============================================
   setTimeout(function() {
-    var headerActions = document.querySelector('.header-actions');
-    if (headerActions && !document.getElementById('ai-assist-btn')) {
-      var btn = document.createElement('button');
-      btn.id = 'ai-assist-btn';
-      btn.className = 'action-btn';
-      btn.setAttribute('data-tooltip', 'AI Assistant (PRO/ULTIMATE)');
-      btn.innerHTML = '<i class="fas fa-robot"></i>';
-      btn.addEventListener('click', function() { self.open(); });
+    var aiBtn = document.getElementById('ai-assist-btn');
+    if (aiBtn) {
+      // Remove any existing listeners by cloning
+      var newBtn = aiBtn.cloneNode(true);
+      aiBtn.parentNode.replaceChild(newBtn, aiBtn);
       
-      var settingsBtn = document.getElementById('settings-btn');
-      if (settingsBtn) headerActions.insertBefore(btn, settingsBtn);
-      else headerActions.appendChild(btn);
-    }
-  }, 500);
-  
-  // Mobile AI button
-  setTimeout(function() {
-    var sheetMore = document.querySelector('#sheet-more > div');
-    if (sheetMore && !document.getElementById('mobile-ai-btn')) {
-      var mobBtn = document.createElement('button');
-      mobBtn.id = 'mobile-ai-btn';
-      mobBtn.className = 'mob-action-btn';
-      mobBtn.innerHTML = '<i class="fas fa-robot"></i> AI Assistant';
-      mobBtn.addEventListener('click', function() {
+      newBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('🤖 AI button clicked - opening modal');
         self.open();
+      });
+      console.log('✅ AI button click handler attached');
+    } else {
+      console.warn('⚠️ AI button not found in DOM, will retry...');
+      // Retry after delay
+      setTimeout(arguments.callee, 500);
+    }
+  }, 1000);
+  
+  // ============================================
+  // ALSO HANDLE MOBILE AI BUTTON
+  // ============================================
+  setTimeout(function() {
+    var mobileAiBtn = document.getElementById('mobile-ai-btn');
+    if (mobileAiBtn) {
+      var newMobileBtn = mobileAiBtn.cloneNode(true);
+      mobileAiBtn.parentNode.replaceChild(newMobileBtn, mobileAiBtn);
+      
+      newMobileBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('🤖 Mobile AI button clicked');
+        self.open();
+        // Close the bottom sheet
         var sheet = document.getElementById('mobile-bottom-sheet');
         if (sheet) sheet.style.transform = 'translateY(calc(100% - 52px))';
       });
-      sheetMore.appendChild(mobBtn);
+      console.log('✅ Mobile AI button click handler attached');
     }
-  }, 800);
+  }, 1000);
 },
   
   open() {
-    console.log('🤖 AI Assistant open() called');
+  console.log('🤖 AI Assistant open() called');
+  
+  var check = this.canUse();
+  console.log('🤖 canUse() result:', check);
+  
+  if (!check.allowed) {
+    console.warn('🤖 AI access denied:', check.reason);
     
-    var check = this.canUse();
-    console.log('🤖 canUse() result:', check);
-    
-    if (!check.allowed) {
-      console.warn('🤖 AI access denied:', check.reason);
-      
-      // Only show upgrade modal for FREE tier users
-      var tier = 'free';
-      try {
-        var session = JSON.parse(localStorage.getItem('tvp_session'));
-        if (session && session.subscription) tier = session.subscription;
-      } catch(e) {}
-      if (typeof UserSystem !== 'undefined' && UserSystem.subscription) {
-        tier = UserSystem.subscription;
-      }
-      
-      if (tier === 'free') {
-        var upgradeModal = document.getElementById('upgrade-modal');
-        if (upgradeModal) {
-          upgradeModal.classList.add('visible');
-          console.log('📢 Showing upgrade modal for free user');
-        }
-      } else {
-        // PRO/ULTIMATE user hit daily limit - show info silently
-        console.log('🔔 Daily limit reached for ' + tier + ' user: ' + this.dailyCount + '/' + this.getLimit());
-      }
-      return;
+    var tier = 'free';
+    try {
+      var session = JSON.parse(localStorage.getItem('tvp_session'));
+      if (session && session.subscription) tier = session.subscription;
+    } catch(e) {}
+    if (typeof UserSystem !== 'undefined' && UserSystem.subscription) {
+      tier = UserSystem.subscription;
     }
     
-    var modal = document.getElementById('ai-assistant-modal');
-    if (modal) {
-      modal.classList.add('visible');
-      this.updateContext();
-      this.updateUsageCounter();
-      setTimeout(function() {
-        var input = document.getElementById('ai-chat-input');
-        if (input) input.focus();
-      }, 300);
-      console.log('✅ AI modal opened successfully');
+    if (tier === 'free') {
+      var upgradeModal = document.getElementById('upgrade-modal');
+      if (upgradeModal) {
+        upgradeModal.classList.add('visible');
+        console.log('📢 Showing upgrade modal for free user');
+      }
     } else {
-      console.error('❌ AI modal element #ai-assistant-modal not found in DOM');
+      console.log('🔔 Daily limit reached for ' + tier + ' user');
+      if (typeof Toast !== 'undefined') {
+        Toast.warning('Daily AI limit reached. ' + this.dailyCount + '/' + this.getLimit());
+      }
     }
-  },
+    return;
+  }
+  
+  var modal = document.getElementById('ai-assistant-modal');
+  if (modal) {
+    modal.classList.add('visible');
+    this.updateContext();
+    this.updateUsageCounter();
+    console.log('✅ AI modal opened');
+    setTimeout(function() {
+      var input = document.getElementById('ai-chat-input');
+      if (input) input.focus();
+    }, 300);
+  } else {
+    console.error('❌ AI modal element #ai-assistant-modal not found in DOM');
+    // Create modal if it doesn't exist
+    this.createModal();
+    setTimeout(function() {
+      document.getElementById('ai-assistant-modal').classList.add('visible');
+    }, 100);
+  }
+},
   
   updateContext() {
     var bar = document.getElementById('ai-context-bar');
