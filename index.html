@@ -5581,7 +5581,263 @@ button:active,.trade-type:active,.order-type-btn:active,.quick-amount-btn:active
     window.FB = null;
     window.__FIREBASE_READY = false;
   }
-	// ============================================
+	
+</script>
+
+<!-- Load Engine AFTER Firebase -->
+<script src="engine.js"></script>
+<!-- Load Chart Libraries AFTER Engine if needed -->
+<script>
+  // Final check that everything loaded
+  document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+      if (window.FB && window.FB.auth) {
+        console.log('✅ Final verification: Firebase ready');
+      } else {
+        console.warn('⚠️ Final verification: Firebase NOT ready');
+      }
+    }, 1000);
+  });
+</script>
+
+<!-- ============================================ -->
+<!-- UI EVENT BINDING ONLY - NO ENGINE INIT HERE -->
+<!-- The engine.js main() handles all initialization -->
+<!-- ============================================ -->
+<script>
+(function() {
+  'use strict';
+  
+  // Wait for engine to be fully ready
+  function waitForEngine(callback) {
+    if (window.TradeVisionEngine && window.TradeVisionEngine.chart && window.TradeVisionEngine.chart.charts) {
+      callback();
+      return;
+    }
+    var attempts = 0;
+    var maxAttempts = 100; // 10 seconds max
+    var checkInterval = setInterval(function() {
+      attempts++;
+      if (window.TradeVisionEngine && window.TradeVisionEngine.chart && window.TradeVisionEngine.chart.charts) {
+        clearInterval(checkInterval);
+        console.log('✅ Engine ready after ' + (attempts * 100) + 'ms');
+        callback();
+      } else if (attempts >= maxAttempts) {
+        clearInterval(checkInterval);
+        console.error('❌ Engine failed to initialize after 10 seconds');
+      }
+    }, 100);
+  }
+  
+  waitForEngine(function() {
+    var engine = window.TradeVisionEngine;
+    
+    // ============================================
+    // MODAL BUTTONS (simple show/hide)
+    // ============================================
+    var modalMap = {
+      'indicators-btn': 'indicators-modal',
+      'drawing-tools-btn': 'drawing-tools-modal',
+      'market-depth-btn': 'market-depth-modal',
+      'news-btn': 'news-modal',
+      'alerts-btn': 'alerts-modal',
+      'settings-btn': 'settings-modal',
+      'watchlist-btn': 'watchlist-modal',
+      'trade-journal-btn': 'trade-journal-modal',
+      'backtest-btn': 'backtest-modal'
+    };
+    
+    Object.entries(modalMap).forEach(function(entry) {
+      var btnId = entry[0];
+      var modalId = entry[1];
+      var btn = document.getElementById(btnId);
+      var modal = document.getElementById(modalId);
+      if (btn && modal) {
+        btn.addEventListener('click', function() {
+          modal.classList.add('visible');
+        });
+      }
+    });
+    
+    // ============================================
+    // CHART TYPE BUTTONS
+    // ============================================
+    document.querySelectorAll('.ct-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var type = this.dataset.type;
+        if (type && engine.chart && engine.chart.changeChartType) {
+          document.querySelectorAll('.ct-btn').forEach(function(b) { b.classList.remove('active'); });
+          this.classList.add('active');
+          engine.chart.changeChartType(type);
+        }
+      });
+    });
+    
+    // ============================================
+    // FULLSCREEN
+    // ============================================
+    var fullscreenBtn = document.getElementById('fullscreen-btn');
+    if (fullscreenBtn) {
+      fullscreenBtn.addEventListener('click', function() {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(function(){});
+        } else {
+          document.exitFullscreen();
+        }
+      });
+    }
+    
+    // ============================================
+    // THEME TOGGLE
+    // ============================================
+    var themeBtn = document.getElementById('theme-toggle-btn');
+    if (themeBtn) {
+      themeBtn.addEventListener('click', function() {
+        if (engine.toggleTheme) {
+          engine.toggleTheme();
+        } else {
+          var body = document.body;
+          var current = body.getAttribute('data-theme') || 'dark';
+          var next = current === 'dark' ? 'light' : 'dark';
+          body.setAttribute('data-theme', next);
+          var icon = this.querySelector('i');
+          if (icon) icon.className = next === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+        }
+      });
+    }
+    
+    // ============================================
+    // LIVE TRADE BUTTONS
+    // ============================================
+    var liveBuyBtn = document.getElementById('live-buy-btn');
+    var liveSellBtn = document.getElementById('live-sell-btn');
+    if (liveBuyBtn) {
+      liveBuyBtn.addEventListener('click', function() {
+        if (typeof BrokerModal !== 'undefined') BrokerModal.open('buy');
+      });
+    }
+    if (liveSellBtn) {
+      liveSellBtn.addEventListener('click', function() {
+        if (typeof BrokerModal !== 'undefined') BrokerModal.open('sell');
+      });
+    }
+    
+    // ============================================
+    // CHART TRADE BUTTONS (floating over chart)
+    // ============================================
+    var chartBuyBtn = document.getElementById('chart-buy-btn');
+    var chartSellBtn = document.getElementById('chart-sell-btn');
+    if (chartBuyBtn) {
+      chartBuyBtn.addEventListener('click', function() {
+        if (typeof BrokerModal !== 'undefined') BrokerModal.open('buy');
+      });
+    }
+    if (chartSellBtn) {
+      chartSellBtn.addEventListener('click', function() {
+        if (typeof BrokerModal !== 'undefined') BrokerModal.open('sell');
+      });
+    }
+    
+    // ============================================
+    // SYMBOL PILLS (quick symbol selector)
+    // ============================================
+    document.querySelectorAll('.symbol-pill').forEach(function(pill) {
+      pill.addEventListener('click', function() {
+        var symbol = this.dataset.symbol;
+        if (symbol && engine.changeSymbol) {
+          document.querySelectorAll('.symbol-pill').forEach(function(p) { p.classList.remove('active'); });
+          this.classList.add('active');
+          engine.changeSymbol(symbol);
+        }
+      });
+    });
+    
+    // ============================================
+    // ZOOM CONTROLS
+    // ============================================
+    document.getElementById('zoom-in-btn')?.addEventListener('click', function() {
+      if (engine.chart && engine.chart.zoomIn) engine.chart.zoomIn();
+    });
+    document.getElementById('zoom-out-btn')?.addEventListener('click', function() {
+      if (engine.chart && engine.chart.zoomOut) engine.chart.zoomOut();
+    });
+    document.getElementById('auto-fit-btn')?.addEventListener('click', function() {
+      if (engine.chart && engine.chart.fitContent) engine.chart.fitContent();
+    });
+    
+    // ============================================
+    // CROSSHAIR TOGGLE
+    // ============================================
+    var crosshairBtn = document.getElementById('crosshair-btn');
+    if (crosshairBtn) {
+      crosshairBtn.addEventListener('click', function() {
+        this.classList.toggle('active');
+      });
+    }
+    
+    // ============================================
+    // TOGGLE DRAWINGS VISIBILITY
+    // ============================================
+    var toggleDrawings = document.getElementById('toggle-drawings-btn');
+    if (toggleDrawings) {
+      toggleDrawings.addEventListener('click', function() {
+        this.classList.toggle('active');
+        var canvas = document.getElementById('drawing-canvas');
+        if (canvas) {
+          var isVisible = canvas.style.display !== 'none';
+          canvas.style.display = isVisible ? 'none' : 'block';
+          if (!isVisible) canvas.style.pointerEvents = 'none';
+        }
+      });
+    }
+    
+    // ============================================
+    // TOGGLE GRID
+    // ============================================
+    var toggleGrid = document.getElementById('toggle-grid-btn');
+    if (toggleGrid) {
+      toggleGrid.addEventListener('click', function() {
+        this.classList.toggle('active');
+      });
+    }
+    
+    console.log('✅ UI event binding complete (engine handles all init)');
+  });
+  
+})();
+</script>
+	<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const checkEngine = setInterval(function() {
+      if (window.TradeVisionEngine) {
+        clearInterval(checkEngine);
+        
+        // Initialize engine
+        window.TradeVisionEngine.init({
+          symbol: 'BTCUSDT',
+          interval: '15m',
+          chartType: 'candlestick'  // ADD THIS
+        });
+        
+        // Force chart type to candlestick
+        setTimeout(function() {
+          if (window.TradeVisionEngine && window.TradeVisionEngine.chart) {
+            // Set chart type explicitly
+            const chartTypeBtns = document.querySelectorAll('.ct-btn');
+            chartTypeBtns.forEach(btn => {
+              btn.classList.remove('active');
+              if (btn.dataset.type === 'candlestick') {
+                btn.classList.add('active');
+              }
+            });
+          }
+        }, 1000);
+      }
+    }, 100);
+  });
+</script>
+	<script>
+// ============================================
 // PHASE 8: INSTITUTIONAL CHART FEATURES
 // BAR REPLAY + MULTI-TIMEFRAME OVERLAY
 // Insert this entire block into Chart.html
@@ -6120,259 +6376,6 @@ button:active,.trade-type:active,.order-type-btn:active,.quick-amount-btn:active
   
   waitForChartEngine();
 })();
-</script>
-
-<!-- Load Engine AFTER Firebase -->
-<script src="engine.js"></script>
-<!-- Load Chart Libraries AFTER Engine if needed -->
-<script>
-  // Final check that everything loaded
-  document.addEventListener('DOMContentLoaded', function() {
-    setTimeout(function() {
-      if (window.FB && window.FB.auth) {
-        console.log('✅ Final verification: Firebase ready');
-      } else {
-        console.warn('⚠️ Final verification: Firebase NOT ready');
-      }
-    }, 1000);
-  });
-</script>
-
-<!-- ============================================ -->
-<!-- UI EVENT BINDING ONLY - NO ENGINE INIT HERE -->
-<!-- The engine.js main() handles all initialization -->
-<!-- ============================================ -->
-<script>
-(function() {
-  'use strict';
-  
-  // Wait for engine to be fully ready
-  function waitForEngine(callback) {
-    if (window.TradeVisionEngine && window.TradeVisionEngine.chart && window.TradeVisionEngine.chart.charts) {
-      callback();
-      return;
-    }
-    var attempts = 0;
-    var maxAttempts = 100; // 10 seconds max
-    var checkInterval = setInterval(function() {
-      attempts++;
-      if (window.TradeVisionEngine && window.TradeVisionEngine.chart && window.TradeVisionEngine.chart.charts) {
-        clearInterval(checkInterval);
-        console.log('✅ Engine ready after ' + (attempts * 100) + 'ms');
-        callback();
-      } else if (attempts >= maxAttempts) {
-        clearInterval(checkInterval);
-        console.error('❌ Engine failed to initialize after 10 seconds');
-      }
-    }, 100);
-  }
-  
-  waitForEngine(function() {
-    var engine = window.TradeVisionEngine;
-    
-    // ============================================
-    // MODAL BUTTONS (simple show/hide)
-    // ============================================
-    var modalMap = {
-      'indicators-btn': 'indicators-modal',
-      'drawing-tools-btn': 'drawing-tools-modal',
-      'market-depth-btn': 'market-depth-modal',
-      'news-btn': 'news-modal',
-      'alerts-btn': 'alerts-modal',
-      'settings-btn': 'settings-modal',
-      'watchlist-btn': 'watchlist-modal',
-      'trade-journal-btn': 'trade-journal-modal',
-      'backtest-btn': 'backtest-modal'
-    };
-    
-    Object.entries(modalMap).forEach(function(entry) {
-      var btnId = entry[0];
-      var modalId = entry[1];
-      var btn = document.getElementById(btnId);
-      var modal = document.getElementById(modalId);
-      if (btn && modal) {
-        btn.addEventListener('click', function() {
-          modal.classList.add('visible');
-        });
-      }
-    });
-    
-    // ============================================
-    // CHART TYPE BUTTONS
-    // ============================================
-    document.querySelectorAll('.ct-btn').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        var type = this.dataset.type;
-        if (type && engine.chart && engine.chart.changeChartType) {
-          document.querySelectorAll('.ct-btn').forEach(function(b) { b.classList.remove('active'); });
-          this.classList.add('active');
-          engine.chart.changeChartType(type);
-        }
-      });
-    });
-    
-    // ============================================
-    // FULLSCREEN
-    // ============================================
-    var fullscreenBtn = document.getElementById('fullscreen-btn');
-    if (fullscreenBtn) {
-      fullscreenBtn.addEventListener('click', function() {
-        if (!document.fullscreenElement) {
-          document.documentElement.requestFullscreen().catch(function(){});
-        } else {
-          document.exitFullscreen();
-        }
-      });
-    }
-    
-    // ============================================
-    // THEME TOGGLE
-    // ============================================
-    var themeBtn = document.getElementById('theme-toggle-btn');
-    if (themeBtn) {
-      themeBtn.addEventListener('click', function() {
-        if (engine.toggleTheme) {
-          engine.toggleTheme();
-        } else {
-          var body = document.body;
-          var current = body.getAttribute('data-theme') || 'dark';
-          var next = current === 'dark' ? 'light' : 'dark';
-          body.setAttribute('data-theme', next);
-          var icon = this.querySelector('i');
-          if (icon) icon.className = next === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
-        }
-      });
-    }
-    
-    // ============================================
-    // LIVE TRADE BUTTONS
-    // ============================================
-    var liveBuyBtn = document.getElementById('live-buy-btn');
-    var liveSellBtn = document.getElementById('live-sell-btn');
-    if (liveBuyBtn) {
-      liveBuyBtn.addEventListener('click', function() {
-        if (typeof BrokerModal !== 'undefined') BrokerModal.open('buy');
-      });
-    }
-    if (liveSellBtn) {
-      liveSellBtn.addEventListener('click', function() {
-        if (typeof BrokerModal !== 'undefined') BrokerModal.open('sell');
-      });
-    }
-    
-    // ============================================
-    // CHART TRADE BUTTONS (floating over chart)
-    // ============================================
-    var chartBuyBtn = document.getElementById('chart-buy-btn');
-    var chartSellBtn = document.getElementById('chart-sell-btn');
-    if (chartBuyBtn) {
-      chartBuyBtn.addEventListener('click', function() {
-        if (typeof BrokerModal !== 'undefined') BrokerModal.open('buy');
-      });
-    }
-    if (chartSellBtn) {
-      chartSellBtn.addEventListener('click', function() {
-        if (typeof BrokerModal !== 'undefined') BrokerModal.open('sell');
-      });
-    }
-    
-    // ============================================
-    // SYMBOL PILLS (quick symbol selector)
-    // ============================================
-    document.querySelectorAll('.symbol-pill').forEach(function(pill) {
-      pill.addEventListener('click', function() {
-        var symbol = this.dataset.symbol;
-        if (symbol && engine.changeSymbol) {
-          document.querySelectorAll('.symbol-pill').forEach(function(p) { p.classList.remove('active'); });
-          this.classList.add('active');
-          engine.changeSymbol(symbol);
-        }
-      });
-    });
-    
-    // ============================================
-    // ZOOM CONTROLS
-    // ============================================
-    document.getElementById('zoom-in-btn')?.addEventListener('click', function() {
-      if (engine.chart && engine.chart.zoomIn) engine.chart.zoomIn();
-    });
-    document.getElementById('zoom-out-btn')?.addEventListener('click', function() {
-      if (engine.chart && engine.chart.zoomOut) engine.chart.zoomOut();
-    });
-    document.getElementById('auto-fit-btn')?.addEventListener('click', function() {
-      if (engine.chart && engine.chart.fitContent) engine.chart.fitContent();
-    });
-    
-    // ============================================
-    // CROSSHAIR TOGGLE
-    // ============================================
-    var crosshairBtn = document.getElementById('crosshair-btn');
-    if (crosshairBtn) {
-      crosshairBtn.addEventListener('click', function() {
-        this.classList.toggle('active');
-      });
-    }
-    
-    // ============================================
-    // TOGGLE DRAWINGS VISIBILITY
-    // ============================================
-    var toggleDrawings = document.getElementById('toggle-drawings-btn');
-    if (toggleDrawings) {
-      toggleDrawings.addEventListener('click', function() {
-        this.classList.toggle('active');
-        var canvas = document.getElementById('drawing-canvas');
-        if (canvas) {
-          var isVisible = canvas.style.display !== 'none';
-          canvas.style.display = isVisible ? 'none' : 'block';
-          if (!isVisible) canvas.style.pointerEvents = 'none';
-        }
-      });
-    }
-    
-    // ============================================
-    // TOGGLE GRID
-    // ============================================
-    var toggleGrid = document.getElementById('toggle-grid-btn');
-    if (toggleGrid) {
-      toggleGrid.addEventListener('click', function() {
-        this.classList.toggle('active');
-      });
-    }
-    
-    console.log('✅ UI event binding complete (engine handles all init)');
-  });
-  
-})();
-</script>
-	<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    const checkEngine = setInterval(function() {
-      if (window.TradeVisionEngine) {
-        clearInterval(checkEngine);
-        
-        // Initialize engine
-        window.TradeVisionEngine.init({
-          symbol: 'BTCUSDT',
-          interval: '15m',
-          chartType: 'candlestick'  // ADD THIS
-        });
-        
-        // Force chart type to candlestick
-        setTimeout(function() {
-          if (window.TradeVisionEngine && window.TradeVisionEngine.chart) {
-            // Set chart type explicitly
-            const chartTypeBtns = document.querySelectorAll('.ct-btn');
-            chartTypeBtns.forEach(btn => {
-              btn.classList.remove('active');
-              if (btn.dataset.type === 'candlestick') {
-                btn.classList.add('active');
-              }
-            });
-          }
-        }, 1000);
-      }
-    }, 100);
-  });
-</script>
+	</script>
 </body>
 </html>
