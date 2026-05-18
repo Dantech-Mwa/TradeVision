@@ -29138,6 +29138,7 @@ window.TradeVisionEngine = {
 };
 
 console.log('🚀 TradeVision');
+
 const AIAssistant = {
   messages: [],
   isProcessing: false,
@@ -29349,11 +29350,9 @@ const AIAssistant = {
   setupTriggers() {
     var self = this;
     
-    // Find and attach to the existing AI button in the HTML
     setTimeout(function() {
       var aiBtn = document.getElementById('ai-assist-btn');
       if (aiBtn) {
-        // Remove existing listeners by cloning
         var newBtn = aiBtn.cloneNode(true);
         aiBtn.parentNode.replaceChild(newBtn, aiBtn);
         
@@ -29370,7 +29369,6 @@ const AIAssistant = {
       }
     }, 500);
     
-    // Mobile AI button
     setTimeout(function() {
       var mobileAiBtn = document.getElementById('mobile-ai-btn');
       if (mobileAiBtn) {
@@ -29476,13 +29474,11 @@ const AIAssistant = {
     var messagesEl = document.getElementById('ai-messages');
     if (!messagesEl) return;
     
-    // Add user message
     var userDiv = document.createElement('div');
     userDiv.style.cssText = 'display:flex;gap:8px;flex-direction:row-reverse;margin-bottom:10px;';
     userDiv.innerHTML = '<div style="width:26px;height:26px;border-radius:50%;background:var(--accent-primary);display:flex;align-items:center;justify-content:center;color:white;font-size:9px;font-weight:700;">YOU</div><div style="background:var(--accent-muted);padding:10px 14px;border-radius:12px;font-size:12px;color:var(--text-primary);max-width:80%;line-height:1.5;">' + text.replace(/</g,'&lt;') + '</div>';
     messagesEl.appendChild(userDiv);
     
-    // Typing indicator
     var typingDiv = document.createElement('div');
     typingDiv.id = 'ai-typing';
     typingDiv.style.cssText = 'display:flex;gap:8px;margin-bottom:10px;';
@@ -29494,24 +29490,35 @@ const AIAssistant = {
     
     try {
       var aiResponse = null;
+      var lowerText = text.toLowerCase();
       
+      // LOCAL ANALYSIS MODE - NO API CALLS
       if (this.useLocalAnalysis) {
-        // Use local chart analysis
-        aiResponse = this.analyzeLocalChart();
-        if (text.toLowerCase().includes('trend')) {
-          aiResponse = "📈 **Trend Analysis:**\n\n" + aiResponse;
-        } else if (text.toLowerCase().includes('rsi')) {
-          aiResponse = "⚡ **RSI Analysis:**\n\n" + aiResponse;
+        console.log('📊 Using LOCAL analysis mode - no API calls');
+        
+        if (lowerText.includes('trend') && !lowerText.includes('full') && !lowerText.includes('complete')) {
+          aiResponse = this.extractTrendOnly();
+        } else if (lowerText.includes('rsi')) {
+          aiResponse = this.extractRSIOnly();
+        } else if (lowerText.includes('volume')) {
+          aiResponse = this.extractVolumeOnly();
+        } else if (lowerText.includes('support') || lowerText.includes('resistance') || lowerText.includes('s/r')) {
+          aiResponse = this.extractSROnly();
+        } else if (lowerText.includes('setup') || lowerText.includes('entry') || lowerText.includes('trade') || lowerText.includes('recommendation')) {
+          aiResponse = this.generateTradeSetup();
+        } else if (lowerText.includes('full') || lowerText.includes('complete') || lowerText.includes('analyze')) {
+          aiResponse = this.analyzeLocalChart();
         } else {
-          aiResponse = "📊 **Chart Analysis:**\n\n" + aiResponse;
+          aiResponse = this.analyzeLocalChart();
         }
-      } else {
-        // Use DeepSeek API
+      } 
+      // DEEPSEEK API MODE
+      else {
+        console.log('🌐 Using DeepSeek API mode');
         var systemPrompt = this.buildSystemPrompt();
         this.messages.push({ role: 'user', content: text });
         var allMessages = [{ role: 'system', content: systemPrompt }].concat(this.messages.slice(-8));
         
-        // Try multiple backends
         var backends = [
           this.apiEndpoint,
           'https://tradevision-backend.wambuamwanza6.workers.dev/api',
@@ -29534,25 +29541,24 @@ const AIAssistant = {
             if (res.ok) {
               var data = await res.json();
               aiResponse = data.choices && data.choices[0] && data.choices[0].message ? data.choices[0].message.content : null;
-              if (aiResponse) break;
+              if (aiResponse) {
+                this.messages.push({ role: 'assistant', content: aiResponse });
+                this.dailyCount++;
+                localStorage.setItem('tvp_ai_count', this.dailyCount);
+                this.updateUsageCounter();
+                break;
+              }
             }
           } catch(err) {
             console.warn('AI backend failed:', err.message);
           }
         }
         
-        if (aiResponse) {
-          this.messages.push({ role: 'assistant', content: aiResponse });
-          this.dailyCount++;
-          localStorage.setItem('tvp_ai_count', this.dailyCount);
-          this.updateUsageCounter();
-        } else {
-          // Fallback to local analysis if API fails
+        if (!aiResponse) {
           aiResponse = "⚠️ DeepSeek API temporarily unavailable. Using local analysis instead:\n\n" + this.analyzeLocalChart();
         }
       }
       
-      // Remove typing indicator
       var typing = document.getElementById('ai-typing');
       if (typing) typing.remove();
       
@@ -29560,7 +29566,6 @@ const AIAssistant = {
         aiResponse = "I'm having trouble analyzing the chart right now. Please try again in a moment.";
       }
       
-      // Add assistant message
       var aiDiv = document.createElement('div');
       aiDiv.style.cssText = 'display:flex;gap:8px;margin-bottom:10px;';
       aiDiv.innerHTML = '<span style="font-size:20px;">🤖</span><div style="background:var(--bg-tertiary);padding:10px 14px;border-radius:12px;font-size:12px;color:var(--text-primary);max-width:85%;line-height:1.6;">' + 
@@ -29575,17 +29580,24 @@ const AIAssistant = {
       var typing = document.getElementById('ai-typing');
       if (typing) typing.remove();
       
-      var errDiv = document.createElement('div');
-      errDiv.style.cssText = 'display:flex;gap:8px;margin-bottom:10px;';
-      errDiv.innerHTML = '<span style="font-size:20px;">⚠️</span><div style="background:var(--danger-muted);padding:10px 14px;border-radius:12px;font-size:12px;color:var(--danger);">' +
-        'AI service temporarily unavailable. Please try again in a few moments.' +
-        '</div>';
-      messagesEl.appendChild(errDiv);
       console.error('AI error:', e.message);
+      
+      // FALLBACK: Try to respond even if error occurred
+      var fallbackResponse = this.getFallbackResponse(text);
+      var aiDiv = document.createElement('div');
+      aiDiv.style.cssText = 'display:flex;gap:8px;margin-bottom:10px;';
+      aiDiv.innerHTML = '<span style="font-size:20px;">🤖</span><div style="background:var(--bg-tertiary);padding:10px 14px;border-radius:12px;font-size:12px;color:var(--text-primary);max-width:85%;line-height:1.6;">' + 
+        fallbackResponse.replace(/\n/g,'<br>') + 
+        '</div>';
+      messagesEl.appendChild(aiDiv);
     }
     
     this.isProcessing = false;
   },
+  
+  // ============================================
+  // LOCAL ANALYSIS METHODS - PROFESSIONAL STYLE
+  // ============================================
   
   analyzeLocalChart: function() {
     var candles = STATE.candles;
@@ -29669,7 +29681,7 @@ const AIAssistant = {
       volStatus = "📈 NORMAL VOLUME - Stable conditions";
     }
     
-    // Build Report
+    // Build Professional Report
     var report = "";
     report += "╔═══════════════════════════════════════════════════════════════════════╗\n";
     report += "║                    📊 AI CHART ANALYSIS REPORT                        ║\n";
@@ -29719,6 +29731,536 @@ const AIAssistant = {
     return report;
   },
   
+  extractTrendOnly: function() {
+    var candles = STATE.candles;
+    if (!candles || candles.length < 30) return "⚠️ Not enough data for trend analysis.";
+    
+    var closes = candles.map(function(c) { return c.close; });
+    var currentPrice = closes[closes.length - 1];
+    var change24h = STATE.change24h || 0;
+    var symbol = STATE.symbol ? STATE.symbol.replace('USDT', '/USDT') : 'Unknown';
+    
+    var sma20 = 0;
+    for (var i = closes.length - 20; i < closes.length; i++) sma20 += closes[i];
+    sma20 = sma20 / 20;
+    
+    var sma50 = 0;
+    for (var i = closes.length - 50; i < closes.length; i++) sma50 += closes[i];
+    sma50 = sma50 / 50;
+    
+    var ema20 = 0;
+    var k = 2 / (20 + 1);
+    var sum = 0;
+    for (var i = 0; i < 20; i++) sum += closes[i];
+    ema20 = sum / 20;
+    for (var i = 20; i < closes.length; i++) {
+      ema20 = closes[i] * k + ema20 * (1 - k);
+    }
+    
+    var trend = "";
+    var recommendation = "";
+    
+    if (currentPrice > sma20 && currentPrice > sma50 && sma20 > sma50) {
+      trend = "🟢 STRONG BULLISH UPTREND";
+      recommendation = "Look for buying opportunities on pullbacks to the 20 EMA or support levels. Consider using trailing stops to protect profits.";
+    } else if (currentPrice > sma20 && currentPrice > sma50) {
+      trend = "🟢 BULLISH - Price above MAs, but MAs not aligned";
+      recommendation = "Cautious bullish bias. Wait for MA alignment or confirmation before entering new longs.";
+    } else if (currentPrice < sma20 && currentPrice < sma50 && sma20 < sma50) {
+      trend = "🔴 STRONG BEARISH DOWNTREND";
+      recommendation = "Avoid long positions. Look for short opportunities on rallies to resistance or the 20 EMA.";
+    } else if (currentPrice < sma20 && currentPrice < sma50) {
+      trend = "🔴 BEARISH - Price below MAs, but MAs not aligned";
+      recommendation = "Cautious bearish bias. Wait for confirmation before entering shorts.";
+    } else {
+      trend = "🟡 CONSOLIDATION / CHOPPY";
+      recommendation = "No clear trend. Consider range-bound strategies or wait for a breakout. Reduce position sizes.";
+    }
+    
+    var report = "";
+    report += "╔════════════════════════════════════════════════════════════╗\n";
+    report += "║                    📈 TREND ANALYSIS                        ║\n";
+    report += "╠════════════════════════════════════════════════════════════╣\n";
+    report += "║                                                            ║\n";
+    report += "║  SYMBOL: " + symbol.padEnd(43) + "║\n";
+    report += "║  CURRENT: $" + this._formatPrice(currentPrice).padEnd(43) + "║\n";
+    report += "║  24h CHANGE: " + (change24h >= 0 ? "+" : "") + change24h.toFixed(2) + "%".padEnd(43) + "║\n";
+    report += "║  TREND: " + trend.padEnd(43) + "║\n";
+    report += "║                                                            ║\n";
+    report += "╠════════════════════════════════════════════════════════════╣\n";
+    report += "║  📊 MOVING AVERAGES:                                       ║\n";
+    report += "║  20 SMA: $" + this._formatPrice(sma20).padEnd(43) + "║\n";
+    report += "║  50 SMA: $" + this._formatPrice(sma50).padEnd(43) + "║\n";
+    report += "║  20 EMA: $" + this._formatPrice(ema20).padEnd(43) + "║\n";
+    report += "║                                                            ║\n";
+    report += "╠════════════════════════════════════════════════════════════╣\n";
+    report += "║  🎯 RECOMMENDATION:                                        ║\n";
+    var wrappedRec = recommendation.match(/.{1,45}/g) || [recommendation];
+    for (var r = 0; r < wrappedRec.length; r++) {
+      report += "║     " + wrappedRec[r].padEnd(43) + "║\n";
+    }
+    report += "║                                                            ║\n";
+    report += "╚════════════════════════════════════════════════════════════╝";
+    
+    return report;
+  },
+  
+  extractRSIOnly: function() {
+    var candles = STATE.candles;
+    if (!candles || candles.length < 30) return "⚠️ Not enough data for RSI analysis.";
+    
+    var closes = candles.map(function(c) { return c.close; });
+    var currentPrice = closes[closes.length - 1];
+    var symbol = STATE.symbol ? STATE.symbol.replace('USDT', '/USDT') : 'Unknown';
+    
+    var gains = 0, losses = 0;
+    for (var i = closes.length - 15; i < closes.length; i++) {
+      var change = closes[i] - closes[i - 1];
+      if (change >= 0) gains += change;
+      else losses -= change;
+    }
+    var avgGain = gains / 14;
+    var avgLoss = losses / 14;
+    var rsi = avgLoss === 0 ? 100 : 100 - (100 / (1 + avgGain / avgLoss));
+    
+    // Calculate RSI trend (comparing to 7 periods ago)
+    var gains7 = 0, losses7 = 0;
+    var startIdx = Math.max(0, closes.length - 22);
+    for (var i = startIdx + 7; i < startIdx + 15; i++) {
+      var change7 = closes[i] - closes[i - 1];
+      if (change7 >= 0) gains7 += change7;
+      else losses7 -= change7;
+    }
+    var avgGain7 = gains7 / 14;
+    var avgLoss7 = losses7 / 14;
+    var rsi7 = avgLoss7 === 0 ? 100 : 100 - (100 / (1 + avgGain7 / avgLoss7));
+    
+    var rsiTrend = rsi > rsi7 ? "⬆️ RISING (increasing momentum)" : "⬇️ FALLING (decreasing momentum)";
+    
+    var status = "";
+    var advice = "";
+    var signalStrength = "";
+    
+    if (rsi > 80) {
+      status = "🔴 EXTREME OVERBOUGHT";
+      advice = "STRONG SELL signal - Take profits immediately. Price likely to reverse down.";
+      signalStrength = "🔥 Strong";
+    } else if (rsi > 70) {
+      status = "⚠️ OVERBOUGHT";
+      advice = "SELL signal - Consider taking partial profits. Avoid new longs.";
+      signalStrength = "⚡ Moderate";
+    } else if (rsi < 20) {
+      status = "🟢 EXTREME OVERSOLD";
+      advice = "STRONG BUY signal - Watch for reversal patterns. Excellent entry zone.";
+      signalStrength = "🔥 Strong";
+    } else if (rsi < 30) {
+      status = "✅ OVERSOLD";
+      advice = "BUY signal - Buying opportunity near. Look for bullish confirmation candles.";
+      signalStrength = "⚡ Moderate";
+    } else if (rsi > 50) {
+      status = "📈 BULLISH MOMENTUM";
+      advice = "HOLD or ADD on pullbacks. Uptrend likely to continue.";
+      signalStrength = "💪 Bullish";
+    } else {
+      status = "📉 BEARISH MOMENTUM";
+      advice = "AVOID longs. Consider shorts or stay in cash.";
+      signalStrength = "👎 Bearish";
+    }
+    
+    var report = "";
+    report += "╔════════════════════════════════════════════════════════════╗\n";
+    report += "║                    ⚡ RSI ANALYSIS                          ║\n";
+    report += "╠════════════════════════════════════════════════════════════╣\n";
+    report += "║                                                            ║\n";
+    report += "║  SYMBOL: " + symbol.padEnd(43) + "║\n";
+    report += "║  PRICE: $" + this._formatPrice(currentPrice).padEnd(43) + "║\n";
+    report += "║  RSI (14): " + rsi.toFixed(1) + " - " + status.padEnd(43) + "║\n";
+    report += "║  RSI TREND: " + rsiTrend.padEnd(43) + "║\n";
+    report += "║  SIGNAL: " + signalStrength.padEnd(43) + "║\n";
+    report += "║                                                            ║\n";
+    report += "╠════════════════════════════════════════════════════════════╣\n";
+    report += "║  💡 INTERPRETATION:                                        ║\n";
+    report += "║     " + advice.substring(0, 45).padEnd(43) + "║\n";
+    report += "║                                                            ║\n";
+    if (rsi > 70) {
+      report += "║  📉 Bearish Divergence Check:                              ║\n";
+      report += "║     Price making higher highs while RSI makes lower highs ║\n";
+      report += "║     would confirm reversal. Monitor for this pattern.     ║\n";
+    } else if (rsi < 30) {
+      report += "║  📈 Bullish Divergence Check:                              ║\n";
+      report += "║     Price making lower lows while RSI makes higher lows   ║\n";
+      report += "║     would confirm reversal. Watch for divergence.         ║\n";
+    }
+    report += "║                                                            ║\n";
+    report += "╚════════════════════════════════════════════════════════════╝";
+    
+    return report;
+  },
+  
+  extractVolumeOnly: function() {
+    var candles = STATE.candles;
+    if (!candles || candles.length < 30) return "⚠️ Not enough data for volume analysis.";
+    
+    var volumes = candles.map(function(c) { return c.volume; });
+    var closes = candles.map(function(c) { return c.close; });
+    var symbol = STATE.symbol ? STATE.symbol.replace('USDT', '/USDT') : 'Unknown';
+    
+    var avgVol = 0;
+    for (var i = volumes.length - 21; i < volumes.length - 1; i++) avgVol += volumes[i];
+    avgVol = avgVol / 20;
+    var lastVol = volumes[volumes.length - 1];
+    var volRatio = lastVol / avgVol;
+    
+    var prevVol = volumes.length > 30 ? volumes[volumes.length - 2] : 0;
+    var volChange = prevVol > 0 ? ((lastVol - prevVol) / prevVol) * 100 : 0;
+    
+    var status = "";
+    var implication = "";
+    
+    if (volRatio > 2) {
+      status = "🔥 EXTREME VOLUME SPIKE";
+      implication = "High conviction move. Strong institutional interest. Trend likely to continue.";
+    } else if (volRatio > 1.5) {
+      status = "📊 ABOVE AVERAGE VOLUME";
+      implication = "Healthy volume confirms price movement. Good for trend following.";
+    } else if (volRatio < 0.5) {
+      status = "😴 LOW VOLUME";
+      implication = "Breakout may lack conviction. Be cautious - false moves possible.";
+    } else if (volRatio < 0.8) {
+      status = "📉 BELOW AVERAGE VOLUME";
+      implication = "Quiet market conditions. Range-bound trading likely.";
+    } else {
+      status = "📈 NORMAL VOLUME";
+      implication = "Stable market conditions. Normal trading activity.";
+    }
+    
+    var lastChange = closes[closes.length - 1] - closes[closes.length - 2];
+    var isGreen = lastChange >= 0;
+    var priceVolRelation = isGreen ? "Green candle with " + (volRatio > 1.5 ? "high" : volRatio < 0.8 ? "low" : "normal") + " volume = " : "Red candle with " + (volRatio > 1.5 ? "high" : volRatio < 0.8 ? "low" : "normal") + " volume = ";
+    priceVolRelation += (isGreen && volRatio > 1.5) ? "Bullish confirmation ✓" : 
+                        (isGreen && volRatio < 0.8) ? "Weak bullish - caution ⚠️" :
+                        (!isGreen && volRatio > 1.5) ? "Bearish confirmation ✓" :
+                        (!isGreen && volRatio < 0.8) ? "Weak bearish - caution ⚠️" : "Neutral";
+    
+    var report = "";
+    report += "╔════════════════════════════════════════════════════════════╗\n";
+    report += "║                    📊 VOLUME ANALYSIS                      ║\n";
+    report += "╠════════════════════════════════════════════════════════════╣\n";
+    report += "║                                                            ║\n";
+    report += "║  SYMBOL: " + symbol.padEnd(43) + "║\n";
+    report += "║  CURRENT VOLUME: " + this._formatVolume(lastVol).padEnd(43) + "║\n";
+    report += "║  20-PERIOD AVG: " + this._formatVolume(avgVol).padEnd(43) + "║\n";
+    report += "║  VOLUME RATIO: " + volRatio.toFixed(2) + "x avg".padEnd(43) + "║\n";
+    report += "║  1-CANDLE CHANGE: " + (volChange >= 0 ? "+" : "") + volChange.toFixed(1) + "%".padEnd(43) + "║\n";
+    report += "║                                                            ║\n";
+    report += "╠════════════════════════════════════════════════════════════╣\n";
+    report += "║  📊 VOLUME STATUS: " + status.padEnd(43) + "║\n";
+    report += "║                                                            ║\n";
+    report += "║  💡 IMPLICATION:                                          ║\n";
+    report += "║     " + implication.substring(0, 45).padEnd(43) + "║\n";
+    report += "║                                                            ║\n";
+    report += "║  🔗 PRICE-VOLUME RELATIONSHIP:                             ║\n";
+    report += "║     " + priceVolRelation.substring(0, 45).padEnd(43) + "║\n";
+    report += "║                                                            ║\n";
+    report += "╚════════════════════════════════════════════════════════════╝";
+    
+    return report;
+  },
+  
+  extractSROnly: function() {
+    var candles = STATE.candles;
+    if (!candles || candles.length < 50) return "⚠️ Not enough data for support/resistance analysis.";
+    
+    var closes = candles.map(function(c) { return c.close; });
+    var highs = candles.map(function(c) { return c.high; });
+    var lows = candles.map(function(c) { return c.low; });
+    var currentPrice = closes[closes.length - 1];
+    var symbol = STATE.symbol ? STATE.symbol.replace('USDT', '/USDT') : 'Unknown';
+    
+    // Find swing highs and lows
+    var swingHighs = [];
+    var swingLows = [];
+    var lookback = Math.min(30, Math.floor(candles.length / 2));
+    
+    for (var i = 10; i < candles.length - 10; i++) {
+      var isHigh = true;
+      var isLow = true;
+      for (var j = -5; j <= 5; j++) {
+        if (j === 0) continue;
+        if (i + j >= 0 && i + j < candles.length) {
+          if (highs[i + j] >= highs[i]) isHigh = false;
+          if (lows[i + j] <= lows[i]) isLow = false;
+        }
+      }
+      if (isHigh && i > 0 && i < candles.length - 1) {
+        swingHighs.push({ price: highs[i], index: i });
+      }
+      if (isLow && i > 0 && i < candles.length - 1) {
+        swingLows.push({ price: lows[i], index: i });
+      }
+    }
+    
+    swingHighs.sort(function(a, b) { return b.price - a.price; });
+    swingLows.sort(function(a, b) { return a.price - b.price; });
+    
+    var uniqueHighs = [];
+    var uniqueLows = [];
+    for (var i = 0; i < swingHighs.length; i++) {
+      var isUnique = true;
+      for (var j = 0; j < uniqueHighs.length; j++) {
+        if (Math.abs(swingHighs[i].price - uniqueHighs[j].price) / uniqueHighs[j].price < 0.01) {
+          isUnique = false;
+          break;
+        }
+      }
+      if (isUnique && uniqueHighs.length < 3) uniqueHighs.push(swingHighs[i].price);
+    }
+    
+    for (var i = 0; i < swingLows.length; i++) {
+      var isUnique = true;
+      for (var j = 0; j < uniqueLows.length; j++) {
+        if (Math.abs(swingLows[i].price - uniqueLows[j].price) / uniqueLows[j].price < 0.01) {
+          isUnique = false;
+          break;
+        }
+      }
+      if (isUnique && uniqueLows.length < 3) uniqueLows.push(swingLows[i].price);
+    }
+    
+    uniqueHighs.sort(function(a, b) { return b - a; });
+    uniqueLows.sort(function(a, b) { return a - b; });
+    
+    var nearestResistance = null;
+    var nearestSupport = null;
+    
+    for (var i = 0; i < uniqueHighs.length; i++) {
+      if (uniqueHighs[i] > currentPrice) {
+        nearestResistance = uniqueHighs[i];
+        break;
+      }
+    }
+    for (var i = uniqueLows.length - 1; i >= 0; i--) {
+      if (uniqueLows[i] < currentPrice) {
+        nearestSupport = uniqueLows[i];
+        break;
+      }
+    }
+    
+    var distanceToResistance = nearestResistance ? ((nearestResistance - currentPrice) / currentPrice) * 100 : null;
+    var distanceToSupport = nearestSupport ? ((currentPrice - nearestSupport) / currentPrice) * 100 : null;
+    
+    var positionAdvice = "";
+    if (distanceToResistance && distanceToSupport) {
+      if (distanceToResistance < distanceToSupport) {
+        positionAdvice = "Price is CLOSER to RESISTANCE. Potential reversal zone. Consider taking profits or tightening stops.";
+      } else {
+        positionAdvice = "Price is CLOSER to SUPPORT. Potential bounce zone. Watch for bullish reversal patterns.";
+      }
+    }
+    
+    var report = "";
+    report += "╔════════════════════════════════════════════════════════════╗\n";
+    report += "║                 📏 SUPPORT & RESISTANCE                     ║\n";
+    report += "╠════════════════════════════════════════════════════════════╣\n";
+    report += "║                                                            ║\n";
+    report += "║  SYMBOL: " + symbol.padEnd(43) + "║\n";
+    report += "║  CURRENT PRICE: $" + this._formatPrice(currentPrice).padEnd(43) + "║\n";
+    report += "║                                                            ║\n";
+    report += "║  🔴 KEY RESISTANCE LEVELS:                                 ║\n";
+    for (var i = 0; i < Math.min(3, uniqueHighs.length); i++) {
+      report += "║     R" + (i+1) + ": $" + this._formatPrice(uniqueHighs[i]).padEnd(43) + "║\n";
+    }
+    if (uniqueHighs.length === 0) report += "║     No clear resistance identified                     ║\n";
+    report += "║                                                            ║\n";
+    report += "║  🟢 KEY SUPPORT LEVELS:                                    ║\n";
+    for (var i = 0; i < Math.min(3, uniqueLows.length); i++) {
+      report += "║     S" + (i+1) + ": $" + this._formatPrice(uniqueLows[i]).padEnd(43) + "║\n";
+    }
+    if (uniqueLows.length === 0) report += "║     No clear support identified                         ║\n";
+    report += "║                                                            ║\n";
+    report += "╠════════════════════════════════════════════════════════════╣\n";
+    report += "║                                                            ║\n";
+    if (nearestResistance) {
+      report += "║  📍 NEAREST RESISTANCE: $" + this._formatPrice(nearestResistance).padEnd(43) + "║\n";
+      report += "║     Distance: " + distanceToResistance.toFixed(2) + "% above current".padEnd(43) + "║\n";
+    }
+    if (nearestSupport) {
+      report += "║  📍 NEAREST SUPPORT: $" + this._formatPrice(nearestSupport).padEnd(43) + "║\n";
+      report += "║     Distance: " + distanceToSupport.toFixed(2) + "% below current".padEnd(43) + "║\n";
+    }
+    report += "║                                                            ║\n";
+    report += "║  💡 TRADING INSIGHT:                                       ║\n";
+    if (positionAdvice) {
+      var wrappedAdvice = positionAdvice.match(/.{1,45}/g) || [positionAdvice];
+      for (var a = 0; a < wrappedAdvice.length; a++) {
+        report += "║     " + wrappedAdvice[a].padEnd(43) + "║\n";
+      }
+    } else {
+      report += "║     Price is trading between key levels. Wait for       ║\n";
+      report += "║     breakout or reversal confirmation.                   ║\n";
+    }
+    report += "║                                                            ║\n";
+    report += "╚════════════════════════════════════════════════════════════╝";
+    
+    return report;
+  },
+  
+  generateTradeSetup: function() {
+    var candles = STATE.candles;
+    if (!candles || candles.length < 50) return "⚠️ Not enough data for trade setup.";
+    
+    var closes = candles.map(function(c) { return c.close; });
+    var highs = candles.map(function(c) { return c.high; });
+    var lows = candles.map(function(c) { return c.low; });
+    var currentPrice = closes[closes.length - 1];
+    var symbol = STATE.symbol ? STATE.symbol.replace('USDT', '/USDT') : 'Unknown';
+    
+    // Calculate RSI
+    var gains = 0, losses = 0;
+    for (var i = closes.length - 15; i < closes.length; i++) {
+      var change = closes[i] - closes[i - 1];
+      if (change >= 0) gains += change;
+      else losses -= change;
+    }
+    var avgGain = gains / 14;
+    var avgLoss = losses / 14;
+    var rsi = avgLoss === 0 ? 100 : 100 - (100 / (1 + avgGain / avgLoss));
+    
+    // Calculate ATR
+    var trueRanges = [];
+    for (var i = candles.length - 15; i < candles.length; i++) {
+      var tr = Math.max(
+        highs[i] - lows[i],
+        Math.abs(highs[i] - closes[i - 1]),
+        Math.abs(lows[i] - closes[i - 1])
+      );
+      trueRanges.push(tr);
+    }
+    var atr = trueRanges.reduce(function(a, b) { return a + b; }, 0) / trueRanges.length;
+    
+    // Find nearest support/resistance
+    var swingHighs = [];
+    var swingLows = [];
+    for (var i = Math.max(10, candles.length - 60); i < candles.length - 10; i++) {
+      var isHigh = true;
+      var isLow = true;
+      for (var j = -5; j <= 5; j++) {
+        if (j === 0) continue;
+        if (i + j >= 0 && i + j < candles.length) {
+          if (highs[i + j] >= highs[i]) isHigh = false;
+          if (lows[i + j] <= lows[i]) isLow = false;
+        }
+      }
+      if (isHigh) swingHighs.push(highs[i]);
+      if (isLow) swingLows.push(lows[i]);
+    }
+    
+    swingHighs.sort(function(a, b) { return a - b; });
+    swingLows.sort(function(a, b) { return a - b; });
+    
+    var nearestResistance = null;
+    var nearestSupport = null;
+    for (var i = 0; i < swingHighs.length; i++) {
+      if (swingHighs[i] > currentPrice) {
+        nearestResistance = swingHighs[i];
+        break;
+      }
+    }
+    for (var i = swingLows.length - 1; i >= 0; i--) {
+      if (swingLows[i] < currentPrice) {
+        nearestSupport = swingLows[i];
+        break;
+      }
+    }
+    
+    // Determine direction based on RSI and price position
+    var direction = "NEUTRAL";
+    var confidence = "";
+    
+    if (rsi < 35 && currentPrice > (nearestSupport || 0) && (nearestSupport && (currentPrice - nearestSupport) / currentPrice < 0.03)) {
+      direction = "BUY (LONG)";
+      confidence = "High - RSI oversold + near support";
+    } else if (rsi < 40) {
+      direction = "BUY (LONG) - Cautious";
+      confidence = "Medium - RSI approaching oversold";
+    } else if (rsi > 65 && currentPrice < (nearestResistance || Infinity) && (nearestResistance && (nearestResistance - currentPrice) / currentPrice < 0.03)) {
+      direction = "SELL (SHORT)";
+      confidence = "High - RSI overbought + near resistance";
+    } else if (rsi > 60) {
+      direction = "SELL (SHORT) - Cautious";
+      confidence = "Medium - RSI approaching overbought";
+    } else {
+      direction = "NEUTRAL - No clear signal";
+      confidence = "Low - Wait for better setup";
+    }
+    
+    // Calculate trade levels
+    var entry = currentPrice;
+    var stopLoss = direction.includes("BUY") ? currentPrice - (atr * 1.5) : (direction.includes("SELL") ? currentPrice + (atr * 1.5) : 0);
+    var takeProfit1 = direction.includes("BUY") ? currentPrice + (atr * 2) : (direction.includes("SELL") ? currentPrice - (atr * 2) : 0);
+    var takeProfit2 = direction.includes("BUY") ? currentPrice + (atr * 3.5) : (direction.includes("SELL") ? currentPrice - (atr * 3.5) : 0);
+    var riskReward = (Math.abs(takeProfit1 - entry) / Math.abs(entry - stopLoss)).toFixed(2);
+    
+    var report = "";
+    report += "╔════════════════════════════════════════════════════════════╗\n";
+    report += "║                    🎯 TRADE SETUP                          ║\n";
+    report += "╠════════════════════════════════════════════════════════════╣\n";
+    report += "║                                                            ║\n";
+    report += "║  SYMBOL: " + symbol.padEnd(43) + "║\n";
+    report += "║  CURRENT PRICE: $" + this._formatPrice(currentPrice).padEnd(43) + "║\n";
+    report += "║  DIRECTION: " + direction.padEnd(43) + "║\n";
+    report += "║  CONFIDENCE: " + confidence.padEnd(43) + "║\n";
+    report += "║                                                            ║\n";
+    report += "╠════════════════════════════════════════════════════════════╣\n";
+    report += "║  📊 TRADE LEVELS:                                          ║\n";
+    report += "║     ENTRY: $" + this._formatPrice(entry).padEnd(43) + "║\n";
+    if (stopLoss > 0) {
+      report += "║     STOP LOSS: $" + this._formatPrice(stopLoss).padEnd(43) + "║\n";
+      report += "║     RISK: $" + this._formatPrice(Math.abs(entry - stopLoss)).padEnd(43) + "║\n";
+    }
+    if (takeProfit1 > 0) {
+      report += "║     TAKE PROFIT 1: $" + this._formatPrice(takeProfit1).padEnd(43) + "║\n";
+      report += "║     TAKE PROFIT 2: $" + this._formatPrice(takeProfit2).padEnd(43) + "║\n";
+    }
+    report += "║     RISK:REWARD: 1:" + riskReward.padEnd(43) + "║\n";
+    report += "║                                                            ║\n";
+    report += "╠════════════════════════════════════════════════════════════╣\n";
+    report += "║  📈 MARKET CONTEXT:                                        ║\n";
+    report += "║     RSI (14): " + rsi.toFixed(1).padEnd(43) + "║\n";
+    report += "║     ATR (14): $" + this._formatPrice(atr).padEnd(43) + "║\n";
+    if (nearestSupport) report += "║     NEAREST SUPPORT: $" + this._formatPrice(nearestSupport).padEnd(43) + "║\n";
+    if (nearestResistance) report += "║     NEAREST RESISTANCE: $" + this._formatPrice(nearestResistance).padEnd(43) + "║\n";
+    report += "║                                                            ║\n";
+    report += "╠════════════════════════════════════════════════════════════╣\n";
+    report += "║  ⚠️ RISK MANAGEMENT:                                       ║\n";
+    report += "║     • Risk 1-2% of account per trade                      ║\n";
+    report += "║     • Never move stop loss further from entry             ║\n";
+    report += "║     • Take 50% profit at TP1, let rest run to TP2         ║\n";
+    report += "║     • Use trailing stop after +2% profit                  ║\n";
+    report += "║                                                            ║\n";
+    report += "╚════════════════════════════════════════════════════════════╝";
+    
+    return report;
+  },
+  
+  getFallbackResponse: function(question) {
+    var lowerQ = question.toLowerCase();
+    
+    if (lowerQ.includes('trend')) {
+      return this.extractTrendOnly();
+    } else if (lowerQ.includes('rsi')) {
+      return this.extractRSIOnly();
+    } else if (lowerQ.includes('volume')) {
+      return this.extractVolumeOnly();
+    } else if (lowerQ.includes('support') || lowerQ.includes('resistance') || lowerQ.includes('s/r')) {
+      return this.extractSROnly();
+    } else if (lowerQ.includes('setup') || lowerQ.includes('entry') || lowerQ.includes('trade')) {
+      return this.generateTradeSetup();
+    } else {
+      return this.analyzeLocalChart();
+    }
+  },
+  
   _formatPrice: function(p) {
     if (p == null || isNaN(p)) return '--';
     if (p >= 1000) return p.toFixed(2);
@@ -29727,6 +30269,14 @@ const AIAssistant = {
     if (p >= 1) return p.toFixed(4);
     if (p >= 0.1) return p.toFixed(5);
     return p.toFixed(8);
+  },
+  
+  _formatVolume: function(v) {
+    if (!v) return '--';
+    if (v >= 1e9) return (v/1e9).toFixed(2) + 'B';
+    if (v >= 1e6) return (v/1e6).toFixed(2) + 'M';
+    if (v >= 1e3) return (v/1e3).toFixed(2) + 'K';
+    return v.toFixed(2);
   },
   
   addAIChatButton: function() {
@@ -29766,7 +30316,6 @@ const AIAssistant = {
       var interval = STATE.interval || '15m';
       var analysis = this.analyzeLocalChart();
       
-      // Capture chart screenshot
       var chartCanvas = document.querySelector('#main-chart-pane canvas');
       var chartImage = '';
       if (chartCanvas) {
@@ -29820,7 +30369,7 @@ const AIAssistant = {
 };
 
 // ============================================
-// FIX: AI Assistant Button Handler (Outside the object)
+// FIX: AI Assistant Button Handler 
 // ============================================
 (function fixAIAssistantButton() {
   function attachAIHandler() {
@@ -29837,7 +30386,6 @@ const AIAssistant = {
         if (typeof AIAssistant.open === 'function') {
           AIAssistant.open();
         } else {
-          // Fallback: show modal directly
           var modal = document.getElementById('ai-assistant-modal');
           if (modal) {
             modal.classList.add('visible');
@@ -29859,7 +30407,6 @@ const AIAssistant = {
     return false;
   }
   
-  // Try to attach immediately and then retry
   if (!attachAIHandler()) {
     var attempts = 0;
     var interval = setInterval(function() {
