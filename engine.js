@@ -29144,7 +29144,62 @@ const AIAssistant = {
     this.addAIChatButton();
     console.log('✅ AI Assistant ready');
   },
+  // Fix: Ensure AI Assistant button works reliably
+function fixAIAssistant() {
+  function attachAIHandler() {
+    const aiBtn = document.getElementById('ai-assist-btn');
+    if (aiBtn) {
+      // Remove all existing listeners by cloning
+      const newBtn = aiBtn.cloneNode(true);
+      aiBtn.parentNode.replaceChild(newBtn, aiBtn);
+      
+      newBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('🤖 AI button clicked - opening modal');
+        
+        // Check if modal exists, create if not
+        if (!document.getElementById('ai-assistant-modal')) {
+          AIAssistant.createModal();
+        }
+        
+        // Open the modal
+        const modal = document.getElementById('ai-assistant-modal');
+        if (modal) {
+          modal.classList.add('visible');
+          AIAssistant.updateContext();
+          AIAssistant.updateUsageCounter();
+          
+          // Focus the input after modal opens
+          setTimeout(function() {
+            const input = document.getElementById('ai-chat-input');
+            if (input) input.focus();
+          }, 300);
+        } else {
+          console.error('AI modal still not found');
+          if (typeof Toast !== 'undefined') {
+            Toast.error('AI Assistant unavailable. Please refresh.');
+          }
+        }
+      });
+      
+      console.log('✅ AI Assistant button handler attached');
+      return true;
+    }
+    return false;
+  }
   
+  // Try to attach immediately and then retry
+  if (!attachAIHandler()) {
+    let attempts = 0;
+    const interval = setInterval(function() {
+      attempts++;
+      if (attachAIHandler() || attempts > 20) {
+        clearInterval(interval);
+      }
+    }, 500);
+  }
+},
   loadDailyCount() {
     var today = new Date().toISOString().slice(0,10);
     var saved = localStorage.getItem('tvp_ai_date');
