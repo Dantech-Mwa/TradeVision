@@ -12248,26 +12248,31 @@ window.addEventListener('resize', () => {
 // ============================================
 const WatchlistManager = {
   init() {
-    // Load saved watchlist or use default
-    const saved = localStorage.getItem(CONFIG.STORAGE_KEYS.WATCHLIST);
-    if (saved) {
-      STATE.watchlist = JSON.parse(saved);
-    } else {
-      STATE.watchlist = [
-        { symbol: 'BTCUSDT' },
-        { symbol: 'ETHUSDT' },
-        { symbol: 'BNBUSDT' },
-        { symbol: 'SOLUSDT' }
-      ];
+  // SAFETY FIX: Ensure watchlist is always an array
+  const saved = localStorage.getItem(CONFIG.STORAGE_KEYS.WATCHLIST);
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      STATE.watchlist = Array.isArray(parsed) ? parsed : [];
+    } catch(e) {
+      STATE.watchlist = [];
     }
-    
-    // Initialize marketData Map
-    if (!STATE.marketData) STATE.marketData = new Map();
-    
-    this.render();
-    this.createModal();
-    this.setupEventListeners();
-  },
+  } else {
+    STATE.watchlist = [
+      { symbol: 'BTCUSDT' },
+      { symbol: 'ETHUSDT' },
+      { symbol: 'BNBUSDT' },
+      { symbol: 'SOLUSDT' }
+    ];
+  }
+  
+  // Initialize marketData Map
+  if (!STATE.marketData) STATE.marketData = new Map();
+  
+  this.render();
+  this.createModal();
+  this.setupEventListeners();
+},
   
  createModal() {
     // Check if modal already exists
@@ -12642,26 +12647,31 @@ const WatchlistManager = {
   },
   
   render() {
-    const container = document.getElementById('watchlist');
-    if (!container) return;
-    
-    if (STATE.watchlist.length === 0) {
-      container.innerHTML = `
-        <div style="padding: 20px; text-align: center; color: var(--text-muted);">
-          <i class="fas fa-star" style="font-size: 24px; margin-bottom: 8px; display: block;"></i>
-          <span>No symbols in watchlist</span>
-          <button class="btn-sm" style="margin-top: 8px; display: block; width: 100%;" id="empty-watchlist-add">Add Symbol</button>
-        </div>
-      `;
-      const emptyAddBtn = document.getElementById('empty-watchlist-add');
-      if (emptyAddBtn) {
-        emptyAddBtn.onclick = () => {
-          const modal = document.getElementById('watchlist-modal');
-          if (modal) modal.classList.add('visible');
-        };
-      }
-      return;
+  const container = document.getElementById('watchlist');
+  if (!container) return;
+  
+  // SAFETY FIX: Ensure watchlist is an array
+  if (!STATE.watchlist || !Array.isArray(STATE.watchlist)) {
+    STATE.watchlist = [];
+  }
+  
+  if (STATE.watchlist.length === 0) {
+    container.innerHTML = `
+      <div style="padding: 20px; text-align: center; color: var(--text-muted);">
+        <i class="fas fa-star" style="font-size: 24px; margin-bottom: 8px; display: block;"></i>
+        <span>No symbols in watchlist</span>
+        <button class="btn-sm" style="margin-top: 8px; display: block; width: 100%;" id="empty-watchlist-add">Add Symbol</button>
+      </div>
+    `;
+    const emptyAddBtn = document.getElementById('empty-watchlist-add');
+    if (emptyAddBtn) {
+      emptyAddBtn.onclick = () => {
+        const modal = document.getElementById('watchlist-modal');
+        if (modal) modal.classList.add('visible');
+      };
     }
+    return;
+  }
     
         container.innerHTML = STATE.watchlist.map(function(item) {
       var s = U.sanitizeAttr(item.symbol);
@@ -24291,9 +24301,6 @@ function initTVPanels() {
 // ============================================
 // MAIN INITIALIZATION
 // ============================================
-// ============================================
-// COMPLETE REPLACEMENT: main() - FIXED ORDER
-// ============================================
 async function main() {
   if (window.__tradevision_initialized) {
     console.warn('⚠️ TradeVision already initialized');
@@ -24301,13 +24308,32 @@ async function main() {
   }
   window.__tradevision_initialized = true;
   
-  console.log('🚀 TradeVision Pro v5.0 Starting (NO FALLBACKS MODE)...');
+  console.log('🚀 TradeVision Pro v5.0 Starting...');
   
   // Show loading state
   const chartContainer = document.getElementById('price-chart');
   if (chartContainer) {
     chartContainer.style.opacity = '0.5';
   }
+  
+  // SAFETY FIX #1: Force hide loader after 15 seconds (prevents infinite loading)
+  const forceHideTimeout = setTimeout(() => {
+    console.warn('⚠️ Force hiding loader after timeout - initialization may have stalled');
+    const loader = document.getElementById('app-loader');
+    if (loader && loader.style.display !== 'none' && loader.style.opacity !== '0') {
+      loader.style.opacity = '0';
+      loader.style.transition = 'opacity 0.3s';
+      setTimeout(() => {
+        if (loader.parentNode) loader.remove();
+      }, 300);
+    }
+    if (chartContainer) chartContainer.style.opacity = '1';
+    
+    // Show user-friendly message
+    if (typeof Toast !== 'undefined') {
+      Toast.warning('Loading took longer than expected. You can refresh if issues persist.', 8000);
+    }
+  }, 15000);
   
   try {
     // ============================================
@@ -24317,6 +24343,11 @@ async function main() {
     setupUI();
     DrawingEngine.init();
     DrawingToolsModal.init();
+    
+    // SAFETY FIX #2: Ensure watchlist is an array before initializing
+    if (!STATE.watchlist || !Array.isArray(STATE.watchlist)) {
+      STATE.watchlist = [];
+    }
     WatchlistManager.init();
     
     // ============================================
@@ -24343,27 +24374,31 @@ async function main() {
     DataManager.connectWS();
     
     // ============================================
-    // STEP 5: Initialize remaining systems
+    // STEP 5: Initialize remaining systems with safety checks
     // ============================================
     console.log('⚙️ STEP 5: Initializing remaining systems...');
-    IndicatorsModal.init();
-    PineEditor.init();
-    TradeManager.init();
-	  // Initialize Smart Order System (after TradeManager is ready)
-if (typeof SmartOrderSystem !== 'undefined') {
-  setTimeout(function() {
-    SmartOrderSystem.init();
-  }, 1000);
-}
-    TickerManager.init();
-    initTVPanels();
-    NewsManager.init();
-    EconomicCalendar.init();
-    MarketOverview.init();
+    
+    // SAFETY FIX #3: Initialize each system with try-catch
+    try { IndicatorsModal.init(); } catch(e) { console.warn('IndicatorsModal init failed:', e.message); }
+    try { PineEditor.init(); } catch(e) { console.warn('PineEditor init failed:', e.message); }
+    try { TradeManager.init(); } catch(e) { console.warn('TradeManager init failed:', e.message); }
+    
+    // Initialize Smart Order System (after TradeManager is ready)
+    if (typeof SmartOrderSystem !== 'undefined') {
+      setTimeout(function() {
+        try { SmartOrderSystem.init(); } catch(e) { console.warn('SmartOrderSystem init failed:', e.message); }
+      }, 1000);
+    }
+    
+    try { TickerManager.init(); } catch(e) { console.warn('TickerManager init failed:', e.message); }
+    try { initTVPanels(); } catch(e) { console.warn('initTVPanels failed:', e.message); }
+    try { NewsManager.init(); } catch(e) { console.warn('NewsManager init failed:', e.message); }
+    try { EconomicCalendar.init(); } catch(e) { console.warn('EconomicCalendar init failed:', e.message); }
+    try { MarketOverview.init(); } catch(e) { console.warn('MarketOverview init failed:', e.message); }
     
     // Initialize mobile features if on mobile
     if (window.innerWidth <= 768) {
-      initAllMobileFeatures();
+      try { initAllMobileFeatures(); } catch(e) { console.warn('Mobile features init failed:', e.message); }
     }
     
     // ============================================
@@ -24378,8 +24413,10 @@ if (typeof SmartOrderSystem !== 'undefined') {
     }, 1000, 'TradeManager-updatePrices');
     
     // ============================================
-    // STEP 7: Hide loader
+    // STEP 7: Hide loader on success
     // ============================================
+    clearTimeout(forceHideTimeout);
+    
     setTimeout(() => {
       if (chartContainer) chartContainer.style.opacity = '1';
     }, 500);
@@ -24388,14 +24425,31 @@ if (typeof SmartOrderSystem !== 'undefined') {
     if (loader) {
       loader.style.opacity = '0';
       loader.style.transition = 'opacity 0.3s';
-      setTimeout(() => loader.remove(), 300);
+      setTimeout(() => {
+        if (loader.parentNode) loader.remove();
+      }, 300);
     }
     
-    console.log('✅ TradeVision Pro v5.0 Ready - NO FALLBACKS MODE');
+    console.log('✅ TradeVision Pro v5.0 Ready');
     
   } catch(e) {
     console.error('❌ Initialization failed:', e);
+    clearTimeout(forceHideTimeout);
     if (chartContainer) chartContainer.style.opacity = '1';
+    
+    // Show user-friendly error
+    if (typeof Toast !== 'undefined') {
+      Toast.error('Failed to load. Please refresh the page.', 10000);
+    }
+    
+    // Force hide loader even on error
+    const loader = document.getElementById('app-loader');
+    if (loader && loader.style.display !== 'none') {
+      loader.style.opacity = '0';
+      setTimeout(() => {
+        if (loader.parentNode) loader.remove();
+      }, 300);
+    }
   }
 }
 // Sync dropdown active states
@@ -24862,53 +24916,57 @@ function setupMobileRightPanel() {
             // This handles ALL clicks without re-binding
             // ============================================
             panelContent.onclick = function(e) {
-				// P0 FIX: Guard against non-DOM targets
+    // SAFETY FIX: Guard against non-DOM targets
     if (!e || !e.target || typeof e.target.closest !== 'function') {
+        console.warn('⚠️ Click event with invalid target, ignoring');
         return;
     }
-                var target = e.target;
+    
+    var target = e.target;
 
-				if (!target || !target.closest) {
+    // SAFETY FIX: Additional check for closest method
+    if (!target || typeof target.closest !== 'function') {
         console.warn('⚠️ Click target is not a DOM element, ignoring');
         return;
     }
                 
                 // === TRADE TYPE BUTTONS (Buy/Sell) ===
                 var tradeTypeBtn = target.closest('.trade-type');
-                if (tradeTypeBtn) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    
-                    // Toggle active state in mobile panel
-                    panelContent.querySelectorAll('.trade-type').forEach(function(b) {
-                        b.classList.remove('active');
-                    });
-                    tradeTypeBtn.classList.add('active');
-                    
-                    // Sync with desktop panel
-                    var isBuy = tradeTypeBtn.classList.contains('buy') || 
-                               (tradeTypeBtn.getAttribute('data-trade-type') === 'buy');
-                    
-                    var desktopBuyBtn = document.querySelector('#right-sidebar .trade-type.buy');
-                    var desktopSellBtn = document.querySelector('#right-sidebar .trade-type.sell');
-                    
-                    if (isBuy && desktopBuyBtn) {
-                        desktopBuyBtn.click();
-                    } else if (!isBuy && desktopSellBtn) {
-                        desktopSellBtn.click();
-                    }
-                    
-                    // Update the place order button text immediately
-                    var orderBtn = panelContent.querySelector('.place-order-btn');
-                    if (orderBtn) {
-                        orderBtn.textContent = isBuy ? 'Place Buy Order' : 'Place Sell Order';
-                        orderBtn.className = 'place-order-btn ' + (isBuy ? 'buy' : 'sell');
-                        orderBtn.style.background = isBuy ? 'var(--up-color)' : 'var(--down-color)';
-                    }
-                    
-                    console.log('📱 Mobile trade type switched to:', isBuy ? 'BUY' : 'SELL');
-                    return;
-                }
+if (tradeTypeBtn) {
+    // SAFETY FIX: Ensure e has preventDefault and stopPropagation
+    if (e && typeof e.preventDefault === 'function') e.preventDefault();
+    if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+    
+    // Toggle active state in mobile panel
+    panelContent.querySelectorAll('.trade-type').forEach(function(b) {
+        b.classList.remove('active');
+    });
+    tradeTypeBtn.classList.add('active');
+    
+    // Sync with desktop panel
+    var isBuy = tradeTypeBtn.classList.contains('buy') || 
+               (tradeTypeBtn.getAttribute('data-trade-type') === 'buy');
+    
+    var desktopBuyBtn = document.querySelector('#right-sidebar .trade-type.buy');
+    var desktopSellBtn = document.querySelector('#right-sidebar .trade-type.sell');
+    
+    if (isBuy && desktopBuyBtn) {
+        desktopBuyBtn.click();
+    } else if (!isBuy && desktopSellBtn) {
+        desktopSellBtn.click();
+    }
+    
+    // Update the place order button text immediately
+    var orderBtn = panelContent.querySelector('.place-order-btn');
+    if (orderBtn) {
+        orderBtn.textContent = isBuy ? 'Place Buy Order' : 'Place Sell Order';
+        orderBtn.className = 'place-order-btn ' + (isBuy ? 'buy' : 'sell');
+        orderBtn.style.background = isBuy ? 'var(--up-color)' : 'var(--down-color)';
+    }
+    
+    console.log('📱 Mobile trade type switched to:', isBuy ? 'BUY' : 'SELL');
+    return;
+}
                 
                 // === ORDER TYPE BUTTONS (Limit/Market/Stop) ===
                 var orderTypeBtn = target.closest('.order-type-btn');
@@ -25603,6 +25661,10 @@ function initMobileSheet() {
     // CLOSE WHEN CLICKING OUTSIDE THE SHEET
     // ============================================
     document.addEventListener('click', function(e) {
+		// SAFETY FIX: Guard against non-DOM targets
+    if (!e || !e.target || typeof e.target.closest !== 'function') {
+        return;
+    }
         if (sheetState !== 'collapsed') {
             // Check if click is outside the sheet
             if (!sheet.contains(e.target) && e.target !== sheetHandle && !sheetHandle.contains(e.target)) {
@@ -25615,6 +25677,9 @@ function initMobileSheet() {
     });
     
     document.addEventListener('touchstart', function(e) {
+		 if (!e || !e.touches || !e.touches[0] || !e.target || typeof e.target.closest !== 'function') {
+        return;
+    }
         if (sheetState !== 'collapsed') {
             if (!sheet.contains(e.target) && e.target !== sheetHandle && !sheetHandle.contains(e.target)) {
                 if (!e.target.closest('.modal-overlay') && !e.target.closest('.ctrl-dropdown-menu')) {
@@ -26823,77 +26888,43 @@ var UserSystem = {
 },
 
 _proceedInit() {
-    if (this._initialized) return;
-    this._initialized = true;
-    
-    console.log('Proceeding with UserSystem initialization...');
-    
-    this.loadSession();
-    this.setupAuthModal();
-    this.setupHeaderButtons();
-    this.setupCryptoSwitcher();
-    this.setupNotificationBanner();
-    this.setupEmailPreferences();
-    
-    if (this.currentUser) {
-        this.updateUI();
-        this.updateDropdownContent();
-        this.checkTrialStatus();
-        this.checkAndSendTrialReminders();
-    }
-    
-    if (window.FB && window.FB.auth) {
-        var self = this;
-        window.FB.auth.onAuthStateChanged(async function(user) {
-            console.log('🔥 Firebase auth state changed:', user ? user.email : 'No user');
-            if (user) {
-                await self.handleFirebaseUser(user);
-            } else {
-                self.logout();
-            }
-        });
-    }
-    
-    // Set up periodic checks
-    setInterval(function() { self.checkTrialStatus(); }, 6 * 60 * 60 * 1000);
-    setInterval(function() { self.checkAndSendTrialReminders(); }, 60 * 60 * 1000);
-},
-_proceedInit() {
-    if (this._initialized) return;
-    this._initialized = true;
-    
-    console.log('Proceeding with UserSystem initialization...');
-    console.log('Firebase available:', !!(window.FB && window.FB.auth));
-    
-    this.loadSession();
-    this.setupAuthModal();
-    this.setupHeaderButtons();
-    this.setupCryptoSwitcher();
-    this.setupNotificationBanner();
-    this.setupEmailPreferences();
-    
-    if (this.currentUser) {
-        this.updateUI();
-        this.updateDropdownContent();
-        this.checkTrialStatus();
-        this.checkAndSendTrialReminders();
-    }
-    
-    if (window.FB && window.FB.auth) {
-        var self = this;
-        onAuthStateChanged(window.FB.auth, async function(user) {
-            console.log('🔥 Firebase auth state changed:', user ? user.email : 'No user');
-            if (user) {
-                await self.handleFirebaseUser(user);
-            } else {
-                self.logout();
-            }
-        });
-    }
-    
-    // Set up periodic checks
-    setInterval(function() { self.checkTrialStatus(); }, 6 * 60 * 60 * 1000);
-    setInterval(function() { self.checkAndSendTrialReminders(); }, 60 * 60 * 1000);
+  if (this._initialized) return;
+  this._initialized = true;
+  
+  console.log('Proceeding with UserSystem initialization...');
+  
+  this.loadSession();
+  this.setupAuthModal();
+  this.setupHeaderButtons();
+  this.setupCryptoSwitcher();
+  this.setupNotificationBanner();
+  this.setupEmailPreferences();
+  
+  if (this.currentUser) {
+    this.updateUI();
+    this.updateDropdownContent();
+    this.checkTrialStatus();
+    this.checkAndSendTrialReminders();
+  }
+  
+  // SAFETY FIX: Check if Firebase auth is available
+  if (window.FB && window.FB.auth && typeof window.FB.auth.onAuthStateChanged === 'function') {
+    const self = this;
+    window.FB.auth.onAuthStateChanged(async function(user) {
+      console.log('🔥 Firebase auth state changed:', user ? user.email : 'No user');
+      if (user) {
+        await self.handleFirebaseUser(user);
+      } else {
+        self.logout();
+      }
+    });
+  } else {
+    console.warn('⚠️ Firebase auth not available, skipping auth state listener');
+  }
+  
+  // Set up periodic checks
+  setInterval(function() { self.checkTrialStatus(); }, 6 * 60 * 60 * 1000);
+  setInterval(function() { self.checkAndSendTrialReminders(); }, 60 * 60 * 1000);
 },
 
     // ============================================
