@@ -4188,15 +4188,12 @@ removeAllOverlays() {
       DrawingEngine.resizeCanvas();
     }
   },
-// ============================================
-// FIXED CODE A: BAR REPLAY SYSTEM
-// Insert between resizeAll() and forceHardReset()
-// ============================================
 
-// ============================================
-// INSTITUTIONAL BAR REPLAY MODULE
-// Fixed: Button now appears correctly in chart controls
-// ============================================
+
+// =============================================
+// COMPLETE REPLACEMENT: barReplay Object
+// Buttons now appear in chart header using .chart-header-right
+// =============================================
 
 barReplay: {
   enabled: false,
@@ -4205,7 +4202,6 @@ barReplay: {
   intervalId: null,
   speed: 1000,
   originalCandles: [],
-  originalVolume: [],
   controlPanel: null,
   
   init() {
@@ -4303,16 +4299,16 @@ barReplay: {
   },
   
   addReplayButton() {
-    // Use multiple attempts to ensure button gets added
     var self = this;
     var attemptCount = 0;
     var maxAttempts = 10;
     
     function tryAddButton() {
       attemptCount++;
-      var chartControls = document.querySelector('.chart-controls');
+      // Look for .chart-header-right instead of .chart-controls
+      var chartHeaderRight = document.querySelector('.chart-header-right');
       
-      if (chartControls && !document.getElementById('replay-toggle-btn')) {
+      if (chartHeaderRight && !document.getElementById('replay-toggle-btn')) {
         var btn = document.createElement('button');
         btn.id = 'replay-toggle-btn';
         btn.className = 'chart-ctrl-btn';
@@ -4328,22 +4324,22 @@ barReplay: {
           }
         });
         
-        // Find best position to insert
-        var indicatorsBtn = document.getElementById('indicators-btn');
-        if (indicatorsBtn && indicatorsBtn.parentNode) {
-          indicatorsBtn.parentNode.insertBefore(btn, indicatorsBtn);
+        // Find the crosshair-btn or insert near the end of chart-header-right
+        var crosshairBtn = chartHeaderRight.querySelector('#crosshair-btn');
+        if (crosshairBtn && crosshairBtn.parentNode) {
+          crosshairBtn.parentNode.insertBefore(btn, crosshairBtn);
         } else {
-          chartControls.appendChild(btn);
+          chartHeaderRight.appendChild(btn);
         }
         
-        console.log('✅ Replay button added to chart controls');
+        console.log('✅ Replay button added to chart header');
         return true;
       }
       
       if (attemptCount < maxAttempts) {
         setTimeout(tryAddButton, 500);
       } else {
-        console.warn('⚠️ Could not add replay button - chart controls not found');
+        console.warn('⚠️ Could not add replay button - chart-header-right not found');
       }
       return false;
     }
@@ -4535,18 +4531,17 @@ barReplay: {
     }
   }
 },
-	  // ============================================
-// FIXED CODE B: MULTI-TIMEFRAME OVERLAY
-// Uses SEPARATE price scale - Does NOT block main chart view
-// Insert after barReplay closing brace (})
-// ============================================
+	  // =============================================
+// COMPLETE REPLACEMENT: multiTimeframeOverlay Object
+// Buttons now appear in chart header using .chart-header-right
+// =============================================
 
 multiTimeframeOverlay: {
   enabled: false,
   timeframes: ['1h', '4h', '1d'],
   overlayData: {},
   overlaySeries: {},
-  overlayPriceScales: {}, // Separate price scales for each overlay
+  overlayPriceScales: {},
   colors: {
     '1h': '#ff9800',
     '4h': '#9b6cff',
@@ -4656,9 +4651,10 @@ multiTimeframeOverlay: {
     
     function tryAddButton() {
       attemptCount++;
-      var chartControls = document.querySelector('.chart-controls');
+      // Look for .chart-header-right instead of .chart-controls
+      var chartHeaderRight = document.querySelector('.chart-header-right');
       
-      if (chartControls && !document.getElementById('mtf-overlay-btn')) {
+      if (chartHeaderRight && !document.getElementById('mtf-overlay-btn')) {
         var btn = document.createElement('button');
         btn.id = 'mtf-overlay-btn';
         btn.className = 'chart-ctrl-btn';
@@ -4673,11 +4669,11 @@ multiTimeframeOverlay: {
           }
         });
         
-        var replayBtn = document.getElementById('replay-toggle-btn');
-        if (replayBtn && replayBtn.parentNode) {
-          replayBtn.parentNode.insertBefore(btn, replayBtn);
+        var crosshairBtn = chartHeaderRight.querySelector('#crosshair-btn');
+        if (crosshairBtn && crosshairBtn.parentNode) {
+          crosshairBtn.parentNode.insertBefore(btn, crosshairBtn);
         } else {
-          chartControls.appendChild(btn);
+          chartHeaderRight.appendChild(btn);
         }
         
         console.log('✅ MTF Overlay button added');
@@ -4749,10 +4745,8 @@ multiTimeframeOverlay: {
   renderTimeframe(timeframe, candles) {
     if (!ChartEngine || !ChartEngine.charts || !ChartEngine.charts.price) return;
     
-    // ============================================
     // CRITICAL FIX: Use SEPARATE price scale (scaleId: 'left')
     // This prevents the overlay from compressing the main chart
-    // ============================================
     
     var lineData = candles.map(function(c) {
       return { time: c.time, value: c.close };
@@ -4767,7 +4761,7 @@ multiTimeframeOverlay: {
       lastValueVisible: true,
       crosshairMarkerVisible: false,
       title: timeframe + ' MTF',
-      priceScaleId: 'left',  // ← KEY FIX: Use left scale, NOT right
+      priceScaleId: 'left',  // KEY FIX: Use left scale, NOT right
       priceFormat: { type: 'price', precision: 2 }
     });
     
@@ -12448,91 +12442,107 @@ const WatchlistManager = {
 };
      
 
-
-  // ============================================
-  // NEWS MANAGER
-  // ============================================
-  const NewsManager = {
-    async init() {
-      await this.fetchNews();
-      IntervalManager.register(() => this.fetchNews(), CONFIG.NEWS_REFRESH, 'NewsManager-refresh');
-      const refreshBtn = document.getElementById('refresh-news-btn');
-      if(refreshBtn) refreshBtn.addEventListener('click', () => this.fetchNews());
-    },
-    
-             // ============================================
-  // REPLACE WITH CODE BLOCK D (COMPLETE METHOD)
-  // ============================================
+// =============================================
+// COMPLETE REPLACEMENT: DataManager.loadNews()
+// Uses ONLY Coinpedia RSS feed through your backend proxy
+// API key stored securely in backend .env
+// =============================================
+const NewsManager = {
+  async init() {
+    await this.fetchNews();
+    IntervalManager.register(() => this.fetchNews(), CONFIG.NEWS_REFRESH, 'NewsManager-refresh');
+    const refreshBtn = document.getElementById('refresh-news-btn');
+    if(refreshBtn) refreshBtn.addEventListener('click', () => this.fetchNews());
+  },
+  
   async fetchNews() {
     const grid = document.getElementById('news-grid');
     if(!grid) return;
     
-    grid.innerHTML = '<div class="news-loading"><i class="fas fa-spinner fa-spin"></i><span>Loading latest news...</span></div>';
+    grid.innerHTML = '<div class="news-loading"><i class="fas fa-spinner fa-spin"></i><span>Loading latest news from Coinpedia...</span></div>';
     
-    // Try multiple news sources
-    const newsSources = [
-      { url: 'https://cryptopanic.com/api/v1/posts/?auth_token=noauth&public=true&kind=news', type: 'json' },
-      { url: 'https://min-api.cryptocompare.com/data/v2/news/?lang=EN&limit=15', type: 'json' },
-      { url: 'https://coinpedia.org/feed/', type: 'rss' }
-    ];
+    try {
+      // Get API base from failover system
+      const apiBase = getApiBase();
+      
+      // Coinpedia RSS feed through your backend proxy
+      // Your backend will fetch the RSS feed using its stored API key (if needed)
+      const rssUrl = `${apiBase}/proxy?endpoint=rss&url=https://coinpedia.org/feed/`;
+      
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
+      const response = await fetch(rssUrl, { signal: controller.signal });
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      
+      const xmlText = await response.text();
+      const articles = this.parseRSS(xmlText);
+      
+      if (articles.length === 0) {
+        throw new Error('No articles found');
+      }
+      
+      this.renderNews(articles);
+      
+    } catch(e) {
+      console.error('Coinpedia news fetch failed:', e);
+      grid.innerHTML = '<div class="news-fallback"><i class="fas fa-newspaper"></i> News temporarily unavailable</div>';
+    }
+  },
+  
+  parseRSS(xmlText) {
+    const items = [];
+    const itemRegex = /<item>([\s\S]*?)<\/item>/gi;
+    let match;
     
-    let articles = [];
-    
-    for (const source of newsSources) {
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 8000);
-        
-        const response = await fetch(source.url, { signal: controller.signal });
-        clearTimeout(timeoutId);
-        
-        if (!response.ok) continue;
-        
-        if (source.type === 'json') {
-          const data = await response.json();
-          
-          if (source.url.includes('cryptopanic')) {
-            articles = data.results?.slice(0, 15).map(item => ({
-              title: item.title,
-              link: item.url,
-              description: item.metadata?.description || item.title,
-              date: item.created_at || new Date().toISOString(),
-              source: 'CryptoPanic',
-              sentiment: item.votes?.positive > item.votes?.negative ? 'bullish' : 'bearish'
-            })) || [];
-          } else if (source.url.includes('cryptocompare')) {
-            articles = data.Data?.slice(0, 15).map(item => ({
-              title: item.title,
-              link: item.url,
-              description: item.body.substring(0, 200),
-              date: new Date(item.published_on * 1000).toISOString(),
-              source: item.source_info?.name || 'CryptoCompare',
-              sentiment: 'neutral'
-            })) || [];
-          }
-        } else if (source.type === 'rss') {
-          const xmlText = await response.text();
-          articles = this.parseRSS(xmlText);
-        }
-        
-        if (articles.length > 0) break;
-        
-      } catch(e) {
-        console.warn(`News source ${source.url} failed:`, e.message);
-        continue;
+    while ((match = itemRegex.exec(xmlText)) !== null) {
+      const content = match[1];
+      
+      // Extract title
+      let title = '';
+      const titleMatch = content.match(/<title>.*?<!\[CDATA\[(.*?)\]\]>.*?<\/title>/) || content.match(/<title>(.*?)<\/title>/);
+      if (titleMatch) title = titleMatch[1].replace(/<!\[CDATA\[|\]\]>/g, '');
+      
+      // Extract link
+      let link = '';
+      const linkMatch = content.match(/<link>(.*?)<\/link>/);
+      if (linkMatch) link = linkMatch[1];
+      
+      // Extract description
+      let description = '';
+      const descMatch = content.match(/<description>.*?<!\[CDATA\[(.*?)\]\]>.*?<\/description>/) || content.match(/<description>(.*?)<\/description>/);
+      if (descMatch) description = descMatch[1].replace(/<!\[CDATA\[|\]\]>/g, '').substring(0, 200);
+      else description = title;
+      
+      // Extract date
+      let date = new Date().toISOString();
+      const dateMatch = content.match(/<pubDate>(.*?)<\/pubDate>/);
+      if (dateMatch) date = dateMatch[1];
+      
+      if (title && link) {
+        items.push({
+          title: title,
+          link: link,
+          description: description,
+          date: date,
+          source: 'Coinpedia'
+        });
       }
     }
     
-    // Fallback to static headlines if all sources fail
-    if (articles.length === 0) {
-      articles = [
-        { title: 'Bitcoin approaches all-time high as institutional demand grows', link: '#', description: 'ETF inflows continue to drive price action', date: new Date().toISOString(), source: 'Market Update' },
-        { title: 'Ethereum upgrade scheduled for next month', link: '#', description: 'Developers announce mainnet date', date: new Date().toISOString(), source: 'Dev Update' },
-        { title: 'Regulatory clarity improving in major economies', link: '#', description: 'New frameworks being discussed', date: new Date().toISOString(), source: 'Regulation' }
-      ];
+    return items.slice(0, 20);
+  },
+  
+  renderNews(articles) {
+    const grid = document.getElementById('news-grid');
+    if (!grid) return;
+    
+    if (!articles || articles.length === 0) {
+      grid.innerHTML = '<div class="news-fallback"><i class="fas fa-newspaper"></i> No news available</div>';
+      return;
     }
     
-    // Render news
     const html = articles.map(article => `
       <div class="news-card" onclick="window.open('${article.link}', '_blank')" style="cursor:pointer;">
         <div class="news-card-content">
@@ -12551,34 +12561,9 @@ const WatchlistManager = {
       </div>
     `).join('');
     
-    grid.innerHTML = html || '<div class="news-fallback">No news available</div>';
+    grid.innerHTML = html;
   },
-
-  parseRSS(xmlText) {
-    const items = [];
-    const itemRegex = /<item>([\s\S]*?)<\/item>/gi;
-    let match;
-    
-    while ((match = itemRegex.exec(xmlText)) !== null) {
-      const content = match[1];
-      const titleMatch = content.match(/<title>.*?<!\[CDATA\[(.*?)\]\]>.*?<\/title>/) || content.match(/<title>(.*?)<\/title>/);
-      const linkMatch = content.match(/<link>(.*?)<\/link>/);
-      const dateMatch = content.match(/<pubDate>(.*?)<\/pubDate>/);
-      
-      if (titleMatch && linkMatch) {
-        items.push({
-          title: titleMatch[1].replace(/<!\[CDATA\[|\]\]>/g, ''),
-          link: linkMatch[1],
-          description: titleMatch[1].substring(0, 200),
-          date: dateMatch ? dateMatch[1] : new Date().toISOString(),
-          source: 'Coinpedia'
-        });
-      }
-    }
-    
-    return items.slice(0, 15);
-  },
-
+  
   timeAgo(date) {
     const seconds = Math.floor((new Date() - new Date(date)) / 1000);
     if (seconds < 60) return 'just now';
@@ -12586,16 +12571,14 @@ const WatchlistManager = {
     if (seconds < 86400) return Math.floor(seconds / 3600) + 'h ago';
     return Math.floor(seconds / 86400) + 'd ago';
   },
-
+  
   truncate(str, len) {
     if (!str) return '';
     if (str.length <= len) return str;
     return str.substring(0, len) + '...';
-  },
-  // ============================================
-  // END OF CODE BLOCK D
-  // ============================================
-  };
+  }
+};
+
 // ============================================
 // STOCK & FOREX MANAGER (Finnhub + Twelve Data)
 // ============================================
@@ -23297,11 +23280,11 @@ function updateMobilePrices() {
   }, 2000);
 }
 
-// ============================================
-// ECONOMIC CALENDAR MODULE 
-// ============================================
-// ============================================
-
+// =============================================
+// COMPLETE REPLACEMENT: EconomicCalendar
+// Fetches live economic events from Finnhub through your backend
+// API key stored securely in backend .env
+// =============================================
 const EconomicCalendar = {
   events: [],
   categories: ['All', 'Labor', 'Inflation', 'Central Bank', 'GDP', 'Trade', 'Manufacturing', 'Housing', 'Consumer', 'Energy', 'Crypto'],
@@ -23311,12 +23294,9 @@ const EconomicCalendar = {
   
   async init() {
     await this.fetchEvents();
-    
-    // Refresh every 6 hours (economic data doesn't change minute by minute)
     IntervalManager.register(() => this.fetchEvents(), 21600000, 'EconomicCalendar-refresh');
-    
     this.setupUI();
-    console.log('✅ Economic Calendar ready with ' + this.countries.length + ' countries');
+    console.log('✅ Economic Calendar ready with live Finnhub data');
   },
   
   setupUI() {
@@ -23326,15 +23306,15 @@ const EconomicCalendar = {
   },
   
   addCategoryFilters() {
-    var container = document.getElementById('economic-calendar');
+    const container = document.getElementById('economic-calendar');
     if (!container) return;
     
-    var filterBar = document.createElement('div');
+    const filterBar = document.createElement('div');
     filterBar.id = 'ec-category-filters';
     filterBar.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;padding:0 4px;';
     
     this.categories.forEach(cat => {
-      var btn = document.createElement('button');
+      const btn = document.createElement('button');
       btn.className = 'ec-category-btn' + (cat === 'All' ? ' active' : '');
       btn.setAttribute('data-category', cat);
       btn.style.cssText = 'padding:4px 12px;border:1px solid var(--border-primary);border-radius:16px;background:' + (cat === 'All' ? 'var(--accent-primary)' : 'var(--bg-tertiary)') + ';color:' + (cat === 'All' ? 'white' : 'var(--text-secondary)') + ';font-size:10px;cursor:pointer;transition:all 0.15s;';
@@ -23358,15 +23338,15 @@ const EconomicCalendar = {
   },
   
   addCountryFilters() {
-    var container = document.getElementById('economic-calendar');
+    const container = document.getElementById('economic-calendar');
     if (!container) return;
     
-    var countryBar = document.createElement('div');
+    const countryBar = document.createElement('div');
     countryBar.id = 'ec-country-filters';
     countryBar.style.cssText = 'display:flex;gap:4px;flex-wrap:wrap;margin-bottom:16px;padding:0 4px;';
     
     this.countries.forEach(country => {
-      var btn = document.createElement('button');
+      const btn = document.createElement('button');
       btn.className = 'ec-country-btn' + (country === 'All' ? ' active' : '');
       btn.setAttribute('data-country', country);
       btn.style.cssText = 'padding:3px 10px;border:1px solid var(--border-primary);border-radius:14px;background:' + (country === 'All' ? 'var(--accent-muted)' : 'transparent') + ';color:' + (country === 'All' ? 'var(--accent-primary)' : 'var(--text-muted)') + ';font-size:9px;cursor:pointer;transition:all 0.15s;';
@@ -23392,7 +23372,7 @@ const EconomicCalendar = {
   addEventDetailsModal() {
     if (document.getElementById('ec-event-modal')) return;
     
-    var modal = document.createElement('div');
+    const modal = document.createElement('div');
     modal.id = 'ec-event-modal';
     modal.className = 'modal-overlay';
     modal.innerHTML = `
@@ -23437,59 +23417,64 @@ const EconomicCalendar = {
     container.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);"><i class="fas fa-spinner fa-spin"></i> Loading economic calendar...</div>';
     
     try {
-      // Try to fetch from Finnhub (live data)
-      var events = await this.fetchLiveEvents();
+      // Get API base from failover system
+      const apiBase = getApiBase();
       
-      if (!events || events.length === 0) {
-        events = this.getComprehensiveFallbackEvents();
-      }
-      
-      this.events = events;
-      this.render();
-      
-    } catch(e) {
-      console.error('Economic calendar error:', e);
-      this.events = this.getComprehensiveFallbackEvents();
-      this.render();
-    }
-  },
-  
-  async fetchLiveEvents() {
-    try {
-      var today = new Date();
-      var nextMonth = new Date(today);
+      const today = new Date();
+      const nextMonth = new Date(today);
       nextMonth.setMonth(nextMonth.getMonth() + 1);
       
-      var from = today.toISOString().slice(0, 10);
-      var to = nextMonth.toISOString().slice(0, 10);
+      const from = today.toISOString().slice(0, 10);
+      const to = nextMonth.toISOString().slice(0, 10);
       
-      var res = await fetch(`https://finnhub.io/api/v1/calendar/economic?from=${from}&to=${to}&token=${CONFIG.FINNHUB_API_KEY}`);
+      // Fetch live economic events from Finnhub through your backend
+      // Your backend will use the Finnhub API key stored in .env
+      const url = `${apiBase}/proxy?endpoint=finnhub-calendar&from=${from}&to=${to}`;
       
-      if (!res.ok) return [];
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      const response = await fetch(url, { signal: controller.signal });
+      clearTimeout(timeoutId);
       
-      var data = await res.json();
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      
+      const data = await response.json();
       
       if (data.economicCalendar && data.economicCalendar.length > 0) {
-        return data.economicCalendar.map(e => ({
+        this.events = data.economicCalendar.map(e => ({
           date: new Date(e.eventDate || e.date),
           event: e.title || e.event,
           country: e.country || 'US',
-          impact: e.impact || Math.floor(Math.random() * 3) + 1,
+          impact: e.impact || this.calculateImpactLevel(e),
           previous: e.previous || '--',
           forecast: e.forecast || '--',
           actual: e.actual || null,
           category: this.detectCategory(e.title || e.event)
         }));
+      } else {
+        this.events = [];
       }
+      
+      this.render();
+      
     } catch(e) {
-      console.warn('Live economic data fetch failed:', e.message);
+      console.error('Economic calendar fetch error:', e);
+      container.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);"><i class="fas fa-exclamation-triangle"></i> Economic data temporarily unavailable</div>';
     }
-    
-    return [];
+  },
+  
+  calculateImpactLevel(event) {
+    // Higher impact for major economic events
+    const title = (event.title || event.event || '').toLowerCase();
+    if (title.includes('fomc') || title.includes('interest rate') || title.includes('nonfarm') || 
+        title.includes('cpi') || title.includes('gdp') || title.includes('fed')) return 3;
+    if (title.includes('jobless') || title.includes('unemployment') || title.includes('pmi') || 
+        title.includes('retail') || title.includes('housing')) return 2;
+    return 1;
   },
   
   detectCategory(eventName) {
-    var name = eventName.toLowerCase();
+    const name = eventName.toLowerCase();
     if (name.includes('employment') || name.includes('job') || name.includes('unemployment') || name.includes('payroll')) return 'Labor';
     if (name.includes('cpi') || name.includes('inflation') || name.includes('price')) return 'Inflation';
     if (name.includes('fed') || name.includes('ecb') || name.includes('boe') || name.includes('boj') || name.includes('rate')) return 'Central Bank';
@@ -23499,190 +23484,53 @@ const EconomicCalendar = {
     if (name.includes('housing') || name.includes('home') || name.includes('building')) return 'Housing';
     if (name.includes('consumer') || name.includes('retail') || name.includes('sentiment')) return 'Consumer';
     if (name.includes('oil') || name.includes('gas') || name.includes('energy')) return 'Energy';
-    if (name.includes('bitcoin') || name.includes('ethereum') || name.includes('crypto')) return 'Crypto';
     return 'General';
   },
   
-  getComprehensiveFallbackEvents() {
-    var events = [];
-    var today = new Date();
-    
-    // Generate dates for next 30 days
-    var dates = [];
-    for (var i = 0; i < 30; i++) {
-      var d = new Date(today);
-      d.setDate(today.getDate() + i);
-      dates.push(d);
-    }
-    
-    // US Events
-    var usEvents = [
-      { event: 'Nonfarm Payrolls', category: 'Labor', impact: 3, previous: '216K', forecast: '175K' },
-      { event: 'Unemployment Rate', category: 'Labor', impact: 3, previous: '3.7%', forecast: '3.8%' },
-      { event: 'CPI YoY', category: 'Inflation', impact: 3, previous: '3.4%', forecast: '3.3%' },
-      { event: 'Core CPI MoM', category: 'Inflation', impact: 3, previous: '0.3%', forecast: '0.2%' },
-      { event: 'FOMC Interest Rate Decision', category: 'Central Bank', impact: 3, previous: '5.50%', forecast: '5.50%' },
-      { event: 'GDP Annualized QoQ', category: 'GDP', impact: 3, previous: '3.3%', forecast: '2.8%' },
-      { event: 'ISM Manufacturing PMI', category: 'Manufacturing', impact: 2, previous: '47.2', forecast: '48.0' },
-      { event: 'ISM Services PMI', category: 'Manufacturing', impact: 2, previous: '53.4', forecast: '52.5' },
-      { event: 'Initial Jobless Claims', category: 'Labor', impact: 2, previous: '215K', forecast: '220K' },
-      { event: 'Retail Sales MoM', category: 'Consumer', impact: 2, previous: '0.6%', forecast: '0.4%' },
-      { event: 'PPI MoM', category: 'Inflation', impact: 2, previous: '-0.1%', forecast: '0.2%' },
-      { event: 'Building Permits', category: 'Housing', impact: 1, previous: '1.49M', forecast: '1.50M' },
-      { event: 'Crude Oil Inventories', category: 'Energy', impact: 2, previous: '-2.2M', forecast: '-1.5M' },
-      { event: 'Trade Balance', category: 'Trade', impact: 1, previous: '-$62.2B', forecast: '-$63.0B' }
-    ];
-    
-    // Eurozone Events
-    var euEvents = [
-      { event: 'ECB Interest Rate Decision', category: 'Central Bank', impact: 3, previous: '4.50%', forecast: '4.50%' },
-      { event: 'Eurozone CPI YoY', category: 'Inflation', impact: 3, previous: '2.9%', forecast: '2.8%' },
-      { event: 'German CPI MoM', category: 'Inflation', impact: 2, previous: '0.3%', forecast: '0.2%' },
-      { event: 'German ZEW Economic Sentiment', category: 'Consumer', impact: 2, previous: '15.2', forecast: '16.0' },
-      { event: 'Eurozone GDP QoQ', category: 'GDP', impact: 2, previous: '0.0%', forecast: '0.1%' }
-    ];
-    
-    // UK Events
-    var ukEvents = [
-      { event: 'BOE Interest Rate Decision', category: 'Central Bank', impact: 3, previous: '5.25%', forecast: '5.25%' },
-      { event: 'UK CPI YoY', category: 'Inflation', impact: 2, previous: '4.0%', forecast: '3.8%' },
-      { event: 'UK GDP MoM', category: 'GDP', impact: 2, previous: '-0.1%', forecast: '0.1%' }
-    ];
-    
-    // China Events
-    var cnEvents = [
-      { event: 'China GDP YoY', category: 'GDP', impact: 3, previous: '5.2%', forecast: '5.0%' },
-      { event: 'China Caixin Manufacturing PMI', category: 'Manufacturing', impact: 2, previous: '50.8', forecast: '51.0' },
-      { event: 'China Trade Balance', category: 'Trade', impact: 2, previous: '$68.4B', forecast: '$70.0B' }
-    ];
-    
-    // Japan Events
-    var jpEvents = [
-      { event: 'BOJ Interest Rate Decision', category: 'Central Bank', impact: 2, previous: '-0.10%', forecast: '-0.10%' },
-      { event: 'Japan CPI YoY', category: 'Inflation', impact: 2, previous: '2.6%', forecast: '2.5%' },
-      { event: 'Japan Tankan Manufacturing', category: 'Manufacturing', impact: 2, previous: '13', forecast: '14' }
-    ];
-    
-    // Crypto Events
-    var cryptoEvents = [
-      { event: 'Bitcoin ETF Flow Data', category: 'Crypto', impact: 2, previous: '+$125M', forecast: '--' },
-      { event: 'CME Bitcoin Futures Expiry', category: 'Crypto', impact: 2, previous: '--', forecast: '--' },
-      { event: 'Ethereum Network Upgrade', category: 'Crypto', impact: 2, previous: '--', forecast: '--' }
-    ];
-    
-    // Distribute events across dates
-    var allEvents = [];
-    var eventIndex = 0;
-    
-    for (var i = 0; i < dates.length && eventIndex < 60; i++) {
-      var date = dates[i];
-      var dayOfWeek = date.getDay();
-      if (dayOfWeek === 0 || dayOfWeek === 6) continue; // Skip weekends
-      
-      // Add US events
-      if (usEvents[eventIndex % usEvents.length]) {
-        var usEvent = { ...usEvents[eventIndex % usEvents.length] };
-        usEvent.date = date;
-        usEvent.country = 'US';
-        allEvents.push(usEvent);
-        eventIndex++;
-      }
-      
-      // Add EU events every few days
-      if (i % 3 === 0 && euEvents[Math.floor(i / 3) % euEvents.length]) {
-        var euEvent = { ...euEvents[Math.floor(i / 3) % euEvents.length] };
-        euEvent.date = date;
-        euEvent.country = 'EU';
-        allEvents.push(euEvent);
-      }
-      
-      // Add UK events
-      if (i % 4 === 1 && ukEvents[Math.floor(i / 4) % ukEvents.length]) {
-        var ukEvent = { ...ukEvents[Math.floor(i / 4) % ukEvents.length] };
-        ukEvent.date = date;
-        ukEvent.country = 'UK';
-        allEvents.push(ukEvent);
-      }
-      
-      // Add China events
-      if (i % 5 === 2 && cnEvents[Math.floor(i / 5) % cnEvents.length]) {
-        var cnEvent = { ...cnEvents[Math.floor(i / 5) % cnEvents.length] };
-        cnEvent.date = date;
-        cnEvent.country = 'China';
-        allEvents.push(cnEvent);
-      }
-      
-      // Add Japan events
-      if (i % 6 === 3 && jpEvents[Math.floor(i / 6) % jpEvents.length]) {
-        var jpEvent = { ...jpEvents[Math.floor(i / 6) % jpEvents.length] };
-        jpEvent.date = date;
-        jpEvent.country = 'Japan';
-        allEvents.push(jpEvent);
-      }
-    }
-    
-    // Add crypto events at random positions
-    for (var c = 0; c < cryptoEvents.length; c++) {
-      var randomDate = dates[Math.floor(Math.random() * dates.length)];
-      var cryptoEvent = { ...cryptoEvents[c] };
-      cryptoEvent.date = randomDate;
-      cryptoEvent.country = 'Global';
-      allEvents.push(cryptoEvent);
-    }
-    
-    // Sort by date
-    allEvents.sort(function(a, b) { return a.date - b.date; });
-    
-    return allEvents;
-  },
-  
   render() {
-    var container = document.getElementById('economic-calendar-list');
+    const container = document.getElementById('economic-calendar-list');
     if (!container) return;
     
-    var filtered = this.events.filter(function(e) {
-      var categoryMatch = EconomicCalendar.currentCategory === 'All' || e.category === EconomicCalendar.currentCategory;
-      var countryMatch = EconomicCalendar.currentCountry === 'All' || e.country === EconomicCalendar.currentCountry;
+    const filtered = this.events.filter(e => {
+      const categoryMatch = this.currentCategory === 'All' || e.category === this.currentCategory;
+      const countryMatch = this.currentCountry === 'All' || e.country === this.currentCountry;
       return categoryMatch && countryMatch;
     });
     
     if (filtered.length === 0) {
-      container.innerHTML = '<div style="padding:30px;text-align:center;color:var(--text-muted);">No events match your filters</div>';
+      container.innerHTML = '<div style="padding:30px;text-align:center;color:var(--text-muted);">No economic events match your filters</div>';
       return;
     }
     
-    var html = '';
+    let html = '';
     
-    for (var i = 0; i < filtered.length; i++) {
-      var e = filtered[i];
-      var eventDate = new Date(e.date);
-      var today = new Date();
-      var isToday = eventDate.toDateString() === today.toDateString();
-      var isTomorrow = new Date(today.setDate(today.getDate() + 1)).toDateString() === eventDate.toDateString();
+    for (let i = 0; i < filtered.length; i++) {
+      const e = filtered[i];
+      const eventDate = new Date(e.date);
+      const today = new Date();
+      const isToday = eventDate.toDateString() === today.toDateString();
+      const isTomorrow = new Date(today.setDate(today.getDate() + 1)).toDateString() === eventDate.toDateString();
       
-      var dateStr = eventDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+      let dateStr = eventDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
       if (isToday) dateStr = '🔴 TODAY';
       if (isTomorrow) dateStr = '🟡 TOMORROW';
       
-      var actual = e.actual !== null && e.actual !== undefined ? e.actual : '--';
-      var previous = e.previous || '--';
-      var forecast = e.forecast || '--';
+      const actual = e.actual !== null && e.actual !== undefined ? e.actual : '--';
+      const previous = e.previous || '--';
+      const forecast = e.forecast || '--';
       
-      var impactStars = '';
-      var impactColor = '';
-      for (var s = 0; s < 3; s++) {
-        if (s < (e.impact || 1)) {
-          impactStars += '★';
-        } else {
-          impactStars += '☆';
-        }
+      let impactStars = '';
+      let impactColor = '';
+      for (let s = 0; s < 3; s++) {
+        if (s < (e.impact || 1)) impactStars += '★';
+        else impactStars += '☆';
       }
       
       if (e.impact === 3) impactColor = '#ef5350';
       else if (e.impact === 2) impactColor = '#ff9800';
       else impactColor = '#4ecdc4';
       
-      var countryFlag = '';
+      let countryFlag = '';
       if (e.country === 'US') countryFlag = '🇺🇸';
       else if (e.country === 'EU') countryFlag = '🇪🇺';
       else if (e.country === 'UK') countryFlag = '🇬🇧';
@@ -23729,35 +23577,33 @@ const EconomicCalendar = {
     container.innerHTML = html;
     
     // Add click handlers for event details
-    var self = this;
-    container.querySelectorAll('.ec-event-item').forEach(function(item) {
+    const self = this;
+    container.querySelectorAll('.ec-event-item').forEach(item => {
       item.addEventListener('click', function() {
-        var idx = parseInt(this.dataset.eventIndex);
-        var event = filtered[idx];
+        const idx = parseInt(this.dataset.eventIndex);
+        const event = filtered[idx];
         if (event) self.showEventDetails(event);
       });
     });
     
-    // Add last updated timestamp
-    var now = new Date();
     container.innerHTML += `
       <div style="text-align:center;font-size:9px;color:var(--text-muted);padding:12px;border-top:1px solid var(--border-primary);margin-top:8px;">
-        <i class="fas fa-sync-alt"></i> Updated ${now.toLocaleTimeString()} · Data via Finnhub + Fallback
+        <i class="fas fa-sync-alt"></i> Updated ${new Date().toLocaleTimeString()} · Data via Finnhub
       </div>
     `;
   },
   
   showEventDetails(event) {
-    var modal = document.getElementById('ec-event-modal');
+    const modal = document.getElementById('ec-event-modal');
     if (!modal) return;
     
-    var titleEl = document.getElementById('ec-modal-title');
-    var dateEl = document.getElementById('ec-modal-date');
-    var previousEl = document.getElementById('ec-modal-previous');
-    var forecastEl = document.getElementById('ec-modal-forecast');
-    var actualEl = document.getElementById('ec-modal-actual');
-    var impactStarsEl = document.getElementById('ec-modal-impact-stars');
-    var iconEl = document.getElementById('ec-modal-icon');
+    const titleEl = document.getElementById('ec-modal-title');
+    const dateEl = document.getElementById('ec-modal-date');
+    const previousEl = document.getElementById('ec-modal-previous');
+    const forecastEl = document.getElementById('ec-modal-forecast');
+    const actualEl = document.getElementById('ec-modal-actual');
+    const impactStarsEl = document.getElementById('ec-modal-impact-stars');
+    const iconEl = document.getElementById('ec-modal-icon');
     
     if (titleEl) titleEl.textContent = event.event;
     if (dateEl) dateEl.textContent = new Date(event.date).toLocaleString();
@@ -23766,8 +23612,8 @@ const EconomicCalendar = {
     if (actualEl) actualEl.textContent = event.actual !== null ? event.actual : 'Not released';
     
     if (impactStarsEl) {
-      var stars = '';
-      for (var i = 0; i < 3; i++) {
+      let stars = '';
+      for (let i = 0; i < 3; i++) {
         if (i < (event.impact || 1)) stars += '<span style="color:#ff9800;font-size:16px;">★</span>';
         else stars += '<span style="color:var(--text-muted);font-size:16px;">☆</span>';
       }
@@ -23779,14 +23625,12 @@ const EconomicCalendar = {
       else if (event.category === 'Inflation') iconEl.className = 'fas fa-chart-line';
       else if (event.category === 'Central Bank') iconEl.className = 'fas fa-university';
       else if (event.category === 'GDP') iconEl.className = 'fas fa-chart-simple';
-      else if (event.category === 'Crypto') iconEl.className = 'fab fa-bitcoin';
       else iconEl.className = 'fas fa-chart-line';
     }
     
     modal.classList.add('visible');
   }
 };
-
 // ============================================
 // EDUCATION CENTER - MODERN E-BOOK READER
 // ============================================
