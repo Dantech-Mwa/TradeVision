@@ -4299,53 +4299,57 @@ barReplay: {
   },
   
   addReplayButton() {
-    var self = this;
-    var attemptCount = 0;
-    var maxAttempts = 10;
-    
-    function tryAddButton() {
-      attemptCount++;
-      // Look for .chart-header-right instead of .chart-controls
-      var chartHeaderRight = document.querySelector('.chart-header-right');
+  const self = this;
+  let attempts = 0;
+  const maxAttempts = 10;
+
+  function tryAdd() {
+    attempts++;
+    const dropdownMenu = document.getElementById('tools-dropdown-menu');
+    if (dropdownMenu && !document.getElementById('replay-dropdown-item')) {
+      // Create the dropdown item
+      const divider = document.createElement('div');
+      divider.className = 'ctrl-dropdown-separator';
       
-      if (chartHeaderRight && !document.getElementById('replay-toggle-btn')) {
-        var btn = document.createElement('button');
-        btn.id = 'replay-toggle-btn';
-        btn.className = 'chart-ctrl-btn';
-        btn.setAttribute('data-tooltip', 'Bar Replay (Backtest Mode)');
-        btn.innerHTML = '<i class="fas fa-history" style="font-size:12px;"></i>';
-        
-        btn.addEventListener('click', function(e) {
-          e.stopPropagation();
-          if (self.enabled) {
-            self.exit();
-          } else {
-            self.start();
-          }
-        });
-        
-        // Find the crosshair-btn or insert near the end of chart-header-right
-        var crosshairBtn = chartHeaderRight.querySelector('#crosshair-btn');
-        if (crosshairBtn && crosshairBtn.parentNode) {
-          crosshairBtn.parentNode.insertBefore(btn, crosshairBtn);
+      const item = document.createElement('div');
+      item.id = 'replay-dropdown-item';
+      item.className = 'ctrl-dropdown-item';
+      item.innerHTML = `
+        <i class="fas fa-history"></i>
+        <span>Bar Replay (Backtest Mode)</span>
+        <span class="ctrl-shortcut"></span>
+      `;
+      
+      item.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (self.enabled) {
+          self.exit();
         } else {
-          chartHeaderRight.appendChild(btn);
+          self.start();
         }
-        
-        console.log('✅ Replay button added to chart header');
-        return true;
+        // Close the dropdown after click
+        const menu = document.getElementById('tools-dropdown-menu');
+        if (menu) menu.classList.remove('visible');
+      });
+      
+      // Find the last separator or just append at the end
+      const lastChild = dropdownMenu.lastElementChild;
+      if (lastChild && lastChild.classList?.contains('ctrl-dropdown-separator')) {
+        dropdownMenu.insertBefore(divider, lastChild);
+        dropdownMenu.insertBefore(item, lastChild);
+      } else {
+        dropdownMenu.appendChild(divider);
+        dropdownMenu.appendChild(item);
       }
       
-      if (attemptCount < maxAttempts) {
-        setTimeout(tryAddButton, 500);
-      } else {
-        console.warn('⚠️ Could not add replay button - chart-header-right not found');
-      }
-      return false;
+      console.log('✅ Replay button added to tools dropdown');
+      return true;
     }
-    
-    setTimeout(tryAddButton, 1000);
-  },
+    if (attempts < maxAttempts) setTimeout(tryAdd, 500);
+    else console.warn('⚠️ Could not add replay button – dropdown not found');
+  }
+  setTimeout(tryAdd, 1500);
+},
   
   start(symbol, interval) {
     if (!STATE.candles || STATE.candles.length === 0) {
@@ -4645,49 +4649,50 @@ multiTimeframeOverlay: {
   },
   
   addToggleButton() {
-    var self = this;
-    var attemptCount = 0;
-    var maxAttempts = 10;
-    
-    function tryAddButton() {
-      attemptCount++;
-      // Look for .chart-header-right instead of .chart-controls
-      var chartHeaderRight = document.querySelector('.chart-header-right');
+  const self = this;
+  let attempts = 0;
+  const maxAttempts = 10;
+
+  function tryAdd() {
+    attempts++;
+    const dropdownMenu = document.getElementById('tools-dropdown-menu');
+    if (dropdownMenu && !document.getElementById('mtf-dropdown-item')) {
+      const item = document.createElement('div');
+      item.id = 'mtf-dropdown-item';
+      item.className = 'ctrl-dropdown-item';
+      item.innerHTML = `
+        <span style="font-size:10px;font-weight:700;">MTF</span>
+        <span>Higher Timeframes (MTF)</span>
+        <span class="ctrl-shortcut"></span>
+      `;
       
-      if (chartHeaderRight && !document.getElementById('mtf-overlay-btn')) {
-        var btn = document.createElement('button');
-        btn.id = 'mtf-overlay-btn';
-        btn.className = 'chart-ctrl-btn';
-        btn.setAttribute('data-tooltip', 'Higher Timeframes (MTF)');
-        btn.innerHTML = '<span style="font-size:10px;font-weight:700;">MTF</span>';
-        
-        btn.addEventListener('click', function(e) {
-          e.stopPropagation();
-          if (self.panel) {
-            var isVisible = self.panel.style.display === 'flex';
-            self.panel.style.display = isVisible ? 'none' : 'flex';
-          }
-        });
-        
-        var crosshairBtn = chartHeaderRight.querySelector('#crosshair-btn');
-        if (crosshairBtn && crosshairBtn.parentNode) {
-          crosshairBtn.parentNode.insertBefore(btn, crosshairBtn);
-        } else {
-          chartHeaderRight.appendChild(btn);
+      item.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (self.panel) {
+          const isVisible = self.panel.style.display === 'flex';
+          self.panel.style.display = isVisible ? 'none' : 'flex';
         }
-        
-        console.log('✅ MTF Overlay button added');
-        return true;
+        // Close the dropdown after click
+        const menu = document.getElementById('tools-dropdown-menu');
+        if (menu) menu.classList.remove('visible');
+      });
+      
+      // Insert before the last separator or at the end
+      const lastChild = dropdownMenu.lastElementChild;
+      if (lastChild && lastChild.classList?.contains('ctrl-dropdown-separator')) {
+        dropdownMenu.insertBefore(item, lastChild);
+      } else {
+        dropdownMenu.appendChild(item);
       }
       
-      if (attemptCount < maxAttempts) {
-        setTimeout(tryAddButton, 500);
-      }
-      return false;
+      console.log('✅ MTF button added to tools dropdown');
+      return true;
     }
-    
-    setTimeout(tryAddButton, 1500);
-  },
+    if (attempts < maxAttempts) setTimeout(tryAdd, 500);
+    else console.warn('⚠️ Could not add MTF button – dropdown not found');
+  }
+  setTimeout(tryAdd, 1500);
+},
   
   async addTimeframe(timeframe) {
     if (this.overlayData[timeframe]) return;
