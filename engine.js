@@ -29137,8 +29137,7 @@ window.TradeVisionEngine = {
   }
 };
 
-console.log('🚀 TradeVision Engine loaded from Vercel');
-
+console.log('🚀 TradeVision');
 const AIAssistant = {
   messages: [],
   isProcessing: false,
@@ -29154,62 +29153,7 @@ const AIAssistant = {
     this.addAIChatButton();
     console.log('✅ AI Assistant ready');
   },
-  // Fix: Ensure AI Assistant button works reliably
-(function fixAIAssistant() {
-  function attachAIHandler() {
-    const aiBtn = document.getElementById('ai-assist-btn');
-    if (aiBtn) {
-      // Remove all existing listeners by cloning
-      const newBtn = aiBtn.cloneNode(true);
-      aiBtn.parentNode.replaceChild(newBtn, aiBtn);
-      
-      newBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        console.log('🤖 AI button clicked - opening modal');
-        
-        // Check if modal exists, create if not
-        if (!document.getElementById('ai-assistant-modal')) {
-          AIAssistant.createModal();
-        }
-        
-        // Open the modal
-        const modal = document.getElementById('ai-assistant-modal');
-        if (modal) {
-          modal.classList.add('visible');
-          AIAssistant.updateContext();
-          AIAssistant.updateUsageCounter();
-          
-          // Focus the input after modal opens
-          setTimeout(function() {
-            const input = document.getElementById('ai-chat-input');
-            if (input) input.focus();
-          }, 300);
-        } else {
-          console.error('AI modal still not found');
-          if (typeof Toast !== 'undefined') {
-            Toast.error('AI Assistant unavailable. Please refresh.');
-          }
-        }
-      });
-      
-      console.log('✅ AI Assistant button handler attached');
-      return true;
-    }
-    return false;
-  }
   
-  // Try to attach immediately and then retry
-  if (!attachAIHandler()) {
-    let attempts = 0;
-    const interval = setInterval(function() {
-      attempts++;
-      if (attachAIHandler() || attempts > 20) {
-        clearInterval(interval);
-      }
-    }, 500);
-  }
-})();
   loadDailyCount() {
     var today = new Date().toISOString().slice(0,10);
     var saved = localStorage.getItem('tvp_ai_date');
@@ -29874,6 +29818,67 @@ const AIAssistant = {
     }
   }
 };
+
+// ============================================
+// FIX: AI Assistant Button Handler (Outside the object)
+// ============================================
+(function fixAIAssistantButton() {
+  function attachAIHandler() {
+    var aiBtn = document.getElementById('ai-assist-btn');
+    if (aiBtn && typeof AIAssistant !== 'undefined') {
+      var newBtn = aiBtn.cloneNode(true);
+      aiBtn.parentNode.replaceChild(newBtn, aiBtn);
+      
+      newBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('🤖 AI button clicked - opening modal');
+        
+        if (typeof AIAssistant.open === 'function') {
+          AIAssistant.open();
+        } else {
+          // Fallback: show modal directly
+          var modal = document.getElementById('ai-assistant-modal');
+          if (modal) {
+            modal.classList.add('visible');
+            if (AIAssistant.updateContext) AIAssistant.updateContext();
+            if (AIAssistant.updateUsageCounter) AIAssistant.updateUsageCounter();
+          } else if (typeof AIAssistant.createModal === 'function') {
+            AIAssistant.createModal();
+            setTimeout(function() {
+              var m = document.getElementById('ai-assistant-modal');
+              if (m) m.classList.add('visible');
+            }, 100);
+          }
+        }
+      });
+      
+      console.log('✅ AI Assistant button handler attached');
+      return true;
+    }
+    return false;
+  }
+  
+  // Try to attach immediately and then retry
+  if (!attachAIHandler()) {
+    var attempts = 0;
+    var interval = setInterval(function() {
+      attempts++;
+      if (attachAIHandler() || attempts > 20) {
+        clearInterval(interval);
+      }
+    }, 500);
+  }
+})();
+
+// Initialize AI Assistant
+setTimeout(function() {
+  if (typeof AIAssistant !== 'undefined' && AIAssistant.init) {
+    AIAssistant.init();
+    console.log('🤖 AI Assistant initialized');
+  }
+}, 2000);
+
 
 // ============================================
 // PRIORITY #5: PUSH NOTIFICATIONS (FCM)
