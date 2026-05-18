@@ -29453,147 +29453,231 @@ const AIAssistant = {
     return 'You are a professional crypto/stocks/forex trading assistant. Be concise (2-3 paragraphs max). Current data: ' + sym + ' at $' + price + ' (' + change + '), ' + (STATE.interval || '15m') + ' timeframe. Latest candle: ' + candleStr + '. Active indicators: ' + inds + '. Provide actionable trading insights. Include: this is not financial advice.';
   },
   
-  async send() {
-    var input = document.getElementById('ai-chat-input');
-    if (!input) return;
-    var text = input.value.trim();
-    if (!text) return;
+ async send() {
+  console.log('🔍 [AI] send() called');
+  
+  var input = document.getElementById('ai-chat-input');
+  if (!input) {
+    console.error('❌ [AI] Chat input element not found');
+    return;
+  }
+  
+  var text = input.value.trim();
+  console.log('📝 [AI] User input:', text);
+  
+  if (!text) {
+    console.warn('⚠️ [AI] Empty input, ignoring');
+    return;
+  }
+  
+  console.log('🔍 [AI] Checking permissions...');
+  var check = this.canUse();
+  console.log('📊 [AI] canUse result:', check);
+  
+  if (!check.allowed) {
+    if (typeof Toast !== 'undefined') Toast.warning(check.reason);
+    return;
+  }
+  
+  if (this.isProcessing) { 
+    console.warn('⚠️ [AI] Already processing, ignoring duplicate request');
+    if (typeof Toast !== 'undefined') Toast.warning('Please wait...'); 
+    return; 
+  }
+  
+  input.value = '';
+  var messagesEl = document.getElementById('ai-messages');
+  if (!messagesEl) {
+    console.error('❌ [AI] Messages element not found');
+    return;
+  }
+  
+  console.log('✅ [AI] Adding user message to DOM');
+  // Add user message
+  var userDiv = document.createElement('div');
+  userDiv.style.cssText = 'display:flex;gap:8px;flex-direction:row-reverse;margin-bottom:10px;';
+  userDiv.innerHTML = '<div style="width:26px;height:26px;border-radius:50%;background:var(--accent-primary);display:flex;align-items:center;justify-content:center;color:white;font-size:9px;font-weight:700;">YOU</div><div style="background:var(--accent-muted);padding:10px 14px;border-radius:12px;font-size:12px;color:var(--text-primary);max-width:80%;line-height:1.5;">' + text.replace(/</g,'&lt;') + '</div>';
+  messagesEl.appendChild(userDiv);
+  
+  // Typing indicator
+  console.log('💬 [AI] Adding typing indicator');
+  var typingDiv = document.createElement('div');
+  typingDiv.id = 'ai-typing';
+  typingDiv.style.cssText = 'display:flex;gap:8px;margin-bottom:10px;';
+  typingDiv.innerHTML = '<span style="font-size:20px;">🤖</span><div class="ai-typing"><span></span><span></span><span></span></div>';
+  messagesEl.appendChild(typingDiv);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+  
+  this.isProcessing = true;
+  
+  try {
+    var aiResponse = null;
+    var lowerText = text.toLowerCase();
     
-    var check = this.canUse();
-    if (!check.allowed) {
-      if (typeof Toast !== 'undefined') Toast.warning(check.reason);
-      return;
-    }
+    console.log('🔍 [AI] useLocalAnalysis:', this.useLocalAnalysis);
+    console.log('🔍 [AI] lowerText:', lowerText);
+    console.log('🔍 [AI] STATE.candles length:', STATE.candles ? STATE.candles.length : 'STATE undefined');
     
-    if (this.isProcessing) { 
-      if (typeof Toast !== 'undefined') Toast.warning('Please wait...'); 
-      return; 
-    }
-    
-    input.value = '';
-    var messagesEl = document.getElementById('ai-messages');
-    if (!messagesEl) return;
-    
-    var userDiv = document.createElement('div');
-    userDiv.style.cssText = 'display:flex;gap:8px;flex-direction:row-reverse;margin-bottom:10px;';
-    userDiv.innerHTML = '<div style="width:26px;height:26px;border-radius:50%;background:var(--accent-primary);display:flex;align-items:center;justify-content:center;color:white;font-size:9px;font-weight:700;">YOU</div><div style="background:var(--accent-muted);padding:10px 14px;border-radius:12px;font-size:12px;color:var(--text-primary);max-width:80%;line-height:1.5;">' + text.replace(/</g,'&lt;') + '</div>';
-    messagesEl.appendChild(userDiv);
-    
-    var typingDiv = document.createElement('div');
-    typingDiv.id = 'ai-typing';
-    typingDiv.style.cssText = 'display:flex;gap:8px;margin-bottom:10px;';
-    typingDiv.innerHTML = '<span style="font-size:20px;">🤖</span><div class="ai-typing"><span></span><span></span><span></span></div>';
-    messagesEl.appendChild(typingDiv);
-    messagesEl.scrollTop = messagesEl.scrollHeight;
-    
-    this.isProcessing = true;
-    
-    try {
-      var aiResponse = null;
-      var lowerText = text.toLowerCase();
+    // LOCAL ANALYSIS MODE - NO API CALLS
+    if (this.useLocalAnalysis) {
+      console.log('📊 [AI] LOCAL ANALYSIS MODE ACTIVE');
       
-      // LOCAL ANALYSIS MODE - NO API CALLS
-      if (this.useLocalAnalysis) {
-        console.log('📊 Using LOCAL analysis mode - no API calls');
+      // Check if we have data
+      if (!STATE.candles || STATE.candles.length < 30) {
+        console.warn('⚠️ [AI] Not enough candles:', STATE.candles ? STATE.candles.length : 0);
+        aiResponse = "⚠️ Not enough chart data. Please wait for more candles to load.\n\nCurrent candles: " + (STATE.candles ? STATE.candles.length : 0);
+      } else {
+        console.log('✅ [AI] Candles available:', STATE.candles.length);
         
+        // Route to appropriate analysis
         if (lowerText.includes('trend') && !lowerText.includes('full') && !lowerText.includes('complete')) {
+          console.log('📈 [AI] Routing to extractTrendOnly()');
           aiResponse = this.extractTrendOnly();
+          console.log('✅ [AI] extractTrendOnly returned, length:', aiResponse ? aiResponse.length : 0);
         } else if (lowerText.includes('rsi')) {
+          console.log('⚡ [AI] Routing to extractRSIOnly()');
           aiResponse = this.extractRSIOnly();
         } else if (lowerText.includes('volume')) {
+          console.log('📊 [AI] Routing to extractVolumeOnly()');
           aiResponse = this.extractVolumeOnly();
         } else if (lowerText.includes('support') || lowerText.includes('resistance') || lowerText.includes('s/r')) {
+          console.log('📏 [AI] Routing to extractSROnly()');
           aiResponse = this.extractSROnly();
         } else if (lowerText.includes('setup') || lowerText.includes('entry') || lowerText.includes('trade') || lowerText.includes('recommendation')) {
+          console.log('🎯 [AI] Routing to generateTradeSetup()');
           aiResponse = this.generateTradeSetup();
-        } else if (lowerText.includes('full') || lowerText.includes('complete') || lowerText.includes('analyze')) {
-          aiResponse = this.analyzeLocalChart();
         } else {
+          console.log('📊 [AI] Routing to full analyzeLocalChart()');
           aiResponse = this.analyzeLocalChart();
-        }
-      } 
-      // DEEPSEEK API MODE
-      else {
-        console.log('🌐 Using DeepSeek API mode');
-        var systemPrompt = this.buildSystemPrompt();
-        this.messages.push({ role: 'user', content: text });
-        var allMessages = [{ role: 'system', content: systemPrompt }].concat(this.messages.slice(-8));
-        
-        var backends = [
-          this.apiEndpoint,
-          'https://tradevision-backend.wambuamwanza6.workers.dev/api',
-        ];
-        
-        for (var i = 0; i < backends.length; i++) {
-          try {
-            var controller = new AbortController();
-            var timeoutId = setTimeout(function() { controller.abort(); }, 15000);
-            
-            var res = await fetch(backends[i] + '/proxy?endpoint=deepseek', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ messages: allMessages }),
-              signal: controller.signal
-            });
-            
-            clearTimeout(timeoutId);
-            
-            if (res.ok) {
-              var data = await res.json();
-              aiResponse = data.choices && data.choices[0] && data.choices[0].message ? data.choices[0].message.content : null;
-              if (aiResponse) {
-                this.messages.push({ role: 'assistant', content: aiResponse });
-                this.dailyCount++;
-                localStorage.setItem('tvp_ai_count', this.dailyCount);
-                this.updateUsageCounter();
-                break;
-              }
-            }
-          } catch(err) {
-            console.warn('AI backend failed:', err.message);
-          }
-        }
-        
-        if (!aiResponse) {
-          aiResponse = "⚠️ DeepSeek API temporarily unavailable. Using local analysis instead:\n\n" + this.analyzeLocalChart();
         }
       }
+    } 
+    // DEEPSEEK API MODE
+    else {
+      console.log('🌐 [AI] DEEPSEEK API MODE ACTIVE');
+      var systemPrompt = this.buildSystemPrompt();
+      this.messages.push({ role: 'user', content: text });
+      var allMessages = [{ role: 'system', content: systemPrompt }].concat(this.messages.slice(-8));
       
-      var typing = document.getElementById('ai-typing');
-      if (typing) typing.remove();
+      var backends = [
+        this.apiEndpoint,
+        'https://tradevision-backend.wambuamwanza6.workers.dev/api',
+      ];
+      
+      for (var i = 0; i < backends.length; i++) {
+        try {
+          console.log('🌐 [AI] Trying backend:', backends[i]);
+          var controller = new AbortController();
+          var timeoutId = setTimeout(function() { controller.abort(); }, 15000);
+          
+          var res = await fetch(backends[i] + '/proxy?endpoint=deepseek', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ messages: allMessages }),
+            signal: controller.signal
+          });
+          
+          clearTimeout(timeoutId);
+          
+          if (res.ok) {
+            var data = await res.json();
+            aiResponse = data.choices && data.choices[0] && data.choices[0].message ? data.choices[0].message.content : null;
+            if (aiResponse) {
+              this.messages.push({ role: 'assistant', content: aiResponse });
+              this.dailyCount++;
+              localStorage.setItem('tvp_ai_count', this.dailyCount);
+              this.updateUsageCounter();
+              console.log('✅ [AI] DeepSeek response received');
+              break;
+            }
+          }
+        } catch(err) {
+          console.warn('⚠️ [AI] Backend failed:', err.message);
+        }
+      }
       
       if (!aiResponse) {
-        aiResponse = "I'm having trouble analyzing the chart right now. Please try again in a moment.";
+        console.warn('⚠️ [AI] All backends failed, using fallback');
+        aiResponse = "⚠️ DeepSeek API temporarily unavailable. Using local analysis instead:\n\n" + this.analyzeLocalChart();
       }
-      
-      var aiDiv = document.createElement('div');
-      aiDiv.style.cssText = 'display:flex;gap:8px;margin-bottom:10px;';
-      aiDiv.innerHTML = '<span style="font-size:20px;">🤖</span><div style="background:var(--bg-tertiary);padding:10px 14px;border-radius:12px;font-size:12px;color:var(--text-primary);max-width:85%;line-height:1.6;">' + 
-        aiResponse.replace(/\*\*(.*?)\*\*/g,'<b>$1</b>').replace(/\n/g,'<br>') + 
-        '</div>';
-      messagesEl.appendChild(aiDiv);
-      messagesEl.scrollTop = messagesEl.scrollHeight;
-      
-      if (this.messages.length > 16) this.messages = this.messages.slice(-8);
-      
-    } catch(e) {
-      var typing = document.getElementById('ai-typing');
-      if (typing) typing.remove();
-      
-      console.error('AI error:', e.message);
-      
-      // FALLBACK: Try to respond even if error occurred
-      var fallbackResponse = this.getFallbackResponse(text);
-      var aiDiv = document.createElement('div');
-      aiDiv.style.cssText = 'display:flex;gap:8px;margin-bottom:10px;';
-      aiDiv.innerHTML = '<span style="font-size:20px;">🤖</span><div style="background:var(--bg-tertiary);padding:10px 14px;border-radius:12px;font-size:12px;color:var(--text-primary);max-width:85%;line-height:1.6;">' + 
-        fallbackResponse.replace(/\n/g,'<br>') + 
-        '</div>';
-      messagesEl.appendChild(aiDiv);
     }
     
-    this.isProcessing = false;
-  },
+    // Remove typing indicator
+    var typing = document.getElementById('ai-typing');
+    if (typing) {
+      console.log('🗑️ [AI] Removing typing indicator');
+      typing.remove();
+    }
+    
+    if (!aiResponse) {
+      console.warn('⚠️ [AI] No response generated, using default');
+      aiResponse = "I'm having trouble analyzing the chart right now. Please try again in a moment.";
+    }
+    
+    console.log('✅ [AI] Adding assistant response to DOM, length:', aiResponse.length);
+    // Add assistant message
+    var aiDiv = document.createElement('div');
+    aiDiv.style.cssText = 'display:flex;gap:8px;margin-bottom:10px;';
+    aiDiv.innerHTML = '<span style="font-size:20px;">🤖</span><div style="background:var(--bg-tertiary);padding:10px 14px;border-radius:12px;font-size:12px;color:var(--text-primary);max-width:85%;line-height:1.6;">' + 
+      aiResponse.replace(/\*\*(.*?)\*\*/g,'<b>$1</b>').replace(/\n/g,'<br>') + 
+      '</div>';
+    messagesEl.appendChild(aiDiv);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+    
+    if (this.messages.length > 16) this.messages = this.messages.slice(-8);
+    
+  } catch(e) {
+    console.error('❌ [AI] Critical error in send():', e.message);
+    console.error('❌ [AI] Error stack:', e.stack);
+    
+    var typing = document.getElementById('ai-typing');
+    if (typing) typing.remove();
+    
+    // FALLBACK: Try to respond even if error occurred
+    console.log('🔄 [AI] Attempting fallback response');
+    var fallbackResponse = this.getFallbackResponse(text);
+    var aiDiv = document.createElement('div');
+    aiDiv.style.cssText = 'display:flex;gap:8px;margin-bottom:10px;';
+    aiDiv.innerHTML = '<span style="font-size:20px;">🤖</span><div style="background:var(--bg-tertiary);padding:10px 14px;border-radius:12px;font-size:12px;color:var(--text-primary);max-width:85%;line-height:1.6;">' + 
+      fallbackResponse.replace(/\n/g,'<br>') + 
+      '</div>';
+    messagesEl.appendChild(aiDiv);
+  }
+  
+  this.isProcessing = false;
+  console.log('🏁 [AI] send() completed');
+},
+
+// Add this debug helper method
+debugAI: function() {
+  console.log('=== AI ASSISTANT DEBUG ===');
+  console.log('useLocalAnalysis:', this.useLocalAnalysis);
+  console.log('isProcessing:', this.isProcessing);
+  console.log('dailyCount:', this.dailyCount);
+  console.log('messages count:', this.messages.length);
+  console.log('STATE exists:', typeof STATE !== 'undefined');
+  if (typeof STATE !== 'undefined') {
+    console.log('STATE.candles length:', STATE.candles ? STATE.candles.length : 0);
+    console.log('STATE.symbol:', STATE.symbol);
+    console.log('STATE.currentPrice:', STATE.currentPrice);
+    console.log('STATE.activeIndicators size:', STATE.activeIndicators ? STATE.activeIndicators.size : 0);
+  }
+  console.log('Modal exists:', !!document.getElementById('ai-assistant-modal'));
+  console.log('Chat input exists:', !!document.getElementById('ai-chat-input'));
+  console.log('Send button exists:', !!document.getElementById('ai-send-btn'));
+  console.log('Messages container exists:', !!document.getElementById('ai-messages'));
+  console.log('========================');
+},
+
+// Add test method
+testLocalAnalysis: function() {
+  console.log('🧪 Testing local analysis...');
+  console.log('Calling analyzeLocalChart()...');
+  var result = this.analyzeLocalChart();
+  console.log('Result length:', result ? result.length : 0);
+  console.log('First 200 chars:', result ? result.substring(0, 200) : 'null');
+  return result;
+},
   
   // ============================================
   // LOCAL ANALYSIS METHODS - PROFESSIONAL STYLE
@@ -30426,7 +30510,31 @@ setTimeout(function() {
   }
 }, 2000);
 
+// Add to window for console debugging
+window.debugAI = function() {
+  if (typeof AIAssistant !== 'undefined') {
+    AIAssistant.debugAI();
+  } else {
+    console.error('AIAssistant not defined yet');
+  }
+};
 
+window.testLocalAI = function() {
+  if (typeof AIAssistant !== 'undefined') {
+    return AIAssistant.testLocalAnalysis();
+  } else {
+    console.error('AIAssistant not defined yet');
+    return null;
+  }
+};
+
+window.checkAIMode = function() {
+  if (typeof AIAssistant !== 'undefined') {
+    console.log('Current mode:', AIAssistant.useLocalAnalysis ? 'LOCAL' : 'DEEPSEEK');
+    console.log('Processing:', AIAssistant.isProcessing);
+    console.log('Daily count:', AIAssistant.dailyCount);
+  }
+};
 // ============================================
 // PRIORITY #5: PUSH NOTIFICATIONS (FCM)
 // ============================================
