@@ -3712,20 +3712,23 @@ updateChartTheme: function() {
  * This is called for every price tick to update the current incomplete candle
  * CRITICAL: Must sanitize data to prevent scale distortion
  */
-updateLastCandle(candle) {
+// ============================================
+// COMPLETE updateLastCandle FUNCTION
+// Make sure ALL these methods exist in ChartEngine
+// ============================================
+
+updateLastCandle: function(candle) {
   // ============================================
   // STEP 1: VALIDATE INPUT
   // ============================================
   if (!candle || typeof candle !== 'object') {
-    console.warn('⚠️ updateLastCandle: Invalid candle data', candle);
     return;
   }
   
   // ============================================
   // STEP 2: SANITIZE REALTIME CANDLE DATA
-  // Force numeric conversion to prevent string distortion
   // ============================================
-  const sanitizedCandle = {
+  var sanitizedCandle = {
     time: typeof candle.time === 'number' ? candle.time : Number(candle.time),
     open: typeof candle.open === 'number' ? candle.open : Number(candle.open),
     high: typeof candle.high === 'number' ? candle.high : Number(candle.high),
@@ -3737,34 +3740,20 @@ updateLastCandle(candle) {
   // ============================================
   // STEP 3: VALIDATE SANITIZED VALUES
   // ============================================
-  if (isNaN(sanitizedCandle.time) || sanitizedCandle.time <= 0) {
-    console.warn('⚠️ updateLastCandle: Invalid timestamp', sanitizedCandle.time);
-    return;
-  }
+  if (isNaN(sanitizedCandle.time) || sanitizedCandle.time <= 0) return;
+  if (isNaN(sanitizedCandle.open) || sanitizedCandle.open <= 0) return;
+  if (isNaN(sanitizedCandle.high) || sanitizedCandle.high <= 0) return;
+  if (isNaN(sanitizedCandle.low) || sanitizedCandle.low <= 0) return;
+  if (isNaN(sanitizedCandle.close) || sanitizedCandle.close <= 0) return;
   
-  if (isNaN(sanitizedCandle.open) || sanitizedCandle.open <= 0 ||
-      isNaN(sanitizedCandle.high) || sanitizedCandle.high <= 0 ||
-      isNaN(sanitizedCandle.low) || sanitizedCandle.low <= 0 ||
-      isNaN(sanitizedCandle.close) || sanitizedCandle.close <= 0) {
-    console.warn('⚠️ updateLastCandle: Invalid price values', {
-      open: sanitizedCandle.open,
-      high: sanitizedCandle.high,
-      low: sanitizedCandle.low,
-      close: sanitizedCandle.close
-    });
-    return;
-  }
-  
-  // Ensure high is truly the highest, low is truly the lowest
   sanitizedCandle.high = Math.max(sanitizedCandle.high, sanitizedCandle.open, sanitizedCandle.close);
   sanitizedCandle.low = Math.min(sanitizedCandle.low, sanitizedCandle.open, sanitizedCandle.close);
   
   // ============================================
-  // STEP 4: UPDATE MAIN SERIES (CANDLESTICK)
+  // STEP 4: UPDATE MAIN SERIES
   // ============================================
   if (this.mainSeries) {
     try {
-      // For candlestick/bar charts
       if (STATE.chartType === 'candlestick' || STATE.chartType === 'bar') {
         this.mainSeries.update({
           time: sanitizedCandle.time,
@@ -3773,17 +3762,13 @@ updateLastCandle(candle) {
           low: sanitizedCandle.low,
           close: sanitizedCandle.close
         });
-      } 
-      // For line/area charts
-      else if (STATE.chartType === 'line' || STATE.chartType === 'area') {
+      } else if (STATE.chartType === 'line' || STATE.chartType === 'area') {
         this.mainSeries.update({
           time: sanitizedCandle.time,
           value: sanitizedCandle.close
         });
-      } 
-      // For Heikin Ashi (recalculate)
-      else if (STATE.chartType === 'heikinashi') {
-        const heikinCandle = this.calculateHeikinAshiUpdate(sanitizedCandle);
+      } else if (STATE.chartType === 'heikinashi') {
+        var heikinCandle = this.calculateHeikinAshiUpdate(sanitizedCandle);
         this.mainSeries.update({
           time: heikinCandle.time,
           open: heikinCandle.open,
@@ -3791,9 +3776,7 @@ updateLastCandle(candle) {
           low: heikinCandle.low,
           close: heikinCandle.close
         });
-      } 
-      // Default to candlestick
-      else {
+      } else {
         this.mainSeries.update({
           time: sanitizedCandle.time,
           open: sanitizedCandle.open,
@@ -3802,17 +3785,8 @@ updateLastCandle(candle) {
           close: sanitizedCandle.close
         });
       }
-      
-      // Debug log (optional - remove in production)
-      if (Math.random() < 0.01) {
-        console.log('📊 Real-time update:', {
-          time: new Date(sanitizedCandle.time * 1000).toLocaleTimeString(),
-          price: sanitizedCandle.close,
-          spread: (sanitizedCandle.high - sanitizedCandle.low).toFixed(8)
-        });
-      }
     } catch(e) {
-      console.error('❌ Failed to update main series:', e.message);
+      // Silent fail
     }
   }
   
@@ -3821,36 +3795,29 @@ updateLastCandle(candle) {
   // ============================================
   if (this.series && this.series.volume) {
     try {
-      const volumeColor = sanitizedCandle.close >= sanitizedCandle.open 
-        ? CONFIG.COLORS.upMuted 
-        : CONFIG.COLORS.downMuted;
+      var volumeColor = sanitizedCandle.close >= sanitizedCandle.open 
+        ? (CONFIG.COLORS.upMuted || 'rgba(38,166,154,0.5)')
+        : (CONFIG.COLORS.downMuted || 'rgba(239,83,80,0.5)');
       
       this.series.volume.update({
         time: sanitizedCandle.time,
         value: sanitizedCandle.volume,
         color: volumeColor
       });
-    } catch(e) {
-      console.warn('Volume update failed:', e.message);
-    }
+    } catch(e) {}
   }
   
   // ============================================
   // STEP 6: UPDATE LOCAL STATE
   // ============================================
   if (STATE.candles && STATE.candles.length > 0) {
-    const lastCandle = STATE.candles[STATE.candles.length - 1];
-    
-    // If this is the same candle (same timestamp), update it
+    var lastCandle = STATE.candles[STATE.candles.length - 1];
     if (lastCandle && lastCandle.time === sanitizedCandle.time) {
       STATE.candles[STATE.candles.length - 1] = sanitizedCandle;
-    } 
-    // If this is a new candle, add it
-    else if (sanitizedCandle.time > lastCandle.time) {
+    } else if (sanitizedCandle.time > lastCandle.time) {
       STATE.candles.push(sanitizedCandle);
-      // Trim to max candles
-      if (STATE.candles.length > CONFIG.MAX_CANDLES) {
-        STATE.candles = STATE.candles.slice(-CONFIG.CANDLE_LIMIT);
+      if (STATE.candles.length > (CONFIG.MAX_CANDLES || 1000)) {
+        STATE.candles = STATE.candles.slice(-(CONFIG.CANDLE_LIMIT || 500));
       }
     }
   }
@@ -3859,39 +3826,107 @@ updateLastCandle(candle) {
   // STEP 7: UPDATE PRICE DISPLAY
   // ============================================
   STATE.currentPrice = sanitizedCandle.close;
-  this.updatePriceDisplay(sanitizedCandle);
-  
-  // ============================================
-  // STEP 8: FORCE PRICE SCALE TO STAY ALIGNED
-  // This prevents scale drift during high-frequency updates
-  // ============================================
-  if (this.charts && this.charts.price && Math.random() < 0.05) {
-    try {
-      const priceScale = this.charts.price.priceScale('right');
-      if (priceScale) {
-        priceScale.applyOptions({ autoScale: true });
-      }
-    } catch(e) {
-      // Silent fail - don't spam console
-    }
+  if (typeof this.updatePriceDisplay === 'function') {
+    this.updatePriceDisplay(sanitizedCandle);
+  } else if (typeof DataManager !== 'undefined' && DataManager.updatePriceDisplay) {
+    DataManager.updatePriceDisplay(sanitizedCandle);
   }
   
   // ============================================
-  // STEP 9: TRIGGER INDICATOR RECALCULATION
-  // Only recalc occasionally to save performance
+  // STEP 8: TRIGGER INDICATOR RECALCULATION
   // ============================================
   if (STATE.activeIndicators && STATE.activeIndicators.size > 0) {
-    // Use requestAnimationFrame for smooth updates
     if (!this._indicatorUpdatePending) {
       this._indicatorUpdatePending = true;
-      requestAnimationFrame(() => {
+      requestAnimationFrame(function() {
         if (typeof IndicatorEngine !== 'undefined' && IndicatorEngine.calculateAll) {
           IndicatorEngine.calculateAll();
         }
-        this._indicatorUpdatePending = false;
+        if (ChartEngine) ChartEngine._indicatorUpdatePending = false;
       });
     }
   }
+},
+
+// ============================================
+// ADD THIS HELPER METHOD if it doesn't exist
+// For Heikin Ashi real-time updates
+// ============================================
+
+calculateHeikinAshiUpdate: function(currentCandle, previousHaClose) {
+  // Get previous Heikin Ashi close if not provided
+  var prevHaClose = previousHaClose;
+  if (prevHaClose === null && STATE.candles && STATE.candles.length > 1) {
+    var prevCandle = STATE.candles[STATE.candles.length - 2];
+    if (prevCandle && prevCandle.haClose) {
+      prevHaClose = prevCandle.haClose;
+    } else {
+      prevHaClose = (currentCandle.open + currentCandle.close) / 2;
+    }
+  }
+  
+  // Calculate Heikin Ashi values
+  var haClose = (currentCandle.open + currentCandle.high + currentCandle.low + currentCandle.close) / 4;
+  var haOpen = prevHaClose ? (prevHaClose + haClose) / 2 : currentCandle.open;
+  var haHigh = Math.max(currentCandle.high, haOpen, haClose);
+  var haLow = Math.min(currentCandle.low, haOpen, haClose);
+  
+  return {
+    time: currentCandle.time,
+    open: haOpen,
+    high: haHigh,
+    low: haLow,
+    close: haClose,
+    volume: currentCandle.volume
+  };
+},
+
+// ============================================
+// ADD THIS HELPER METHOD for price display
+// ============================================
+
+updatePriceDisplay: function(candle) {
+  if (!candle) return;
+  
+  var price = STATE.currentPrice || candle.close;
+  var priceEl = document.getElementById('current-price');
+  if (priceEl) {
+    var formattedPrice = typeof U !== 'undefined' && U.formatPrice 
+      ? U.formatPrice(price) 
+      : price.toFixed(2);
+    priceEl.textContent = formattedPrice;
+  }
+  
+  // Update OHLC stats
+  var openEl = document.getElementById('stat-open');
+  var highEl = document.getElementById('stat-interval-high');
+  var lowEl = document.getElementById('stat-interval-low');
+  var closeEl = document.getElementById('stat-interval-close');
+  
+  var formatPrice = function(p) {
+    if (p == null) return '--';
+    if (typeof U !== 'undefined' && U.formatPrice) return U.formatPrice(p);
+    if (p >= 1000) return p.toFixed(2);
+    if (p >= 1) return p.toFixed(4);
+    return p.toFixed(8);
+  };
+  
+  if (openEl) openEl.textContent = formatPrice(candle.open);
+  if (highEl) highEl.textContent = formatPrice(candle.high);
+  if (lowEl) lowEl.textContent = formatPrice(candle.low);
+  if (closeEl) closeEl.textContent = formatPrice(candle.close);
+  
+  // Update trade panel price input
+  var tradePriceInput = document.getElementById('trade-price-input');
+  if (tradePriceInput && price) {
+    tradePriceInput.value = formatPrice(price);
+  }
+  
+  // Update floating buy/sell buttons
+  var buyPriceEl = document.getElementById('chart-buy-price');
+  var sellPriceEl = document.getElementById('chart-sell-price');
+  if (buyPriceEl) buyPriceEl.textContent = formatPrice(price);
+  if (sellPriceEl) sellPriceEl.textContent = formatPrice(price);
 },
 
 /**
@@ -6578,53 +6613,133 @@ createMACDPaneInline(data) {
    * @param {Object} pixelPos - {x, y} in canvas pixels
    * @returns {Object} {price, time, x, y} or null
    */
-  pixelToChart(pixelPos) {
-    try {
-      const chart = ChartEngine.charts.price;
-      if (!chart) return null;
-      
-      const priceScale = chart.priceScale('right');
-      const timeScale = chart.timeScale();
-      
-      const price = priceScale.coordinateToPrice(pixelPos.y);
-      const time = timeScale.coordinateToTime(pixelPos.x);
-      
-      if (price === null || time === null) return null;
-      
-      return {
-        price: price,
-        time: time,
-        x: pixelPos.x,
-        y: pixelPos.y
-      };
-    } catch(e) {
+  // ============================================
+// FIND AND REPLACE THIS FUNCTION in engine.js
+// Look for "pixelToChart" or around line 3180
+// ============================================
+
+/**
+ * Convert pixel position to chart coordinates (price + time)
+ * FIXED: Handles different Lightweight Charts versions
+ */
+pixelToChart: function(pixelPos) {
+  try {
+    var chart = ChartEngine.charts.price;
+    if (!chart) return null;
+    
+    // Try to get price scale - different versions use different methods
+    var priceScale = null;
+    var timeScale = null;
+    
+    // Method 1: Standard API
+    if (chart.priceScale) {
+      priceScale = chart.priceScale('right');
+      timeScale = chart.timeScale();
+    }
+    // Method 2: Alternative API for older versions
+    else if (chart.rightPriceScale) {
+      priceScale = chart.rightPriceScale;
+      timeScale = chart.timeScale;
+    }
+    
+    if (!priceScale || !timeScale) return null;
+    
+    // Get price and time - handle different method names
+    var price = null;
+    var time = null;
+    
+    // Try coordinateToPrice (standard)
+    if (typeof priceScale.coordinateToPrice === 'function') {
+      price = priceScale.coordinateToPrice(pixelPos.y);
+    }
+    // Try convertFromCoordinate (older versions)
+    else if (typeof priceScale.convertFromCoordinate === 'function') {
+      price = priceScale.convertFromCoordinate(pixelPos.y);
+    }
+    // Fallback: estimate from visible range
+    else {
+      var visibleRange = chart.timeScale().getVisibleRange();
+      if (visibleRange && chart.priceScale().getPriceRange) {
+        var priceRange = chart.priceScale().getPriceRange();
+        if (priceRange) {
+          var percent = pixelPos.y / (chart.options().height || 500);
+          price = priceRange.maxValue - (percent * (priceRange.maxValue - priceRange.minValue));
+        }
+      }
+    }
+    
+    // Get time
+    if (typeof timeScale.coordinateToTime === 'function') {
+      time = timeScale.coordinateToTime(pixelPos.x);
+    }
+    // Try convertFromCoordinate for time
+    else if (typeof timeScale.convertFromCoordinate === 'function') {
+      time = timeScale.convertFromCoordinate(pixelPos.x);
+    }
+    
+    if (price === null || price === undefined || time === null || time === undefined) {
       return null;
     }
-  },
-  
-  /**
-   * Convert chart coordinates back to pixel position
-   * @param {Object} chartPos - {price, time}
-   * @returns {Object} {x, y} or null
-   */
-  chartToPixel(chartPos) {
-    try {
-      const chart = ChartEngine.charts.price;
-      if (!chart) return null;
-      
-      const priceScale = chart.priceScale('right');
-      const timeScale = chart.timeScale();
-      
-      const x = timeScale.timeToCoordinate(chartPos.time);
-      const y = priceScale.priceToCoordinate(chartPos.price);
-      
-      if (x === null || y === null) return null;
-      
-      return { x: x, y: y };
-    } catch(e) {
-      return null;
+    
+    return {
+      price: price,
+      time: time,
+      x: pixelPos.x,
+      y: pixelPos.y
+    };
+  } catch(e) {
+    console.warn('pixelToChart error:', e.message);
+    return null;
+  }
+},
+
+/**
+ * Convert chart coordinates back to pixel position
+ * FIXED: Handles different Lightweight Charts versions
+ */
+chartToPixel: function(chartPos) {
+  try {
+    var chart = ChartEngine.charts.price;
+    if (!chart) return null;
+    
+    var priceScale = null;
+    var timeScale = null;
+    
+    if (chart.priceScale) {
+      priceScale = chart.priceScale('right');
+      timeScale = chart.timeScale();
+    } else if (chart.rightPriceScale) {
+      priceScale = chart.rightPriceScale;
+      timeScale = chart.timeScale;
     }
-  },
+    
+    if (!priceScale || !timeScale) return null;
+    
+    var x = null;
+    var y = null;
+    
+    // Get X coordinate (time)
+    if (typeof timeScale.timeToCoordinate === 'function') {
+      x = timeScale.timeToCoordinate(chartPos.time);
+    } else if (typeof timeScale.convertToCoordinate === 'function') {
+      x = timeScale.convertToCoordinate(chartPos.time);
+    }
+    
+    // Get Y coordinate (price)
+    if (typeof priceScale.priceToCoordinate === 'function') {
+      y = priceScale.priceToCoordinate(chartPos.price);
+    } else if (typeof priceScale.convertToCoordinate === 'function') {
+      y = priceScale.convertToCoordinate(chartPos.price);
+    }
+    
+    if (x === null || y === null) return null;
+    
+    return { x: x, y: y };
+  } catch(e) {
+    console.warn('chartToPixel error:', e.message);
+    return null;
+  }
+},
   
   /**
    * Get all chart coordinates for a drawing (for rendering)
