@@ -11972,8 +11972,331 @@ if (label4) {
   else label4.textContent = 'DXY Strength';
 }
 
- 
 
+
+// Initialize after DOM ready
+setTimeout(() => {
+  if (typeof RightSidebarCharts !== 'undefined') {
+    RightSidebarCharts.init();
+  }
+}, 3000);
+
+// Resize handler
+window.addEventListener('resize', () => {
+  if (typeof RightSidebarCharts !== 'undefined') {
+    RightSidebarCharts.resizeAll();
+  }
+});
+// ============================================
+// PROFESSIONAL RIGHT SIDEBAR CHARTS
+// Institutional-grade with:
+// - Retry logic & exponential backoff
+// - Memory leak prevention
+// - Theme-aware rendering
+// - Performance optimizations
+// ============================================
+
+const RightSidebarCharts = (function() {
+  'use strict';
+  
+  // Private variables
+  let charts = {};
+  let marketData = null;
+  let updateInterval = null;
+  let isFetching = false;
+  let retryCount = 0;
+  let resizeObserver = null;
+  
+  // Configuration
+  const CONFIG = {
+    API_URL: 'https://coingecko-proxy.vercel.app/api/coingecko', // Update after fixing
+    UPDATE_INTERVAL_MS: 600000, // 10 minutes
+    RETRY_DELAY_MS: 5000,
+    MAX_RETRIES: 3,
+    CHART_HEIGHT: 120,
+    DAYS_HISTORY: 30
+  };
+  
+  // Chart color schemes (TradingView-inspired)
+  const COLORS = {
+    dominance: { line: '#f7931a', area: 'rgba(247, 147, 26, 0.1)' },
+    marketcap: { line: '#58a6ff', area: 'rgba(88, 166, 255, 0.1)' },
+    volume: { line: '#26a69a', area: 'rgba(38, 166, 154, 0.1)' }
+  };
+  
+  // ============================================
+  // Private Helper Functions
+  // ============================================
+  
+  function formatLargeNumber(num) {
+    if (!num) return '--';
+    if (num >= 1e12) return (num / 1e12).toFixed(2) + 'T';
+    if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
+    if (num >= 1e6) return (num / 1e6).toFixed(2) + 'M';
+    if (num >= 1e3) return (num / 1e3).toFixed(2) + 'K';
+    return num.toFixed(2);
+  }
+  
+  function getThemeColors() {
+    const isLightTheme = document.body.getAttribute('data-theme') === 'light';
+    return {
+      textColor: isLightTheme ? '#1f2328' : '#c9d1d9',
+      gridColor: isLightTheme ? '#f0f2f5' : '#21262d'
+    };
+  }
+  
+  async function fetchWithRetry(url, retries = CONFIG.MAX_RETRIES) {
+    for (let i = 0; i <= retries; i++) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
+        
+        const response = await fetch(url, { signal: controller.signal });
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        
+        const data = await response.json();
+        if (data.error) throw new Error(data.error);
+        
+        retryCount = 0; // Reset retry count on success
+        return data;
+        
+      } catch (error) {
+        console.warn(`Fetch attempt ${i + 1} failed:`, error.message);
+        if (i === retries) throw error;
+        
+        // Exponential backoff
+        await new Promise(resolve => setTimeout(resolve, CONFIG.RETRY_DELAY_MS * Math.pow(2, i)));
+      }
+    }
+  }
+  
+  function createMiniChart(containerId, options) {
+    const container = document.getElementById(containerId);
+    if (!container) return null;
+    
+    // Don't recreate if exists and has data
+    if (charts[containerId] && charts[containerId].series) {
+      if (options.data && options.data.length) {
+        charts[containerId].series.setData(options.data);
+      }
+      return charts[containerId];
+    }
+    
+    container.innerHTML = '';
+    
+    const theme = getThemeColors();
+    
+    const chart = LightweightCharts.createChart(container, {
+      width: container.clientWidth,
+      height: CONFIG.CHART_HEIGHT,
+      layout: {
+        background: { type: 'solid', color: 'transparent' },
+        textColor: theme.textColor
+      },
+      grid: {
+        vertLines: { visible: false },
+        horzLines: { visible: false }
+      },
+      rightPriceScale: {
+        visible: true,
+        borderVisible: false,
+        scaleMargins: { top: 0.1, bottom: 0.1 }
+      },
+      timeScale: { visible: false },
+      crosshair: { mode: 0, vertLine: { visible: false }, horzLine: { visible: false } },
+      handleScroll: false,
+      handleScale: false
+    });
+    
+    let series;
+    if (options.type === 'area') {
+      series = chart.addAreaSeries({
+        topColor: COLORS[options.key]?.area || options.color + '33',
+        bottomColor: 'transparent',
+        lineColor: COLORS[options.key]?.line || options.color,
+        lineWidth: 2
+      });
+    } else {
+      series = chart.addLineSeries({
+        color: COLORS[options.key]?.line || options.color,
+        lineWidth: 2,
+        priceLineVisible: false,
+        lastValueVisible: true
+      });
+    }
+    
+    if (options.data && options.data.length) {
+      series.setData(options.data);
+      chart.timeScale().fitContent();
+    }
+    
+    charts[containerId] = { chart, series };
+    return charts[containerId];
+  }
+  
+  function renderAllCharts() {
+    if (!marketData) return;
+    
+    // BTC Dominance Chart
+    createMiniChart('dominance-chart-container', {
+      key: 'dominance',
+      data: marketData.trends?.btc_dominance_history || [],
+      color: '#f7931a',
+      type: 'line'
+    });
+    
+    // Market Cap Chart
+    createMiniChart('marketcap-chart-container', {
+      key: 'marketcap',
+      data: marketData.trends?.market_cap_history || [],
+      color: '#58a6ff',
+      type: 'area'
+    });
+    
+    // Volume Chart
+    createMiniChart('volume-trend-container', {
+      key: 'volume',
+      data: marketData.trends?.volume_history || [],
+      color: '#26a69a',
+      type: 'area'
+    });
+    
+    // Update stats displays
+    const btcDomEl = document.getElementById('btc-dominance');
+    const marketCapEl = document.getElementById('total-marketcap');
+    const volumeEl = document.getElementById('total-volume');
+    const updateTimeEl = document.getElementById('coingecko-last-update');
+    
+    if (btcDomEl && marketData.current) {
+      btcDomEl.textContent = marketData.current.btc_dominance.toFixed(1) + '%';
+    }
+    if (marketCapEl && marketData.current) {
+      marketCapEl.textContent = formatLargeNumber(marketData.current.total_market_cap);
+    }
+    if (volumeEl && marketData.current) {
+      volumeEl.textContent = formatLargeNumber(marketData.current.total_volume_24h);
+    }
+    if (updateTimeEl && marketData.timestamp) {
+      updateTimeEl.textContent = new Date(marketData.timestamp).toLocaleTimeString();
+    }
+  }
+  
+  async function fetchData() {
+    if (isFetching) return;
+    isFetching = true;
+    
+    try {
+      const url = `${CONFIG.API_URL}?endpoint=all&days=${CONFIG.DAYS_HISTORY}`;
+      const data = await fetchWithRetry(url);
+      
+      marketData = data;
+      renderAllCharts();
+      
+      console.log('✅ Market charts updated:', new Date().toLocaleTimeString());
+      
+    } catch (error) {
+      console.error('Failed to fetch market data:', error);
+      
+      // Show error state in containers if no data exists
+      if (!marketData) {
+        const containers = ['dominance-chart-container', 'marketcap-chart-container', 'volume-trend-container'];
+        containers.forEach(id => {
+          const el = document.getElementById(id);
+          if (el && el.innerHTML === '') {
+            el.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted);font-size:10px;">⚠️ Data unavailable</div>';
+          }
+        });
+      }
+    } finally {
+      isFetching = false;
+    }
+  }
+  
+  function handleResize() {
+    Object.values(charts).forEach(({ chart }) => {
+      const container = chart._container?.parentElement;
+      if (container && chart.resize) {
+        chart.resize(container.clientWidth, CONFIG.CHART_HEIGHT);
+      }
+    });
+  }
+  
+  function handleThemeChange() {
+    // Recreate charts with new theme colors
+    const chartIds = Object.keys(charts);
+    if (chartIds.length === 0) return;
+    
+    // Store current data
+    const currentData = { ...marketData };
+    
+    // Clear and recreate
+    charts = {};
+    marketData = currentData;
+    renderAllCharts();
+  }
+  
+  // ============================================
+  // Public API
+  // ============================================
+  
+  return {
+    init: async function() {
+      console.log('📊 Initializing right sidebar charts...');
+      
+      await fetchData();
+      
+      // Start periodic updates
+      if (updateInterval) clearInterval(updateInterval);
+      updateInterval = setInterval(fetchData, CONFIG.UPDATE_INTERVAL_MS);
+      
+      // Watch for theme changes
+      const themeBtn = document.getElementById('theme-toggle-btn');
+      if (themeBtn) {
+        themeBtn.addEventListener('click', () => setTimeout(handleThemeChange, 100));
+      }
+      
+      // Watch for resize
+      window.addEventListener('resize', () => setTimeout(handleResize, 150));
+      
+      // Optional: Use ResizeObserver for more precise container sizing
+      if (typeof ResizeObserver !== 'undefined') {
+        resizeObserver = new ResizeObserver(handleResize);
+        ['dominance-chart-container', 'marketcap-chart-container', 'volume-trend-container'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) resizeObserver.observe(el);
+        });
+      }
+      
+      console.log('✅ Right sidebar charts ready');
+    },
+    
+    refresh: function() {
+      fetchData();
+    },
+    
+    destroy: function() {
+      if (updateInterval) clearInterval(updateInterval);
+      if (resizeObserver) resizeObserver.disconnect();
+      
+      Object.values(charts).forEach(({ chart }) => {
+        if (chart && chart.remove) chart.remove();
+      });
+      charts = {};
+      marketData = null;
+    }
+  };
+})();
+
+// Initialize after DOM ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => RightSidebarCharts.init(), 1000);
+  });
+} else {
+  setTimeout(() => RightSidebarCharts.init(), 1000);
+}
   // ============================================
   // WATCHLIST MANAGER (FIXED - ADD MODAL WORKING)
   // ============================================
@@ -23481,57 +23804,40 @@ const EconomicCalendar = {
   },
   
   async fetchEvents() {
-    const container = document.getElementById('economic-calendar-list');
-    if (!container) return;
+  const container = document.getElementById('economic-calendar-list');
+  if (!container) return;
+  
+  container.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);"><i class="fas fa-spinner fa-spin"></i> Loading economic calendar...</div>';
+  
+  try {
+    // Use your Vercel proxy instead of Cloudflare Worker
+    const apiBase = 'https://coingecko-proxy-eight.vercel.app/api/coingecko';
+    const today = new Date();
+    const nextMonth = new Date(today);
+    nextMonth.setMonth(nextMonth.getMonth() + 1);
     
-    container.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);"><i class="fas fa-spinner fa-spin"></i> Loading economic calendar...</div>';
+    const from = today.toISOString().slice(0, 10);
+    const to = nextMonth.toISOString().slice(0, 10);
     
-    try {
-      // Get API base from failover system
-      const apiBase = getApiBase();
-      
-      const today = new Date();
-      const nextMonth = new Date(today);
-      nextMonth.setMonth(nextMonth.getMonth() + 1);
-      
-      const from = today.toISOString().slice(0, 10);
-      const to = nextMonth.toISOString().slice(0, 10);
-      
-      // Fetch live economic events from Finnhub through your backend
-      // Your backend will use the Finnhub API key stored in .env
-      const url = `${apiBase}/proxy?endpoint=finnhub-calendar&from=${from}&to=${to}`;
-      
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000);
-      const response = await fetch(url, { signal: controller.signal });
-      clearTimeout(timeoutId);
-      
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      
-      const data = await response.json();
-      
-      if (data.economicCalendar && data.economicCalendar.length > 0) {
-        this.events = data.economicCalendar.map(e => ({
-          date: new Date(e.eventDate || e.date),
-          event: e.title || e.event,
-          country: e.country || 'US',
-          impact: e.impact || this.calculateImpactLevel(e),
-          previous: e.previous || '--',
-          forecast: e.forecast || '--',
-          actual: e.actual || null,
-          category: this.detectCategory(e.title || e.event)
-        }));
-      } else {
-        this.events = [];
-      }
-      
+    const url = `${apiBase}?endpoint=finnhub-calendar&from=${from}&to=${to}`;
+    
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    
+    const data = await response.json();
+    
+    if (data.economicCalendar && data.economicCalendar.length > 0) {
+      this.events = data.economicCalendar;
       this.render();
-      
-    } catch(e) {
-      console.error('Economic calendar fetch error:', e);
-      container.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);"><i class="fas fa-exclamation-triangle"></i> Economic data temporarily unavailable</div>';
+    } else {
+      container.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);">No upcoming economic events</div>';
     }
-  },
+    
+  } catch(e) {
+    console.error('Economic calendar fetch error:', e);
+    container.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-muted);"><i class="fas fa-exclamation-triangle"></i> Economic data temporarily unavailable</div>';
+  }
+},
   
   calculateImpactLevel(event) {
     // Higher impact for major economic events
