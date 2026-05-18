@@ -2618,8 +2618,62 @@ createVolumeChart() {
   
   this.charts.volume = chart;
   this.series.volume = series;
+	// Force volume chart to show volume values on right scale
+chart.applyOptions({
+    rightPriceScale: {
+        visible: true,
+        borderVisible: true,
+        autoScale: true,
+        mode: 0,  // 0 = normal, 1 = logarithmic
+        entireTextOnly: false,
+        minimumWidth: 40,
+        tickMarkFormatter: function(value) {
+            // Format volume as K, M, B
+            if (value >= 1e9) return (value / 1e9).toFixed(1) + 'B';
+            if (value >= 1e6) return (value / 1e6).toFixed(1) + 'M';
+            if (value >= 1e3) return (value / 1e3).toFixed(1) + 'K';
+            return value.toFixed(0);
+        }
+    }
+});
+
+// Also ensure the series uses volume format
+series.applyOptions({
+    priceFormat: {
+        type: 'volume'
+    }
+});
   
   console.log('✅ Volume chart created');
+	// ============================================
+// CODE D: Insert at the end of createVolumeChart()
+// ============================================
+
+// Force volume pane to have fixed height and be visible
+const volumePane = document.getElementById('volume-chart-pane');
+if (volumePane) {
+    const height = window.innerWidth <= 768 ? 80 : 100;
+    volumePane.style.cssText = `
+        display: flex !important;
+        flex-direction: column !important;
+        flex: 0 0 ${height}px !important;
+        min-height: ${height}px !important;
+        max-height: ${height}px !important;
+        height: ${height}px !important;
+        width: 100% !important;
+        overflow: hidden !important;
+        border-top: 1px solid var(--border-primary) !important;
+        border-bottom: 1px solid var(--border-primary) !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    `;
+}
+
+// Ensure the container is visible
+const container = document.getElementById('chart-container');
+if (container) {
+    container.style.overflow = 'visible';
+}
 },
 	  _waitForDimensions(containerId, timeout = 3000) {
   return new Promise((resolve) => {
@@ -2747,6 +2801,22 @@ createIndicatorPane(id, containerId, opts = {}) {
       });
       
       const chart = LightweightCharts.createChart(el, chartOptions);
+		// Force time scale to be visible and sync with main chart
+chart.timeScale().applyOptions({
+    visible: true,
+    fixLeftEdge: true,
+    fixRightEdge: true,
+    rightOffset: 10
+});
+
+// Immediately subscribe to main chart's time range changes
+if (ChartEngine.charts.price) {
+    ChartEngine.charts.price.timeScale().subscribeVisibleTimeRangeChange(function(range) {
+        if (range && !chart.isDisposed?.()) {
+            chart.timeScale().setVisibleRange(range);
+        }
+    });
+}
       const series = chart.addLineSeries({
         color: opts.color || '#9b6cff',
         lineWidth: 1.5,
@@ -3118,120 +3188,115 @@ removeIndicatorPane(id, name) {
 // REPLACE THIS METHOD IN ChartEngine
 // Line ~1400: setupCrosshair() {
 // ============================================
-setupCrosshair() {
-  const chart = this.charts.price;
-  if (!chart) return;
-  
-  chart.applyOptions({
-    crosshair: {
-      mode: 1,
-      vertLine: {
-        color: '#8b949e',
-        width: 1,
-        style: 2,
-        labelBackgroundColor: '#1c2128',
-        labelVisible: true
-      },
-      horzLine: {
-        color: '#8b949e',
-        width: 1,
-        style: 2,
-        labelBackgroundColor: '#1c2128',
-        labelVisible: true
-      }
-    }
-  });
-  
-  // ============================================
-  // FIX #4: SYNC CROSSHAIR TO ALL PANES
-  // This makes horizontal/vertical lines follow
-  // across volume chart and indicator panes
-  // ============================================
-  const self = this;
-  
-  chart.subscribeCrosshairMove((param) => {
-    // Update drawing engine crosshair
-    if (DrawingEngine && typeof DrawingEngine.handleCrosshairMove === 'function') {
-      DrawingEngine.handleCrosshairMove(param);
-    }
-    
-    if (!param || !param.point || !param.time) {
-      // Hide crosshair on all panes
-      if (self.charts.volume) {
-        self.charts.volume.applyOptions({
-          crosshair: { mode: 0, vertLine: { visible: false }, horzLine: { visible: false } }
-        });
-      }
-      const indicatorIds = ['rsi', 'macd', 'cci', 'williamsr', 'atr', 'stoch', 'obv', 'mfi'];
-      indicatorIds.forEach(function(id) {
-        if (self.charts[id]) {
-          try {
-            self.charts[id].applyOptions({
-              crosshair: { mode: 0, vertLine: { visible: false }, horzLine: { visible: false } }
-            });
-          } catch(e) {}
-        }
-      });
-      return;
-    }
-    
-    // Get the price at the crosshair position for horizontal line
-    const priceScale = chart.priceScale('right');
-    const price = priceScale.coordinateToPrice(param.point.y);
-    
-    // Update crosshair on all panes with the same price level
-    if (self.charts.volume && self.series.volume) {
-      self.charts.volume.applyOptions({
+// ============================================
+// CODE C: Replace the entire setupCrosshair() method
+// ============================================
+setupCrosshair: function() {
+    const chart = this.charts.price;
+    if (!chart) return;
+
+    chart.applyOptions({
         crosshair: {
-          mode: 1,
-          vertLine: { color: '#8b949e', width: 1, style: 2, labelVisible: true, visible: true },
-          horzLine: { color: '#8b949e', width: 1, style: 2, labelVisible: true, visible: true }
-        }
-      });
-      // Force the horizontal line to the same price coordinate
-      try {
-        self.charts.volume.priceScale('right').applyOptions({ autoScale: true });
-      } catch(e) {}
-    }
-    
-    // Update crosshair on RSI pane
-    if (self.charts.rsi) {
-      self.charts.rsi.applyOptions({
-        crosshair: {
-          mode: 1,
-          vertLine: { color: '#8b949e', width: 1, style: 2, labelVisible: true, visible: true },
-          horzLine: { color: '#8b949e', width: 1, style: 2, labelVisible: true, visible: true }
-        }
-      });
-    }
-    
-    // Update crosshair on MACD pane
-    if (self.charts.macd) {
-      self.charts.macd.applyOptions({
-        crosshair: {
-          mode: 1,
-          vertLine: { color: '#8b949e', width: 1, style: 2, labelVisible: true, visible: true },
-          horzLine: { color: '#8b949e', width: 1, style: 2, labelVisible: true, visible: true }
-        }
-      });
-    }
-    
-    // Update crosshair on all indicator panes
-    const indicatorIds = ['cci', 'williamsr', 'atr', 'stoch', 'obv', 'mfi'];
-    indicatorIds.forEach(function(id) {
-      if (self.charts[id]) {
-        try {
-          self.charts[id].applyOptions({
-            crosshair: {
-              mode: 1,
-              vertLine: { color: '#8b949e', width: 1, style: 2, labelVisible: true, visible: true },
-              horzLine: { color: '#8b949e', width: 1, style: 2, labelVisible: true, visible: true }
+            mode: 1,
+            vertLine: {
+                color: '#8b949e',
+                width: 1,
+                style: 2,
+                labelBackgroundColor: '#1c2128',
+                labelVisible: true
+            },
+            horzLine: {
+                color: '#8b949e',
+                width: 1,
+                style: 2,
+                labelBackgroundColor: '#1c2128',
+                labelVisible: true
             }
-          });
-        } catch(e) {}
-      }
+        }
     });
-  });
+
+    const self = this;
+
+    chart.subscribeCrosshairMove((param) => {
+        // Update drawing engine crosshair
+        if (DrawingEngine && typeof DrawingEngine.handleCrosshairMove === 'function') {
+            DrawingEngine.handleCrosshairMove(param);
+        }
+
+        // ============================================
+        // SYNC CROSSHAIR TO VOLUME CHART
+        // ============================================
+        if (self.charts.volume) {
+            if (param && param.point && param.time) {
+                self.charts.volume.applyOptions({
+                    crosshair: {
+                        mode: 1,
+                        vertLine: {
+                            color: '#8b949e',
+                            width: 1,
+                            style: 2,
+                            labelVisible: true,
+                            labelBackgroundColor: '#1c2128'
+                        },
+                        horzLine: {
+                            color: '#8b949e',
+                            width: 1,
+                            style: 2,
+                            labelVisible: true,
+                            labelBackgroundColor: '#1c2128'
+                        }
+                    }
+                });
+            } else {
+                // Hide crosshair on volume when not hovering
+                self.charts.volume.applyOptions({
+                    crosshair: {
+                        mode: 0,
+                        vertLine: { visible: false },
+                        horzLine: { visible: false }
+                    }
+                });
+            }
+        }
+
+        // ============================================
+        // SYNC CROSSHAIR TO ALL INDICATOR PANES
+        // ============================================
+        const indicatorIds = ['rsi', 'macd', 'cci', 'williamsr', 'atr', 'stoch', 'obv', 'mfi'];
+        indicatorIds.forEach(function(id) {
+            if (self.charts[id]) {
+                if (param && param.point && param.time) {
+                    self.charts[id].applyOptions({
+                        crosshair: {
+                            mode: 1,
+                            vertLine: {
+                                color: '#8b949e',
+                                width: 1,
+                                style: 2,
+                                labelVisible: true,
+                                labelBackgroundColor: '#1c2128'
+                            },
+                            horzLine: {
+                                color: '#8b949e',
+                                width: 1,
+                                style: 2,
+                                labelVisible: true,
+                                labelBackgroundColor: '#1c2128'
+                            }
+                        }
+                    });
+                } else {
+                    self.charts[id].applyOptions({
+                        crosshair: {
+                            mode: 0,
+                            vertLine: { visible: false },
+                            horzLine: { visible: false }
+                        }
+                    });
+                }
+            }
+        });
+    });
 },
     
   // ============================================
