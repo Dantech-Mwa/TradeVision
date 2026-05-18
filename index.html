@@ -5590,13 +5590,15 @@ button:active,.trade-type:active,.order-type-btn:active,.quick-amount-btn:active
       .then(() => console.log('✅ Firebase persistence set to LOCAL'))
       .catch(err => console.warn('Persistence warning:', err.message));
     
-    // Make available globally
+     // Make available globally
     window.FB = {
       app: app,
       auth: auth,
       db: db,
       rtdb: rtdb
     };
+   // Make onAuthStateChanged available globally
+  window.onAuthStateChanged = onAuthStateChanged;
     window.__FIREBASE_READY = true;
     
     console.log('✅ Firebase initialized successfully!');
