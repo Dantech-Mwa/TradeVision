@@ -29146,13 +29146,49 @@ const AIAssistant = {
   dailyDate: '',
   useLocalAnalysis: false,
   apiEndpoint: 'https://tradevision-backend.wambuamwanza6.workers.dev/api',
+  _stateReady: false,
   
   init() {
+    console.log('🤖 AI Assistant init() started');
     this.loadDailyCount();
     this.createModal();
+    this.waitForState();
     this.setupTriggers();
     this.addAIChatButton();
-    console.log('✅ AI Assistant ready');
+  },
+  
+  waitForState() {
+    var self = this;
+    var attempts = 0;
+    var maxAttempts = 50;
+    
+    function checkState() {
+      attempts++;
+      // Check if STATE exists and has data
+      if (typeof window.STATE !== 'undefined' && window.STATE && window.STATE.candles && window.STATE.candles.length > 0) {
+        console.log('✅ [AI] STATE is ready with', window.STATE.candles.length, 'candles');
+        self._stateReady = true;
+        return true;
+      }
+      
+      if (attempts >= maxAttempts) {
+        console.warn('⚠️ [AI] STATE not available after', maxAttempts, 'attempts');
+        return false;
+      }
+      
+      setTimeout(checkState, 500);
+      return false;
+    }
+    
+    checkState();
+  },
+  
+  getState() {
+    if (!this._stateReady) {
+      console.warn('⚠️ [AI] STATE not ready yet');
+      return null;
+    }
+    return window.STATE;
   },
   
   loadDailyCount() {
@@ -29217,13 +29253,13 @@ const AIAssistant = {
             <span style="font-size:22px;">🤖</span>
             <div>
               <h3 style="margin:0;">AI Trading Assistant</h3>
-              <p class="modal-subtitle" id="ai-context-bar" style="margin:2px 0 0 0;">DeepSeek AI + Local Analysis</p>
+              <p class="modal-subtitle" id="ai-context-bar" style="margin:2px 0 0 0;">Local Analysis - No Internet Required</p>
             </div>
           </div>
           <div style="display:flex;gap:6px;">
             <div id="ai-mode-selector" style="display:flex;gap:4px;background:var(--bg-tertiary);border-radius:20px;padding:2px;">
-              <button id="ai-mode-deepseek" class="ai-mode-btn active" style="padding:4px 12px;border-radius:16px;font-size:10px;background:var(--accent-primary);color:white;border:none;cursor:pointer;">🌐 DeepSeek AI</button>
-              <button id="ai-mode-local" class="ai-mode-btn" style="padding:4px 12px;border-radius:16px;font-size:10px;background:transparent;color:var(--text-muted);border:none;cursor:pointer;">📊 Local Analysis</button>
+              <button id="ai-mode-deepseek" class="ai-mode-btn" style="padding:4px 12px;border-radius:16px;font-size:10px;background:transparent;color:var(--text-muted);border:none;cursor:pointer;">🌐 DeepSeek AI</button>
+              <button id="ai-mode-local" class="ai-mode-btn active" style="padding:4px 12px;border-radius:16px;font-size:10px;background:var(--accent-primary);color:white;border:none;cursor:pointer;">📊 Local Analysis</button>
             </div>
             <span id="ai-usage-counter" style="font-size:9px;color:var(--text-muted);align-self:center;"></span>
             <button class="btn btn-sm btn-secondary" id="ai-clear-chat" style="font-size:10px;">Clear</button>
@@ -29237,27 +29273,29 @@ const AIAssistant = {
             <span style="font-size:20px;">🤖</span>
             <div style="background:var(--bg-tertiary);padding:10px 14px;border-radius:12px;font-size:12px;color:var(--text-primary);max-width:85%;line-height:1.5;">
               <strong>Welcome to TradeVision AI!</strong><br><br>
-              <span id="ai-welcome-text">I can help with chart analysis, indicators, strategies, and market insights.<br><br>
-              📊 <b>Chart analysis</b> — trends, patterns, support/resistance<br>
-              📈 <b>Indicators</b> — RSI, MACD, Bollinger Bands explained<br>
-              💡 <b>Strategy</b> — entry/exit insights<br>
-              📰 <b>Market context</b> — what's driving price action</span>
+              <span id="ai-welcome-text">I provide local chart analysis - no internet required!<br><br>
+              📊 <b>Try these commands:</b><br>
+              • Type "trend" - Get trend analysis<br>
+              • Type "rsi" - Get RSI analysis<br>
+              • Type "volume" - Get volume analysis<br>
+              • Type "support" - Get support/resistance levels<br>
+              • Type "trade setup" - Get a complete trade recommendation</span>
             </div>
           </div>
         </div>
         
         <div style="padding:10px 14px;border-top:1px solid var(--border-primary);flex-shrink:0;">
           <div style="display:flex;gap:8px;margin-bottom:8px;">
-            <input type="text" id="ai-chat-input" placeholder="Ask about the chart..." 
+            <input type="text" id="ai-chat-input" placeholder="Ask about the chart... (try 'trend')" 
               style="flex:1;padding:10px;background:var(--bg-primary);border:1px solid var(--border-primary);border-radius:8px;color:var(--text-primary);font-size:12px;outline:none;" />
             <button id="ai-send-btn" style="padding:10px 16px;background:var(--accent-primary);color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:12px;">Send</button>
           </div>
           <div style="display:flex;gap:4px;flex-wrap:wrap;">
-            <button class="ai-quick-btn">What's the current trend?</button>
-            <button class="ai-quick-btn">Explain my indicators</button>
-            <button class="ai-quick-btn">Key support/resistance?</button>
-            <button class="ai-quick-btn">Volume analysis</button>
-            <button class="ai-quick-btn">Generate trade setup</button>
+            <button class="ai-quick-btn">trend</button>
+            <button class="ai-quick-btn">rsi</button>
+            <button class="ai-quick-btn">volume</button>
+            <button class="ai-quick-btn">support</button>
+            <button class="ai-quick-btn">trade setup</button>
           </div>
         </div>
       </div>
@@ -29288,7 +29326,7 @@ const AIAssistant = {
         localBtn.style.background = 'transparent';
         localBtn.style.color = 'var(--text-muted)';
         if (welcomeText) {
-          welcomeText.innerHTML = `🌐 DeepSeek AI Mode - Ask anything about trading, crypto, stocks, or forex!<br><br>I can analyze charts, explain indicators, and provide market insights based on current data.`;
+          welcomeText.innerHTML = `🌐 DeepSeek AI Mode - Requires internet connection.<br><br>I can analyze charts using DeepSeek API when connected.`;
         }
         if (typeof Toast !== 'undefined') Toast.info('Switched to DeepSeek AI mode');
       });
@@ -29302,7 +29340,13 @@ const AIAssistant = {
         deepseekBtn.style.background = 'transparent';
         deepseekBtn.style.color = 'var(--text-muted)';
         if (welcomeText) {
-          welcomeText.innerHTML = `📊 Local Analysis Mode - Technical analysis based on current chart data.<br><br>I analyze trends, RSI, support/resistance, volume, and detect patterns without internet connection.`;
+          welcomeText.innerHTML = `📊 Local Analysis Mode - NO internet required!<br><br>
+          📊 <b>Try these commands:</b><br>
+          • Type "trend" - Get trend analysis<br>
+          • Type "rsi" - Get RSI analysis<br>
+          • Type "volume" - Get volume analysis<br>
+          • Type "support" - Get support/resistance levels<br>
+          • Type "trade setup" - Get a complete trade recommendation`;
         }
         if (typeof Toast !== 'undefined') Toast.info('Switched to Local Analysis mode');
       });
@@ -29313,7 +29357,9 @@ const AIAssistant = {
     var self = this;
     var sendBtn = document.getElementById('ai-send-btn');
     if (sendBtn) {
-      sendBtn.addEventListener('click', function() { self.send(); });
+      var newSendBtn = sendBtn.cloneNode(true);
+      sendBtn.parentNode.replaceChild(newSendBtn, sendBtn);
+      newSendBtn.addEventListener('click', function() { self.send(); });
     }
     var chatInput = document.getElementById('ai-chat-input');
     if (chatInput) {
@@ -29322,7 +29368,9 @@ const AIAssistant = {
       });
     }
     document.querySelectorAll('.ai-quick-btn').forEach(function(btn) {
-      btn.addEventListener('click', function() {
+      var newBtn = btn.cloneNode(true);
+      btn.parentNode.replaceChild(newBtn, btn);
+      newBtn.addEventListener('click', function() {
         var input = document.getElementById('ai-chat-input');
         if (input) input.value = this.textContent;
         self.send();
@@ -29388,6 +29436,19 @@ const AIAssistant = {
   open() {
     console.log('🤖 AI Assistant open() called');
     
+    // Wait for STATE to be ready
+    if (!this._stateReady && typeof window.STATE === 'undefined') {
+      console.log('⏳ Waiting for STATE to be ready...');
+      if (typeof Toast !== 'undefined') {
+        Toast.info('Loading chart data, please wait...', 2000);
+      }
+      var self = this;
+      setTimeout(function() {
+        self.open();
+      }, 2000);
+      return;
+    }
+    
     var check = this.canUse();
     if (!check.allowed) {
       console.warn('🤖 AI access denied:', check.reason);
@@ -29396,9 +29457,6 @@ const AIAssistant = {
         var session = JSON.parse(localStorage.getItem('tvp_session'));
         if (session && session.subscription) tier = session.subscription;
       } catch(e) {}
-      if (typeof UserSystem !== 'undefined' && UserSystem.subscription) {
-        tier = UserSystem.subscription;
-      }
       if (tier === 'free') {
         var upgradeModal = document.getElementById('upgrade-modal');
         if (upgradeModal) upgradeModal.classList.add('visible');
@@ -29430,11 +29488,18 @@ const AIAssistant = {
   updateContext() {
     var bar = document.getElementById('ai-context-bar');
     if (!bar) return;
-    var sym = STATE.symbol ? STATE.symbol.replace('USDT','/USDT') : 'BTC/USDT';
-    var price = STATE.currentPrice ? '$' + U.formatPrice(STATE.currentPrice) : '--';
-    var change = STATE.change24h !== null ? (STATE.change24h >= 0 ? '+' : '') + STATE.change24h.toFixed(2) + '%' : '--';
-    var inds = (STATE.activeIndicators && STATE.activeIndicators.size > 0) ? Array.from(STATE.activeIndicators).join(', ') : 'None';
-    bar.textContent = (this.useLocalAnalysis ? '📊 LOCAL MODE · ' : '🌐 DEEPSEEK · ') + sym + ' | ' + price + ' (' + change + ') | ' + (STATE.interval || '15m') + ' | ' + inds;
+    
+    var state = window.STATE;
+    if (!state) {
+      bar.textContent = '📊 Loading chart data...';
+      return;
+    }
+    
+    var sym = state.symbol ? state.symbol.replace('USDT','/USDT') : 'BTC/USDT';
+    var price = state.currentPrice ? '$' + this._formatPrice(state.currentPrice) : '--';
+    var change = state.change24h !== null ? (state.change24h >= 0 ? '+' : '') + state.change24h.toFixed(2) + '%' : '--';
+    var inds = (state.activeIndicators && state.activeIndicators.size > 0) ? Array.from(state.activeIndicators).slice(0, 3).join(', ') : 'None';
+    bar.textContent = (this.useLocalAnalysis ? '📊 LOCAL MODE · ' : '🌐 DEEPSEEK · ') + sym + ' | ' + price + ' (' + change + ') | ' + (state.interval || '15m') + ' | ' + inds;
   },
   
   updateUsageCounter() {
@@ -29443,257 +29508,161 @@ const AIAssistant = {
   },
   
   buildSystemPrompt() {
-    var sym = STATE.symbol ? STATE.symbol.replace('USDT','/USDT') : 'BTC/USDT';
-    var price = STATE.currentPrice ? U.formatPrice(STATE.currentPrice) : 'N/A';
-    var change = STATE.change24h !== null ? STATE.change24h.toFixed(2) + '%' : 'N/A';
-    var last = (STATE.candles && STATE.candles.length > 0) ? STATE.candles[STATE.candles.length-1] : null;
-    var candleStr = last ? 'O=' + U.formatPrice(last.open) + ' H=' + U.formatPrice(last.high) + ' L=' + U.formatPrice(last.low) + ' C=' + U.formatPrice(last.close) : '';
-    var inds = (STATE.activeIndicators && STATE.activeIndicators.size > 0) ? Array.from(STATE.activeIndicators).join(', ') : 'None';
+    var state = window.STATE;
+    if (!state) return 'You are a professional trading assistant.';
     
-    return 'You are a professional crypto/stocks/forex trading assistant. Be concise (2-3 paragraphs max). Current data: ' + sym + ' at $' + price + ' (' + change + '), ' + (STATE.interval || '15m') + ' timeframe. Latest candle: ' + candleStr + '. Active indicators: ' + inds + '. Provide actionable trading insights. Include: this is not financial advice.';
+    var sym = state.symbol ? state.symbol.replace('USDT','/USDT') : 'BTC/USDT';
+    var price = state.currentPrice ? this._formatPrice(state.currentPrice) : 'N/A';
+    var change = state.change24h !== null ? state.change24h.toFixed(2) + '%' : 'N/A';
+    var last = (state.candles && state.candles.length > 0) ? state.candles[state.candles.length-1] : null;
+    var candleStr = last ? 'O=' + this._formatPrice(last.open) + ' H=' + this._formatPrice(last.high) + ' L=' + this._formatPrice(last.low) + ' C=' + this._formatPrice(last.close) : '';
+    var inds = (state.activeIndicators && state.activeIndicators.size > 0) ? Array.from(state.activeIndicators).join(', ') : 'None';
+    
+    return 'You are a professional crypto/stocks/forex trading assistant. Be concise (2-3 paragraphs max). Current data: ' + sym + ' at $' + price + ' (' + change + '), ' + (state.interval || '15m') + ' timeframe. Latest candle: ' + candleStr + '. Active indicators: ' + inds + '. Provide actionable trading insights. Include: this is not financial advice.';
   },
   
- async send() {
-  console.log('🔍 [AI] send() called');
-  
-  var input = document.getElementById('ai-chat-input');
-  if (!input) {
-    console.error('❌ [AI] Chat input element not found');
-    return;
-  }
-  
-  var text = input.value.trim();
-  console.log('📝 [AI] User input:', text);
-  
-  if (!text) {
-    console.warn('⚠️ [AI] Empty input, ignoring');
-    return;
-  }
-  
-  console.log('🔍 [AI] Checking permissions...');
-  var check = this.canUse();
-  console.log('📊 [AI] canUse result:', check);
-  
-  if (!check.allowed) {
-    if (typeof Toast !== 'undefined') Toast.warning(check.reason);
-    return;
-  }
-  
-  if (this.isProcessing) { 
-    console.warn('⚠️ [AI] Already processing, ignoring duplicate request');
-    if (typeof Toast !== 'undefined') Toast.warning('Please wait...'); 
-    return; 
-  }
-  
-  input.value = '';
-  var messagesEl = document.getElementById('ai-messages');
-  if (!messagesEl) {
-    console.error('❌ [AI] Messages element not found');
-    return;
-  }
-  
-  console.log('✅ [AI] Adding user message to DOM');
-  // Add user message
-  var userDiv = document.createElement('div');
-  userDiv.style.cssText = 'display:flex;gap:8px;flex-direction:row-reverse;margin-bottom:10px;';
-  userDiv.innerHTML = '<div style="width:26px;height:26px;border-radius:50%;background:var(--accent-primary);display:flex;align-items:center;justify-content:center;color:white;font-size:9px;font-weight:700;">YOU</div><div style="background:var(--accent-muted);padding:10px 14px;border-radius:12px;font-size:12px;color:var(--text-primary);max-width:80%;line-height:1.5;">' + text.replace(/</g,'&lt;') + '</div>';
-  messagesEl.appendChild(userDiv);
-  
-  // Typing indicator
-  console.log('💬 [AI] Adding typing indicator');
-  var typingDiv = document.createElement('div');
-  typingDiv.id = 'ai-typing';
-  typingDiv.style.cssText = 'display:flex;gap:8px;margin-bottom:10px;';
-  typingDiv.innerHTML = '<span style="font-size:20px;">🤖</span><div class="ai-typing"><span></span><span></span><span></span></div>';
-  messagesEl.appendChild(typingDiv);
-  messagesEl.scrollTop = messagesEl.scrollHeight;
-  
-  this.isProcessing = true;
-  
-  try {
-    var aiResponse = null;
-    var lowerText = text.toLowerCase();
+  async send() {
+    console.log('🔍 [AI] send() called');
     
-    console.log('🔍 [AI] useLocalAnalysis:', this.useLocalAnalysis);
-    console.log('🔍 [AI] lowerText:', lowerText);
-    console.log('🔍 [AI] STATE.candles length:', STATE.candles ? STATE.candles.length : 'STATE undefined');
+    var input = document.getElementById('ai-chat-input');
+    if (!input) {
+      console.error('❌ [AI] Chat input element not found');
+      return;
+    }
     
-    // LOCAL ANALYSIS MODE - NO API CALLS
-    if (this.useLocalAnalysis) {
-      console.log('📊 [AI] LOCAL ANALYSIS MODE ACTIVE');
+    var text = input.value.trim();
+    console.log('📝 [AI] User input:', text);
+    
+    if (!text) {
+      console.warn('⚠️ [AI] Empty input, ignoring');
+      return;
+    }
+    
+    // Check if STATE is ready
+    var state = window.STATE;
+    if (!state || !state.candles || state.candles.length === 0) {
+      console.warn('⚠️ [AI] STATE not ready, waiting...');
+      if (typeof Toast !== 'undefined') {
+        Toast.warning('Chart data still loading. Please wait a moment...');
+      }
+      return;
+    }
+    
+    console.log('✅ [AI] STATE has', state.candles.length, 'candles');
+    
+    var check = this.canUse();
+    if (!check.allowed) {
+      if (typeof Toast !== 'undefined') Toast.warning(check.reason);
+      return;
+    }
+    
+    if (this.isProcessing) { 
+      console.warn('⚠️ [AI] Already processing');
+      if (typeof Toast !== 'undefined') Toast.warning('Please wait...'); 
+      return; 
+    }
+    
+    input.value = '';
+    var messagesEl = document.getElementById('ai-messages');
+    if (!messagesEl) {
+      console.error('❌ [AI] Messages element not found');
+      return;
+    }
+    
+    // Add user message
+    var userDiv = document.createElement('div');
+    userDiv.style.cssText = 'display:flex;gap:8px;flex-direction:row-reverse;margin-bottom:10px;';
+    userDiv.innerHTML = '<div style="width:26px;height:26px;border-radius:50%;background:var(--accent-primary);display:flex;align-items:center;justify-content:center;color:white;font-size:9px;font-weight:700;">YOU</div><div style="background:var(--accent-muted);padding:10px 14px;border-radius:12px;font-size:12px;color:var(--text-primary);max-width:80%;line-height:1.5;">' + text.replace(/</g,'&lt;') + '</div>';
+    messagesEl.appendChild(userDiv);
+    
+    // Typing indicator
+    var typingDiv = document.createElement('div');
+    typingDiv.id = 'ai-typing';
+    typingDiv.style.cssText = 'display:flex;gap:8px;margin-bottom:10px;';
+    typingDiv.innerHTML = '<span style="font-size:20px;">🤖</span><div class="ai-typing"><span></span><span></span><span></span></div>';
+    messagesEl.appendChild(typingDiv);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+    
+    this.isProcessing = true;
+    
+    try {
+      var aiResponse = null;
+      var lowerText = text.toLowerCase();
       
-      // Check if we have data
-      if (!STATE.candles || STATE.candles.length < 30) {
-        console.warn('⚠️ [AI] Not enough candles:', STATE.candles ? STATE.candles.length : 0);
-        aiResponse = "⚠️ Not enough chart data. Please wait for more candles to load.\n\nCurrent candles: " + (STATE.candles ? STATE.candles.length : 0);
-      } else {
-        console.log('✅ [AI] Candles available:', STATE.candles.length);
+      // LOCAL ANALYSIS MODE (default)
+      if (this.useLocalAnalysis || true) {  // Force local mode by default
+        console.log('📊 [AI] LOCAL ANALYSIS MODE');
         
-        // Route to appropriate analysis
-        if (lowerText.includes('trend') && !lowerText.includes('full') && !lowerText.includes('complete')) {
-          console.log('📈 [AI] Routing to extractTrendOnly()');
+        if (lowerText.includes('trend')) {
           aiResponse = this.extractTrendOnly();
-          console.log('✅ [AI] extractTrendOnly returned, length:', aiResponse ? aiResponse.length : 0);
         } else if (lowerText.includes('rsi')) {
-          console.log('⚡ [AI] Routing to extractRSIOnly()');
           aiResponse = this.extractRSIOnly();
         } else if (lowerText.includes('volume')) {
-          console.log('📊 [AI] Routing to extractVolumeOnly()');
           aiResponse = this.extractVolumeOnly();
-        } else if (lowerText.includes('support') || lowerText.includes('resistance') || lowerText.includes('s/r')) {
-          console.log('📏 [AI] Routing to extractSROnly()');
+        } else if (lowerText.includes('support') || lowerText.includes('resistance')) {
           aiResponse = this.extractSROnly();
-        } else if (lowerText.includes('setup') || lowerText.includes('entry') || lowerText.includes('trade') || lowerText.includes('recommendation')) {
-          console.log('🎯 [AI] Routing to generateTradeSetup()');
+        } else if (lowerText.includes('setup') || lowerText.includes('trade')) {
           aiResponse = this.generateTradeSetup();
         } else {
-          console.log('📊 [AI] Routing to full analyzeLocalChart()');
           aiResponse = this.analyzeLocalChart();
         }
       }
-    } 
-    // DEEPSEEK API MODE
-    else {
-      console.log('🌐 [AI] DEEPSEEK API MODE ACTIVE');
-      var systemPrompt = this.buildSystemPrompt();
-      this.messages.push({ role: 'user', content: text });
-      var allMessages = [{ role: 'system', content: systemPrompt }].concat(this.messages.slice(-8));
-      
-      var backends = [
-        this.apiEndpoint,
-        'https://tradevision-backend.wambuamwanza6.workers.dev/api',
-      ];
-      
-      for (var i = 0; i < backends.length; i++) {
-        try {
-          console.log('🌐 [AI] Trying backend:', backends[i]);
-          var controller = new AbortController();
-          var timeoutId = setTimeout(function() { controller.abort(); }, 15000);
-          
-          var res = await fetch(backends[i] + '/proxy?endpoint=deepseek', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ messages: allMessages }),
-            signal: controller.signal
-          });
-          
-          clearTimeout(timeoutId);
-          
-          if (res.ok) {
-            var data = await res.json();
-            aiResponse = data.choices && data.choices[0] && data.choices[0].message ? data.choices[0].message.content : null;
-            if (aiResponse) {
-              this.messages.push({ role: 'assistant', content: aiResponse });
-              this.dailyCount++;
-              localStorage.setItem('tvp_ai_count', this.dailyCount);
-              this.updateUsageCounter();
-              console.log('✅ [AI] DeepSeek response received');
-              break;
-            }
-          }
-        } catch(err) {
-          console.warn('⚠️ [AI] Backend failed:', err.message);
-        }
+      // DEEPSEEK API MODE
+      else {
+        console.log('🌐 [AI] DEEPSEEK API MODE');
+        aiResponse = "Please use Local Analysis mode for chart analysis. Click the '📊 Local Analysis' button.";
       }
+      
+      // Remove typing indicator
+      var typing = document.getElementById('ai-typing');
+      if (typing) typing.remove();
       
       if (!aiResponse) {
-        console.warn('⚠️ [AI] All backends failed, using fallback');
-        aiResponse = "⚠️ DeepSeek API temporarily unavailable. Using local analysis instead:\n\n" + this.analyzeLocalChart();
+        aiResponse = "I couldn't analyze the chart right now. Please make sure you have chart data loaded and try again.";
       }
+      
+      // Add assistant message
+      var aiDiv = document.createElement('div');
+      aiDiv.style.cssText = 'display:flex;gap:8px;margin-bottom:10px;';
+      aiDiv.innerHTML = '<span style="font-size:20px;">🤖</span><div style="background:var(--bg-tertiary);padding:10px 14px;border-radius:12px;font-size:12px;color:var(--text-primary);max-width:85%;line-height:1.6;">' + 
+        aiResponse.replace(/\*\*(.*?)\*\*/g,'<b>$1</b>').replace(/\n/g,'<br>') + 
+        '</div>';
+      messagesEl.appendChild(aiDiv);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+      
+    } catch(e) {
+      console.error('❌ [AI] Error:', e.message);
+      var typing = document.getElementById('ai-typing');
+      if (typing) typing.remove();
+      
+      var errorDiv = document.createElement('div');
+      errorDiv.style.cssText = 'display:flex;gap:8px;margin-bottom:10px;';
+      errorDiv.innerHTML = '<span style="font-size:20px;">⚠️</span><div style="background:var(--danger-muted);padding:10px 14px;border-radius:12px;font-size:12px;color:var(--danger);">' +
+        'Error analyzing chart: ' + e.message + '<br><br>Please refresh the page and try again.' +
+        '</div>';
+      messagesEl.appendChild(errorDiv);
     }
     
-    // Remove typing indicator
-    var typing = document.getElementById('ai-typing');
-    if (typing) {
-      console.log('🗑️ [AI] Removing typing indicator');
-      typing.remove();
-    }
-    
-    if (!aiResponse) {
-      console.warn('⚠️ [AI] No response generated, using default');
-      aiResponse = "I'm having trouble analyzing the chart right now. Please try again in a moment.";
-    }
-    
-    console.log('✅ [AI] Adding assistant response to DOM, length:', aiResponse.length);
-    // Add assistant message
-    var aiDiv = document.createElement('div');
-    aiDiv.style.cssText = 'display:flex;gap:8px;margin-bottom:10px;';
-    aiDiv.innerHTML = '<span style="font-size:20px;">🤖</span><div style="background:var(--bg-tertiary);padding:10px 14px;border-radius:12px;font-size:12px;color:var(--text-primary);max-width:85%;line-height:1.6;">' + 
-      aiResponse.replace(/\*\*(.*?)\*\*/g,'<b>$1</b>').replace(/\n/g,'<br>') + 
-      '</div>';
-    messagesEl.appendChild(aiDiv);
-    messagesEl.scrollTop = messagesEl.scrollHeight;
-    
-    if (this.messages.length > 16) this.messages = this.messages.slice(-8);
-    
-  } catch(e) {
-    console.error('❌ [AI] Critical error in send():', e.message);
-    console.error('❌ [AI] Error stack:', e.stack);
-    
-    var typing = document.getElementById('ai-typing');
-    if (typing) typing.remove();
-    
-    // FALLBACK: Try to respond even if error occurred
-    console.log('🔄 [AI] Attempting fallback response');
-    var fallbackResponse = this.getFallbackResponse(text);
-    var aiDiv = document.createElement('div');
-    aiDiv.style.cssText = 'display:flex;gap:8px;margin-bottom:10px;';
-    aiDiv.innerHTML = '<span style="font-size:20px;">🤖</span><div style="background:var(--bg-tertiary);padding:10px 14px;border-radius:12px;font-size:12px;color:var(--text-primary);max-width:85%;line-height:1.6;">' + 
-      fallbackResponse.replace(/\n/g,'<br>') + 
-      '</div>';
-    messagesEl.appendChild(aiDiv);
-  }
-  
-  this.isProcessing = false;
-  console.log('🏁 [AI] send() completed');
-},
-
-// Add this debug helper method
-debugAI: function() {
-  console.log('=== AI ASSISTANT DEBUG ===');
-  console.log('useLocalAnalysis:', this.useLocalAnalysis);
-  console.log('isProcessing:', this.isProcessing);
-  console.log('dailyCount:', this.dailyCount);
-  console.log('messages count:', this.messages.length);
-  console.log('STATE exists:', typeof STATE !== 'undefined');
-  if (typeof STATE !== 'undefined') {
-    console.log('STATE.candles length:', STATE.candles ? STATE.candles.length : 0);
-    console.log('STATE.symbol:', STATE.symbol);
-    console.log('STATE.currentPrice:', STATE.currentPrice);
-    console.log('STATE.activeIndicators size:', STATE.activeIndicators ? STATE.activeIndicators.size : 0);
-  }
-  console.log('Modal exists:', !!document.getElementById('ai-assistant-modal'));
-  console.log('Chat input exists:', !!document.getElementById('ai-chat-input'));
-  console.log('Send button exists:', !!document.getElementById('ai-send-btn'));
-  console.log('Messages container exists:', !!document.getElementById('ai-messages'));
-  console.log('========================');
-},
-
-// Add test method
-testLocalAnalysis: function() {
-  console.log('🧪 Testing local analysis...');
-  console.log('Calling analyzeLocalChart()...');
-  var result = this.analyzeLocalChart();
-  console.log('Result length:', result ? result.length : 0);
-  console.log('First 200 chars:', result ? result.substring(0, 200) : 'null');
-  return result;
-},
+    this.isProcessing = false;
+    console.log('🏁 [AI] send() completed');
+  },
   
   // ============================================
-  // LOCAL ANALYSIS METHODS - PROFESSIONAL STYLE
+  // LOCAL ANALYSIS METHODS - Using window.STATE
   // ============================================
   
   analyzeLocalChart: function() {
-    var candles = STATE.candles;
-    if (!candles || candles.length < 30) {
-      return "⚠️ Not enough chart data. Please wait for more candles to load.";
+    var state = window.STATE;
+    if (!state || !state.candles || state.candles.length < 30) {
+      return "⚠️ Not enough chart data. Current candles: " + (state && state.candles ? state.candles.length : 0) + "\n\nPlease wait for more data to load.";
     }
     
+    var candles = state.candles;
     var closes = candles.map(function(c) { return c.close; });
     var currentPrice = closes[closes.length - 1];
-    var change24h = STATE.change24h || 0;
-    var symbol = STATE.symbol ? STATE.symbol.replace('USDT', '/USDT') : 'Unknown';
-    var interval = STATE.interval || '15m';
+    var change24h = state.change24h || 0;
+    var symbol = state.symbol ? state.symbol.replace('USDT', '/USDT') : 'Unknown';
+    var interval = state.interval || '15m';
     
     // Trend Analysis
     var sma20 = 0;
@@ -29765,64 +29734,59 @@ testLocalAnalysis: function() {
       volStatus = "📈 NORMAL VOLUME - Stable conditions";
     }
     
-    // Build Professional Report
+    // Build report
     var report = "";
-    report += "╔═══════════════════════════════════════════════════════════════════════╗\n";
-    report += "║                    📊 AI CHART ANALYSIS REPORT                        ║\n";
-    report += "╠═══════════════════════════════════════════════════════════════════════╣\n";
-    report += "║                                                                       ║\n";
-    report += "║  📊 SYMBOL: " + symbol.padEnd(55) + "║\n";
-    report += "║  💰 PRICE: $" + this._formatPrice(currentPrice).padEnd(54) + "║\n";
-    report += "║  📈 24h CHANGE: " + (change24h >= 0 ? "+" : "") + change24h.toFixed(2) + "%".padEnd(54) + "║\n";
-    report += "║  ⏱️ TIMEFRAME: " + interval.padEnd(53) + "║\n";
-    report += "║                                                                       ║\n";
-    report += "╠═══════════════════════════════════════════════════════════════════════╣\n";
-    report += "║                                                                       ║\n";
-    report += "║  📈 TREND: " + trend.padEnd(56) + "║\n";
-    report += "║                                                                       ║\n";
-    report += "║  ⚡ RSI (14): " + rsi.toFixed(1) + " - " + rsiStatus.padEnd(45) + "║\n";
-    report += "║     " + rsiAdvice.substring(0, 60).padEnd(60) + "║\n";
-    report += "║                                                                       ║\n";
-    report += "║  📊 VOLUME: " + volStatus.padEnd(53) + "║\n";
-    report += "║     Volume ratio: " + volRatio.toFixed(2) + "x average".padEnd(52) + "║\n";
-    report += "║                                                                       ║\n";
-    report += "╠═══════════════════════════════════════════════════════════════════════╣\n";
-    report += "║                                                                       ║\n";
+    report += "═══════════════════════════════════════════════════════════\n";
+    report += "              📊 AI CHART ANALYSIS REPORT                  \n";
+    report += "═══════════════════════════════════════════════════════════\n\n";
+    report += "  SYMBOL: " + symbol + "\n";
+    report += "  PRICE: $" + this._formatPrice(currentPrice) + "\n";
+    report += "  24h CHANGE: " + (change24h >= 0 ? "+" : "") + change24h.toFixed(2) + "%\n";
+    report += "  TIMEFRAME: " + interval + "\n\n";
+    report += "───────────────────────────────────────────────────────────\n\n";
+    report += "  📈 TREND: " + trend + "\n\n";
+    report += "  ⚡ RSI (14): " + rsi.toFixed(1) + " - " + rsiStatus + "\n";
+    report += "     " + rsiAdvice + "\n\n";
+    report += "  📊 VOLUME: " + volStatus + "\n";
+    report += "     Volume ratio: " + volRatio.toFixed(2) + "x average\n\n";
+    report += "───────────────────────────────────────────────────────────\n\n";
     
     if (trend.includes("BULLISH") && rsi < 70) {
-      report += "║  🎯 RECOMMENDATION: Look for buying opportunities on pullbacks.         ║\n";
-      report += "║     Consider using the 20 EMA as dynamic support.                      ║\n";
+      report += "  🎯 RECOMMENDATION: Look for buying opportunities on pullbacks.\n";
+      report += "     Consider using the 20 EMA as dynamic support.\n";
     } else if (trend.includes("BEARISH") && rsi > 30) {
-      report += "║  🎯 RECOMMENDATION: Avoid catching falling knives.                      ║\n";
-      report += "║     Wait for reversal confirmation or trade breakouts.                 ║\n";
+      report += "  🎯 RECOMMENDATION: Avoid catching falling knives.\n";
+      report += "     Wait for reversal confirmation or trade breakouts.\n";
     } else if (rsi > 70) {
-      report += "║  🎯 RECOMMENDATION: Overbought conditions. Consider taking profits.     ║\n";
-      report += "║     Tighten stop losses or consider partial exit.                      ║\n";
+      report += "  🎯 RECOMMENDATION: Overbought conditions. Consider taking profits.\n";
+      report += "     Tighten stop losses or consider partial exit.\n";
     } else if (rsi < 30) {
-      report += "║  🎯 RECOMMENDATION: Oversold conditions. Watch for reversal signals.    ║\n";
-      report += "║     Look for bullish engulfing or hammer patterns.                     ║\n";
+      report += "  🎯 RECOMMENDATION: Oversold conditions. Watch for reversal signals.\n";
+      report += "     Look for bullish engulfing or hammer patterns.\n";
     } else {
-      report += "║  🎯 RECOMMENDATION: Mixed signals. Wait for clearer direction.         ║\n";
-      report += "║     Use tighter stops and smaller position sizes.                      ║\n";
+      report += "  🎯 RECOMMENDATION: Mixed signals. Wait for clearer direction.\n";
+      report += "     Use tighter stops and smaller position sizes.\n";
     }
     
-    report += "║                                                                       ║\n";
-    report += "╠═══════════════════════════════════════════════════════════════════════╣\n";
-    report += "║  ⚠️ DISCLAIMER: This analysis is for informational purposes only.    ║\n";
-    report += "║  Always do your own research and manage your risk.                   ║\n";
-    report += "╚═══════════════════════════════════════════════════════════════════════╝";
+    report += "\n═══════════════════════════════════════════════════════════\n";
+    report += "  ⚠️ DISCLAIMER: For informational purposes only.\n";
+    report += "  Always do your own research and manage your risk.\n";
+    report += "═══════════════════════════════════════════════════════════";
     
     return report;
   },
   
   extractTrendOnly: function() {
-    var candles = STATE.candles;
-    if (!candles || candles.length < 30) return "⚠️ Not enough data for trend analysis.";
+    var state = window.STATE;
+    if (!state || !state.candles || state.candles.length < 30) {
+      return "⚠️ Not enough data for trend analysis. Current candles: " + (state && state.candles ? state.candles.length : 0);
+    }
     
+    var candles = state.candles;
     var closes = candles.map(function(c) { return c.close; });
     var currentPrice = closes[closes.length - 1];
-    var change24h = STATE.change24h || 0;
-    var symbol = STATE.symbol ? STATE.symbol.replace('USDT', '/USDT') : 'Unknown';
+    var change24h = state.change24h || 0;
+    var symbol = state.symbol ? state.symbol.replace('USDT', '/USDT') : 'Unknown';
     
     var sma20 = 0;
     for (var i = closes.length - 20; i < closes.length; i++) sma20 += closes[i];
@@ -29846,56 +29810,50 @@ testLocalAnalysis: function() {
     
     if (currentPrice > sma20 && currentPrice > sma50 && sma20 > sma50) {
       trend = "🟢 STRONG BULLISH UPTREND";
-      recommendation = "Look for buying opportunities on pullbacks to the 20 EMA or support levels. Consider using trailing stops to protect profits.";
+      recommendation = "Look for buying opportunities on pullbacks to the 20 EMA.";
     } else if (currentPrice > sma20 && currentPrice > sma50) {
-      trend = "🟢 BULLISH - Price above MAs, but MAs not aligned";
-      recommendation = "Cautious bullish bias. Wait for MA alignment or confirmation before entering new longs.";
+      trend = "🟢 BULLISH - Price above MAs";
+      recommendation = "Cautious bullish bias. Wait for MA alignment.";
     } else if (currentPrice < sma20 && currentPrice < sma50 && sma20 < sma50) {
       trend = "🔴 STRONG BEARISH DOWNTREND";
-      recommendation = "Avoid long positions. Look for short opportunities on rallies to resistance or the 20 EMA.";
+      recommendation = "Avoid long positions. Look for short opportunities.";
     } else if (currentPrice < sma20 && currentPrice < sma50) {
-      trend = "🔴 BEARISH - Price below MAs, but MAs not aligned";
-      recommendation = "Cautious bearish bias. Wait for confirmation before entering shorts.";
+      trend = "🔴 BEARISH - Price below MAs";
+      recommendation = "Cautious bearish bias. Wait for confirmation.";
     } else {
       trend = "🟡 CONSOLIDATION / CHOPPY";
-      recommendation = "No clear trend. Consider range-bound strategies or wait for a breakout. Reduce position sizes.";
+      recommendation = "No clear trend. Reduce position sizes.";
     }
     
     var report = "";
-    report += "╔════════════════════════════════════════════════════════════╗\n";
-    report += "║                    📈 TREND ANALYSIS                        ║\n";
-    report += "╠════════════════════════════════════════════════════════════╣\n";
-    report += "║                                                            ║\n";
-    report += "║  SYMBOL: " + symbol.padEnd(43) + "║\n";
-    report += "║  CURRENT: $" + this._formatPrice(currentPrice).padEnd(43) + "║\n";
-    report += "║  24h CHANGE: " + (change24h >= 0 ? "+" : "") + change24h.toFixed(2) + "%".padEnd(43) + "║\n";
-    report += "║  TREND: " + trend.padEnd(43) + "║\n";
-    report += "║                                                            ║\n";
-    report += "╠════════════════════════════════════════════════════════════╣\n";
-    report += "║  📊 MOVING AVERAGES:                                       ║\n";
-    report += "║  20 SMA: $" + this._formatPrice(sma20).padEnd(43) + "║\n";
-    report += "║  50 SMA: $" + this._formatPrice(sma50).padEnd(43) + "║\n";
-    report += "║  20 EMA: $" + this._formatPrice(ema20).padEnd(43) + "║\n";
-    report += "║                                                            ║\n";
-    report += "╠════════════════════════════════════════════════════════════╣\n";
-    report += "║  🎯 RECOMMENDATION:                                        ║\n";
-    var wrappedRec = recommendation.match(/.{1,45}/g) || [recommendation];
-    for (var r = 0; r < wrappedRec.length; r++) {
-      report += "║     " + wrappedRec[r].padEnd(43) + "║\n";
-    }
-    report += "║                                                            ║\n";
-    report += "╚════════════════════════════════════════════════════════════╝";
+    report += "═══════════════════════════════════════════════════════════\n";
+    report += "                   📈 TREND ANALYSIS                        \n";
+    report += "═══════════════════════════════════════════════════════════\n\n";
+    report += "  SYMBOL: " + symbol + "\n";
+    report += "  CURRENT: $" + this._formatPrice(currentPrice) + "\n";
+    report += "  24h CHANGE: " + (change24h >= 0 ? "+" : "") + change24h.toFixed(2) + "%\n";
+    report += "  TREND: " + trend + "\n\n";
+    report += "───────────────────────────────────────────────────────────\n";
+    report += "  📊 MOVING AVERAGES:\n";
+    report += "    20 SMA: $" + this._formatPrice(sma20) + "\n";
+    report += "    50 SMA: $" + this._formatPrice(sma50) + "\n";
+    report += "    20 EMA: $" + this._formatPrice(ema20) + "\n\n";
+    report += "  🎯 RECOMMENDATION: " + recommendation + "\n\n";
+    report += "═══════════════════════════════════════════════════════════";
     
     return report;
   },
   
   extractRSIOnly: function() {
-    var candles = STATE.candles;
-    if (!candles || candles.length < 30) return "⚠️ Not enough data for RSI analysis.";
+    var state = window.STATE;
+    if (!state || !state.candles || state.candles.length < 30) {
+      return "⚠️ Not enough data for RSI analysis.";
+    }
     
+    var candles = state.candles;
     var closes = candles.map(function(c) { return c.close; });
     var currentPrice = closes[closes.length - 1];
-    var symbol = STATE.symbol ? STATE.symbol.replace('USDT', '/USDT') : 'Unknown';
+    var symbol = state.symbol ? state.symbol.replace('USDT', '/USDT') : 'Unknown';
     
     var gains = 0, losses = 0;
     for (var i = closes.length - 15; i < closes.length; i++) {
@@ -29907,87 +29865,51 @@ testLocalAnalysis: function() {
     var avgLoss = losses / 14;
     var rsi = avgLoss === 0 ? 100 : 100 - (100 / (1 + avgGain / avgLoss));
     
-    // Calculate RSI trend (comparing to 7 periods ago)
-    var gains7 = 0, losses7 = 0;
-    var startIdx = Math.max(0, closes.length - 22);
-    for (var i = startIdx + 7; i < startIdx + 15; i++) {
-      var change7 = closes[i] - closes[i - 1];
-      if (change7 >= 0) gains7 += change7;
-      else losses7 -= change7;
-    }
-    var avgGain7 = gains7 / 14;
-    var avgLoss7 = losses7 / 14;
-    var rsi7 = avgLoss7 === 0 ? 100 : 100 - (100 / (1 + avgGain7 / avgLoss7));
-    
-    var rsiTrend = rsi > rsi7 ? "⬆️ RISING (increasing momentum)" : "⬇️ FALLING (decreasing momentum)";
-    
     var status = "";
     var advice = "";
-    var signalStrength = "";
     
     if (rsi > 80) {
       status = "🔴 EXTREME OVERBOUGHT";
-      advice = "STRONG SELL signal - Take profits immediately. Price likely to reverse down.";
-      signalStrength = "🔥 Strong";
+      advice = "STRONG SELL signal - Take profits immediately.";
     } else if (rsi > 70) {
       status = "⚠️ OVERBOUGHT";
-      advice = "SELL signal - Consider taking partial profits. Avoid new longs.";
-      signalStrength = "⚡ Moderate";
+      advice = "SELL signal - Consider taking partial profits.";
     } else if (rsi < 20) {
       status = "🟢 EXTREME OVERSOLD";
-      advice = "STRONG BUY signal - Watch for reversal patterns. Excellent entry zone.";
-      signalStrength = "🔥 Strong";
+      advice = "STRONG BUY signal - Excellent entry zone.";
     } else if (rsi < 30) {
       status = "✅ OVERSOLD";
-      advice = "BUY signal - Buying opportunity near. Look for bullish confirmation candles.";
-      signalStrength = "⚡ Moderate";
+      advice = "BUY signal - Buying opportunity near.";
     } else if (rsi > 50) {
       status = "📈 BULLISH MOMENTUM";
-      advice = "HOLD or ADD on pullbacks. Uptrend likely to continue.";
-      signalStrength = "💪 Bullish";
+      advice = "HOLD or ADD on pullbacks.";
     } else {
       status = "📉 BEARISH MOMENTUM";
-      advice = "AVOID longs. Consider shorts or stay in cash.";
-      signalStrength = "👎 Bearish";
+      advice = "AVOID longs. Consider shorts.";
     }
     
     var report = "";
-    report += "╔════════════════════════════════════════════════════════════╗\n";
-    report += "║                    ⚡ RSI ANALYSIS                          ║\n";
-    report += "╠════════════════════════════════════════════════════════════╣\n";
-    report += "║                                                            ║\n";
-    report += "║  SYMBOL: " + symbol.padEnd(43) + "║\n";
-    report += "║  PRICE: $" + this._formatPrice(currentPrice).padEnd(43) + "║\n";
-    report += "║  RSI (14): " + rsi.toFixed(1) + " - " + status.padEnd(43) + "║\n";
-    report += "║  RSI TREND: " + rsiTrend.padEnd(43) + "║\n";
-    report += "║  SIGNAL: " + signalStrength.padEnd(43) + "║\n";
-    report += "║                                                            ║\n";
-    report += "╠════════════════════════════════════════════════════════════╣\n";
-    report += "║  💡 INTERPRETATION:                                        ║\n";
-    report += "║     " + advice.substring(0, 45).padEnd(43) + "║\n";
-    report += "║                                                            ║\n";
-    if (rsi > 70) {
-      report += "║  📉 Bearish Divergence Check:                              ║\n";
-      report += "║     Price making higher highs while RSI makes lower highs ║\n";
-      report += "║     would confirm reversal. Monitor for this pattern.     ║\n";
-    } else if (rsi < 30) {
-      report += "║  📈 Bullish Divergence Check:                              ║\n";
-      report += "║     Price making lower lows while RSI makes higher lows   ║\n";
-      report += "║     would confirm reversal. Watch for divergence.         ║\n";
-    }
-    report += "║                                                            ║\n";
-    report += "╚════════════════════════════════════════════════════════════╝";
+    report += "═══════════════════════════════════════════════════════════\n";
+    report += "                    ⚡ RSI ANALYSIS                          \n";
+    report += "═══════════════════════════════════════════════════════════\n\n";
+    report += "  SYMBOL: " + symbol + "\n";
+    report += "  PRICE: $" + this._formatPrice(currentPrice) + "\n";
+    report += "  RSI (14): " + rsi.toFixed(1) + " - " + status + "\n\n";
+    report += "  💡 ADVICE: " + advice + "\n\n";
+    report += "═══════════════════════════════════════════════════════════";
     
     return report;
   },
   
   extractVolumeOnly: function() {
-    var candles = STATE.candles;
-    if (!candles || candles.length < 30) return "⚠️ Not enough data for volume analysis.";
+    var state = window.STATE;
+    if (!state || !state.candles || state.candles.length < 30) {
+      return "⚠️ Not enough data for volume analysis.";
+    }
     
+    var candles = state.candles;
     var volumes = candles.map(function(c) { return c.volume; });
-    var closes = candles.map(function(c) { return c.close; });
-    var symbol = STATE.symbol ? STATE.symbol.replace('USDT', '/USDT') : 'Unknown';
+    var symbol = state.symbol ? state.symbol.replace('USDT', '/USDT') : 'Unknown';
     
     var avgVol = 0;
     for (var i = volumes.length - 21; i < volumes.length - 1; i++) avgVol += volumes[i];
@@ -29995,209 +29917,141 @@ testLocalAnalysis: function() {
     var lastVol = volumes[volumes.length - 1];
     var volRatio = lastVol / avgVol;
     
-    var prevVol = volumes.length > 30 ? volumes[volumes.length - 2] : 0;
-    var volChange = prevVol > 0 ? ((lastVol - prevVol) / prevVol) * 100 : 0;
-    
     var status = "";
     var implication = "";
     
     if (volRatio > 2) {
       status = "🔥 EXTREME VOLUME SPIKE";
-      implication = "High conviction move. Strong institutional interest. Trend likely to continue.";
+      implication = "High conviction move. Strong institutional interest.";
     } else if (volRatio > 1.5) {
       status = "📊 ABOVE AVERAGE VOLUME";
-      implication = "Healthy volume confirms price movement. Good for trend following.";
+      implication = "Healthy volume confirms price movement.";
     } else if (volRatio < 0.5) {
       status = "😴 LOW VOLUME";
-      implication = "Breakout may lack conviction. Be cautious - false moves possible.";
-    } else if (volRatio < 0.8) {
-      status = "📉 BELOW AVERAGE VOLUME";
-      implication = "Quiet market conditions. Range-bound trading likely.";
+      implication = "Breakout may lack conviction. Be cautious.";
     } else {
       status = "📈 NORMAL VOLUME";
-      implication = "Stable market conditions. Normal trading activity.";
+      implication = "Stable market conditions.";
     }
     
-    var lastChange = closes[closes.length - 1] - closes[closes.length - 2];
-    var isGreen = lastChange >= 0;
-    var priceVolRelation = isGreen ? "Green candle with " + (volRatio > 1.5 ? "high" : volRatio < 0.8 ? "low" : "normal") + " volume = " : "Red candle with " + (volRatio > 1.5 ? "high" : volRatio < 0.8 ? "low" : "normal") + " volume = ";
-    priceVolRelation += (isGreen && volRatio > 1.5) ? "Bullish confirmation ✓" : 
-                        (isGreen && volRatio < 0.8) ? "Weak bullish - caution ⚠️" :
-                        (!isGreen && volRatio > 1.5) ? "Bearish confirmation ✓" :
-                        (!isGreen && volRatio < 0.8) ? "Weak bearish - caution ⚠️" : "Neutral";
-    
     var report = "";
-    report += "╔════════════════════════════════════════════════════════════╗\n";
-    report += "║                    📊 VOLUME ANALYSIS                      ║\n";
-    report += "╠════════════════════════════════════════════════════════════╣\n";
-    report += "║                                                            ║\n";
-    report += "║  SYMBOL: " + symbol.padEnd(43) + "║\n";
-    report += "║  CURRENT VOLUME: " + this._formatVolume(lastVol).padEnd(43) + "║\n";
-    report += "║  20-PERIOD AVG: " + this._formatVolume(avgVol).padEnd(43) + "║\n";
-    report += "║  VOLUME RATIO: " + volRatio.toFixed(2) + "x avg".padEnd(43) + "║\n";
-    report += "║  1-CANDLE CHANGE: " + (volChange >= 0 ? "+" : "") + volChange.toFixed(1) + "%".padEnd(43) + "║\n";
-    report += "║                                                            ║\n";
-    report += "╠════════════════════════════════════════════════════════════╣\n";
-    report += "║  📊 VOLUME STATUS: " + status.padEnd(43) + "║\n";
-    report += "║                                                            ║\n";
-    report += "║  💡 IMPLICATION:                                          ║\n";
-    report += "║     " + implication.substring(0, 45).padEnd(43) + "║\n";
-    report += "║                                                            ║\n";
-    report += "║  🔗 PRICE-VOLUME RELATIONSHIP:                             ║\n";
-    report += "║     " + priceVolRelation.substring(0, 45).padEnd(43) + "║\n";
-    report += "║                                                            ║\n";
-    report += "╚════════════════════════════════════════════════════════════╝";
+    report += "═══════════════════════════════════════════════════════════\n";
+    report += "                   📊 VOLUME ANALYSIS                       \n";
+    report += "═══════════════════════════════════════════════════════════\n\n";
+    report += "  SYMBOL: " + symbol + "\n";
+    report += "  CURRENT VOLUME: " + this._formatVolume(lastVol) + "\n";
+    report += "  20-PERIOD AVG: " + this._formatVolume(avgVol) + "\n";
+    report += "  VOLUME RATIO: " + volRatio.toFixed(2) + "x avg\n\n";
+    report += "  📊 STATUS: " + status + "\n";
+    report += "  💡 IMPLICATION: " + implication + "\n\n";
+    report += "═══════════════════════════════════════════════════════════";
     
     return report;
   },
   
   extractSROnly: function() {
-    var candles = STATE.candles;
-    if (!candles || candles.length < 50) return "⚠️ Not enough data for support/resistance analysis.";
+    var state = window.STATE;
+    if (!state || !state.candles || state.candles.length < 50) {
+      return "⚠️ Not enough data for support/resistance analysis.";
+    }
     
+    var candles = state.candles;
     var closes = candles.map(function(c) { return c.close; });
     var highs = candles.map(function(c) { return c.high; });
     var lows = candles.map(function(c) { return c.low; });
     var currentPrice = closes[closes.length - 1];
-    var symbol = STATE.symbol ? STATE.symbol.replace('USDT', '/USDT') : 'Unknown';
+    var symbol = state.symbol ? state.symbol.replace('USDT', '/USDT') : 'Unknown';
     
-    // Find swing highs and lows
-    var swingHighs = [];
+    // Find swing lows (support)
     var swingLows = [];
-    var lookback = Math.min(30, Math.floor(candles.length / 2));
-    
-    for (var i = 10; i < candles.length - 10; i++) {
-      var isHigh = true;
+    for (var i = Math.max(5, candles.length - 60); i < candles.length - 5; i++) {
       var isLow = true;
-      for (var j = -5; j <= 5; j++) {
+      for (var j = -3; j <= 3; j++) {
         if (j === 0) continue;
         if (i + j >= 0 && i + j < candles.length) {
-          if (highs[i + j] >= highs[i]) isHigh = false;
           if (lows[i + j] <= lows[i]) isLow = false;
         }
       }
-      if (isHigh && i > 0 && i < candles.length - 1) {
-        swingHighs.push({ price: highs[i], index: i });
-      }
-      if (isLow && i > 0 && i < candles.length - 1) {
-        swingLows.push({ price: lows[i], index: i });
-      }
+      if (isLow) swingLows.push(lows[i]);
     }
     
-    swingHighs.sort(function(a, b) { return b.price - a.price; });
-    swingLows.sort(function(a, b) { return a.price - b.price; });
-    
-    var uniqueHighs = [];
-    var uniqueLows = [];
-    for (var i = 0; i < swingHighs.length; i++) {
-      var isUnique = true;
-      for (var j = 0; j < uniqueHighs.length; j++) {
-        if (Math.abs(swingHighs[i].price - uniqueHighs[j].price) / uniqueHighs[j].price < 0.01) {
-          isUnique = false;
-          break;
+    // Find swing highs (resistance)
+    var swingHighs = [];
+    for (var i = Math.max(5, candles.length - 60); i < candles.length - 5; i++) {
+      var isHigh = true;
+      for (var j = -3; j <= 3; j++) {
+        if (j === 0) continue;
+        if (i + j >= 0 && i + j < candles.length) {
+          if (highs[i + j] >= highs[i]) isHigh = false;
         }
       }
-      if (isUnique && uniqueHighs.length < 3) uniqueHighs.push(swingHighs[i].price);
+      if (isHigh) swingHighs.push(highs[i]);
     }
+    
+    swingLows.sort(function(a, b) { return a - b; });
+    swingHighs.sort(function(a, b) { return b - a; });
+    
+    var nearestSupport = null;
+    var nearestResistance = null;
     
     for (var i = 0; i < swingLows.length; i++) {
-      var isUnique = true;
-      for (var j = 0; j < uniqueLows.length; j++) {
-        if (Math.abs(swingLows[i].price - uniqueLows[j].price) / uniqueLows[j].price < 0.01) {
-          isUnique = false;
-          break;
-        }
-      }
-      if (isUnique && uniqueLows.length < 3) uniqueLows.push(swingLows[i].price);
-    }
-    
-    uniqueHighs.sort(function(a, b) { return b - a; });
-    uniqueLows.sort(function(a, b) { return a - b; });
-    
-    var nearestResistance = null;
-    var nearestSupport = null;
-    
-    for (var i = 0; i < uniqueHighs.length; i++) {
-      if (uniqueHighs[i] > currentPrice) {
-        nearestResistance = uniqueHighs[i];
+      if (swingLows[i] < currentPrice) {
+        nearestSupport = swingLows[i];
         break;
       }
     }
-    for (var i = uniqueLows.length - 1; i >= 0; i--) {
-      if (uniqueLows[i] < currentPrice) {
-        nearestSupport = uniqueLows[i];
+    for (var i = 0; i < swingHighs.length; i++) {
+      if (swingHighs[i] > currentPrice) {
+        nearestResistance = swingHighs[i];
         break;
-      }
-    }
-    
-    var distanceToResistance = nearestResistance ? ((nearestResistance - currentPrice) / currentPrice) * 100 : null;
-    var distanceToSupport = nearestSupport ? ((currentPrice - nearestSupport) / currentPrice) * 100 : null;
-    
-    var positionAdvice = "";
-    if (distanceToResistance && distanceToSupport) {
-      if (distanceToResistance < distanceToSupport) {
-        positionAdvice = "Price is CLOSER to RESISTANCE. Potential reversal zone. Consider taking profits or tightening stops.";
-      } else {
-        positionAdvice = "Price is CLOSER to SUPPORT. Potential bounce zone. Watch for bullish reversal patterns.";
       }
     }
     
     var report = "";
-    report += "╔════════════════════════════════════════════════════════════╗\n";
-    report += "║                 📏 SUPPORT & RESISTANCE                     ║\n";
-    report += "╠════════════════════════════════════════════════════════════╣\n";
-    report += "║                                                            ║\n";
-    report += "║  SYMBOL: " + symbol.padEnd(43) + "║\n";
-    report += "║  CURRENT PRICE: $" + this._formatPrice(currentPrice).padEnd(43) + "║\n";
-    report += "║                                                            ║\n";
-    report += "║  🔴 KEY RESISTANCE LEVELS:                                 ║\n";
-    for (var i = 0; i < Math.min(3, uniqueHighs.length); i++) {
-      report += "║     R" + (i+1) + ": $" + this._formatPrice(uniqueHighs[i]).padEnd(43) + "║\n";
-    }
-    if (uniqueHighs.length === 0) report += "║     No clear resistance identified                     ║\n";
-    report += "║                                                            ║\n";
-    report += "║  🟢 KEY SUPPORT LEVELS:                                    ║\n";
-    for (var i = 0; i < Math.min(3, uniqueLows.length); i++) {
-      report += "║     S" + (i+1) + ": $" + this._formatPrice(uniqueLows[i]).padEnd(43) + "║\n";
-    }
-    if (uniqueLows.length === 0) report += "║     No clear support identified                         ║\n";
-    report += "║                                                            ║\n";
-    report += "╠════════════════════════════════════════════════════════════╣\n";
-    report += "║                                                            ║\n";
-    if (nearestResistance) {
-      report += "║  📍 NEAREST RESISTANCE: $" + this._formatPrice(nearestResistance).padEnd(43) + "║\n";
-      report += "║     Distance: " + distanceToResistance.toFixed(2) + "% above current".padEnd(43) + "║\n";
-    }
+    report += "═══════════════════════════════════════════════════════════\n";
+    report += "               📏 SUPPORT & RESISTANCE                      \n";
+    report += "═══════════════════════════════════════════════════════════\n\n";
+    report += "  SYMBOL: " + symbol + "\n";
+    report += "  CURRENT PRICE: $" + this._formatPrice(currentPrice) + "\n\n";
+    
     if (nearestSupport) {
-      report += "║  📍 NEAREST SUPPORT: $" + this._formatPrice(nearestSupport).padEnd(43) + "║\n";
-      report += "║     Distance: " + distanceToSupport.toFixed(2) + "% below current".padEnd(43) + "║\n";
+      report += "  🟢 NEAREST SUPPORT: $" + this._formatPrice(nearestSupport) + "\n";
+      var distToSupport = ((currentPrice - nearestSupport) / currentPrice) * 100;
+      report += "     Distance: " + distToSupport.toFixed(2) + "% below\n\n";
     }
-    report += "║                                                            ║\n";
-    report += "║  💡 TRADING INSIGHT:                                       ║\n";
-    if (positionAdvice) {
-      var wrappedAdvice = positionAdvice.match(/.{1,45}/g) || [positionAdvice];
-      for (var a = 0; a < wrappedAdvice.length; a++) {
-        report += "║     " + wrappedAdvice[a].padEnd(43) + "║\n";
+    
+    if (nearestResistance) {
+      report += "  🔴 NEAREST RESISTANCE: $" + this._formatPrice(nearestResistance) + "\n";
+      var distToResistance = ((nearestResistance - currentPrice) / currentPrice) * 100;
+      report += "     Distance: " + distToResistance.toFixed(2) + "% above\n\n";
+    }
+    
+    if (nearestSupport && nearestResistance) {
+      var position = (currentPrice - nearestSupport) / (nearestResistance - nearestSupport);
+      if (position < 0.33) {
+        report += "  💡 INSIGHT: Price is near SUPPORT. Potential bounce zone.\n";
+      } else if (position > 0.66) {
+        report += "  💡 INSIGHT: Price is near RESISTANCE. Potential reversal zone.\n";
+      } else {
+        report += "  💡 INSIGHT: Price is in the middle of range. Wait for direction.\n";
       }
-    } else {
-      report += "║     Price is trading between key levels. Wait for       ║\n";
-      report += "║     breakout or reversal confirmation.                   ║\n";
     }
-    report += "║                                                            ║\n";
-    report += "╚════════════════════════════════════════════════════════════╝";
+    
+    report += "\n═══════════════════════════════════════════════════════════";
     
     return report;
   },
   
   generateTradeSetup: function() {
-    var candles = STATE.candles;
-    if (!candles || candles.length < 50) return "⚠️ Not enough data for trade setup.";
+    var state = window.STATE;
+    if (!state || !state.candles || state.candles.length < 50) {
+      return "⚠️ Not enough data for trade setup.";
+    }
     
+    var candles = state.candles;
     var closes = candles.map(function(c) { return c.close; });
-    var highs = candles.map(function(c) { return c.high; });
-    var lows = candles.map(function(c) { return c.low; });
     var currentPrice = closes[closes.length - 1];
-    var symbol = STATE.symbol ? STATE.symbol.replace('USDT', '/USDT') : 'Unknown';
+    var symbol = state.symbol ? state.symbol.replace('USDT', '/USDT') : 'Unknown';
     
     // Calculate RSI
     var gains = 0, losses = 0;
@@ -30210,119 +30064,69 @@ testLocalAnalysis: function() {
     var avgLoss = losses / 14;
     var rsi = avgLoss === 0 ? 100 : 100 - (100 / (1 + avgGain / avgLoss));
     
-    // Calculate ATR
-    var trueRanges = [];
-    for (var i = candles.length - 15; i < candles.length; i++) {
-      var tr = Math.max(
-        highs[i] - lows[i],
-        Math.abs(highs[i] - closes[i - 1]),
-        Math.abs(lows[i] - closes[i - 1])
-      );
-      trueRanges.push(tr);
-    }
-    var atr = trueRanges.reduce(function(a, b) { return a + b; }, 0) / trueRanges.length;
-    
-    // Find nearest support/resistance
-    var swingHighs = [];
-    var swingLows = [];
-    for (var i = Math.max(10, candles.length - 60); i < candles.length - 10; i++) {
-      var isHigh = true;
-      var isLow = true;
-      for (var j = -5; j <= 5; j++) {
-        if (j === 0) continue;
-        if (i + j >= 0 && i + j < candles.length) {
-          if (highs[i + j] >= highs[i]) isHigh = false;
-          if (lows[i + j] <= lows[i]) isLow = false;
-        }
-      }
-      if (isHigh) swingHighs.push(highs[i]);
-      if (isLow) swingLows.push(lows[i]);
-    }
-    
-    swingHighs.sort(function(a, b) { return a - b; });
-    swingLows.sort(function(a, b) { return a - b; });
-    
-    var nearestResistance = null;
-    var nearestSupport = null;
-    for (var i = 0; i < swingHighs.length; i++) {
-      if (swingHighs[i] > currentPrice) {
-        nearestResistance = swingHighs[i];
-        break;
-      }
-    }
-    for (var i = swingLows.length - 1; i >= 0; i--) {
-      if (swingLows[i] < currentPrice) {
-        nearestSupport = swingLows[i];
-        break;
-      }
-    }
-    
-    // Determine direction based on RSI and price position
-    var direction = "NEUTRAL";
-    var confidence = "";
-    
-    if (rsi < 35 && currentPrice > (nearestSupport || 0) && (nearestSupport && (currentPrice - nearestSupport) / currentPrice < 0.03)) {
+    // Determine direction
+    var direction = "";
+    if (rsi < 30) {
       direction = "BUY (LONG)";
-      confidence = "High - RSI oversold + near support";
-    } else if (rsi < 40) {
-      direction = "BUY (LONG) - Cautious";
-      confidence = "Medium - RSI approaching oversold";
-    } else if (rsi > 65 && currentPrice < (nearestResistance || Infinity) && (nearestResistance && (nearestResistance - currentPrice) / currentPrice < 0.03)) {
+    } else if (rsi > 70) {
       direction = "SELL (SHORT)";
-      confidence = "High - RSI overbought + near resistance";
-    } else if (rsi > 60) {
-      direction = "SELL (SHORT) - Cautious";
-      confidence = "Medium - RSI approaching overbought";
     } else {
       direction = "NEUTRAL - No clear signal";
-      confidence = "Low - Wait for better setup";
     }
-    
-    // Calculate trade levels
-    var entry = currentPrice;
-    var stopLoss = direction.includes("BUY") ? currentPrice - (atr * 1.5) : (direction.includes("SELL") ? currentPrice + (atr * 1.5) : 0);
-    var takeProfit1 = direction.includes("BUY") ? currentPrice + (atr * 2) : (direction.includes("SELL") ? currentPrice - (atr * 2) : 0);
-    var takeProfit2 = direction.includes("BUY") ? currentPrice + (atr * 3.5) : (direction.includes("SELL") ? currentPrice - (atr * 3.5) : 0);
-    var riskReward = (Math.abs(takeProfit1 - entry) / Math.abs(entry - stopLoss)).toFixed(2);
     
     var report = "";
-    report += "╔════════════════════════════════════════════════════════════╗\n";
-    report += "║                    🎯 TRADE SETUP                          ║\n";
-    report += "╠════════════════════════════════════════════════════════════╣\n";
-    report += "║                                                            ║\n";
-    report += "║  SYMBOL: " + symbol.padEnd(43) + "║\n";
-    report += "║  CURRENT PRICE: $" + this._formatPrice(currentPrice).padEnd(43) + "║\n";
-    report += "║  DIRECTION: " + direction.padEnd(43) + "║\n";
-    report += "║  CONFIDENCE: " + confidence.padEnd(43) + "║\n";
-    report += "║                                                            ║\n";
-    report += "╠════════════════════════════════════════════════════════════╣\n";
-    report += "║  📊 TRADE LEVELS:                                          ║\n";
-    report += "║     ENTRY: $" + this._formatPrice(entry).padEnd(43) + "║\n";
-    if (stopLoss > 0) {
-      report += "║     STOP LOSS: $" + this._formatPrice(stopLoss).padEnd(43) + "║\n";
-      report += "║     RISK: $" + this._formatPrice(Math.abs(entry - stopLoss)).padEnd(43) + "║\n";
+    report += "═══════════════════════════════════════════════════════════\n";
+    report += "                    🎯 TRADE SETUP                          \n";
+    report += "═══════════════════════════════════════════════════════════\n\n";
+    report += "  SYMBOL: " + symbol + "\n";
+    report += "  CURRENT PRICE: $" + this._formatPrice(currentPrice) + "\n";
+    report += "  DIRECTION: " + direction + "\n\n";
+    report += "  📊 RSI (14): " + rsi.toFixed(1) + "\n\n";
+    
+    if (rsi < 30) {
+      var stopLoss = currentPrice * 0.98;
+      var takeProfit1 = currentPrice * 1.03;
+      var takeProfit2 = currentPrice * 1.05;
+      var risk = currentPrice - stopLoss;
+      var reward1 = takeProfit1 - currentPrice;
+      var rr1 = (reward1 / risk).toFixed(2);
+      
+      report += "  📋 TRADE LEVELS (LONG):\n";
+      report += "     ENTRY: $" + this._formatPrice(currentPrice) + "\n";
+      report += "     STOP LOSS: $" + this._formatPrice(stopLoss) + "\n";
+      report += "     TAKE PROFIT 1: $" + this._formatPrice(takeProfit1) + " (1:" + rr1 + ")\n";
+      report += "     TAKE PROFIT 2: $" + this._formatPrice(takeProfit2) + "\n\n";
+      report += "  ⚠️ RISK MANAGEMENT:\n";
+      report += "     • Risk 1-2% of account\n";
+      report += "     • Take 50% profit at TP1\n";
+      report += "     • Move stop to breakeven after +1%\n";
+    } else if (rsi > 70) {
+      var stopLoss = currentPrice * 1.02;
+      var takeProfit1 = currentPrice * 0.97;
+      var takeProfit2 = currentPrice * 0.95;
+      var risk = stopLoss - currentPrice;
+      var reward1 = currentPrice - takeProfit1;
+      var rr1 = (reward1 / risk).toFixed(2);
+      
+      report += "  📋 TRADE LEVELS (SHORT):\n";
+      report += "     ENTRY: $" + this._formatPrice(currentPrice) + "\n";
+      report += "     STOP LOSS: $" + this._formatPrice(stopLoss) + "\n";
+      report += "     TAKE PROFIT 1: $" + this._formatPrice(takeProfit1) + " (1:" + rr1 + ")\n";
+      report += "     TAKE PROFIT 2: $" + this._formatPrice(takeProfit2) + "\n\n";
+      report += "  ⚠️ RISK MANAGEMENT:\n";
+      report += "     • Risk 1-2% of account\n";
+      report += "     • Take 50% profit at TP1\n";
+      report += "     • Move stop to breakeven after -1%\n";
+    } else {
+      report += "  💡 No clear trade signal at this time.\n";
+      report += "     Wait for RSI to reach oversold (<30) for LONG\n";
+      report += "     or overbought (>70) for SHORT.\n";
     }
-    if (takeProfit1 > 0) {
-      report += "║     TAKE PROFIT 1: $" + this._formatPrice(takeProfit1).padEnd(43) + "║\n";
-      report += "║     TAKE PROFIT 2: $" + this._formatPrice(takeProfit2).padEnd(43) + "║\n";
-    }
-    report += "║     RISK:REWARD: 1:" + riskReward.padEnd(43) + "║\n";
-    report += "║                                                            ║\n";
-    report += "╠════════════════════════════════════════════════════════════╣\n";
-    report += "║  📈 MARKET CONTEXT:                                        ║\n";
-    report += "║     RSI (14): " + rsi.toFixed(1).padEnd(43) + "║\n";
-    report += "║     ATR (14): $" + this._formatPrice(atr).padEnd(43) + "║\n";
-    if (nearestSupport) report += "║     NEAREST SUPPORT: $" + this._formatPrice(nearestSupport).padEnd(43) + "║\n";
-    if (nearestResistance) report += "║     NEAREST RESISTANCE: $" + this._formatPrice(nearestResistance).padEnd(43) + "║\n";
-    report += "║                                                            ║\n";
-    report += "╠════════════════════════════════════════════════════════════╣\n";
-    report += "║  ⚠️ RISK MANAGEMENT:                                       ║\n";
-    report += "║     • Risk 1-2% of account per trade                      ║\n";
-    report += "║     • Never move stop loss further from entry             ║\n";
-    report += "║     • Take 50% profit at TP1, let rest run to TP2         ║\n";
-    report += "║     • Use trailing stop after +2% profit                  ║\n";
-    report += "║                                                            ║\n";
-    report += "╚════════════════════════════════════════════════════════════╝";
+    
+    report += "\n═══════════════════════════════════════════════════════════\n";
+    report += "  ⚠️ This is a simulated setup for educational purposes.\n";
+    report += "  Always use proper risk management.\n";
+    report += "═══════════════════════════════════════════════════════════";
     
     return report;
   },
@@ -30336,9 +30140,9 @@ testLocalAnalysis: function() {
       return this.extractRSIOnly();
     } else if (lowerQ.includes('volume')) {
       return this.extractVolumeOnly();
-    } else if (lowerQ.includes('support') || lowerQ.includes('resistance') || lowerQ.includes('s/r')) {
+    } else if (lowerQ.includes('support') || lowerQ.includes('resistance')) {
       return this.extractSROnly();
-    } else if (lowerQ.includes('setup') || lowerQ.includes('entry') || lowerQ.includes('trade')) {
+    } else if (lowerQ.includes('setup') || lowerQ.includes('trade')) {
       return this.generateTradeSetup();
     } else {
       return this.analyzeLocalChart();
@@ -30371,13 +30175,13 @@ testLocalAnalysis: function() {
         var aiBtn = document.createElement('button');
         aiBtn.id = 'ai-chat-analysis-btn';
         aiBtn.className = 'modal-action-btn';
-        aiBtn.setAttribute('data-tooltip', 'Analyze Current Chart (Local AI)');
+        aiBtn.setAttribute('data-tooltip', 'Analyze Current Chart');
         aiBtn.innerHTML = '<i class="fas fa-robot" style="color:#9b6cff;"></i>';
         aiBtn.style.cssText = 'margin-left:auto;margin-right:8px;';
         aiBtn.addEventListener('click', function() {
           var input = document.getElementById('ai-chat-input');
           if (input) {
-            input.value = "Analyze the current chart";
+            input.value = "analyze";
             self.send();
           }
           var modal = document.getElementById('community-modal');
@@ -30394,10 +30198,11 @@ testLocalAnalysis: function() {
   async generateReport() {
     if (typeof Toast !== 'undefined') Toast.info('📄 Generating report...');
     try {
-      var symbol = STATE.symbol ? STATE.symbol.replace('USDT', '/USDT') : 'BTC/USDT';
-      var price = STATE.currentPrice ? '$' + U.formatPrice(STATE.currentPrice) : 'N/A';
-      var change = STATE.change24h !== null ? (STATE.change24h >= 0 ? '+' : '') + STATE.change24h.toFixed(2) + '%' : 'N/A';
-      var interval = STATE.interval || '15m';
+      var state = window.STATE;
+      var symbol = state && state.symbol ? state.symbol.replace('USDT', '/USDT') : 'BTC/USDT';
+      var price = state && state.currentPrice ? '$' + this._formatPrice(state.currentPrice) : 'N/A';
+      var change = state && state.change24h !== null ? (state.change24h >= 0 ? '+' : '') + state.change24h.toFixed(2) + '%' : 'N/A';
+      var interval = state && state.interval || '15m';
       var analysis = this.analyzeLocalChart();
       
       var chartCanvas = document.querySelector('#main-chart-pane canvas');
@@ -30425,7 +30230,7 @@ testLocalAnalysis: function() {
         '<div class="header">' +
         '<div><strong>Symbol:</strong> ' + symbol + ' · ' + interval + '</div>' +
         '<div class="price">' + price + '</div>' +
-        '<div class="' + (STATE.change24h >= 0 ? 'up' : 'down') + '">' + change + ' (24h)</div>' +
+        '<div class="' + (state && state.change24h >= 0 ? 'up' : 'down') + '">' + change + ' (24h)</div>' +
         '<div><strong>Generated:</strong> ' + new Date().toLocaleString() + '</div>' +
         '</div>' +
         (chartImage ? '<div class="section"><h3>📉 Chart Screenshot</h3><img src="' + chartImage + '" alt="Chart"/></div>' : '') +
@@ -30452,89 +30257,13 @@ testLocalAnalysis: function() {
   }
 };
 
-// ============================================
-// FIX: AI Assistant Button Handler 
-// ============================================
-(function fixAIAssistantButton() {
-  function attachAIHandler() {
-    var aiBtn = document.getElementById('ai-assist-btn');
-    if (aiBtn && typeof AIAssistant !== 'undefined') {
-      var newBtn = aiBtn.cloneNode(true);
-      aiBtn.parentNode.replaceChild(newBtn, aiBtn);
-      
-      newBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        console.log('🤖 AI button clicked - opening modal');
-        
-        if (typeof AIAssistant.open === 'function') {
-          AIAssistant.open();
-        } else {
-          var modal = document.getElementById('ai-assistant-modal');
-          if (modal) {
-            modal.classList.add('visible');
-            if (AIAssistant.updateContext) AIAssistant.updateContext();
-            if (AIAssistant.updateUsageCounter) AIAssistant.updateUsageCounter();
-          } else if (typeof AIAssistant.createModal === 'function') {
-            AIAssistant.createModal();
-            setTimeout(function() {
-              var m = document.getElementById('ai-assistant-modal');
-              if (m) m.classList.add('visible');
-            }, 100);
-          }
-        }
-      });
-      
-      console.log('✅ AI Assistant button handler attached');
-      return true;
-    }
-    return false;
-  }
-  
-  if (!attachAIHandler()) {
-    var attempts = 0;
-    var interval = setInterval(function() {
-      attempts++;
-      if (attachAIHandler() || attempts > 20) {
-        clearInterval(interval);
-      }
-    }, 500);
-  }
-})();
-
-// Initialize AI Assistant
+// Initialize AI Assistant after a delay
 setTimeout(function() {
   if (typeof AIAssistant !== 'undefined' && AIAssistant.init) {
     AIAssistant.init();
     console.log('🤖 AI Assistant initialized');
   }
-}, 2000);
-
-// Add to window for console debugging
-window.debugAI = function() {
-  if (typeof AIAssistant !== 'undefined') {
-    AIAssistant.debugAI();
-  } else {
-    console.error('AIAssistant not defined yet');
-  }
-};
-
-window.testLocalAI = function() {
-  if (typeof AIAssistant !== 'undefined') {
-    return AIAssistant.testLocalAnalysis();
-  } else {
-    console.error('AIAssistant not defined yet');
-    return null;
-  }
-};
-
-window.checkAIMode = function() {
-  if (typeof AIAssistant !== 'undefined') {
-    console.log('Current mode:', AIAssistant.useLocalAnalysis ? 'LOCAL' : 'DEEPSEEK');
-    console.log('Processing:', AIAssistant.isProcessing);
-    console.log('Daily count:', AIAssistant.dailyCount);
-  }
-};
+}, 3000);
 // ============================================
 // PRIORITY #5: PUSH NOTIFICATIONS (FCM)
 // ============================================
