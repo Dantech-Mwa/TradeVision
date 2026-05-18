@@ -24476,6 +24476,10 @@ async function main() {
     try { NewsManager.init(); } catch(e) { console.warn('NewsManager init failed:', e.message); }
     try { EconomicCalendar.init(); } catch(e) { console.warn('EconomicCalendar init failed:', e.message); }
     try { MarketOverview.init(); } catch(e) { console.warn('MarketOverview init failed:', e.message); }
+	if (typeof AIAssistant !== 'undefined' && AIAssistant.init) {
+    AIAssistant.init();
+    console.log('🤖 AI Assistant initialized from main()');
+  }
     
     // Initialize mobile features if on mobile
     if (window.innerWidth <= 768) {
@@ -29069,7 +29073,13 @@ IntervalManager.register(function() {
       console.warn('Firebase not available after 5 seconds, initializing without it');
       UserSystem.init();
     }
-	
+	      // Initialize AI Assistant after UserSystem
+      setTimeout(function() {
+        if (typeof AIAssistant !== 'undefined' && AIAssistant.init) {
+          AIAssistant.init();
+          console.log('🤖 AI Assistant initialized');
+        }
+      }, 1000);
   }, 100);
 })();
 // ============================================
@@ -29145,7 +29155,7 @@ const AIAssistant = {
     console.log('✅ AI Assistant ready');
   },
   // Fix: Ensure AI Assistant button works reliably
-function fixAIAssistant() {
+(function fixAIAssistant() {
   function attachAIHandler() {
     const aiBtn = document.getElementById('ai-assist-btn');
     if (aiBtn) {
@@ -29199,7 +29209,7 @@ function fixAIAssistant() {
       }
     }, 500);
   }
-},
+})();
   loadDailyCount() {
     var today = new Date().toISOString().slice(0,10);
     var saved = localStorage.getItem('tvp_ai_date');
