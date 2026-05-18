@@ -11996,310 +11996,253 @@ window.addEventListener('resize', () => {
 // - Performance optimizations
 // ============================================
 
-const RightSidebarCharts = (function() {
-  'use strict';
+// ============================================
+// RIGHT SIDEBAR CHARTS - CoinGecko via Vercel
+// Uses your working proxy endpoint
+// ============================================
+
+const RightSidebarCharts = {
+  charts: {},
+  data: null,
+  updateInterval: null,
+  isFetching: false,
   
-  // Private variables
-  let charts = {};
-  let marketData = null;
-  let updateInterval = null;
-  let isFetching = false;
-  let retryCount = 0;
-  let resizeObserver = null;
+  // Use your WORKING Vercel URL
+  getApiUrl() {
+    return 'https://coingecko-proxy-eight.vercel.app/api/coingecko';
+  },
   
-  // Configuration
-  const CONFIG = {
-    API_URL: 'https://coingecko-proxy.vercel.app/api/coingecko', // Update after fixing
-    UPDATE_INTERVAL_MS: 600000, // 10 minutes
-    RETRY_DELAY_MS: 5000,
-    MAX_RETRIES: 3,
-    CHART_HEIGHT: 120,
-    DAYS_HISTORY: 30
-  };
+  async init() {
+    console.log('📊 Initializing right sidebar charts...');
+    await this.fetchData();
+    this.startAutoRefresh();
+  },
   
-  // Chart color schemes (TradingView-inspired)
-  const COLORS = {
-    dominance: { line: '#f7931a', area: 'rgba(247, 147, 26, 0.1)' },
-    marketcap: { line: '#58a6ff', area: 'rgba(88, 166, 255, 0.1)' },
-    volume: { line: '#26a69a', area: 'rgba(38, 166, 154, 0.1)' }
-  };
-  
-  // ============================================
-  // Private Helper Functions
-  // ============================================
-  
-  function formatLargeNumber(num) {
-    if (!num) return '--';
-    if (num >= 1e12) return (num / 1e12).toFixed(2) + 'T';
-    if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
-    if (num >= 1e6) return (num / 1e6).toFixed(2) + 'M';
-    if (num >= 1e3) return (num / 1e3).toFixed(2) + 'K';
-    return num.toFixed(2);
-  }
-  
-  function getThemeColors() {
-    const isLightTheme = document.body.getAttribute('data-theme') === 'light';
-    return {
-      textColor: isLightTheme ? '#1f2328' : '#c9d1d9',
-      gridColor: isLightTheme ? '#f0f2f5' : '#21262d'
-    };
-  }
-  
-  async function fetchWithRetry(url, retries = CONFIG.MAX_RETRIES) {
-    for (let i = 0; i <= retries; i++) {
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 15000);
-        
-        const response = await fetch(url, { signal: controller.signal });
-        clearTimeout(timeoutId);
-        
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        
-        const data = await response.json();
-        if (data.error) throw new Error(data.error);
-        
-        retryCount = 0; // Reset retry count on success
-        return data;
-        
-      } catch (error) {
-        console.warn(`Fetch attempt ${i + 1} failed:`, error.message);
-        if (i === retries) throw error;
-        
-        // Exponential backoff
-        await new Promise(resolve => setTimeout(resolve, CONFIG.RETRY_DELAY_MS * Math.pow(2, i)));
-      }
+  async fetchData() {
+    if (this.isFetching) return;
+    this.isFetching = true;
+    
+    try {
+      const url = `${this.getApiUrl()}?endpoint=all&days=30`;
+      console.log('Fetching:', url);
+      
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      
+      const newData = await response.json();
+      console.log('✅ Chart data received:', {
+        marketCap: newData.trends?.market_cap_history?.length,
+        volume: newData.trends?.volume_history?.length,
+        dominance: newData.current?.btc_dominance
+      });
+      
+      this.data = newData;
+      this.renderAllCharts();
+      this.updateStatsDisplay();
+      
+    } catch (error) {
+      console.error('Failed to fetch chart data:', error);
+      this.showErrorState();
+    } finally {
+      this.isFetching = false;
     }
-  }
+  },
   
-  function createMiniChart(containerId, options) {
+  renderAllCharts() {
+    if (!this.data) {
+      this.showErrorState();
+      return;
+    }
+    
+    // Render Market Cap Chart (HAS data)
+    if (this.data.trends?.market_cap_history?.length > 0) {
+      this.renderMiniChart('marketcap-chart-container', {
+        data: this.data.trends.market_cap_history,
+        color: '#58a6ff',
+        title: 'Total Market Cap',
+        prefix: '$',
+        suffix: 'B'
+      });
+    } else {
+      this.showChartError('marketcap-chart-container', 'No market cap data');
+    }
+    
+    // Render Volume Chart (HAS data)
+    if (this.data.trends?.volume_history?.length > 0) {
+      this.renderMiniChart('volume-trend-container', {
+        data: this.data.trends.volume_history,
+        color: '#26a69a',
+        title: '24h Volume',
+        prefix: '$',
+        suffix: 'B',
+        type: 'area'
+      });
+    } else {
+      this.showChartError('volume-trend-container', 'No volume data');
+    }
+    
+    // BTC Dominance Chart (may be empty - show current value instead)
+    if (this.data.trends?.btc_dominance_history?.length > 0) {
+      this.renderMiniChart('dominance-chart-container', {
+        data: this.data.trends.btc_dominance_history,
+        color: '#f7931a',
+        title: 'BTC Dominance',
+        prefix: '',
+        suffix: '%'
+      });
+    } else if (this.data.current?.btc_dominance) {
+      // Show current value as a simple display
+      this.showCurrentValueOnly('dominance-chart-container', {
+        value: this.data.current.btc_dominance.toFixed(1),
+        suffix: '%',
+        color: '#f7931a',
+        label: 'Current BTC Dominance'
+      });
+    } else {
+      this.showChartError('dominance-chart-container', 'No dominance data');
+    }
+  },
+  
+  renderMiniChart(containerId, options) {
     const container = document.getElementById(containerId);
-    if (!container) return null;
+    if (!container) return;
     
-    // Don't recreate if exists and has data
-    if (charts[containerId] && charts[containerId].series) {
-      if (options.data && options.data.length) {
-        charts[containerId].series.setData(options.data);
-      }
-      return charts[containerId];
+    // Check if LightweightCharts is available
+    if (typeof LightweightCharts === 'undefined') {
+      console.warn('LightweightCharts not loaded yet');
+      container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted);font-size:10px;">Loading charts...</div>';
+      return;
     }
     
+    // Clear container
     container.innerHTML = '';
     
-    const theme = getThemeColors();
-    
+    // Create chart
     const chart = LightweightCharts.createChart(container, {
       width: container.clientWidth,
-      height: CONFIG.CHART_HEIGHT,
+      height: 120,
       layout: {
         background: { type: 'solid', color: 'transparent' },
-        textColor: theme.textColor
+        textColor: document.body.getAttribute('data-theme') === 'light' ? '#1f2328' : '#c9d1d9'
       },
-      grid: {
-        vertLines: { visible: false },
-        horzLines: { visible: false }
-      },
-      rightPriceScale: {
-        visible: true,
-        borderVisible: false,
-        scaleMargins: { top: 0.1, bottom: 0.1 }
-      },
+      grid: { vertLines: { visible: false }, horzLines: { visible: false } },
+      rightPriceScale: { visible: true, borderVisible: false, scaleMargins: { top: 0.1, bottom: 0.1 } },
       timeScale: { visible: false },
       crosshair: { mode: 0, vertLine: { visible: false }, horzLine: { visible: false } },
       handleScroll: false,
       handleScale: false
     });
     
+    // Create series
     let series;
     if (options.type === 'area') {
       series = chart.addAreaSeries({
-        topColor: COLORS[options.key]?.area || options.color + '33',
-        bottomColor: 'transparent',
-        lineColor: COLORS[options.key]?.line || options.color,
+        topColor: `${options.color}33`,
+        bottomColor: `${options.color}00`,
+        lineColor: options.color,
         lineWidth: 2
       });
     } else {
       series = chart.addLineSeries({
-        color: COLORS[options.key]?.line || options.color,
+        color: options.color,
         lineWidth: 2,
         priceLineVisible: false,
         lastValueVisible: true
       });
     }
     
-    if (options.data && options.data.length) {
-      series.setData(options.data);
-      chart.timeScale().fitContent();
-    }
+    // Format data for chart
+    const chartData = options.data.map(point => ({
+      time: point.time,
+      value: point.value
+    }));
     
-    charts[containerId] = { chart, series };
-    return charts[containerId];
-  }
+    series.setData(chartData);
+    chart.timeScale().fitContent();
+    
+    // Store for resize
+    this.charts[containerId] = chart;
+  },
   
-  function renderAllCharts() {
-    if (!marketData) return;
+  showCurrentValueOnly(containerId, options) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
     
-    // BTC Dominance Chart
-    createMiniChart('dominance-chart-container', {
-      key: 'dominance',
-      data: marketData.trends?.btc_dominance_history || [],
-      color: '#f7931a',
-      type: 'line'
+    container.innerHTML = `
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;">
+        <div style="font-size:24px;font-weight:700;color:${options.color};">${options.value}${options.suffix}</div>
+        <div style="font-size:9px;color:var(--text-muted);margin-top:4px;">${options.label}</div>
+      </div>
+    `;
+  },
+  
+  showChartError(containerId, message) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    if (container.innerHTML === '' || container.innerHTML.includes('unavailable')) {
+      container.innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted);font-size:10px;">
+          ⚠️ ${message}
+        </div>
+      `;
+    }
+  },
+  
+  showErrorState() {
+    ['dominance-chart-container', 'marketcap-chart-container', 'volume-trend-container'].forEach(id => {
+      this.showChartError(id, 'Data unavailable');
     });
+  },
+  
+  updateStatsDisplay() {
+    if (!this.data?.current) return;
     
-    // Market Cap Chart
-    createMiniChart('marketcap-chart-container', {
-      key: 'marketcap',
-      data: marketData.trends?.market_cap_history || [],
-      color: '#58a6ff',
-      type: 'area'
-    });
-    
-    // Volume Chart
-    createMiniChart('volume-trend-container', {
-      key: 'volume',
-      data: marketData.trends?.volume_history || [],
-      color: '#26a69a',
-      type: 'area'
-    });
-    
-    // Update stats displays
     const btcDomEl = document.getElementById('btc-dominance');
     const marketCapEl = document.getElementById('total-marketcap');
     const volumeEl = document.getElementById('total-volume');
-    const updateTimeEl = document.getElementById('coingecko-last-update');
     
-    if (btcDomEl && marketData.current) {
-      btcDomEl.textContent = marketData.current.btc_dominance.toFixed(1) + '%';
-    }
-    if (marketCapEl && marketData.current) {
-      marketCapEl.textContent = formatLargeNumber(marketData.current.total_market_cap);
-    }
-    if (volumeEl && marketData.current) {
-      volumeEl.textContent = formatLargeNumber(marketData.current.total_volume_24h);
-    }
-    if (updateTimeEl && marketData.timestamp) {
-      updateTimeEl.textContent = new Date(marketData.timestamp).toLocaleTimeString();
-    }
-  }
+    if (btcDomEl) btcDomEl.textContent = this.data.current.btc_dominance?.toFixed(1) + '%' || '--';
+    if (marketCapEl) marketCapEl.textContent = this.formatNumber(this.data.current.total_market_cap);
+    if (volumeEl) volumeEl.textContent = this.formatNumber(this.data.current.total_volume_24h);
+  },
   
-  async function fetchData() {
-    if (isFetching) return;
-    isFetching = true;
-    
-    try {
-      const url = `${CONFIG.API_URL}?endpoint=all&days=${CONFIG.DAYS_HISTORY}`;
-      const data = await fetchWithRetry(url);
-      
-      marketData = data;
-      renderAllCharts();
-      
-      console.log('✅ Market charts updated:', new Date().toLocaleTimeString());
-      
-    } catch (error) {
-      console.error('Failed to fetch market data:', error);
-      
-      // Show error state in containers if no data exists
-      if (!marketData) {
-        const containers = ['dominance-chart-container', 'marketcap-chart-container', 'volume-trend-container'];
-        containers.forEach(id => {
-          const el = document.getElementById(id);
-          if (el && el.innerHTML === '') {
-            el.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted);font-size:10px;">⚠️ Data unavailable</div>';
-          }
-        });
-      }
-    } finally {
-      isFetching = false;
-    }
-  }
+  formatNumber(num) {
+    if (!num) return '--';
+    if (num >= 1e12) return (num / 1e12).toFixed(2) + 'T';
+    if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
+    if (num >= 1e6) return (num / 1e6).toFixed(2) + 'M';
+    return num.toFixed(2);
+  },
   
-  function handleResize() {
-    Object.values(charts).forEach(({ chart }) => {
-      const container = chart._container?.parentElement;
+  startAutoRefresh() {
+    if (this.updateInterval) clearInterval(this.updateInterval);
+    this.updateInterval = setInterval(() => this.fetchData(), 600000); // 10 minutes
+  },
+  
+  resizeCharts() {
+    Object.entries(this.charts).forEach(([id, chart]) => {
+      const container = document.getElementById(id);
       if (container && chart.resize) {
-        chart.resize(container.clientWidth, CONFIG.CHART_HEIGHT);
+        chart.resize(container.clientWidth, 120);
       }
     });
   }
-  
-  function handleThemeChange() {
-    // Recreate charts with new theme colors
-    const chartIds = Object.keys(charts);
-    if (chartIds.length === 0) return;
-    
-    // Store current data
-    const currentData = { ...marketData };
-    
-    // Clear and recreate
-    charts = {};
-    marketData = currentData;
-    renderAllCharts();
-  }
-  
-  // ============================================
-  // Public API
-  // ============================================
-  
-  return {
-    init: async function() {
-      console.log('📊 Initializing right sidebar charts...');
-      
-      await fetchData();
-      
-      // Start periodic updates
-      if (updateInterval) clearInterval(updateInterval);
-      updateInterval = setInterval(fetchData, CONFIG.UPDATE_INTERVAL_MS);
-      
-      // Watch for theme changes
-      const themeBtn = document.getElementById('theme-toggle-btn');
-      if (themeBtn) {
-        themeBtn.addEventListener('click', () => setTimeout(handleThemeChange, 100));
-      }
-      
-      // Watch for resize
-      window.addEventListener('resize', () => setTimeout(handleResize, 150));
-      
-      // Optional: Use ResizeObserver for more precise container sizing
-      if (typeof ResizeObserver !== 'undefined') {
-        resizeObserver = new ResizeObserver(handleResize);
-        ['dominance-chart-container', 'marketcap-chart-container', 'volume-trend-container'].forEach(id => {
-          const el = document.getElementById(id);
-          if (el) resizeObserver.observe(el);
-        });
-      }
-      
-      console.log('✅ Right sidebar charts ready');
-    },
-    
-    refresh: function() {
-      fetchData();
-    },
-    
-    destroy: function() {
-      if (updateInterval) clearInterval(updateInterval);
-      if (resizeObserver) resizeObserver.disconnect();
-      
-      Object.values(charts).forEach(({ chart }) => {
-        if (chart && chart.remove) chart.remove();
-      });
-      charts = {};
-      marketData = null;
-    }
-  };
-})();
+};
 
 // Initialize after DOM ready
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(() => RightSidebarCharts.init(), 1000);
+    setTimeout(() => RightSidebarCharts.init(), 2000);
   });
 } else {
-  setTimeout(() => RightSidebarCharts.init(), 1000);
+  setTimeout(() => RightSidebarCharts.init(), 2000);
 }
-  // ============================================
-  // WATCHLIST MANAGER (FIXED - ADD MODAL WORKING)
-  // ============================================
+
+// Resize handler
+window.addEventListener('resize', () => {
+  if (RightSidebarCharts.resizeCharts) RightSidebarCharts.resizeCharts();
+});
  // ============================================
 // WATCHLIST MANAGER (COMPLETE FIXED VERSION)
 // ============================================
