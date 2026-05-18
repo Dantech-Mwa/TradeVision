@@ -9476,6 +9476,22 @@ const DrawingToolsModal = {
 _wsConnecting: false,
   _reconnecting: false,
 	_restPollingActive: false, 
+	  _rateLimitQueue: [],
+_rateLimitInterval: null,
+_lastRequestTime: 0,
+_MIN_REQUEST_INTERVAL: 1000, // 1 second between requests
+
+async _rateLimitFetch(url) {
+  const now = Date.now();
+  const timeSinceLastRequest = now - this._lastRequestTime;
+  
+  if (timeSinceLastRequest < this._MIN_REQUEST_INTERVAL) {
+    await new Promise(resolve => setTimeout(resolve, this._MIN_REQUEST_INTERVAL - timeSinceLastRequest));
+  }
+  
+  this._lastRequestTime = Date.now();
+  return fetch(url);
+},
     async init() {
       await this.loadSymbols();
       await this.loadHistory(STATE.symbol, STATE.interval);
@@ -9891,15 +9907,17 @@ async load24h(symbol) {
   try {
     let data;
     
-    // ============================================
-    // CRYPTO - Binance via Cloudflare Worker
-    // ============================================
     if (STATE.assetType === 'crypto') {
-      // Use direct Cloudflare worker call (no failover delays)
-      const apiBase = 'https://tradevision-backend.wambuamwanza6.workers.dev/api';
-      const response = await fetch(`${apiBase}/proxy?endpoint=ticker&symbol=${symbol}`);
+      const apiBase = getApiBase();
+      // USE RATE LIMITED FETCH
+      const response = await this._rateLimitFetch(`${apiBase}/proxy?endpoint=ticker&symbol=${symbol}`);
       
       if (!response.ok) {
+        if (response.status === 429) {
+          console.warn(`⚠️ Rate limited for ${symbol}, waiting 2 seconds...`);
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          return this.load24h(symbol); // Retry once
+        }
         throw new Error(`HTTP ${response.status}`);
       }
       
@@ -10046,6 +10064,10 @@ async load24h(symbol) {
     
   } catch(error) {
     console.error('❌ load24h fatal error:', error.message);
+	   if (error.message.includes('429')) {
+      // Silent retry after delay
+      setTimeout(() => this.load24h(symbol), 3000);
+    }
     
     // Set fallback values to prevent UI from showing empty
     this.setFallbackValues();
@@ -10397,12 +10419,17 @@ connectWS() {
       }
     };
     
-    ws.onerror = (error) => {
-      console.error('🔴 WebSocket error:', error);
-      STATE._wsHealth.isHealthy = false;
-      this._wsConnecting = false;
-      // NO REST FALLBACK - just wait for reconnect
-    };
+  ws.onerror = (error) => {
+  console.error('🔴 WebSocket error:', error);
+  STATE._wsHealth.isHealthy = false;
+  this._wsConnecting = false;
+  
+  // Don't show error to user - just log
+  const statusDot = document.getElementById('status-dot');
+  const statusText = document.getElementById('status-text');
+  if (statusDot) statusDot.style.display = 'none';
+  if (statusText) statusText.style.display = 'none';
+};
     
     ws.onclose = (event) => {
       console.log(`🔴 WebSocket closed: code=${event.code}, reason=${event.reason || 'none'}`);
@@ -15288,45 +15315,72 @@ const SmartOrderSystem = {
   },
   
   renderTimers: function() {
-    var container = document.getElementById('active-timers-container');
-    if (!container) return;
-    
-    if (this.activeTimers.length === 0) {
-      container.innerHTML = '<div style="padding:12px;text-align:center;color:var(--text-muted);font-size:10px;">No active timed orders</div>';
-      return;
-    }
-    
-    var now = Date.now();
-    var html = '';
-    for (var i = 0; i < this.activeTimers.length; i++) {
-      var timer = this.activeTimers[i];
-      var remaining = Math.max(0, timer.expiresAt - now);
-      var seconds = Math.ceil(remaining / 1000);
-      
-      if (timer.type === 'close_position') {
-        html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-bottom:1px solid rgba(48,54,61,0.3);font-size:11px;">' +
-          '<div><span style="color:#ff9800;">⏰</span> Close position</div>' +
-          '<div><span style="font-family:monospace;">' + seconds + 's</span>' +
-          '<button onclick="SmartOrderSystem.cancelTimer(\'' + timer.id + '\')" style="background:none;border:none;color:var(--danger);cursor:pointer;margin-left:8px;">✕</button></div>' +
-          '</div>';
-      } else {
-        var sideColor = timer.side === 'buy' ? '#26a69a' : '#ef5350';
-        html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-bottom:1px solid rgba(48,54,61,0.3);font-size:11px;">' +
-          '<div><span style="color:' + sideColor + ';">⏰</span> ' + timer.side.toUpperCase() + ' ' + timer.amount + '</div>' +
-          '<div><span style="font-family:monospace;">' + seconds + 's</span>' +
-          '<button onclick="SmartOrderSystem.cancelTimer(\'' + timer.id + '\')" style="background:none;border:none;color:var(--danger);cursor:pointer;margin-left:8px;">✕</button></div>' +
-          '</div>';
-      }
-    }
-    container.innerHTML = html;
-  },
+  var container = document.getElementById('active-timers-container');
+  if (!container) return;
   
-  cancelTimer: function(timerId) {
-    this.activeTimers = this.activeTimers.filter(function(t) { return t.id !== timerId; });
+  if (this.activeTimers.length === 0) {
+    container.innerHTML = '<div style="padding:12px;text-align:center;color:var(--text-muted);font-size:10px;">No active timed orders</div>';
+    return;
+  }
+  
+  var self = this;
+  var html = '';
+  
+  for (var i = 0; i < this.activeTimers.length; i++) {
+    var timer = this.activeTimers[i];
+    var remaining = Math.max(0, timer.expiresAt - Date.now());
+    var seconds = Math.ceil(remaining / 1000);
+    
+    if (timer.type === 'close_position') {
+      html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-bottom:1px solid rgba(48,54,61,0.3);font-size:11px;" data-timer-id="' + timer.id + '">' +
+        '<div><span style="color:#ff9800;">⏰</span> Close position</div>' +
+        '<div><span style="font-family:monospace;">' + seconds + 's</span>' +
+        '<button class="cancel-timer-btn" data-timer-id="' + timer.id + '" style="background:none;border:none;color:var(--danger);cursor:pointer;margin-left:8px;padding:4px 8px;">✕</button></div>' +
+        '</div>';
+    } else {
+      var sideColor = timer.side === 'buy' ? '#26a69a' : '#ef5350';
+      html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-bottom:1px solid rgba(48,54,61,0.3);font-size:11px;" data-timer-id="' + timer.id + '">' +
+        '<div><span style="color:' + sideColor + ';">⏰</span> ' + timer.side.toUpperCase() + ' ' + timer.amount + '</div>' +
+        '<div><span style="font-family:monospace;">' + seconds + 's</span>' +
+        '<button class="cancel-timer-btn" data-timer-id="' + timer.id + '" style="background:none;border:none;color:var(--danger);cursor:pointer;margin-left:8px;padding:4px 8px;">✕</button></div>' +
+        '</div>';
+    }
+  }
+  
+  container.innerHTML = html;
+  
+  // Attach event listeners to cancel buttons
+  container.querySelectorAll('.cancel-timer-btn').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var timerId = this.getAttribute('data-timer-id');
+      if (timerId && self.cancelTimer) {
+        self.cancelTimer(timerId);
+      }
+    });
+  });
+},
+  
+ cancelTimer: function(timerId) {
+  console.log('❌ Cancelling timer:', timerId);
+  
+  // Find and remove the timer
+  const timerIndex = this.activeTimers.findIndex(function(t) { 
+    return t.id === timerId; 
+  });
+  
+  if (timerIndex !== -1) {
+    this.activeTimers.splice(timerIndex, 1);
     this.saveTimers();
     this.renderTimers();
-    if (typeof Toast !== 'undefined') Toast.info('Timed order cancelled');
-  },
+    
+    if (typeof Toast !== 'undefined') {
+      Toast.info('Timed order cancelled');
+    }
+  } else {
+    console.warn('Timer not found:', timerId);
+  }
+},
   
   saveTimers: function() {
     localStorage.setItem('tvp_smart_timers', JSON.stringify({ active: this.activeTimers }));
@@ -19589,20 +19643,38 @@ function initScreener() {
   // FETCH ALL TICKERS AND CALCULATE INDICATORS
   // ============================================
   async function fetchScreenerData() {
-    if (isLoading) return;
-    isLoading = true;
-    
-    container.innerHTML = '<div style="padding:15px;text-align:center;color:var(--text-muted);"><i class="fas fa-spinner fa-spin"></i> Loading screener...</div>';
-    
+  if (isLoading) return;
+  isLoading = true;
+  
+  // Add retry count
+  let retryCount = 0;
+  const maxRetries = 3;
+  
+  async function attemptFetch() {
     try {
-      // Fetch all Binance tickers via your Vercel proxy
-      const apiBase = getApiBase();  // ← Uses failover system
-var proxyUrl = `${apiBase}/proxy?endpoint=screener`;
-      var res = await fetch(proxyUrl);
+      const apiBase = getApiBase();
+      const proxyUrl = `${apiBase}/proxy?endpoint=screener`;
+      
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      const res = await fetch(proxyUrl, { signal: controller.signal });
+      clearTimeout(timeoutId);
+      
+      if (res.status === 429) {
+        if (retryCount < maxRetries) {
+          retryCount++;
+          const delay = 2000 * retryCount;
+          console.log(`⚠️ Rate limited, retrying in ${delay}ms (attempt ${retryCount}/${maxRetries})`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+          return attemptFetch();
+        } else {
+          throw new Error('Rate limit exceeded after retries');
+        }
+      }
       
       if (!res.ok) throw new Error('HTTP ' + res.status);
       
-      var data = await res.json();
+      const data = await res.json();
       
       if (!Array.isArray(data)) {
         throw new Error('Invalid data format');
@@ -19640,12 +19712,21 @@ var proxyUrl = `${apiBase}/proxy?endpoint=screener`;
       
     } catch(err) {
       console.error('Screener fetch error:', err);
-      container.innerHTML = '<div style="padding:10px;text-align:center;color:var(--text-muted);font-size:10px;">Failed to load. Retrying...</div>';
-      setTimeout(fetchScreenerData, 10000);
+      if (retryCount < maxRetries && err.message.includes('429')) {
+        retryCount++;
+        await new Promise(resolve => setTimeout(resolve, 2000 * retryCount));
+        return attemptFetch();
+      }
+      // Show fallback UI
+      container.innerHTML = '<div style="padding:15px;text-align:center;color:var(--text-muted);font-size:11px;">Rate limit reached. Please wait...</div>';
     } finally {
       isLoading = false;
     }
   }
+  
+  await attemptFetch();
+}
+  
   
   // ============================================
   // CALCULATE TECHNICAL INDICATORS
