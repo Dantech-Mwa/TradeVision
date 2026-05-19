@@ -11402,6 +11402,31 @@ async searchAllSymbols(query) {
   const q = query.toUpperCase();
   
   console.log(`🔍 Starting symbol search for: "${query}"`);
+
+	 // ============================================
+  // 0. SPECIAL MAPPINGS (Commodities, Common Names)
+  // ============================================
+  const specialMappings = {
+    'GOLD': { symbol: 'XAUUSDT', name: 'Gold / US Dollar', type: 'crypto' },
+    'SILVER': { symbol: 'XAGUSDT', name: 'Silver / US Dollar', type: 'crypto' },
+    'BITCOIN': { symbol: 'BTCUSDT', name: 'Bitcoin', type: 'crypto' },
+    'ETHEREUM': { symbol: 'ETHUSDT', name: 'Ethereum', type: 'crypto' },
+    'BTC': { symbol: 'BTCUSDT', name: 'Bitcoin', type: 'crypto' },
+    'ETH': { symbol: 'ETHUSDT', name: 'Ethereum', type: 'crypto' },
+    'BNB': { symbol: 'BNBUSDT', name: 'BNB', type: 'crypto' },
+    'SOL': { symbol: 'SOLUSDT', name: 'Solana', type: 'crypto' },
+    'XRP': { symbol: 'XRPUSDT', name: 'Ripple', type: 'crypto' },
+    'ADA': { symbol: 'ADAUSDT', name: 'Cardano', type: 'crypto' },
+    'DOGE': { symbol: 'DOGEUSDT', name: 'Dogecoin', type: 'crypto' }
+  };
+  
+  // Check if query matches a special mapping
+  if (specialMappings[q]) {
+    const mapped = specialMappings[q];
+    console.log(`🔍 Mapping "${query}" to ${mapped.symbol}`);
+    results.push(mapped);
+    return results; // Return immediately for exact matches
+  }
   
   // ============================================
   // 1. CRYPTO SEARCH - From availableSymbols
@@ -16636,6 +16661,16 @@ function setupUI() {
             if(e.key === 'Enter') {
                 const s = searchInput.value.trim().toUpperCase();
                 if(s) {
+					const specialMappings = {
+          'GOLD': 'XAUUSDT',
+          'SILVER': 'XAGUSDT',
+          'BITCOIN': 'BTCUSDT',
+          'ETHEREUM': 'ETHUSDT'
+        };
+        
+        if (specialMappings[s]) {
+          s = specialMappings[s];
+        }
                     DataManager.switchSymbol(s);
                     suggestions.style.display = 'none';
                 }
@@ -19698,7 +19733,13 @@ function initScreener() {
             atrPercent: null
           };
         });
-      
+      screenerData = screenerData.slice(0, 10);
+  
+  // Store in lookup for indicator calculation
+  allTickerData = {};
+  screenerData.forEach(function(item) {
+    allTickerData[item.symbol] = item;
+  });
       // Store in lookup for indicator calculation
       allTickerData = {};
       screenerData.forEach(function(item) {
@@ -19733,7 +19774,7 @@ function initScreener() {
   // ============================================
   async function calculateTechnicalIndicators() {
     // Process in batches to avoid API rate limits
-    var symbols = Object.keys(allTickerData);
+    var symbols = screenerData.map(function(item) { return item.symbol; });
     var batchSize = 5;
     var processedCount = 0;
     
