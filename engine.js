@@ -392,21 +392,44 @@ setInterval(() => {
   checkApiHealth();
 }, 300000);
 
-// FIXED: Use unique variable name to prevent duplicate declaration
+// ============================================
+// UNIFIED FETCH INTERCEPTOR - Single Source of Truth
+// ============================================
+
+// Save original fetch once
 const TV_ORIGINAL_FETCH = window.fetch;
 
 window.fetch = function(url, options) {
   const urlStr = typeof url === 'string' ? url : url.url;
   
-  // Don't intercept our own proxy calls (already absolute)
+  // ============================================
+  // 1. DIRECT BINANCE CALLS - NO PROXY
+  // ============================================
+  // Bypass proxy for all Binance direct API calls
+  if (urlStr.includes('api.binance.com') || urlStr.includes('fapi.binance.com')) {
+    // Check if this is already a direct call (not going through proxy)
+    if (!urlStr.includes('/proxy')) {
+      // This is a direct Binance call - DO NOT PROXY
+      console.log('📊 Binance Direct (No Proxy):', urlStr);
+      return TV_ORIGINAL_FETCH(url, options);
+    }
+  }
+  
+  // ============================================
+  // 2. DON'T INTERCEPT OUR OWN PROXY CALLS
+  // ============================================
   if (urlStr.includes('tradevision-backend.wambuamwanza6.workers.dev') || 
       urlStr.includes('workers.dev') ||
       urlStr.includes('pages.dev') ||
-      urlStr.includes('/api/proxy')) {
+      urlStr.includes('/api/proxy') ||
+      urlStr.includes('vercel.app') ||
+      urlStr.includes('onrender.com')) {
     return TV_ORIGINAL_FETCH(url, options);
   }
   
-  // Intercept Binance API calls
+  // ============================================
+  // 3. INTERCEPT BINANCE API CALLS (FOR PROXY)
+  // ============================================
   if (urlStr.includes('api.binance.com')) {
     let endpoint = 'unknown';
     if (urlStr.includes('/klines')) endpoint = 'klines';
@@ -435,7 +458,9 @@ window.fetch = function(url, options) {
     return TV_ORIGINAL_FETCH(proxyUrl, options);
   }
   
-  // Intercept Finnhub
+  // ============================================
+  // 4. INTERCEPT FINNHUB API CALLS
+  // ============================================
   if (urlStr.includes('finnhub.io')) {
     let symbol = 'AAPL';
     try {
@@ -447,7 +472,9 @@ window.fetch = function(url, options) {
     return TV_ORIGINAL_FETCH(proxyUrl, options);
   }
   
-  // Intercept Twelve Data
+  // ============================================
+  // 5. INTERCEPT TWELVE DATA API CALLS
+  // ============================================
   if (urlStr.includes('api.twelvedata.com')) {
     let symbol = 'BTC';
     let interval = '15min';
@@ -461,83 +488,17 @@ window.fetch = function(url, options) {
     return TV_ORIGINAL_FETCH(proxyUrl, options);
   }
   
-  // Pass through all other requests
+  // ============================================
+  // 6. PASS THROUGH ALL OTHER REQUESTS
+  // ============================================
   return TV_ORIGINAL_FETCH(url, options);
 };
 
-console.log('✅ Proxy interceptor installed (Vercel + CloudFlare failover)');
-
-const __originalFetch = window.fetch;
-
-window.fetch = function(url, options) {
-  const urlStr = typeof url === 'string' ? url : url.url;
-  
-  // Don't intercept our own proxy calls (already absolute)
-  if (urlStr.includes('tradevision-backend.wambuamwanza6.workers.dev') || urlStr.includes('/api')) {
-    return __originalFetch(url, options);
-  }
-  
-  // Intercept Binance API calls
-// Intercept Binance API calls
-if (urlStr.includes('api.binance.com')) {
-  let endpoint = 'unknown';
-  if (urlStr.includes('/klines')) endpoint = 'klines';
-  else if (urlStr.includes('/ticker/24hr')) endpoint = 'ticker';
-  else if (urlStr.includes('/depth')) endpoint = 'depth';
-  else if (urlStr.includes('/exchangeInfo')) endpoint = 'exchangeInfo';  // ← ADD THIS LINE
-  
-  // Parse parameters
-  let symbol = 'BTCUSDT';
-  let interval = '15m';
-  try {
-    const urlObj = new URL(urlStr);
-    symbol = urlObj.searchParams.get('symbol') || 'BTCUSDT';
-    interval = urlObj.searchParams.get('interval') || '15m';
-  } catch(e) {
-    const symbolMatch = urlStr.match(/symbol=([^&]+)/);
-    const intervalMatch = urlStr.match(/interval=([^&]+)/);
-    if (symbolMatch) symbol = symbolMatch[1];
-    if (intervalMatch) interval = intervalMatch[1];
-  }
-  
-  // Build ABSOLUTE proxy URL using the API base
-  const apiBase = getApiBase();
-  const proxyUrl = `${apiBase}/proxy?endpoint=${endpoint}&symbol=${symbol}&interval=${interval}`;
-  console.log('🔄 PROXY:', endpoint, symbol, interval, '→', proxyUrl);
-  return __originalFetch(proxyUrl, options);
-}
-  
-  // Intercept Finnhub
-  if (urlStr.includes('finnhub.io')) {
-    let symbol = 'AAPL';
-    try {
-      const urlObj = new URL(urlStr);
-      symbol = urlObj.searchParams.get('symbol') || 'AAPL';
-    } catch(e) {}
-    const apiBase = getApiBase();
-    const proxyUrl = `${apiBase}/proxy?endpoint=finnhub&symbol=${symbol}`;
-    return __originalFetch(proxyUrl, options);
-  }
-  
-  // Intercept Twelve Data
-  if (urlStr.includes('api.twelvedata.com')) {
-    let symbol = 'BTC';
-    let interval = '15min';
-    try {
-      const urlObj = new URL(urlStr);
-      symbol = urlObj.searchParams.get('symbol') || 'BTC';
-      interval = urlObj.searchParams.get('interval') || '15min';
-    } catch(e) {}
-    const apiBase = getApiBase();
-    const proxyUrl = `${apiBase}/proxy?endpoint=twelvedata&symbol=${symbol}&interval=${interval}`;
-    return __originalFetch(proxyUrl, options);
-  }
-  
-  // Pass through all other requests
-  return __originalFetch(url, options);
-};
-
-console.log('✅ Proxy interceptor installed (using Vercel backend)');
+console.log('✅ Unified fetch interceptor installed');
+console.log('   - Binance Direct calls: NO proxy');
+console.log('   - Cloudflare: Primary backend');
+console.log('   - Vercel: Fallback');
+console.log('   - Render: Last resort');
 
 // ============================================
 // TRADEVISION PRO v3.2 - MINIMAL UPGRADE ONLY
@@ -835,6 +796,46 @@ STOCK_SYMBOLS_FALLBACK: [
   {symbol:'CLOV', description:'Clover Health'},
   {symbol:'WISH', description:'ContextLogic Inc.'},
 ],
+
+// ============================================
+// ADD TO CONFIG
+// ============================================
+INDICES_SYMBOLS: [
+  { symbol: 'SPX', name: 'S&P 500', source: 'twelvedata' },
+  { symbol: 'NDX', name: 'NASDAQ 100', source: 'twelvedata' },
+  { symbol: 'DJI', name: 'Dow Jones', source: 'twelvedata' },
+  { symbol: 'RUT', name: 'Russell 2000', source: 'twelvedata' },
+  { symbol: 'VIX', name: 'Volatility Index', source: 'twelvedata' },
+  { symbol: 'DAX', name: 'German DAX', source: 'twelvedata' },
+  { symbol: 'FTSE', name: 'FTSE 100', source: 'twelvedata' },
+  { symbol: 'NIKKEI', name: 'Nikkei 225', source: 'twelvedata' },
+  { symbol: 'HSI', name: 'Hang Seng', source: 'twelvedata' },
+],
+
+FUTURES_SYMBOLS: [
+  // Binance Futures (USDT margined)
+  { symbol: 'BTCUSDT', type: 'perpetual', exchange: 'binance' },
+  { symbol: 'ETHUSDT', type: 'perpetual', exchange: 'binance' },
+  { symbol: 'BNBUSDT', type: 'perpetual', exchange: 'binance' },
+  { symbol: 'SOLUSDT', type: 'perpetual', exchange: 'binance' },
+  { symbol: 'XRPUSDT', type: 'perpetual', exchange: 'binance' },
+  // CME Futures (via Twelve Data)
+  { symbol: 'ES', name: 'E-mini S&P 500', source: 'twelvedata' },
+  { symbol: 'NQ', name: 'E-mini NASDAQ', source: 'twelvedata' },
+  { symbol: 'YM', name: 'E-mini Dow', source: 'twelvedata' },
+  { symbol: 'RTY', name: 'E-mini Russell', source: 'twelvedata' },
+],
+
+COMMODITIES_SYMBOLS: [
+  { symbol: 'XAUUSD', name: 'Gold', source: 'twelvedata' },
+  { symbol: 'XAGUSD', name: 'Silver', source: 'twelvedata' },
+  { symbol: 'WTI', name: 'Crude Oil', source: 'twelvedata' },
+  { symbol: 'BRENT', name: 'Brent Oil', source: 'twelvedata' },
+  { symbol: 'NATURALGAS', name: 'Natural Gas', source: 'twelvedata' },
+  { symbol: 'COPPER', name: 'Copper', source: 'twelvedata' },
+  { symbol: 'WHEAT', name: 'Wheat', source: 'twelvedata' },
+  { symbol: 'CORN', name: 'Corn', source: 'twelvedata' },
+],
     COLORS: {
       up: '#26a69a', down: '#ef5350',
       upMuted: 'rgba(38,166,154,0.5)', downMuted: 'rgba(239,83,80,0.5)',
@@ -1129,53 +1130,77 @@ STATE.positions = StorageManager.get(CONFIG.STORAGE_KEYS.POSITIONS, []);
     }
   };
   
-  // ============================================
-// INSTITUTIONAL VOLUME PROFILE MODULE (SAFE)
-// Uses histogram on separate pane + overlay lines
+// ============================================
+// VOLUME PROFILE ENGINE v3.0
 // ============================================
 const VolumeProfileEngine = {
+  // ============================================
+  // STATE
+  // ============================================
   enabled: false,
-  profilePane: null,
   profileChart: null,
   profileSeries: null,
   pocLine: null,
   vahLine: null,
   valLine: null,
   currentData: null,
-
+  isRendering: false,
+  pendingRender: false,
+  renderTimeout: null,
+  
+  // ============================================
+  // CONSTANTS
+  // ============================================
+  PANE_HEIGHT: 100, // Reduced from 150
+  NUM_ROWS: 30, // Reduced from 40
+  UPDATE_DELAY: 250,
+  
+  // ============================================
+  // CALCULATE VOLUME PROFILE DATA
+  // ============================================
   calculate: function(candles, visibleFrom, visibleTo, numRows) {
-    numRows = numRows || 50;
-    if (!candles || candles.length === 0) return null;
+    numRows = numRows || this.NUM_ROWS;
+    
+    if (!candles || !Array.isArray(candles) || candles.length === 0) {
+      return null;
+    }
     
     var visibleCandles = [];
     for (var i = 0; i < candles.length; i++) {
-      if (candles[i].time >= visibleFrom && candles[i].time <= visibleTo) {
-        visibleCandles.push(candles[i]);
+      var c = candles[i];
+      if (c && typeof c.time === 'number' && c.time >= visibleFrom && c.time <= visibleTo) {
+        visibleCandles.push(c);
       }
     }
     
     if (visibleCandles.length === 0) {
-      visibleCandles = candles.slice(-100);
+      visibleCandles = candles.slice(-50);
     }
     
-    if (visibleCandles.length < 5) return null;
+    if (visibleCandles.length < 5) {
+      return null;
+    }
     
     var highestHigh = -Infinity;
     var lowestLow = Infinity;
+    
     for (var i = 0; i < visibleCandles.length; i++) {
       var c = visibleCandles[i];
+      if (!c) continue;
       if (c.high > highestHigh) highestHigh = c.high;
       if (c.low < lowestLow) lowestLow = c.low;
     }
     
     var priceRange = highestHigh - lowestLow;
-    if (priceRange <= 0) return null;
+    if (priceRange <= 0) {
+      return null;
+    }
     
-    highestHigh += priceRange * 0.02;
-    lowestLow -= priceRange * 0.02;
+    highestHigh += priceRange * 0.01;
+    lowestLow -= priceRange * 0.01;
     priceRange = highestHigh - lowestLow;
-    
     var rowSize = priceRange / numRows;
+    
     var rows = [];
     for (var i = 0; i < numRows; i++) {
       rows.push({
@@ -1190,9 +1215,10 @@ const VolumeProfileEngine = {
     
     for (var i = 0; i < visibleCandles.length; i++) {
       var c = visibleCandles[i];
-      var candleRange = c.high - c.low;
+      if (!c || !c.high || !c.low || !c.volume) continue;
       
-      if (candleRange === 0) {
+      var candleRange = c.high - c.low;
+      if (candleRange <= 0) {
         var binIndex = Math.floor((c.close - lowestLow) / rowSize);
         if (binIndex >= 0 && binIndex < numRows) {
           rows[binIndex].volume += c.volume;
@@ -1225,11 +1251,16 @@ const VolumeProfileEngine = {
     
     var maxVolume = 0;
     var pocIndex = 0;
+    
     for (var i = 0; i < rows.length; i++) {
       if (rows[i].volume > maxVolume) {
         maxVolume = rows[i].volume;
         pocIndex = i;
       }
+    }
+    
+    if (maxVolume <= 0) {
+      return null;
     }
     
     var totalVolume = 0;
@@ -1267,60 +1298,81 @@ const VolumeProfileEngine = {
       numRows: numRows,
       highestHigh: highestHigh,
       lowestLow: lowestLow,
-      candleCount: visibleCandles.length
+      candleCount: visibleCandles.length,
+      maxVolume: maxVolume
     };
   },
-
-  /**
-   * Render volume profile in a SEPARATE small pane below the chart
-   * This prevents any conflict with the main price chart
-   */
+  
+  // ============================================
+  // RENDER VOLUME PROFILE
+  // ============================================
   render: function() {
-    if (!this.enabled) {
-      this.remove();
+    if (this.isRendering) {
+      this.pendingRender = true;
       return;
     }
     
-    var mainChart = ChartEngine.chart;
-    if (!mainChart) return;
+    this.isRendering = true;
+    
+    if (!this.enabled) {
+      this.remove();
+      this.isRendering = false;
+      return;
+    }
+    
+    var mainChart = ChartEngine.charts && ChartEngine.charts.price;
+    if (!mainChart) {
+      this.isRendering = false;
+      return;
+    }
     
     var candles = STATE.candles;
-    if (!candles || candles.length < 5) return;
+    if (!candles || !Array.isArray(candles) || candles.length < 10) {
+      this.isRendering = false;
+      return;
+    }
     
     var visibleRange = mainChart.timeScale().getVisibleRange();
     if (!visibleRange) {
       visibleRange = {
-        from: candles[Math.max(0, candles.length - 100)].time,
+        from: candles[Math.max(0, candles.length - 50)].time,
         to: candles[candles.length - 1].time
       };
     }
     
-    var profileData = this.calculate(candles, visibleRange.from, visibleRange.to, 40);
-    if (!profileData) return;
-    
-    this.currentData = profileData;
-    
-    var maxVol = 0;
-    for (var i = 0; i < profileData.rows.length; i++) {
-      if (profileData.rows[i].volume > maxVol) {
-        maxVol = profileData.rows[i].volume;
-      }
+    var profileData = this.calculate(candles, visibleRange.from, visibleRange.to, this.NUM_ROWS);
+    if (!profileData) {
+      this.isRendering = false;
+      return;
     }
     
-    if (maxVol <= 0) return;
-    
+    this.currentData = profileData;
     this.remove();
+    this.renderMainLines(mainChart, visibleRange, profileData);
+    this.renderProfilePane(profileData);
     
-    // Add POC, VAH, VAL lines to MAIN chart (these are safe horizontal lines)
+    this.isRendering = false;
+    
+    if (this.pendingRender) {
+      this.pendingRender = false;
+      setTimeout(this.render.bind(this), 50);
+    }
+  },
+  
+  // ============================================
+  // RENDER MAIN LINES (POC, VAH, VAL)
+  // ============================================
+  renderMainLines: function(mainChart, visibleRange, profileData) {
     try {
       var pocPrice = (profileData.poc.priceLow + profileData.poc.priceHigh) / 2;
       this.pocLine = mainChart.addLineSeries({
-        color: 'rgba(255, 200, 50, 0.8)',
+        color: 'rgba(255, 200, 50, 0.85)',
         lineWidth: 2,
         lineStyle: 0,
         priceLineVisible: false,
         lastValueVisible: true,
-        crosshairMarkerVisible: false
+        crosshairMarkerVisible: false,
+        title: 'POC'
       });
       this.pocLine.setData([
         { time: visibleRange.from, value: pocPrice },
@@ -1334,7 +1386,8 @@ const VolumeProfileEngine = {
         lineStyle: 2,
         priceLineVisible: false,
         lastValueVisible: true,
-        crosshairMarkerVisible: false
+        crosshairMarkerVisible: false,
+        title: 'VAH'
       });
       this.vahLine.setData([
         { time: visibleRange.from, value: vahPrice },
@@ -1348,217 +1401,339 @@ const VolumeProfileEngine = {
         lineStyle: 2,
         priceLineVisible: false,
         lastValueVisible: true,
-        crosshairMarkerVisible: false
+        crosshairMarkerVisible: false,
+        title: 'VAL'
       });
       this.valLine.setData([
         { time: visibleRange.from, value: valPrice },
         { time: visibleRange.to, value: valPrice }
       ]);
+      
     } catch(e) {
-      console.warn('POC/VA lines error:', e.message);
+      console.warn('VolumeProfile: Error rendering main lines:', e.message);
+    }
+  },
+  
+  // ============================================
+  // RENDER PROFILE PANE (Histogram) - FIXED
+  // ============================================
+  renderProfilePane: function(profileData) {
+    var container = document.getElementById('indicator-panes-container');
+    if (!container) {
+      console.warn('VolumeProfile: Indicator panes container not found');
+      return;
     }
     
-    // Create a small histogram pane for the volume bars
-    this.createProfilePane(profileData, maxVol, visibleRange);
-  },
-
-  /**
-   * Create a separate pane showing the volume profile histogram
-   */
-  createProfilePane: function(profileData, maxVol, visibleRange) {
-    var container = document.getElementById('indicator-panes-container');
-    if (!container) return;
-    
-    // Make sure container is visible
     container.style.display = 'flex';
+    container.style.flexDirection = 'column';
+    container.style.width = '100%';
     
-    // Create the pane
+    // ============================================
+    // CREATE PANE WITH SMALLER HEIGHT
+    // ============================================
     var pane = document.createElement('div');
     pane.id = 'vp-pane';
     pane.className = 'chart-pane chart-pane-indicator';
     pane.setAttribute('data-title', 'Volume Profile');
-    pane.style.cssText = 'flex: 0 0 150px; min-height: 130px; max-height: 180px; display: flex; flex-direction: column; border-bottom: 1px solid var(--border-primary); overflow: hidden;';
+    pane.style.cssText = [
+      'flex: 0 0 ' + this.PANE_HEIGHT + 'px',
+      'min-height: ' + this.PANE_HEIGHT + 'px',
+      'max-height: ' + this.PANE_HEIGHT + 'px',
+      'display: flex',
+      'flex-direction: column',
+      'border-bottom: 1px solid var(--border-primary)',
+      'overflow: hidden',
+      'width: 100%',
+      'position: relative',
+      'background: var(--bg-primary)'
+    ].join(';');
     
     var chartDiv = document.createElement('div');
     chartDiv.id = 'vp-chart';
-    chartDiv.style.cssText = 'flex: 1; min-height: 60px; width: 100%;';
+    chartDiv.style.cssText = [
+      'flex: 1',
+      'min-height: ' + (this.PANE_HEIGHT - 20) + 'px',
+      'width: 100%',
+      'position: relative'
+    ].join(';');
+    
     pane.appendChild(chartDiv);
     container.appendChild(pane);
     
     var self = this;
     
-    // Wait for pane to have dimensions
-    setTimeout(function() {
-      if (!chartDiv.clientWidth || !chartDiv.clientHeight) {
-        chartDiv.style.width = '100%';
-        chartDiv.style.height = '130px';
+    // ============================================
+    // USE REQUESTANIMATIONFRAME FOR SMOOTHER RENDERING
+    // ============================================
+    requestAnimationFrame(function() {
+      var el = document.getElementById('vp-chart');
+      if (!el) return;
+      
+      var width = el.clientWidth || container.clientWidth || 300;
+      var height = el.clientHeight || (self.PANE_HEIGHT - 20);
+      
+      if (width < 50 || height < 50) {
+        setTimeout(function() {
+          self.renderProfilePane(profileData);
+        }, 100);
+        return;
       }
       
-      // Create chart in the pane
-      var profileChart = LightweightCharts.createChart(chartDiv, {
+      var isLightTheme = document.body.getAttribute('data-theme') === 'light';
+      
+      // ============================================
+      // CREATE CHART WITH TRANSPARENT BACKGROUND
+      // ============================================
+      var profileChart = LightweightCharts.createChart(el, {
         layout: {
           background: { type: 'solid', color: 'transparent' },
-          textColor: '#c9d1d9'
+          textColor: isLightTheme ? '#1f2328' : '#c9d1d9'
         },
         grid: {
           vertLines: { visible: false },
           horzLines: { visible: false }
         },
         rightPriceScale: {
-          borderColor: '#30363d',
-          visible: true
+          visible: true,
+          borderVisible: true,
+          autoScale: true,
+          scaleMargins: { top: 0.1, bottom: 0.1 }
         },
         timeScale: {
-          borderColor: '#30363d',
-          visible: false
+          visible: false,
+          borderVisible: false
         },
-        crosshair: { mode: 0 },
+        crosshair: {
+          mode: 0,
+          vertLine: { visible: false },
+          horzLine: { visible: false }
+        },
         handleScroll: { vertTouchDrag: false, horzTouchDrag: false },
-        handleScale: { pinch: false, mouseWheel: false },
-        width: chartDiv.clientWidth || 600,
-        height: chartDiv.clientHeight || 130
+        handleScale: { axisPressedMouseMove: false, pinch: false, mouseWheel: false },
+        width: width,
+        height: height
       });
       
       self.profileChart = profileChart;
       
-      // Build histogram data (vertical bars)
-      // We use index-based X axis so bars stack properly
+      // ============================================
+      // BUILD HISTOGRAM DATA
+      // ============================================
       var histData = [];
+      var maxVol = profileData.maxVolume || 0;
+      
       for (var i = 0; i < profileData.rows.length; i++) {
         var row = profileData.rows[i];
-        var color;
+        if (!row || row.volume <= 0) continue;
         
-        if (row.volume > 0) {
-          var buyRatio = row.buyVolume / (row.buyVolume + row.sellVolume || 1);
-          
-          if (i === profileData.pocIndex) {
-            color = 'rgba(255, 200, 50, 0.9)'; // POC = gold
-          } else if (buyRatio > 0.6) {
-            color = 'rgba(38, 166, 154, 0.6)'; // Buy dominant = green
-          } else if (buyRatio < 0.4) {
-            color = 'rgba(239, 83, 80, 0.6)'; // Sell dominant = red
-          } else {
-            color = 'rgba(88, 166, 255, 0.5)'; // Neutral = blue
-          }
-          
-          histData.push({
-            time: i,
-            value: row.volume,
-            color: color
-          });
+        var buyRatio = (row.buyVolume + row.sellVolume) > 0 
+          ? row.buyVolume / (row.buyVolume + row.sellVolume) 
+          : 0.5;
+        
+        var color;
+        if (i === profileData.pocIndex) {
+          color = 'rgba(255, 200, 50, 0.9)';
+        } else if (buyRatio > 0.6) {
+          color = 'rgba(38, 166, 154, 0.7)';
+        } else if (buyRatio < 0.4) {
+          color = 'rgba(239, 83, 80, 0.7)';
+        } else {
+          color = 'rgba(88, 166, 255, 0.5)';
         }
-      }
-      
-      // Add histogram series
-      var histSeries = profileChart.addHistogramSeries({
-        priceFormat: { type: 'volume' },
-        priceScaleId: 'right'
-      });
-      
-      histSeries.setData(histData);
-      self.profileSeries = histSeries;
-      
-      // Sync time scale with main chart
-      if (ChartEngine.chart) {
-        ChartEngine.charts.price.timeScale().subscribeVisibleTimeRangeChange(function(range) {
-          if (range && profileChart && self.enabled) {
-            try {
-              profileChart.timeScale().setVisibleRange(range);
-            } catch(e) {}
-          }
+        
+        // ============================================
+        // USE INDEX AS TIME FOR HISTOGRAM
+        // ============================================
+        histData.push({
+          time: i,
+          value: row.volume,
+          color: color
         });
       }
       
-      profileChart.timeScale().fitContent();
+      // ============================================
+      // ADD HISTOGRAM SERIES
+      // ============================================
+      if (histData.length > 0) {
+        var histSeries = profileChart.addHistogramSeries({
+          priceFormat: { type: 'volume' },
+          priceScaleId: 'right'
+        });
+        
+        histSeries.setData(histData);
+        self.profileSeries = histSeries;
+        
+        // ============================================
+        // FIT CONTENT AFTER DATA LOAD
+        // ============================================
+        setTimeout(function() {
+          try {
+            profileChart.timeScale().fitContent();
+          } catch(e) {}
+        }, 50);
+      }
       
-    }, 200);
+      // ============================================
+      // ADD REMOVE BUTTON
+      // ============================================
+      self.addRemoveButton(pane);
+      
+      console.log('✅ Volume Profile rendered with ' + histData.length + ' bars');
+    });
   },
-
+  
+  // ============================================
+  // ADD REMOVE BUTTON
+  // ============================================
+  addRemoveButton: function(pane) {
+    if (!pane) return;
+    
+    var removeBtn = document.createElement('button');
+    removeBtn.className = 'pane-remove-btn';
+    removeBtn.style.cssText = [
+      'position: absolute',
+      'top: 2px',
+      'right: 2px',
+      'z-index: 10',
+      'width: 18px',
+      'height: 18px',
+      'background: none',
+      'border: none',
+      'color: var(--text-muted)',
+      'cursor: pointer',
+      'font-size: 10px',
+      'padding: 0',
+      'opacity: 0.7'
+    ].join(';');
+    removeBtn.innerHTML = '✕';
+    removeBtn.title = 'Remove Volume Profile';
+    
+    var self = this;
+    removeBtn.addEventListener('click', function() {
+      self.toggle();
+    });
+    
+    pane.appendChild(removeBtn);
+  },
+  
+  // ============================================
+  // REMOVE VOLUME PROFILE
+  // ============================================
   remove: function() {
-    // Remove lines from main chart
-    var mainChart = ChartEngine.charts.price;
+    var mainChart = ChartEngine.charts && ChartEngine.charts.price;
     if (mainChart) {
       try {
-        if (this.pocLine) { mainChart.removeSeries(this.pocLine); this.pocLine = null; }
-        if (this.vahLine) { mainChart.removeSeries(this.vahLine); this.vahLine = null; }
-        if (this.valLine) { mainChart.removeSeries(this.valLine); this.valLine = null; }
+        if (this.pocLine) {
+          mainChart.removeSeries(this.pocLine);
+          this.pocLine = null;
+        }
+        if (this.vahLine) {
+          mainChart.removeSeries(this.vahLine);
+          this.vahLine = null;
+        }
+        if (this.valLine) {
+          mainChart.removeSeries(this.valLine);
+          this.valLine = null;
+        }
       } catch(e) {}
     }
     
-    // Remove profile pane
     var pane = document.getElementById('vp-pane');
-    if (pane) {
-      pane.remove();
+    if (pane && pane.parentNode) {
+      pane.parentNode.removeChild(pane);
     }
     
-    // Remove chart
     if (this.profileChart) {
-      try { this.profileChart.remove(); } catch(e) {}
+      try {
+        this.profileChart.remove();
+      } catch(e) {}
       this.profileChart = null;
       this.profileSeries = null;
     }
     
-    // Hide container if empty
     var container = document.getElementById('indicator-panes-container');
-    if (container && container.children.length <= 1) {
+    if (container && container.children.length === 0) {
       container.style.display = 'none';
     }
+    
+    this.currentData = null;
   },
-
+  
+  // ============================================
+  // TOGGLE VOLUME PROFILE
+  // ============================================
   toggle: function() {
     this.enabled = !this.enabled;
     
     if (this.enabled) {
       this.render();
-      if (typeof Toast !== 'undefined') Toast.success('Volume Profile: ON');
+      if (typeof Toast !== 'undefined') {
+        Toast.success('Volume Profile: ON');
+      }
     } else {
       this.remove();
-      if (typeof Toast !== 'undefined') Toast.info('Volume Profile: OFF');
+      if (typeof Toast !== 'undefined') {
+        Toast.info('Volume Profile: OFF');
+      }
     }
     
     var btn = document.getElementById('volume-profile-btn');
     if (btn) {
       btn.classList.toggle('active', this.enabled);
+      btn.style.color = this.enabled ? 'var(--accent-primary)' : 'var(--text-secondary)';
+      btn.style.background = this.enabled ? 'var(--accent-muted)' : 'transparent';
     }
     
     return this.enabled;
   },
-
+  
+  // ============================================
+  // INITIALIZE
+  // ============================================
   init: function() {
     this.addControlButton();
     
-    if (ChartEngine.charts && ChartEngine.charts.price) {
+    var mainChart = ChartEngine.charts && ChartEngine.charts.price;
+    if (mainChart) {
       var self = this;
-      var renderTimeout = null;
       
-      ChartEngine.charts.price.timeScale().subscribeVisibleTimeRangeChange(function() {
+      mainChart.timeScale().subscribeVisibleTimeRangeChange(function() {
         if (!self.enabled) return;
-        if (renderTimeout) clearTimeout(renderTimeout);
-        renderTimeout = setTimeout(function() {
+        
+        if (self.renderTimeout) {
+          clearTimeout(self.renderTimeout);
+        }
+        
+        self.renderTimeout = setTimeout(function() {
           self.render();
-          renderTimeout = null;
-        }, 500);
+          self.renderTimeout = null;
+        }, self.UPDATE_DELAY);
       });
     }
     
-    console.log('Volume Profile Engine ready');
+    console.log('✅ Volume Profile Engine v3.0 initialized');
   },
-
+  
+  // ============================================
+  // ADD CONTROL BUTTON
+  // ============================================
   addControlButton: function() {
     var chartControls = document.querySelector('.chart-controls');
-    if (!chartControls || document.getElementById('volume-profile-btn')) return;
+    if (!chartControls) return;
+    
+    if (document.getElementById('volume-profile-btn')) return;
     
     var btn = document.createElement('button');
     btn.id = 'volume-profile-btn';
     btn.className = 'chart-ctrl-btn';
     btn.setAttribute('data-tooltip', 'Volume Profile');
     btn.innerHTML = '<span style="font-size:10px;font-weight:700;">VP</span>';
+    btn.style.color = 'var(--text-secondary)';
+    btn.style.background = 'transparent';
     
     var self = this;
     btn.addEventListener('click', function() {
-      var isActive = self.toggle();
-      this.style.color = isActive ? 'var(--accent-primary)' : 'var(--text-secondary)';
-      this.style.background = isActive ? 'var(--accent-muted)' : 'transparent';
+      self.toggle();
     });
     
     var ctrlDivider = chartControls.querySelector('.ctrl-divider');
@@ -1570,21 +1745,28 @@ const VolumeProfileEngine = {
   }
 };
 
-// Also wire up the dropdown menu item
+// ============================================
+// EXPOSE GLOBALLY
+// ============================================
+window.VolumeProfileEngine = VolumeProfileEngine;
+
+// ============================================
+// DROPDOWN MENU ITEM
+// ============================================
 setTimeout(function() {
-    var dropdownItem = document.querySelector('#tools-dropdown-menu #volume-profile-btn');
-    if (dropdownItem) {
-        dropdownItem.addEventListener('click', function(e) {
-            e.stopPropagation();
-            VolumeProfileEngine.toggle();
-            // Update active state
-            var isActive = VolumeProfileEngine.enabled;
-            this.classList.toggle('active', isActive);
-            // Close dropdown
-            var menu = document.getElementById('tools-dropdown-menu');
-            if (menu) menu.classList.remove('visible');
-        });
-    }
+  var dropdownItem = document.querySelector('#tools-dropdown-menu #volume-profile-btn');
+  if (dropdownItem) {
+    dropdownItem.addEventListener('click', function(e) {
+      e.stopPropagation();
+      VolumeProfileEngine.toggle();
+      
+      var isActive = VolumeProfileEngine.enabled;
+      this.classList.toggle('active', isActive);
+      
+      var menu = document.getElementById('tools-dropdown-menu');
+      if (menu) menu.classList.remove('visible');
+    });
+  }
 }, 3000);
 
 // ============================================
@@ -2151,6 +2333,19 @@ const ChartEngine = {
     
     // Force price scale
     chart.priceScale('right').applyOptions({ visible: true, borderVisible: true, autoScale: true });
+	
+	 Object.defineProperty(this, 'chart', {
+    get: function() {
+      return this.charts ? this.charts.price : null;
+    },
+    set: function(val) {
+      if (this.charts) {
+        this.charts.price = val;
+      }
+    },
+    enumerable: true,
+    configurable: true
+  });
     
     console.log('✅ Price chart created');
     
@@ -2212,9 +2407,7 @@ const ChartEngine = {
     
     console.log('✅ Volume chart created');
   },
-  // ============================================
-// ADD THIS TO YOUR ChartEngine (after createVolumeChart)
-// ============================================
+  
 
 // ============================================
 // INDICATOR PANE MANAGEMENT
@@ -3023,6 +3216,23 @@ updateAllIndicators() {
     if (tradePriceInput && price) {
       tradePriceInput.value = formatPrice(price);
     }
+	// ============================================
+// FORCE CHART RENDER AFTER PRICE UPDATE
+// ============================================
+if (STATE.assetType === 'stocks' || STATE.assetType === 'forex') {
+  setTimeout(() => {
+    if (typeof ChartEngine !== 'undefined' && ChartEngine.mainSeries && STATE.candles.length > 0) {
+      const lastCandle = STATE.candles[STATE.candles.length - 1];
+      ChartEngine.mainSeries.update({
+        time: lastCandle.time,
+        open: lastCandle.open,
+        high: lastCandle.high,
+        low: lastCandle.low,
+        close: lastCandle.close
+      });
+    }
+  }, 100);
+}
   },
   
   // ============================================
@@ -4121,6 +4331,19 @@ limitVisibleCandles() {
   this.updateVolume(limitedCandles);
   this.fitContent();
 },
+// ============================================
+// ADD THIS METHOD TO ChartEngine
+// ============================================
+forceRedraw: function() {
+  if (this.mainSeries && STATE.candles.length > 0) {
+    const data = this._formatDataForChartType(STATE.candles);
+    this.mainSeries.setData([]);
+    setTimeout(() => {
+      this.mainSeries.setData(data);
+      this.fitContent();
+    }, 100);
+  }
+},
 };
 
 // ============================================
@@ -4933,116 +5156,470 @@ const PointFigureEngine = {
 // ============================================
 // MARKET PROFILE ENGINE (TPO)
 // ============================================
+// ============================================
+// MARKET PROFILE ENGINE v2.0 - TPO HISTOGRAM
+// ============================================
 const MarketProfileEngine = {
+  // ============================================
+  // STATE
+  // ============================================
   enabled: false,
+  profileData: null,
+  tpoPane: null,
+  tpoChart: null,
+  tpoSeries: null,
   pocLine: null,
   vahLine: null,
   valLine: null,
   
-  init: function() {
-    console.log('✅ Market Profile Engine ready');
-    const savedState = localStorage.getItem('tvp_market_profile_enabled');
-    if (savedState === 'true') {
-      this.enabled = true;
-      this.calculate();
-    }
+  // ============================================
+  // CONFIGURATION
+  // ============================================
+  config: {
+    numRows: 20,
+    valueAreaPercent: 0.70,
+    paneHeight: 120,
+    updateDelay: 250
   },
   
+  // ============================================
+  // TOGGLE MARKET PROFILE
+  // ============================================
   toggle: function() {
     this.enabled = !this.enabled;
-    if (this.enabled) this.calculate();
-    else this.remove();
+    
+    if (this.enabled) {
+      this.calculate();
+      this.render();
+      if (typeof Toast !== 'undefined') {
+        Toast.success('Market Profile ON - TPO Histogram displayed');
+      }
+    } else {
+      this.remove();
+      if (typeof Toast !== 'undefined') {
+        Toast.info('Market Profile OFF');
+      }
+    }
+    
+    // Update button
+    const btn = document.querySelector('[data-action="tpo"]');
+    if (btn) {
+      btn.classList.toggle('active', this.enabled);
+    }
+    
     return this.enabled;
   },
   
+  // ============================================
+  // CALCULATE TPO DATA
+  // ============================================
   calculate: function() {
     const candles = STATE.candles;
-    if (!candles || candles.length === 0) return;
-    
-    const days = {};
-    for (let i = 0; i < candles.length; i++) {
-      const date = new Date(candles[i].time * 1000);
-      const dayKey = date.toISOString().slice(0, 10);
-      if (!days[dayKey]) days[dayKey] = [];
-      days[dayKey].push(candles[i]);
+    if (!candles || candles.length < 30) {
+      console.warn('⚠️ Insufficient data for Market Profile');
+      return null;
     }
     
-    const tpoData = [];
-    for (const [day, dayCandles] of Object.entries(days)) {
-      if (dayCandles.length < 10) continue;
-      
-      let high = -Infinity, low = Infinity;
-      for (let i = 0; i < dayCandles.length; i++) {
-        if (dayCandles[i].high > high) high = dayCandles[i].high;
-        if (dayCandles[i].low < low) low = dayCandles[i].low;
-      }
-      
-      const priceIncrement = (high - low) / 20;
-      const levels = {};
-      for (let i = 0; i < dayCandles.length; i++) {
-        const level = Math.round((dayCandles[i].close - low) / priceIncrement);
-        levels[level] = (levels[level] || 0) + 1;
-      }
-      
-      let maxCount = 0, pocLevel = 0;
-      for (const [level, count] of Object.entries(levels)) {
-        if (count > maxCount) { maxCount = count; pocLevel = parseInt(level); }
-      }
-      
-      const totalTime = Object.values(levels).reduce((a, b) => a + b, 0);
-      const targetTime = totalTime * 0.7;
-      let currentTime = maxCount;
-      let upper = pocLevel, lower = pocLevel;
-      
-      while (currentTime < targetTime) {
-        const upperCount = levels[upper + 1] || 0;
-        const lowerCount = levels[lower - 1] || 0;
-        if (upperCount >= lowerCount && upperCount > 0) {
-          currentTime += upperCount;
-          upper++;
-        } else if (lowerCount > 0) {
-          currentTime += lowerCount;
-          lower--;
-        } else break;
-      }
-      
-      tpoData.push({
-        date: day,
-        valueAreaHigh: low + priceIncrement * (upper + 0.5),
-        valueAreaLow: low + priceIncrement * (lower - 0.5),
-        poc: low + priceIncrement * (pocLevel + 0.5)
+    // Get today's candles only
+    const today = new Date().toISOString().slice(0, 10);
+    const todayCandles = candles.filter(function(c) {
+      const date = new Date(c.time * 1000).toISOString().slice(0, 10);
+      return date === today;
+    });
+    
+    if (todayCandles.length < 5) {
+      // Use last 20 candles if not enough today
+      const last20 = candles.slice(-20);
+      return this._calculateTPO(last20);
+    }
+    
+    return this._calculateTPO(todayCandles);
+  },
+  
+  // ============================================
+  // CALCULATE TPO (INTERNAL)
+  // ============================================
+  _calculateTPO: function(candles) {
+    if (!candles || candles.length === 0) {
+      return null;
+    }
+    
+    // Find price range
+    let highestHigh = -Infinity;
+    let lowestLow = Infinity;
+    
+    for (let i = 0; i < candles.length; i++) {
+      const c = candles[i];
+      if (c.high > highestHigh) highestHigh = c.high;
+      if (c.low < lowestLow) lowestLow = c.low;
+    }
+    
+    const priceRange = highestHigh - lowestLow;
+    if (priceRange <= 0) return null;
+    
+    // Add padding
+    highestHigh += priceRange * 0.02;
+    lowestLow -= priceRange * 0.02;
+    const paddedRange = highestHigh - lowestLow;
+    const rowSize = paddedRange / this.config.numRows;
+    
+    // Initialize rows
+    const rows = [];
+    for (let i = 0; i < this.config.numRows; i++) {
+      rows.push({
+        priceLow: lowestLow + (i * rowSize),
+        priceHigh: lowestLow + ((i + 1) * rowSize),
+        priceMid: lowestLow + (i * rowSize) + (rowSize / 2),
+        tpoCount: 0
       });
     }
     
-    if (tpoData.length === 0) return;
-    const last = tpoData[tpoData.length - 1];
-    const chart = ChartEngine.charts.price;
-    if (!chart) return;
+    // Count TPOs (time spent at each price level)
+    for (let i = 0; i < candles.length; i++) {
+      const c = candles[i];
+      const timePrice = (c.open + c.close) / 2;
+      for (let j = 0; j < rows.length; j++) {
+        const row = rows[j];
+        if (timePrice >= row.priceLow && timePrice < row.priceHigh) {
+          row.tpoCount++;
+          break;
+        }
+      }
+    }
     
-    const range = chart.timeScale().getVisibleRange();
-    if (!range) return;
+    // Find POC (Point of Control)
+    let pocIndex = 0;
+    let maxTPO = 0;
+    for (let i = 0; i < rows.length; i++) {
+      if (rows[i].tpoCount > maxTPO) {
+        maxTPO = rows[i].tpoCount;
+        pocIndex = i;
+      }
+    }
+    
+    // Calculate Value Area (70% of TPOs)
+    const totalTPO = rows.reduce(function(sum, r) { return sum + r.tpoCount; }, 0);
+    const targetTPO = totalTPO * this.config.valueAreaPercent;
+    let accumulatedTPO = rows[pocIndex].tpoCount;
+    let upperIndex = pocIndex;
+    let lowerIndex = pocIndex;
+    
+    while (accumulatedTPO < targetTPO && (upperIndex < rows.length - 1 || lowerIndex > 0)) {
+      const upperVol = upperIndex < rows.length - 1 ? rows[upperIndex + 1].tpoCount : 0;
+      const lowerVol = lowerIndex > 0 ? rows[lowerIndex - 1].tpoCount : 0;
+      
+      if (upperVol >= lowerVol && upperIndex < rows.length - 1) {
+        upperIndex++;
+        accumulatedTPO += upperVol;
+      } else if (lowerIndex > 0) {
+        lowerIndex--;
+        accumulatedTPO += lowerVol;
+      } else {
+        break;
+      }
+    }
+    
+    this.profileData = {
+      rows: rows,
+      poc: rows[pocIndex],
+      pocIndex: pocIndex,
+      valueAreaHigh: rows[upperIndex],
+      valueAreaLow: rows[lowerIndex],
+      totalTPO: totalTPO,
+      highestHigh: highestHigh,
+      lowestLow: lowestLow,
+      candleCount: candles.length
+    };
+    
+    return this.profileData;
+  },
+  
+  // ============================================
+  // RENDER TPO HISTOGRAM
+  // ============================================
+  render: function() {
+    if (!this.enabled || !this.profileData) {
+      return;
+    }
     
     this.remove();
     
-    this.pocLine = chart.addLineSeries({ color: 'rgba(255, 200, 50, 0.8)', lineWidth: 2, priceLineVisible: false });
-    this.pocLine.setData([{ time: range.from, value: last.poc }, { time: range.to, value: last.poc }]);
+    const mainChart = ChartEngine.charts.price;
+    if (!mainChart) return;
     
-    this.vahLine = chart.addLineSeries({ color: 'rgba(255, 255, 255, 0.5)', lineWidth: 1, lineStyle: 2, priceLineVisible: false });
-    this.vahLine.setData([{ time: range.from, value: last.valueAreaHigh }, { time: range.to, value: last.valueAreaHigh }]);
+    // Get visible range
+    const range = mainChart.timeScale().getVisibleRange();
+    if (!range) return;
     
-    this.valLine = chart.addLineSeries({ color: 'rgba(255, 255, 255, 0.5)', lineWidth: 1, lineStyle: 2, priceLineVisible: false });
-    this.valLine.setData([{ time: range.from, value: last.valueAreaLow }, { time: range.to, value: last.valueAreaLow }]);
+    const data = this.profileData;
     
-    if (typeof Toast !== 'undefined') Toast.info('Market Profile: POC, VAH, VAL displayed');
+    // Render POC line
+    const pocPrice = (data.poc.priceLow + data.poc.priceHigh) / 2;
+    this.pocLine = mainChart.addLineSeries({
+      color: 'rgba(255, 200, 50, 0.85)',
+      lineWidth: 2,
+      lineStyle: 0,
+      priceLineVisible: false,
+      lastValueVisible: true,
+      crosshairMarkerVisible: false,
+      title: 'POC'
+    });
+    this.pocLine.setData([
+      { time: range.from, value: pocPrice },
+      { time: range.to, value: pocPrice }
+    ]);
+    
+    // Render VAH line
+    const vahPrice = (data.valueAreaHigh.priceLow + data.valueAreaHigh.priceHigh) / 2;
+    this.vahLine = mainChart.addLineSeries({
+      color: 'rgba(255, 255, 255, 0.5)',
+      lineWidth: 1,
+      lineStyle: 2,
+      priceLineVisible: false,
+      lastValueVisible: true,
+      crosshairMarkerVisible: false,
+      title: 'VAH'
+    });
+    this.vahLine.setData([
+      { time: range.from, value: vahPrice },
+      { time: range.to, value: vahPrice }
+    ]);
+    
+    // Render VAL line
+    const valPrice = (data.valueAreaLow.priceLow + data.valueAreaLow.priceHigh) / 2;
+    this.valLine = mainChart.addLineSeries({
+      color: 'rgba(255, 255, 255, 0.5)',
+      lineWidth: 1,
+      lineStyle: 2,
+      priceLineVisible: false,
+      lastValueVisible: true,
+      crosshairMarkerVisible: false,
+      title: 'VAL'
+    });
+    this.valLine.setData([
+      { time: range.from, value: valPrice },
+      { time: range.to, value: valPrice }
+    ]);
+    
+    // Render TPO histogram in a separate pane
+    this._renderTPOHistogram();
   },
   
+  // ============================================
+  // RENDER TPO HISTOGRAM (SEPARATE PANE)
+  // ============================================
+  _renderTPOHistogram: function() {
+    const container = document.getElementById('indicator-panes-container');
+    if (!container) return;
+    
+    // Ensure container is visible
+    container.style.display = 'flex';
+    container.style.flexDirection = 'column';
+    container.style.width = '100%';
+    
+    // Create pane
+    const pane = document.createElement('div');
+    pane.id = 'tpo-pane';
+    pane.className = 'chart-pane chart-pane-indicator';
+    pane.setAttribute('data-title', 'Market Profile (TPO)');
+    pane.style.cssText = `
+      flex: 0 0 ${this.config.paneHeight}px;
+      min-height: ${this.config.paneHeight}px;
+      max-height: ${this.config.paneHeight}px;
+      display: flex;
+      flex-direction: column;
+      border-bottom: 1px solid var(--border-primary);
+      overflow: hidden;
+      width: 100%;
+      position: relative;
+      background: var(--bg-primary);
+    `;
+    
+    const chartDiv = document.createElement('div');
+    chartDiv.id = 'tpo-chart';
+    chartDiv.style.cssText = `
+      flex: 1;
+      min-height: ${this.config.paneHeight - 20}px;
+      width: 100%;
+      position: relative;
+    `;
+    
+    pane.appendChild(chartDiv);
+    container.appendChild(pane);
+    this.tpoPane = pane;
+    
+    // Create TPO histogram chart
+    const el = document.getElementById('tpo-chart');
+    if (!el) return;
+    
+    const isLightTheme = document.body.getAttribute('data-theme') === 'light';
+    
+    setTimeout(function() {
+      const width = el.clientWidth || container.clientWidth || 300;
+      const height = el.clientHeight || (MarketProfileEngine.config.paneHeight - 20);
+      
+      el.style.width = width + 'px';
+      el.style.height = height + 'px';
+      
+      try {
+        const chart = LightweightCharts.createChart(el, {
+          layout: {
+            background: { type: 'solid', color: isLightTheme ? '#ffffff' : '#0d1117' },
+            textColor: isLightTheme ? '#1f2328' : '#c9d1d9'
+          },
+          grid: {
+            vertLines: { visible: false },
+            horzLines: { visible: false }
+          },
+          rightPriceScale: {
+            visible: true,
+            borderVisible: true,
+            autoScale: true,
+            scaleMargins: { top: 0.1, bottom: 0.1 }
+          },
+          timeScale: {
+            visible: false,
+            borderVisible: false
+          },
+          crosshair: {
+            mode: 0,
+            vertLine: { visible: false },
+            horzLine: { visible: false }
+          },
+          handleScroll: { vertTouchDrag: false, horzTouchDrag: false },
+          handleScale: { axisPressedMouseMove: false, pinch: false, mouseWheel: false },
+          width: width,
+          height: height
+        });
+        
+        MarketProfileEngine.tpoChart = chart;
+        
+        // Build histogram data
+        const data = MarketProfileEngine.profileData;
+        if (!data) return;
+        
+        const histData = [];
+        const maxTPO = Math.max.apply(null, data.rows.map(function(r) { return r.tpoCount; }));
+        
+        for (let i = 0; i < data.rows.length; i++) {
+          const row = data.rows[i];
+          if (row.tpoCount <= 0) continue;
+          
+          const isPOC = (i === data.pocIndex);
+          const isValueArea = (i >= data.valueAreaLow && i <= data.valueAreaHigh);
+          
+          let color;
+          if (isPOC) {
+            color = 'rgba(255, 200, 50, 0.9)';
+          } else if (isValueArea) {
+            color = 'rgba(88, 166, 255, 0.6)';
+          } else {
+            color = 'rgba(255, 255, 255, 0.2)';
+          }
+          
+          histData.push({
+            time: i,
+            value: row.tpoCount,
+            color: color
+          });
+        }
+        
+        // Add histogram series
+        if (histData.length > 0) {
+          const histSeries = chart.addHistogramSeries({
+            priceFormat: { type: 'volume' },
+            priceScaleId: 'right'
+          });
+          histSeries.setData(histData);
+          MarketProfileEngine.tpoSeries = histSeries;
+          chart.timeScale().fitContent();
+        }
+        
+        // Add remove button
+        MarketProfileEngine._addRemoveButton(pane);
+        
+      } catch(e) {
+        console.error('❌ Failed to create TPO chart:', e);
+      }
+    }, 100);
+  },
+  
+  // ============================================
+  // ADD REMOVE BUTTON
+  // ============================================
+  _addRemoveButton: function(pane) {
+    if (!pane) return;
+    
+    const removeBtn = document.createElement('button');
+    removeBtn.style.cssText = `
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      z-index: 10;
+      width: 20px;
+      height: 20px;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 12px;
+      padding: 0;
+    `;
+    removeBtn.innerHTML = '✕';
+    removeBtn.title = 'Remove Market Profile';
+    
+    const self = this;
+    removeBtn.addEventListener('click', function() {
+      self.toggle();
+    });
+    
+    pane.appendChild(removeBtn);
+  },
+  
+  // ============================================
+  // REMOVE MARKET PROFILE
+  // ============================================
   remove: function() {
-    const chart = ChartEngine.charts.price;
-    if (chart) {
-      if (this.pocLine) { try { chart.removeSeries(this.pocLine); } catch(e) {} this.pocLine = null; }
-      if (this.vahLine) { try { chart.removeSeries(this.vahLine); } catch(e) {} this.vahLine = null; }
-      if (this.valLine) { try { chart.removeSeries(this.valLine); } catch(e) {} this.valLine = null; }
+    const mainChart = ChartEngine.charts.price;
+    if (mainChart) {
+      try {
+        if (this.pocLine) {
+          mainChart.removeSeries(this.pocLine);
+          this.pocLine = null;
+        }
+        if (this.vahLine) {
+          mainChart.removeSeries(this.vahLine);
+          this.vahLine = null;
+        }
+        if (this.valLine) {
+          mainChart.removeSeries(this.valLine);
+          this.valLine = null;
+        }
+      } catch(e) {}
     }
+    
+    // Remove TPO pane
+    if (this.tpoPane && this.tpoPane.parentNode) {
+      this.tpoPane.parentNode.removeChild(this.tpoPane);
+      this.tpoPane = null;
+    }
+    
+    // Destroy TPO chart
+    if (this.tpoChart) {
+      try {
+        this.tpoChart.remove();
+      } catch(e) {}
+      this.tpoChart = null;
+      this.tpoSeries = null;
+    }
+    
+    // Hide container if empty
+    const container = document.getElementById('indicator-panes-container');
+    if (container && container.children.length === 0) {
+      container.style.display = 'none';
+    }
+    
+    this.profileData = null;
   }
 };
 // ============================================
@@ -7581,290 +8158,361 @@ _setIndicatorData(name, id, result) {
    * Render a MACD pane (special case with 3 series)
    */
   // ============================================
-// UPDATE THIS METHOD IN IndicatorEngine
+
 // ============================================
-// ============================================
-// REPLACE THIS METHOD IN IndicatorEngine
+// COMPLETE FIXED VERSION OF _renderMACDPane
 // ============================================
 _renderMACDPane(name, reg, result, data) {
   console.log('📊 Rendering MACD...');
   
-  // Check if MACD already has all 3 series
-  const hasMACDLine = ChartEngine._indicatorSeries && 
-                      ChartEngine._indicatorSeries['macd_line'] !== undefined;
-  const hasSignalLine = ChartEngine._indicatorSeries && 
-                       ChartEngine._indicatorSeries['macd_signal'] !== undefined;
-  const hasHistogram = ChartEngine._indicatorSeries && 
-                      ChartEngine._indicatorSeries['macd_hist'] !== undefined;
+  // ============================================
+  // STEP 1: Check if MACD already exists
+  // ============================================
+  const hasMACDChart = this._indicatorCharts && this._indicatorCharts['macd'] !== undefined;
+  const hasMACDLine = this._indicatorSeries && this._indicatorSeries['macd_line'] !== undefined;
+  const hasSignalLine = this._indicatorSeries && this._indicatorSeries['macd_signal'] !== undefined;
+  const hasHistogram = this._indicatorSeries && this._indicatorSeries['macd_hist'] !== undefined;
   
-  // If any series is missing, recreate everything
-  if (!hasMACDLine || !hasSignalLine || !hasHistogram) {
+  // ============================================
+  // STEP 2: Validate MACD data
+  // ============================================
+  if (!result || !result.line || !result.signal || !result.hist) {
+    console.warn('⚠️ MACD data incomplete, skipping render');
+    return;
+  }
+  
+  // ============================================
+  // STEP 3: Check if MACD needs recreation
+  // ============================================
+  const needsRecreation = !hasMACDChart || !hasMACDLine || !hasSignalLine || !hasHistogram;
+  
+  if (needsRecreation) {
     console.log('🔄 Creating/recreating MACD with all 3 series...');
-    
-    // Remove existing MACD if any
-    if (ChartEngine._indicatorCharts && ChartEngine._indicatorCharts['macd']) {
-      try {
-        ChartEngine._indicatorCharts['macd'].remove();
-      } catch(e) {}
-      delete ChartEngine._indicatorCharts['macd'];
-    }
-    if (ChartEngine._indicatorSeries) {
-      delete ChartEngine._indicatorSeries['macd_line'];
-      delete ChartEngine._indicatorSeries['macd_signal'];
-      delete ChartEngine._indicatorSeries['macd_hist'];
-    }
-    
-    // Remove the pane from DOM
-    const pane = document.getElementById('macd-pane');
-    if (pane) pane.remove();
-    
-    // Create the pane container
-    const container = document.getElementById('indicator-panes-container');
-    if (!container) {
-      console.error('❌ Indicator container not found');
-      return;
-    }
-    
-    // Create the pane
-    const isMobile = window.innerWidth <= 768;
-    const paneHeight = isMobile ? 110 : 130;
-    
-    const newPane = document.createElement('div');
-    newPane.className = 'chart-pane chart-pane-indicator';
-    newPane.id = 'macd-pane';
-    newPane.setAttribute('data-title', 'MACD (12,26,9)');
-    newPane.style.cssText = `
-      flex: 0 0 ${paneHeight}px;
-      min-height: ${paneHeight}px;
-      max-height: ${paneHeight}px;
-      display: flex;
-      flex-direction: column;
-      border-bottom: 1px solid var(--border-primary);
-      overflow: hidden;
-      width: 100%;
-      position: relative;
-      background: var(--bg-primary);
-    `;
-    
-    const chartDiv = document.createElement('div');
-    chartDiv.id = 'macd-chart';
-    chartDiv.className = 'chart-canvas';
-    chartDiv.style.cssText = `
-      flex: 1;
-      min-height: ${paneHeight - 20}px;
-      width: 100%;
-      position: relative;
-    `;
-    
-    newPane.appendChild(chartDiv);
-    container.appendChild(newPane);
-    
-    // Create the chart with all 3 series
-    setTimeout(() => {
-      const el = document.getElementById('macd-chart');
-      if (!el) {
-        console.error('❌ MACD chart element not found');
-        return;
-      }
-      
-      const isLightTheme = document.body.getAttribute('data-theme') === 'light';
-      
-      // Get dimensions
-      let width = el.clientWidth || container.clientWidth || 300;
-      let height = el.clientHeight || (paneHeight - 20);
-      
-      el.style.width = width + 'px';
-      el.style.height = height + 'px';
-      
-      console.log(`📊 Creating MACD chart with ${width}x${height}`);
-      
-      try {
-        // Create chart instance
-        const chart = LightweightCharts.createChart(el, {
-          layout: {
-            background: { type: 'solid', color: isLightTheme ? '#ffffff' : '#0d1117' },
-            textColor: isLightTheme ? '#1f2328' : '#c9d1d9'
-          },
-          grid: {
-            vertLines: { color: isLightTheme ? '#f0f2f5' : '#21262d' },
-            horzLines: { color: isLightTheme ? '#f0f2f5' : '#21262d' }
-          },
-          rightPriceScale: {
-            visible: true,
-            borderVisible: true,
-            autoScale: true,
-            scaleMargins: { top: 0.1, bottom: 0.1 }
-          },
-          timeScale: {
-            visible: true,
-            borderVisible: true,
-            timeVisible: true,
-            secondsVisible: false,
-            fixLeftEdge: true,
-            fixRightEdge: true
-          },
-          crosshair: {
-            mode: 1,
-            vertLine: { color: '#8b949e', width: 1, style: 2, labelBackgroundColor: '#1c2128' },
-            horzLine: { color: '#8b949e', width: 1, style: 2, labelBackgroundColor: '#1c2128' }
-          },
-          handleScroll: { vertTouchDrag: false, horzTouchDrag: true },
-          handleScale: { axisPressedMouseMove: false, pinch: true, mouseWheel: false },
-          width: width,
-          height: height
-        });
-        
-        // ============================================
-        // CREATE ALL 3 SERIES FOR MACD
-        // ============================================
-        
-        // 1. MACD Line
-        const macdLineSeries = chart.addLineSeries({
-          color: '#3399ff',
-          lineWidth: 2,
-          priceLineVisible: false,
-          lastValueVisible: false
-        });
-        
-        // 2. Signal Line
-        const signalLineSeries = chart.addLineSeries({
-          color: '#ffa500',
-          lineWidth: 1.5,
-          priceLineVisible: false,
-          lastValueVisible: false
-        });
-        
-        // 3. Histogram
-        const histSeries = chart.addHistogramSeries({
-          priceFormat: { type: 'volume', precision: 0 }
-        });
-        
-        // Store them
-        if (!ChartEngine._indicatorCharts) ChartEngine._indicatorCharts = {};
-        if (!ChartEngine._indicatorSeries) ChartEngine._indicatorSeries = {};
-        
-        ChartEngine._indicatorCharts['macd'] = chart;
-        ChartEngine._indicatorSeries['macd_line'] = macdLineSeries;
-        ChartEngine._indicatorSeries['macd_signal'] = signalLineSeries;
-        ChartEngine._indicatorSeries['macd_hist'] = histSeries;
-        
-        // ============================================
-        // SYNC TIME SCALE WITH MAIN CHART
-        // ============================================
-        if (ChartEngine.charts && ChartEngine.charts.price) {
-          const mainChart = ChartEngine.charts.price;
-          
-          mainChart.timeScale().subscribeVisibleTimeRangeChange((range) => {
-            if (range && chart && !chart.isDisposed?.()) {
-              try {
-                chart.timeScale().setVisibleRange(range);
-              } catch(e) {}
-            }
-          });
-          
-          try {
-            const initialRange = mainChart.timeScale().getVisibleRange();
-            if (initialRange) {
-              chart.timeScale().setVisibleRange(initialRange);
-            }
-          } catch(e) {}
-        }
-        
-        // ============================================
-        // SET DATA IF AVAILABLE
-        // ============================================
-        if (result && result.line) {
-          macdLineSeries.setData(result.line);
-          signalLineSeries.setData(result.signal);
-          histSeries.setData(result.hist);
-          chart.timeScale().fitContent();
-        }
-        
-        console.log('✅ MACD pane created with all 3 series');
-        
-        // ============================================
-        // ADD REMOVE BUTTON
-        // ============================================
-        const removeBtn = document.createElement('button');
-        removeBtn.className = 'pane-remove-btn';
-        removeBtn.style.cssText = `
-          position: absolute;
-          top: 4px;
-          right: 4px;
-          z-index: 10;
-          width: 20px;
-          height: 20px;
-          background: none;
-          border: none;
-          color: var(--text-muted);
-          cursor: pointer;
-          font-size: 12px;
-          padding: 0;
-        `;
-        removeBtn.innerHTML = '✕';
-        removeBtn.title = 'Remove MACD';
-        
-        const self = this;
-        removeBtn.addEventListener('click', function() {
-          // Remove MACD from active indicators
-          STATE.activeIndicators.delete('MACD');
-          
-          // Remove the pane
-          const pane = document.getElementById('macd-pane');
-          if (pane) pane.remove();
-          
-          // Remove chart
-          if (ChartEngine._indicatorCharts && ChartEngine._indicatorCharts['macd']) {
-            try {
-              ChartEngine._indicatorCharts['macd'].remove();
-            } catch(e) {}
-            delete ChartEngine._indicatorCharts['macd'];
-          }
-          if (ChartEngine._indicatorSeries) {
-            delete ChartEngine._indicatorSeries['macd_line'];
-            delete ChartEngine._indicatorSeries['macd_signal'];
-            delete ChartEngine._indicatorSeries['macd_hist'];
-          }
-          
-          // Update badge
-          const indicatorCount = document.getElementById('indicator-count');
-          if (indicatorCount) {
-            indicatorCount.textContent = STATE.activeIndicators.size;
-          }
-          
-          ChartEngine.resizeAll();
-          
-          if (typeof Toast !== 'undefined') {
-            Toast.info('MACD removed');
-          }
-        });
-        
-        newPane.appendChild(removeBtn);
-        
-        ChartEngine.resizeAll();
-        
-      } catch(e) {
-        console.error('❌ Failed to create MACD chart:', e);
-      }
-    }, 100);
+    this._createMACDPane(result);
   } else {
-    // Update existing MACD
     console.log('📊 Updating existing MACD...');
-    if (result && result.line) {
-      if (ChartEngine._indicatorSeries['macd_line']) {
-        ChartEngine._indicatorSeries['macd_line'].setData(result.line);
+    this._updateMACDPane(result);
+  }
+},
+
+// ============================================
+// HELPER: Create MACD pane with all 3 series
+// ============================================
+_createMACDPane(result) {
+  // ============================================
+  // STEP 1: Remove existing MACD if any
+  // ============================================
+  this._removeMACDPane();
+  
+  // ============================================
+  // STEP 2: Create the pane container
+  // ============================================
+  const container = document.getElementById('indicator-panes-container');
+  if (!container) {
+    console.error('❌ Indicator container not found');
+    return;
+  }
+  
+  // Ensure container is visible
+  container.style.display = 'flex';
+  container.style.flexDirection = 'column';
+  container.style.width = '100%';
+  
+  // ============================================
+  // STEP 3: Create the pane element
+  // ============================================
+  const isMobile = window.innerWidth <= 768;
+  const paneHeight = isMobile ? 110 : 130;
+  
+  const newPane = document.createElement('div');
+  newPane.className = 'chart-pane chart-pane-indicator';
+  newPane.id = 'macd-pane';
+  newPane.setAttribute('data-title', 'MACD (12,26,9)');
+  newPane.style.cssText = `
+    flex: 0 0 ${paneHeight}px;
+    min-height: ${paneHeight}px;
+    max-height: ${paneHeight}px;
+    display: flex;
+    flex-direction: column;
+    border-bottom: 1px solid var(--border-primary);
+    overflow: hidden;
+    width: 100%;
+    position: relative;
+    background: var(--bg-primary);
+  `;
+  
+  const chartDiv = document.createElement('div');
+  chartDiv.id = 'macd-chart';
+  chartDiv.className = 'chart-canvas';
+  chartDiv.style.cssText = `
+    flex: 1;
+    min-height: ${paneHeight - 20}px;
+    width: 100%;
+    position: relative;
+  `;
+  
+  newPane.appendChild(chartDiv);
+  container.appendChild(newPane);
+  
+  // ============================================
+  // STEP 4: Create the chart with all 3 series
+  // ============================================
+  const el = document.getElementById('macd-chart');
+  if (!el) {
+    console.error('❌ MACD chart element not found');
+    return;
+  }
+  
+  const isLightTheme = document.body.getAttribute('data-theme') === 'light';
+  
+  setTimeout(() => {
+    // Get dimensions
+    let width = el.clientWidth || container.clientWidth || 300;
+    let height = el.clientHeight || (paneHeight - 20);
+    
+    el.style.width = width + 'px';
+    el.style.height = height + 'px';
+    
+    console.log(`📊 Creating MACD chart with ${width}x${height}`);
+    
+    try {
+      // Create chart instance
+      const chart = LightweightCharts.createChart(el, {
+        layout: {
+          background: { type: 'solid', color: isLightTheme ? '#ffffff' : '#0d1117' },
+          textColor: isLightTheme ? '#1f2328' : '#c9d1d9'
+        },
+        grid: {
+          vertLines: { color: isLightTheme ? '#f0f2f5' : '#21262d' },
+          horzLines: { color: isLightTheme ? '#f0f2f5' : '#21262d' }
+        },
+        rightPriceScale: {
+          visible: true,
+          borderVisible: true,
+          autoScale: true,
+          scaleMargins: { top: 0.1, bottom: 0.1 }
+        },
+        timeScale: {
+          visible: true,
+          borderVisible: true,
+          timeVisible: true,
+          secondsVisible: false,
+          fixLeftEdge: true,
+          fixRightEdge: true
+        },
+        crosshair: {
+          mode: 1,
+          vertLine: { color: '#8b949e', width: 1, style: 2, labelBackgroundColor: '#1c2128' },
+          horzLine: { color: '#8b949e', width: 1, style: 2, labelBackgroundColor: '#1c2128' }
+        },
+        handleScroll: { vertTouchDrag: false, horzTouchDrag: true },
+        handleScale: { axisPressedMouseMove: false, pinch: true, mouseWheel: false },
+        width: width,
+        height: height
+      });
+      
+      // ============================================
+      // CREATE ALL 3 SERIES FOR MACD
+      // ============================================
+      
+      // 1. MACD Line
+      const macdLineSeries = chart.addLineSeries({
+        color: '#3399ff',
+        lineWidth: 2,
+        priceLineVisible: false,
+        lastValueVisible: false
+      });
+      
+      // 2. Signal Line
+      const signalLineSeries = chart.addLineSeries({
+        color: '#ffa500',
+        lineWidth: 1.5,
+        priceLineVisible: false,
+        lastValueVisible: false
+      });
+      
+      // 3. Histogram
+      const histSeries = chart.addHistogramSeries({
+        priceFormat: { type: 'volume', precision: 0 }
+      });
+      
+      // ============================================
+      // STORE THEM PROPERLY
+      // ============================================
+      if (!this._indicatorCharts) this._indicatorCharts = {};
+      if (!this._indicatorSeries) this._indicatorSeries = {};
+      
+      this._indicatorCharts['macd'] = chart;
+      this._indicatorSeries['macd_line'] = macdLineSeries;
+      this._indicatorSeries['macd_signal'] = signalLineSeries;
+      this._indicatorSeries['macd_hist'] = histSeries;
+      
+      // ============================================
+      // SYNC TIME SCALE WITH MAIN CHART
+      // ============================================
+      if (this.charts && this.charts.price) {
+        const mainChart = this.charts.price;
+        
+        mainChart.timeScale().subscribeVisibleTimeRangeChange((range) => {
+          if (range && chart && !chart.isDisposed?.()) {
+            try {
+              chart.timeScale().setVisibleRange(range);
+            } catch(e) {}
+          }
+        });
+        
+        try {
+          const initialRange = mainChart.timeScale().getVisibleRange();
+          if (initialRange) {
+            chart.timeScale().setVisibleRange(initialRange);
+          }
+        } catch(e) {}
       }
-      if (ChartEngine._indicatorSeries['macd_signal']) {
-        ChartEngine._indicatorSeries['macd_signal'].setData(result.signal);
+      
+      // ============================================
+      // SET DATA
+      // ============================================
+      if (result && result.line) {
+        macdLineSeries.setData(result.line);
+        signalLineSeries.setData(result.signal);
+        histSeries.setData(result.hist);
+        chart.timeScale().fitContent();
       }
-      if (ChartEngine._indicatorSeries['macd_hist']) {
-        ChartEngine._indicatorSeries['macd_hist'].setData(result.hist);
-      }
-      if (ChartEngine._indicatorCharts && ChartEngine._indicatorCharts['macd']) {
-        ChartEngine._indicatorCharts['macd'].timeScale().fitContent();
-      }
+      
+      console.log('✅ MACD pane created with all 3 series');
+      
+      // ============================================
+      // ADD REMOVE BUTTON
+      // ============================================
+      const removeBtn = document.createElement('button');
+      removeBtn.className = 'pane-remove-btn';
+      removeBtn.style.cssText = `
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        z-index: 10;
+        width: 20px;
+        height: 20px;
+        background: none;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        font-size: 12px;
+        padding: 0;
+      `;
+      removeBtn.innerHTML = '✕';
+      removeBtn.title = 'Remove MACD';
+      
+      const self = this;
+      removeBtn.addEventListener('click', function() {
+        // Remove MACD from active indicators
+        STATE.activeIndicators.delete('MACD');
+        
+        // Remove the pane
+        const pane = document.getElementById('macd-pane');
+        if (pane) pane.remove();
+        
+        // Remove chart
+        if (self._indicatorCharts && self._indicatorCharts['macd']) {
+          try {
+            self._indicatorCharts['macd'].remove();
+          } catch(e) {}
+          delete self._indicatorCharts['macd'];
+        }
+        if (self._indicatorSeries) {
+          delete self._indicatorSeries['macd_line'];
+          delete self._indicatorSeries['macd_signal'];
+          delete self._indicatorSeries['macd_hist'];
+        }
+        
+        // Update badge
+        const indicatorCount = document.getElementById('indicator-count');
+        if (indicatorCount) {
+          indicatorCount.textContent = STATE.activeIndicators.size;
+        }
+        
+        if (typeof Toast !== 'undefined') {
+          Toast.info('MACD removed');
+        }
+      });
+      
+      newPane.appendChild(removeBtn);
+      
+    } catch(e) {
+      console.error('❌ Failed to create MACD chart:', e);
+    }
+  }, 100);
+},
+
+// ============================================
+// HELPER: Update existing MACD pane
+// ============================================
+_updateMACDPane(result) {
+  if (!result || !result.line) return;
+  
+  // Update MACD line
+  if (this._indicatorSeries && this._indicatorSeries['macd_line']) {
+    try {
+      this._indicatorSeries['macd_line'].setData(result.line);
+    } catch(e) {
+      console.warn('Failed to update MACD line:', e.message);
     }
   }
+  
+  // Update signal line
+  if (this._indicatorSeries && this._indicatorSeries['macd_signal']) {
+    try {
+      this._indicatorSeries['macd_signal'].setData(result.signal);
+    } catch(e) {
+      console.warn('Failed to update MACD signal:', e.message);
+    }
+  }
+  
+  // Update histogram
+  if (this._indicatorSeries && this._indicatorSeries['macd_hist']) {
+    try {
+      this._indicatorSeries['macd_hist'].setData(result.hist);
+    } catch(e) {
+      console.warn('Failed to update MACD histogram:', e.message);
+    }
+  }
+  
+  // Fit content
+  if (this._indicatorCharts && this._indicatorCharts['macd']) {
+    try {
+      this._indicatorCharts['macd'].timeScale().fitContent();
+    } catch(e) {}
+  }
+  
+  console.log('✅ MACD updated successfully');
+},
+
+// ============================================
+// HELPER: Remove MACD pane completely
+// ============================================
+_removeMACDPane() {
+  // Remove from DOM
+  const pane = document.getElementById('macd-pane');
+  if (pane) {
+    pane.remove();
+  }
+  
+  // Remove chart instance
+  if (this._indicatorCharts && this._indicatorCharts['macd']) {
+    try {
+      this._indicatorCharts['macd'].remove();
+    } catch(e) {}
+    delete this._indicatorCharts['macd'];
+  }
+  
+  // Remove series
+  if (this._indicatorSeries) {
+    delete this._indicatorSeries['macd_line'];
+    delete this._indicatorSeries['macd_signal'];
+    delete this._indicatorSeries['macd_hist'];
+  }
+  
+  console.log('🧹 MACD pane removed completely');
 },
   
   /**
@@ -7994,81 +8642,85 @@ _renderMACDPane(name, reg, result, data) {
   crosshairVisible: false,
   crosshairPosition: null,
   
-  // ============================================
-  // COORDINATE CONVERSION UTILITIES
-  // Converts between pixel coordinates and chart price/time
-  // ============================================
-  
-  /**
-   * Convert pixel position to chart coordinates (price + time)
-   * @param {Object} pixelPos - {x, y} in canvas pixels
-   * @returns {Object} {price, time, x, y} or null
-   */
-  // ============================================
-// FIND AND REPLACE THIS FUNCTION in engine.js
-// Look for "pixelToChart" or around line 3180
-// ============================================
 
 /**
  * Convert pixel position to chart coordinates (price + time)
- * FIXED: Handles different Lightweight Charts versions
+ * @param {Object} pixelPos - {x, y} in canvas pixels
+ * @returns {Object|null} {price, time, x, y} or null if conversion fails
  */
 pixelToChart: function(pixelPos) {
+  if (!pixelPos || typeof pixelPos.x !== 'number' || typeof pixelPos.y !== 'number') {
+    console.warn('pixelToChart: Invalid pixel position');
+    return null;
+  }
+  
   try {
-    var chart = ChartEngine.chart;
-    if (!chart) return null;
-    
-    // Try to get price scale - different versions use different methods
-    var priceScale = null;
-    var timeScale = null;
-    
-    // Method 1: Standard API
-    if (chart.priceScale) {
-      priceScale = chart.priceScale('right');
-      timeScale = chart.timeScale();
-    }
-    // Method 2: Alternative API for older versions
-    else if (chart.rightPriceScale) {
-      priceScale = chart.rightPriceScale;
-      timeScale = chart.timeScale;
+    // ============================================
+    // STEP 1: Get the chart instance
+    // ============================================
+    const chart = this._getChartInstance();
+    if (!chart) {
+      console.warn('pixelToChart: No chart instance available');
+      return null;
     }
     
-    if (!priceScale || !timeScale) return null;
+    // ============================================
+    // STEP 2: Get price and time scales
+    // ============================================
+    const priceScale = this._getPriceScale(chart);
+    const timeScale = this._getTimeScale(chart);
     
-    // Get price and time - handle different method names
-    var price = null;
-    var time = null;
+    if (!priceScale || !timeScale) {
+      console.warn('pixelToChart: Price or time scale not available');
+      return null;
+    }
     
-    // Try coordinateToPrice (standard)
+    // ============================================
+    // STEP 3: Convert pixel to price (Y-axis)
+    // ============================================
+    let price = null;
+    
+    // Try standard API methods
     if (typeof priceScale.coordinateToPrice === 'function') {
       price = priceScale.coordinateToPrice(pixelPos.y);
-    }
-    // Try convertFromCoordinate (older versions)
-    else if (typeof priceScale.convertFromCoordinate === 'function') {
+    } else if (typeof priceScale.convertFromCoordinate === 'function') {
       price = priceScale.convertFromCoordinate(pixelPos.y);
-    }
-    // Fallback: estimate from visible range
-    else {
-      var visibleRange = chart.timeScale().getVisibleRange();
-      if (visibleRange && chart.priceScale().getPriceRange) {
-        var priceRange = chart.priceScale().getPriceRange();
-        if (priceRange) {
-          var percent = pixelPos.y / (chart.options().height || 500);
-          price = priceRange.maxValue - (percent * (priceRange.maxValue - priceRange.minValue));
-        }
-      }
+    } else if (typeof priceScale.getValueByCoordinate === 'function') {
+      price = priceScale.getValueByCoordinate(pixelPos.y);
     }
     
-    // Get time
+    // Fallback: Estimate from visible range
+    if (price === null || price === undefined || !isFinite(price)) {
+      price = this._estimatePriceFromRange(chart, pixelPos.y);
+    }
+    
+    // ============================================
+    // STEP 4: Convert pixel to time (X-axis)
+    // ============================================
+    let time = null;
+    
+    // Try standard API methods
     if (typeof timeScale.coordinateToTime === 'function') {
       time = timeScale.coordinateToTime(pixelPos.x);
-    }
-    // Try convertFromCoordinate for time
-    else if (typeof timeScale.convertFromCoordinate === 'function') {
+    } else if (typeof timeScale.convertFromCoordinate === 'function') {
       time = timeScale.convertFromCoordinate(pixelPos.x);
+    } else if (typeof timeScale.getValueByCoordinate === 'function') {
+      time = timeScale.getValueByCoordinate(pixelPos.x);
     }
     
-    if (price === null || price === undefined || time === null || time === undefined) {
+    // Fallback: Estimate from visible range
+    if (time === null || time === undefined || !isFinite(time)) {
+      time = this._estimateTimeFromRange(chart, pixelPos.x);
+    }
+    
+    // ============================================
+    // STEP 5: Validate and return
+    // ============================================
+    if (price === null || price === undefined || !isFinite(price)) {
+      return null;
+    }
+    
+    if (time === null || time === undefined || !isFinite(time)) {
       return null;
     }
     
@@ -8078,6 +8730,7 @@ pixelToChart: function(pixelPos) {
       x: pixelPos.x,
       y: pixelPos.y
     };
+    
   } catch(e) {
     console.warn('pixelToChart error:', e.message);
     return null;
@@ -8086,48 +8739,401 @@ pixelToChart: function(pixelPos) {
 
 /**
  * Convert chart coordinates back to pixel position
- * FIXED: Handles different Lightweight Charts versions
+ * @param {Object} chartPos - {price, time} in chart coordinates
+ * @returns {Object|null} {x, y} or null if conversion fails
  */
 chartToPixel: function(chartPos) {
+  if (!chartPos || typeof chartPos.price !== 'number' || typeof chartPos.time !== 'number') {
+    console.warn('chartToPixel: Invalid chart position');
+    return null;
+  }
+  
   try {
-    var chart = ChartEngine.chart;
-    if (!chart) return null;
-    
-    var priceScale = null;
-    var timeScale = null;
-    
-    if (chart.priceScale) {
-      priceScale = chart.priceScale('right');
-      timeScale = chart.timeScale();
-    } else if (chart.rightPriceScale) {
-      priceScale = chart.rightPriceScale;
-      timeScale = chart.timeScale;
+    // ============================================
+    // STEP 1: Get the chart instance
+    // ============================================
+    const chart = this._getChartInstance();
+    if (!chart) {
+      console.warn('chartToPixel: No chart instance available');
+      return null;
     }
     
-    if (!priceScale || !timeScale) return null;
+    // ============================================
+    // STEP 2: Get price and time scales
+    // ============================================
+    const priceScale = this._getPriceScale(chart);
+    const timeScale = this._getTimeScale(chart);
     
-    var x = null;
-    var y = null;
-    
-    // Get X coordinate (time)
-    if (typeof timeScale.timeToCoordinate === 'function') {
-      x = timeScale.timeToCoordinate(chartPos.time);
-    } else if (typeof timeScale.convertToCoordinate === 'function') {
-      x = timeScale.convertToCoordinate(chartPos.time);
+    if (!priceScale || !timeScale) {
+      console.warn('chartToPixel: Price or time scale not available');
+      return null;
     }
     
-    // Get Y coordinate (price)
+    // ============================================
+    // STEP 3: Convert price to pixel (Y-axis)
+    // ============================================
+    let y = null;
+    
+    // Try standard API methods
     if (typeof priceScale.priceToCoordinate === 'function') {
       y = priceScale.priceToCoordinate(chartPos.price);
     } else if (typeof priceScale.convertToCoordinate === 'function') {
       y = priceScale.convertToCoordinate(chartPos.price);
+    } else if (typeof priceScale.getValueByCoordinate === 'function') {
+      // Inverse: find coordinate for value
+      y = this._inversePriceScale(chart, chartPos.price);
     }
     
-    if (x === null || y === null) return null;
+    // Fallback: Estimate from visible range
+    if (y === null || y === undefined || !isFinite(y)) {
+      y = this._estimatePixelFromPrice(chart, chartPos.price);
+    }
+    
+    // ============================================
+    // STEP 4: Convert time to pixel (X-axis)
+    // ============================================
+    let x = null;
+    
+    // Try standard API methods
+    if (typeof timeScale.timeToCoordinate === 'function') {
+      x = timeScale.timeToCoordinate(chartPos.time);
+    } else if (typeof timeScale.convertToCoordinate === 'function') {
+      x = timeScale.convertToCoordinate(chartPos.time);
+    } else if (typeof timeScale.getValueByCoordinate === 'function') {
+      // Inverse: find coordinate for time
+      x = this._inverseTimeScale(chart, chartPos.time);
+    }
+    
+    // Fallback: Estimate from visible range
+    if (x === null || x === undefined || !isFinite(x)) {
+      x = this._estimatePixelFromTime(chart, chartPos.time);
+    }
+    
+    // ============================================
+    // STEP 5: Validate and return
+    // ============================================
+    if (x === null || x === undefined || !isFinite(x)) {
+      return null;
+    }
+    
+    if (y === null || y === undefined || !isFinite(y)) {
+      return null;
+    }
     
     return { x: x, y: y };
+    
   } catch(e) {
     console.warn('chartToPixel error:', e.message);
+    return null;
+  }
+},
+
+// ============================================
+// HELPER: Get chart instance with fallback
+// ============================================
+_getChartInstance: function() {
+  // Try multiple ways to get the chart
+  if (this._chartInstance) {
+    return this._chartInstance;
+  }
+  
+  if (window.ChartEngine && window.ChartEngine.charts && window.ChartEngine.charts.price) {
+    this._chartInstance = window.ChartEngine.charts.price;
+    return this._chartInstance;
+  }
+  
+  if (window.ChartEngine && window.ChartEngine.chart) {
+    this._chartInstance = window.ChartEngine.chart;
+    return this._chartInstance;
+  }
+  
+  if (window.ChartEngine && window.ChartEngine.mainChart) {
+    this._chartInstance = window.ChartEngine.mainChart;
+    return this._chartInstance;
+  }
+  
+  // Try to find by DOM
+  const chartEl = document.getElementById('price-chart');
+  if (chartEl && chartEl.__chartInstance) {
+    this._chartInstance = chartEl.__chartInstance;
+    return this._chartInstance;
+  }
+  
+  return null;
+},
+
+// ============================================
+// HELPER: Get price scale with fallback
+// ============================================
+_getPriceScale: function(chart) {
+  if (!chart) return null;
+  
+  // Method 1: Standard API
+  if (typeof chart.priceScale === 'function') {
+    try {
+      return chart.priceScale('right');
+    } catch(e) {}
+  }
+  
+  // Method 2: Direct property
+  if (chart.rightPriceScale) {
+    return chart.rightPriceScale;
+  }
+  
+  // Method 3: Get from options
+  if (chart.options && chart.options.rightPriceScale) {
+    return chart.options.rightPriceScale;
+  }
+  
+  return null;
+},
+
+// ============================================
+// HELPER: Get time scale with fallback
+// ============================================
+_getTimeScale: function(chart) {
+  if (!chart) return null;
+  
+  // Method 1: Standard API
+  if (typeof chart.timeScale === 'function') {
+    try {
+      return chart.timeScale();
+    } catch(e) {}
+  }
+  
+  // Method 2: Direct property
+  if (chart.timeScale) {
+    return chart.timeScale;
+  }
+  
+  return null;
+},
+
+// ============================================
+// HELPER: Estimate price from visible range
+// ============================================
+_estimatePriceFromRange: function(chart, y) {
+  try {
+    const canvas = this.canvas;
+    if (!canvas) return null;
+    
+    const height = canvas.height;
+    const percentage = y / height;
+    
+    // Get visible price range from chart
+    const priceScale = this._getPriceScale(chart);
+    if (!priceScale) return null;
+    
+    let minPrice, maxPrice;
+    
+    if (typeof priceScale.getPriceRange === 'function') {
+      const range = priceScale.getPriceRange();
+      if (range) {
+        minPrice = range.minValue;
+        maxPrice = range.maxValue;
+      }
+    }
+    
+    if (minPrice === undefined || maxPrice === undefined) {
+      // Fallback: use candles data
+      const candles = window.STATE && window.STATE.candles;
+      if (candles && candles.length > 0) {
+        const closePrices = candles.map(c => c.close);
+        minPrice = Math.min(...closePrices);
+        maxPrice = Math.max(...closePrices);
+      } else {
+        return null;
+      }
+    }
+    
+    const priceRange = maxPrice - minPrice;
+    return maxPrice - (percentage * priceRange);
+    
+  } catch(e) {
+    console.warn('_estimatePriceFromRange error:', e.message);
+    return null;
+  }
+},
+
+// ============================================
+// HELPER: Estimate time from visible range
+// ============================================
+_estimateTimeFromRange: function(chart, x) {
+  try {
+    const canvas = this.canvas;
+    if (!canvas) return null;
+    
+    const width = canvas.width;
+    const percentage = x / width;
+    
+    // Get visible time range from chart
+    const timeScale = this._getTimeScale(chart);
+    if (!timeScale) return null;
+    
+    let minTime, maxTime;
+    
+    if (typeof timeScale.getVisibleRange === 'function') {
+      const range = timeScale.getVisibleRange();
+      if (range) {
+        minTime = range.from;
+        maxTime = range.to;
+      }
+    }
+    
+    if (minTime === undefined || maxTime === undefined) {
+      // Fallback: use candles data
+      const candles = window.STATE && window.STATE.candles;
+      if (candles && candles.length > 0) {
+        const times = candles.map(c => c.time);
+        minTime = Math.min(...times);
+        maxTime = Math.max(...times);
+      } else {
+        return null;
+      }
+    }
+    
+    const timeRange = maxTime - minTime;
+    return minTime + (percentage * timeRange);
+    
+  } catch(e) {
+    console.warn('_estimateTimeFromRange error:', e.message);
+    return null;
+  }
+},
+
+// ============================================
+// HELPER: Estimate pixel from price
+// ============================================
+_estimatePixelFromPrice: function(chart, price) {
+  try {
+    const canvas = this.canvas;
+    if (!canvas) return null;
+    
+    const height = canvas.height;
+    
+    // Get visible price range
+    const priceScale = this._getPriceScale(chart);
+    if (!priceScale) return null;
+    
+    let minPrice, maxPrice;
+    
+    if (typeof priceScale.getPriceRange === 'function') {
+      const range = priceScale.getPriceRange();
+      if (range) {
+        minPrice = range.minValue;
+        maxPrice = range.maxValue;
+      }
+    }
+    
+    if (minPrice === undefined || maxPrice === undefined) {
+      return null;
+    }
+    
+    const priceRange = maxPrice - minPrice;
+    const percentage = (maxPrice - price) / priceRange;
+    return percentage * height;
+    
+  } catch(e) {
+    console.warn('_estimatePixelFromPrice error:', e.message);
+    return null;
+  }
+},
+
+// ============================================
+// HELPER: Estimate pixel from time
+// ============================================
+_estimatePixelFromTime: function(chart, time) {
+  try {
+    const canvas = this.canvas;
+    if (!canvas) return null;
+    
+    const width = canvas.width;
+    
+    // Get visible time range
+    const timeScale = this._getTimeScale(chart);
+    if (!timeScale) return null;
+    
+    let minTime, maxTime;
+    
+    if (typeof timeScale.getVisibleRange === 'function') {
+      const range = timeScale.getVisibleRange();
+      if (range) {
+        minTime = range.from;
+        maxTime = range.to;
+      }
+    }
+    
+    if (minTime === undefined || maxTime === undefined) {
+      return null;
+    }
+    
+    const timeRange = maxTime - minTime;
+    const percentage = (time - minTime) / timeRange;
+    return percentage * width;
+    
+  } catch(e) {
+    console.warn('_estimatePixelFromTime error:', e.message);
+    return null;
+  }
+},
+
+// ============================================
+// HELPER: Inverse price scale (for older APIs)
+// ============================================
+_inversePriceScale: function(chart, price) {
+  try {
+    const priceScale = this._getPriceScale(chart);
+    if (!priceScale) return null;
+    
+    // Try to get all visible price levels
+    if (typeof priceScale.getPriceRange === 'function') {
+      const range = priceScale.getPriceRange();
+      if (range) {
+        const minPrice = range.minValue;
+        const maxPrice = range.maxValue;
+        const priceRange = maxPrice - minPrice;
+        const percentage = (price - minPrice) / priceRange;
+        const canvas = this.canvas;
+        if (canvas) {
+          return percentage * canvas.height;
+        }
+      }
+    }
+    
+    return null;
+    
+  } catch(e) {
+    console.warn('_inversePriceScale error:', e.message);
+    return null;
+  }
+},
+
+// ============================================
+// HELPER: Inverse time scale (for older APIs)
+// ============================================
+_inverseTimeScale: function(chart, time) {
+  try {
+    const timeScale = this._getTimeScale(chart);
+    if (!timeScale) return null;
+    
+    if (typeof timeScale.getVisibleRange === 'function') {
+      const range = timeScale.getVisibleRange();
+      if (range) {
+        const minTime = range.from;
+        const maxTime = range.to;
+        const timeRange = maxTime - minTime;
+        const percentage = (time - minTime) / timeRange;
+        const canvas = this.canvas;
+        if (canvas) {
+          return percentage * canvas.width;
+        }
+      }
+    }
+    
+    return null;
+    
+  } catch(e) {
+    console.warn('_inverseTimeScale error:', e.message);
     return null;
   }
 },
@@ -10796,10 +11802,579 @@ const DrawingToolsModal = {
 };
 
 
+// ============================================
+// YAHOO FINANCE DIRECT DATA MANAGER
+// No API key, no proxy, unlimited data
+// ============================================
+// ============================================
+// ============================================
+// YAHOO FINANCE DIRECT DATA MANAGER v2.0
+// Ultra-fast with aggressive caching & parallel fetching
+// ============================================
+const YahooDataManager = {
+  // ============================================
+  // CONFIGURATION
+  // ============================================
+  _primaryProxy: 'https://corsproxy.io/?',
+  _backupProxies: [
+    'https://api.allorigins.win/raw?url=',
+    'https://thingproxy.freeboard.io/fetch/'
+  ],
+  
+  // ============================================
+  // CACHE SYSTEM
+  // ============================================
+  _cache: {},
+  _cacheTTL: 60000, // 1 minute (fast cache)
+  _longCacheTTL: 300000, // 5 minutes (for historical)
+  _prefetchQueue: [],
+  _isPrefetching: false,
+  
+  // ============================================
+  // CORE FETCH WITH CACHE
+  // ============================================
+  async _fetchWithCache(url, ttl = this._cacheTTL) {
+    var cacheKey = url;
+    var now = Date.now();
+    
+    // ============================================
+    // CHECK MEMORY CACHE
+    // ============================================
+    if (this._cache[cacheKey] && (now - this._cache[cacheKey].timestamp) < ttl) {
+      console.log(`📦 Cache hit: ${url.substring(0, 60)}...`);
+      return this._cache[cacheKey].response.clone();
+    }
+    
+    // ============================================
+    // CHECK BROWSER CACHE (for repeat visits)
+    // ============================================
+    try {
+      var cache = await caches.open('yahoo-data-v1');
+      var cachedResponse = await cache.match(cacheKey);
+      if (cachedResponse) {
+        console.log(`📦 Browser cache hit: ${url.substring(0, 60)}...`);
+        // Refresh in background
+        this._refreshCache(url, cacheKey);
+        return cachedResponse;
+      }
+    } catch(e) {
+      // Browser cache not available, continue
+    }
+    
+    // ============================================
+    // FETCH FRESH DATA
+    // ============================================
+    console.log(`📡 Fetching: ${url.substring(0, 60)}...`);
+    
+    var response = await this._fetchWithFailover(url);
+    
+    // ============================================
+    // STORE IN CACHES
+    // ============================================
+    if (response.ok) {
+      // Memory cache
+      this._cache[cacheKey] = {
+        response: response.clone(),
+        timestamp: now
+      };
+      
+      // Browser cache (background)
+      try {
+        var cache = await caches.open('yahoo-data-v1');
+        cache.put(cacheKey, response.clone());
+      } catch(e) {}
+    }
+    
+    return response;
+  },
+  
+  // ============================================
+  // REFRESH CACHE IN BACKGROUND
+  // ============================================
+  async _refreshCache(url, cacheKey) {
+    try {
+      var freshResponse = await this._fetchWithFailover(url);
+      if (freshResponse.ok) {
+        this._cache[cacheKey] = {
+          response: freshResponse.clone(),
+          timestamp: Date.now()
+        };
+        var cache = await caches.open('yahoo-data-v1');
+        cache.put(cacheKey, freshResponse.clone());
+      }
+    } catch(e) {
+      // Silent fail - cache is still valid
+    }
+  },
+  
+  // ============================================
+  // FETCH WITH FAILOVER (optimized)
+  // ============================================
+  async _fetchWithFailover(url) {
+    // ============================================
+    // TRY PRIMARY PROXY FIRST (with shorter timeout)
+    // ============================================
+    var proxyUrl = `${this._primaryProxy}${encodeURIComponent(url)}`;
+    
+    try {
+      var controller = new AbortController();
+      var timeoutId = setTimeout(() => controller.abort(), 6000); // 6s timeout
+      
+      var response = await fetch(proxyUrl, { 
+        signal: controller.signal,
+        headers: { 'Accept': 'application/json' }
+      });
+      clearTimeout(timeoutId);
+      
+      if (response.ok) {
+        return response;
+      }
+      
+      throw new Error(`HTTP ${response.status}`);
+      
+    } catch(e) {
+      // ============================================
+      // TRY BACKUP PROXIES (parallel)
+      // ============================================
+      var backupPromises = this._backupProxies.map(async (backupProxy) => {
+        var backupUrl = `${backupProxy}${encodeURIComponent(url)}`;
+        try {
+          var controller = new AbortController();
+          var timeoutId = setTimeout(() => controller.abort(), 5000);
+          var response = await fetch(backupUrl, { signal: controller.signal });
+          clearTimeout(timeoutId);
+          if (response.ok) return response;
+        } catch(e) {}
+        return null;
+      });
+      
+      var results = await Promise.all(backupPromises);
+      var successfulResponse = results.find(r => r !== null);
+      
+      if (successfulResponse) {
+        return successfulResponse;
+      }
+      
+      throw new Error('All CORS proxies failed');
+    }
+  },
+  
+  // ============================================
+  // FETCH STOCK DATA (with caching)
+  // ============================================
+  async getStockData(symbol, interval = '1d', range = '3mo') {
+    var cacheKey = `stock_${symbol}_${interval}_${range}`;
+    var now = Date.now();
+    
+    // ============================================
+    // CHECK CACHE FIRST
+    // ============================================
+    if (this._cache[cacheKey] && (now - this._cache[cacheKey].timestamp) < this._longCacheTTL) {
+      console.log(`📦 Cache hit for ${symbol} ${interval}`);
+      return this._cache[cacheKey].data;
+    }
+    
+    // ============================================
+    // FETCH DATA
+    // ============================================
+    var url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=${interval}&range=${range}`;
+    
+    try {
+      var response = await this._fetchWithCache(url, this._longCacheTTL);
+      var data = await response.json();
+      
+      if (!data.chart || !data.chart.result || !data.chart.result[0]) {
+        throw new Error('No data returned from Yahoo');
+      }
+      
+      var result = data.chart.result[0];
+      var timestamps = result.timestamp;
+      var quotes = result.indicators.quote[0];
+      var adjClose = result.indicators.adjclose ? result.indicators.adjclose[0] : null;
+      
+      var candles = timestamps.map((time, index) => ({
+        time: time,
+        open: quotes.open[index],
+        high: quotes.high[index],
+        low: quotes.low[index],
+        close: adjClose ? adjClose[index] : quotes.close[index],
+        volume: quotes.volume[index] || 0
+      })).filter(c => c.open !== null && c.close !== null);
+      
+      // ============================================
+      // STORE IN CACHE
+      // ============================================
+      this._cache[cacheKey] = {
+        data: candles,
+        timestamp: now
+      };
+      
+      console.log(`✅ ${candles.length} candles for ${symbol} (${Date.now() - now}ms)`);
+      return candles;
+      
+    } catch(e) {
+      console.error(`❌ Failed to fetch ${symbol}:`, e.message);
+      return [];
+    }
+  },
+  
+  // ============================================
+  // FETCH FOREX DATA (with caching)
+  // ============================================
+  async getForexData(pair, interval = '1d', range = '3mo') {
+    var cacheKey = `forex_${pair}_${interval}_${range}`;
+    var now = Date.now();
+    
+    if (this._cache[cacheKey] && (now - this._cache[cacheKey].timestamp) < this._longCacheTTL) {
+      console.log(`📦 Cache hit for ${pair} ${interval}`);
+      return this._cache[cacheKey].data;
+    }
+    
+    var url = `https://query1.finance.yahoo.com/v8/finance/chart/${pair}?interval=${interval}&range=${range}`;
+    
+    try {
+      var response = await this._fetchWithCache(url, this._longCacheTTL);
+      var data = await response.json();
+      
+      if (!data.chart || !data.chart.result || !data.chart.result[0]) {
+        throw new Error('No data returned from Yahoo');
+      }
+      
+      var result = data.chart.result[0];
+      var timestamps = result.timestamp;
+      var quotes = result.indicators.quote[0];
+      var adjClose = result.indicators.adjclose ? result.indicators.adjclose[0] : null;
+      
+      var candles = timestamps.map((time, index) => ({
+        time: time,
+        open: quotes.open[index],
+        high: quotes.high[index],
+        low: quotes.low[index],
+        close: adjClose ? adjClose[index] : quotes.close[index],
+        volume: quotes.volume[index] || 0
+      })).filter(c => c.open !== null && c.close !== null);
+      
+      this._cache[cacheKey] = {
+        data: candles,
+        timestamp: now
+      };
+      
+      console.log(`✅ ${candles.length} candles for ${pair} (${Date.now() - now}ms)`);
+      return candles;
+      
+    } catch(e) {
+      console.error(`❌ Failed to fetch ${pair}:`, e.message);
+      return [];
+    }
+  },
+  
+  // ============================================
+  // GET QUOTE (with short cache)
+  // ============================================
+  async getQuote(symbol) {
+    var cacheKey = `quote_${symbol}`;
+    var now = Date.now();
+    
+    if (this._cache[cacheKey] && (now - this._cache[cacheKey].timestamp) < 10000) { // 10s cache
+      return this._cache[cacheKey].data;
+    }
+    
+    var url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&range=1d`;
+    
+    try {
+      var response = await this._fetchWithCache(url, 10000);
+      var data = await response.json();
+      
+      if (data.chart && data.chart.result && data.chart.result[0]) {
+        var result = data.chart.result[0];
+        var meta = result.meta;
+        var quote = result.indicators.quote[0];
+        
+        var quoteData = {
+          symbol: meta.symbol,
+          price: meta.regularMarketPrice || quote.close[quote.close.length - 1],
+          high: meta.regularMarketDayHigh || Math.max(...quote.high),
+          low: meta.regularMarketDayLow || Math.min(...quote.low),
+          volume: meta.regularMarketVolume || quote.volume[quote.volume.length - 1],
+          change: meta.regularMarketChange || 0,
+          changePercent: meta.regularMarketChangePercent || 0,
+          open: quote.open[0],
+          previousClose: meta.previousClose || quote.close[quote.close.length - 2] || 0
+        };
+        
+        this._cache[cacheKey] = {
+          data: quoteData,
+          timestamp: now
+        };
+        
+        return quoteData;
+      }
+      return null;
+      
+    } catch(e) {
+      console.error(`❌ Quote failed for ${symbol}:`, e.message);
+      return null;
+    }
+  },
+  
+  // ============================================
+  // SEARCH SYMBOLS
+  // ============================================
+  async searchSymbols(query) {
+    var cacheKey = `search_${query}`;
+    var now = Date.now();
+    
+    if (this._cache[cacheKey] && (now - this._cache[cacheKey].timestamp) < 60000) {
+      return this._cache[cacheKey].data;
+    }
+    
+    var url = `https://query1.finance.yahoo.com/v1/finance/search?q=${query}&quotesCount=10&newsCount=0`;
+    
+    try {
+      var response = await this._fetchWithCache(url, 60000);
+      var data = await response.json();
+      
+      if (data.quotes) {
+        var results = data.quotes.map(q => ({
+          symbol: q.symbol,
+          name: q.shortname || q.longname || q.symbol,
+          type: q.quoteType || 'equity',
+          exchange: q.exchange || 'NYSE'
+        }));
+        
+        this._cache[cacheKey] = {
+          data: results,
+          timestamp: now
+        };
+        
+        return results;
+      }
+      return [];
+      
+    } catch(e) {
+      console.error(`❌ Search failed for ${query}:`, e.message);
+      return [];
+    }
+  },
+  
+  // ============================================
+  // PREFETCH SYMBOL (for faster switching)
+  // ============================================
+  prefetch(symbol, interval = '1d', range = '3mo') {
+    if (!symbol) return;
+    
+    // Add to queue
+    this._prefetchQueue.push({ symbol, interval, range });
+    
+    // Process queue
+    if (!this._isPrefetching) {
+      this._processPrefetchQueue();
+    }
+  },
+  
+  async _processPrefetchQueue() {
+    if (this._prefetchQueue.length === 0) {
+      this._isPrefetching = false;
+      return;
+    }
+    
+    this._isPrefetching = true;
+    var item = this._prefetchQueue.shift();
+    
+    // Prefetch in background with low priority
+    setTimeout(async () => {
+      await this.getStockData(item.symbol, item.interval, item.range);
+      this._processPrefetchQueue();
+    }, 100);
+  },
+  
+  // ============================================
+  // CLEAR CACHE
+  // ============================================
+  clearCache() {
+    this._cache = {};
+    console.log('🧹 Yahoo cache cleared');
+  },
+  
+  // ============================================
+  // DEBUG
+  // ============================================
+  debug() {
+    console.log('=== YAHOO DATA MANAGER ===');
+    console.log('Cache entries:', Object.keys(this._cache).length);
+    console.log('Prefetch queue:', this._prefetchQueue.length);
+    console.log('Is prefetching:', this._isPrefetching);
+    console.log('==============================');
+  }
+};
+
+// ============================================
+// EXPOSE GLOBALLY
+// ============================================
+window.YahooDataManager = YahooDataManager;
+
+// ============================================
+// PRELOAD COMMON SYMBOLS ON STARTUP
+// ============================================
+setTimeout(() => {
+  if (typeof YahooDataManager !== 'undefined') {
+    // Preload common stocks
+    ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA'].forEach(symbol => {
+      YahooDataManager.prefetch(symbol, '1d', '3mo');
+    });
+    // Preload common forex
+    ['EURUSD=X', 'GBPUSD=X', 'USDJPY=X'].forEach(pair => {
+      YahooDataManager.prefetch(pair, '1d', '3mo');
+    });
+    console.log('🚀 YahooDataManager: Prefetching common symbols');
+  }
+}, 1000);
+
+// ============================================
+// HOOK INTO WATCHLIST FOR PRELOADING
+// ============================================
+setTimeout(() => {
+  if (typeof WatchlistManager !== 'undefined') {
+    // Override render to add preload
+    var originalRender = WatchlistManager.render;
+    WatchlistManager.render = function() {
+      originalRender.call(this);
+      
+      // Add hover preload
+      document.querySelectorAll('.watchlist-item').forEach(el => {
+        el.addEventListener('mouseenter', function() {
+          var symbol = this.dataset.symbol;
+          if (symbol && typeof YahooDataManager !== 'undefined') {
+            YahooDataManager.prefetch(symbol, '1d', '3mo');
+          }
+        });
+      });
+    };
+  }
+}, 2000);
+
+
+// ============================================
+// WebSocket State Manager - Defined outside DataManager
+// ============================================
+var WebSocketStateManager = {
+  _state: {
+    ws: null,
+    isConnecting: false,
+    isReconnecting: false,
+    reconnectAttempts: 0,
+    lastMessageTime: 0,
+    lastPingTime: 0,
+    isHealthy: false,
+    pingIntervalId: null,
+    healthIntervalId: null,
+    reconnectTimeoutId: null,
+    messageQueue: [],
+    cache: new Map(),
+    connectionStartTime: 0
+  },
+  
+  getWs: function() { return this._state.ws; },
+  setWs: function(val) { this._state.ws = val; },
+  
+  getIsConnecting: function() { return this._state.isConnecting; },
+  setIsConnecting: function(val) { this._state.isConnecting = val; },
+  
+  getIsReconnecting: function() { return this._state.isReconnecting; },
+  setIsReconnecting: function(val) { this._state.isReconnecting = val; },
+  
+  getReconnectAttempts: function() { return this._state.reconnectAttempts; },
+  setReconnectAttempts: function(val) { this._state.reconnectAttempts = val; },
+  
+  getLastMessageTime: function() { return this._state.lastMessageTime; },
+  setLastMessageTime: function(val) { this._state.lastMessageTime = val; },
+  
+  getIsHealthy: function() { return this._state.isHealthy; },
+  setIsHealthy: function(val) { this._state.isHealthy = val; },
+  
+  incrementReconnectAttempts: function() {
+    this._state.reconnectAttempts++;
+    return this._state.reconnectAttempts;
+  },
+  
+  reset: function() {
+    this._state.reconnectAttempts = 0;
+    this._state.isHealthy = false;
+    this._state.isConnecting = false;
+    this._state.isReconnecting = false;
+    this._state.lastMessageTime = 0;
+    this._state.messageQueue = [];
+  },
+  
+  clearIntervals: function() {
+    if (this._state.pingIntervalId) {
+      clearInterval(this._state.pingIntervalId);
+      this._state.pingIntervalId = null;
+    }
+    if (this._state.healthIntervalId) {
+      clearInterval(this._state.healthIntervalId);
+      this._state.healthIntervalId = null;
+    }
+    if (this._state.reconnectTimeoutId) {
+      clearTimeout(this._state.reconnectTimeoutId);
+      this._state.reconnectTimeoutId = null;
+    }
+  },
+  
+  queueMessage: function(data) {
+    if (this._state.messageQueue.length >= DataManager.WS_CONFIG.MAX_MESSAGE_QUEUE) {
+      this._state.messageQueue.shift();
+    }
+    this._state.messageQueue.push(data);
+  },
+  
+  flushMessageQueue: function() {
+    const queue = this._state.messageQueue;
+    this._state.messageQueue = [];
+    return queue;
+  },
+  
+  cacheMessage: function(key, data, ttl) {
+    const expiry = Date.now() + (ttl || DataManager.WS_CONFIG.CACHE_TTL);
+    this._state.cache.set(key, { data, expiry });
+    
+    if (this._state.cache.size > DataManager.WS_CONFIG.MAX_CACHE_ENTRIES) {
+      const oldestKey = this._state.cache.keys().next().value;
+      this._state.cache.delete(oldestKey);
+    }
+  },
+  
+  getCachedMessage: function(key) {
+    const entry = this._state.cache.get(key);
+    if (entry && entry.expiry > Date.now()) {
+      return entry.data;
+    }
+    this._state.cache.delete(key);
+    return null;
+  }
+};
   // ============================================
   // DATA MANAGER
   // ============================================
   const DataManager = {
+	  
+ // ============================================
+  // WebSocket Manager Configuration
+  // ============================================
+  WS_CONFIG: {
+    MAX_RECONNECT_ATTEMPTS: 15,
+    BASE_RECONNECT_DELAY: 1000,
+    MAX_RECONNECT_DELAY: 60000,
+    RECONNECT_JITTER: 0.3,
+    PING_INTERVAL: 30000,
+    STALE_CONNECTION_THRESHOLD: 45000,
+    CONNECTION_TIMEOUT: 10000,
+    MAX_MESSAGE_QUEUE: 100,
+    CACHE_TTL: 60000,
+    MAX_CACHE_ENTRIES: 50
+  },
+  // Inside DataManager, after WS_CONFIG
+_wsState: WebSocketStateManager,
 _wsConnecting: false,
   _reconnecting: false,
 	_restPollingActive: false, 
@@ -10827,24 +12402,188 @@ async _rateLimitFetch(url) {
       this.connectWS();
       this.startMarketOverview();
       console.log('✅ Data Manager initialized');
+	   // Initialize cache and preload
+  this._cache.clearOld();
+  
+  // Preload default assets in background
+  setTimeout(() => {
+    const defaultAssets = [
+      { symbol: 'AAPL', interval: '1d' },
+      { symbol: 'TSLA', interval: '1d' },
+      { symbol: 'EURUSD', interval: '1d' },
+      { symbol: 'GBPUSD', interval: '1d' }
+    ];
+    
+    for (const asset of defaultAssets) {
+      this._cache.get(asset.symbol, asset.interval) || 
+      this._fetchFreshData(asset.symbol, asset.interval, 'stocks').catch(() => {});
+    }
+  }, 2000);
     },
 
 
 _parseKlines(data) {
   const candles = [];
+  
+  // If no data, return empty array
+  if (!data || data.length === 0) return candles;
+  
+  // Check if data is already in object format (Yahoo or converted)
+  const firstItem = data[0];
+  const isObjectFormat = firstItem && 
+                         typeof firstItem === 'object' && 
+                         firstItem.time !== undefined && 
+                         firstItem.open !== undefined;
+  
+  if (isObjectFormat) {
+    // Already in correct format (Yahoo data or previously converted)
+    // Just validate and return
+    for (let i = 0; i < data.length; i++) {
+      const k = data[i];
+      if (!k) continue;
+      
+      const time = typeof k.time === 'number' ? k.time : Number(k.time);
+      const open = typeof k.open === 'number' ? k.open : Number(k.open);
+      const high = typeof k.high === 'number' ? k.high : Number(k.high);
+      const low = typeof k.low === 'number' ? k.low : Number(k.low);
+      const close = typeof k.close === 'number' ? k.close : Number(k.close);
+      const volume = typeof k.volume === 'number' ? k.volume : Number(k.volume || 0);
+      
+      if (isNaN(time) || isNaN(open) || isNaN(high) || isNaN(low) || isNaN(close)) continue;
+      if (open <= 0 || close <= 0) continue;
+      
+      candles.push({
+        time: time,
+        open: open,
+        high: Math.max(high, open, close),
+        low: Math.min(low, open, close),
+        close: close,
+        volume: Math.max(0, volume)
+      });
+    }
+    return candles.sort((a, b) => a.time - b.time);
+  }
+  
+  // Binance array format
   for (let i = 0; i < data.length; i++) {
     const k = data[i];
     if (!k || k.length < 6) continue;
+    
     const time = Math.floor(k[0] / 1000);
     const open = parseFloat(k[1]);
     const high = parseFloat(k[2]);
     const low = parseFloat(k[3]);
     const close = parseFloat(k[4]);
     const volume = parseFloat(k[5]);
+    
     if (isNaN(time) || isNaN(open) || isNaN(high) || isNaN(low) || isNaN(close)) continue;
-    candles.push({ time, open, high, low, close, volume });
+    if (open <= 0 || close <= 0) continue;
+    
+    candles.push({
+      time: time,
+      open: open,
+      high: Math.max(high, open, close),
+      low: Math.min(low, open, close),
+      close: close,
+      volume: Math.max(0, volume)
+    });
   }
-  return candles.sort((a,b) => a.time - b.time);
+  
+  return candles.sort((a, b) => a.time - b.time);
+},
+_convertYahooToCandles(data) {
+  if (!data || data.length === 0) return [];
+  
+  return data.map(c => ({
+    time: c.time,
+    open: parseFloat(c.open.toFixed(6)),
+    high: parseFloat(c.high.toFixed(6)),
+    low: parseFloat(c.low.toFixed(6)),
+    close: parseFloat(c.close.toFixed(6)),
+    volume: Math.round(c.volume) || 0
+  })).filter(c => 
+    !isNaN(c.time) && 
+    !isNaN(c.open) && 
+    !isNaN(c.high) && 
+    !isNaN(c.low) && 
+    !isNaN(c.close) && 
+    c.open > 0 && 
+    c.close > 0
+  );
+},
+// ============================================
+// ADVANCED CACHING SYSTEM
+// ============================================
+_cache: {
+  // In-memory cache for instant access
+  memory: new Map(),
+  
+  // Cache expiry (5 minutes for stocks/forex, 1 minute for crypto)
+  getExpiry(assetType) {
+    return assetType === 'crypto' ? 60000 : 300000;
+  },
+  
+  // Get from cache (memory → localStorage)
+  get(symbol, interval) {
+    const key = `${symbol}_${interval}`;
+    
+    // Check memory cache first (instant)
+    const memoryCached = this.memory.get(key);
+    if (memoryCached && Date.now() - memoryCached.timestamp < this.getExpiry(STATE.assetType)) {
+      return memoryCached.data;
+    }
+    
+    // Check localStorage (persistent)
+    const localCached = StorageManager.get(`cache_${key}`);
+    if (localCached && Date.now() - localCached.timestamp < this.getExpiry(STATE.assetType)) {
+      // Restore to memory
+      this.memory.set(key, { data: localCached.data, timestamp: localCached.timestamp });
+      return localCached.data;
+    }
+    
+    return null;
+  },
+  
+  // Set cache (memory + localStorage)
+  set(symbol, interval, data) {
+    const key = `${symbol}_${interval}`;
+    const cacheEntry = {
+      data: data,
+      timestamp: Date.now()
+    };
+    
+    // Memory cache (instant)
+    this.memory.set(key, cacheEntry);
+    
+    // localStorage (persistent)
+    StorageManager.set(`cache_${key}`, cacheEntry);
+  },
+  
+  // Clear old caches
+  clearOld() {
+    const now = Date.now();
+    const expiry = 24 * 60 * 60 * 1000; // 24 hours
+    
+    // Clear memory cache
+    for (const [key, entry] of this.memory) {
+      if (now - entry.timestamp > expiry) {
+        this.memory.delete(key);
+      }
+    }
+    
+    // Clear localStorage - find all cache keys
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('cache_')) {
+        try {
+          const entry = JSON.parse(localStorage.getItem(key));
+          if (now - entry.timestamp > expiry) {
+            localStorage.removeItem(key);
+          }
+        } catch(e) {}
+      }
+    }
+  }
 },
   // ============================================
 // CODE BLOCK H: Replace DataManager.loadSymbols
@@ -11159,315 +12898,669 @@ _buildExtendedFallbackSymbols() {
       quoteAsset: 'USDT'
     }));
   },
+ 
  // ============================================
-// CODE BLOCK 1: DataManager.loadHistory()
-// REMOVED: cached candles, filtered outliers, all fallbacks
-// KEPT: All original validation logic
+// ADD THIS TO DataManager (before loadHistory)
 // ============================================
+_validateCandles(candles) {
+  if (!candles || !Array.isArray(candles) || candles.length < 2) {
+    return [];
+  }
+  
+  // Filter out invalid candles
+  const validCandles = candles.filter(c => {
+    return c.time && typeof c.time === 'number' && c.time > 0 &&
+           c.open && typeof c.open === 'number' && c.open > 0 &&
+           c.high && typeof c.high === 'number' && c.high > 0 &&
+           c.low && typeof c.low === 'number' && c.low > 0 &&
+           c.close && typeof c.close === 'number' && c.close > 0;
+  });
+  
+  // Ensure high >= low and high >= open/close
+  return validCandles.map(c => ({
+    time: c.time,
+    open: c.open,
+    high: Math.max(c.high, c.open, c.close),
+    low: Math.min(c.low, c.open, c.close),
+    close: c.close,
+    volume: c.volume || 0
+  }));
+},
+ // ============================================
+// BACKGROUND REFRESH METHOD
 // ============================================
-// REPLACE loadHistory WITH THIS
+async _fetchFreshData(symbol, interval, assetType) {
+  console.log(`🔄 Fetching fresh data for ${symbol}...`);
+  
+  let klinesData;
+  
+  // ============================================
+  // CRYPTO - DIRECT BINANCE
+  // ============================================
+  if (assetType === 'crypto' || assetType === 'futures') {
+    const directUrl = `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=200`;
+    try {
+      const response = await fetch(directUrl);
+      if (response.ok) {
+        klinesData = await response.json();
+      }
+    } catch(e) {
+      klinesData = await fetchWithFailover(`endpoint=klines&symbol=${symbol}&interval=${interval}&limit=200`);
+    }
+  }
+  
+  // ============================================
+  // STOCKS & FOREX - BACKEND
+  // ============================================
+  else if (assetType === 'stocks' || assetType === 'forex') {
+    const apiBase = 'https://coingecko-proxy-eight.vercel.app/api/coingecko';
+    let range = '3mo';
+    if (['1m','3m','5m','15m','30m'].includes(interval)) range = '5d';
+    else if (['1h','2h','4h'].includes(interval)) range = '1mo';
+    else if (interval === '1d') range = '3mo';
+    else if (interval === '1w') range = '1y';
+    
+    const url = `${apiBase}?endpoint=market-data&symbol=${encodeURIComponent(symbol)}&interval=${encodeURIComponent(interval)}&range=${encodeURIComponent(range)}`;
+    
+    try {
+      const response = await fetch(url);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.candles && data.candles.length > 0) {
+          klinesData = data.candles;
+        }
+      }
+    } catch(e) {
+      console.error('Backend fetch failed:', e);
+    }
+  }
+  
+  // ============================================
+  // PROCESS DATA
+  // ============================================
+  if (klinesData && klinesData.length > 0) {
+    const rawKlines = this._parseKlines(klinesData);
+    const validCandles = this._validateCandles(rawKlines);
+    
+    if (validCandles.length > 0) {
+      STATE.candles = validCandles;
+      
+      // Cache the result
+      this._cache.set(symbol, interval, validCandles);
+      
+      // Update chart if not already rendered from cache
+      if (!cached) {
+        this._renderChart(STATE.candles);
+      } else {
+        // Just update volume and indicators
+        if (ChartEngine) {
+          ChartEngine.updateVolume(validCandles);
+          if (STATE.activeIndicators && STATE.activeIndicators.size > 0) {
+            IndicatorEngine.calculateAll();
+          }
+        }
+      }
+      
+      // Load 24h stats
+      await this.load24h(symbol);
+    }
+  }
+},
+// ============================================
+// CLEAN, STABLE loadHistory - NO FLICKER
 // ============================================
 async loadHistory(symbol, interval) {
   ErrorHandler.clearInlineErrors();
   
-  // Clear chart before fetching
-  if (typeof ChartEngine !== 'undefined' && ChartEngine.mainSeries) {
-    try {
-      ChartEngine.mainSeries.setData([]);
-      if (ChartEngine.series && ChartEngine.series.volume) {
-        ChartEngine.series.volume.setData([]);
-      }
-      console.log('🧹 Cleared chart data before fetching');
-    } catch(e) {
-      console.warn('Could not clear chart data:', e.message);
-    }
+  // ============================================
+  // STEP 1: Validate that this is the current symbol
+  // ============================================
+  // If the symbol doesn't match, discard this load
+  if (symbol !== STATE.symbol && STATE.symbol) {
+    console.log(`⏭️ Ignoring stale load for ${symbol}, current is ${STATE.symbol}`);
+    return;
   }
   
-  STATE.candles = [];
-  
-  if (this._loadQueueTimeout) {
-    clearTimeout(this._loadQueueTimeout);
-    this._loadQueueTimeout = null;
+  // ============================================
+  // STEP 2: Show loading state
+  // ============================================
+  const chartContainer = document.getElementById('price-chart');
+  if (chartContainer) {
+    chartContainer.style.opacity = '0.4';
+    chartContainer.style.transition = 'opacity 0.2s ease';
   }
   
-  this._loadingInProgress = true;
+  // ============================================
+  // STEP 3: Detect asset type
+  // ============================================
+  const assetType = AssetTypeManager.detectAssetType(symbol);
+  STATE.assetType = assetType;
+  
+  console.log(`📊 Loading ${assetType} data for ${symbol}`);
   
   try {
-    // Use CONFIG.INITIAL_CANDLE_LIMIT instead of CONFIG.CANDLE_LIMIT
-    const klinesData = await fetchWithFailover(
-      `endpoint=klines&symbol=${symbol}&interval=${interval}&limit=${CONFIG.INITIAL_CANDLE_LIMIT || 200}`
-    );
+    let klinesData = null;
     
-    // REJECT if error
-    if (klinesData.error) {
-      throw new Error(klinesData.message);
+    // ============================================
+    // CRYPTO - DIRECT BINANCE (NO PROXY)
+    // ============================================
+    if (assetType === 'crypto' || assetType === 'futures') {
+      const directUrl = `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${CONFIG.INITIAL_CANDLE_LIMIT || 200}`;
+      
+      console.log(`🟢 CRYPTO DIRECT: ${directUrl}`);
+      const response = await fetch(directUrl);
+      
+      if (response.ok) {
+        klinesData = await response.json();
+      } else {
+        throw new Error(`Binance HTTP ${response.status}`);
+      }
     }
     
-    if (!klinesData || !Array.isArray(klinesData) || klinesData.length === 0) {
-      throw new Error('No candle data received for ' + symbol);
+    // ============================================
+    // STOCKS & FOREX - BACKEND (YAHOO)
+    // ============================================
+    else if (assetType === 'stocks' || assetType === 'forex') {
+      // Determine range based on interval
+      let range = '3mo';
+      if (['1m', '3m', '5m', '15m', '30m'].includes(interval)) {
+        range = '5d';
+      } else if (interval === '1h' || interval === '2h' || interval === '4h') {
+        range = '1mo';
+      } else if (interval === '1d') {
+        range = '3mo';
+      } else if (interval === '1w') {
+        range = '1y';
+      }
+      
+      const apiBase = 'https://coingecko-proxy-eight.vercel.app/api/coingecko';
+      const url = `${apiBase}?endpoint=market-data&symbol=${encodeURIComponent(symbol)}&interval=${encodeURIComponent(interval)}&range=${encodeURIComponent(range)}`;
+      
+      console.log(`📡 Stocks/Forex via backend: ${url}`);
+      
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        throw new Error(`Backend HTTP ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      if (!data.candles || data.candles.length === 0) {
+        throw new Error('No candles returned from backend');
+      }
+      
+      klinesData = data.candles;
+      console.log(`✅ Backend returned ${klinesData.length} candles from ${data.source}`);
     }
     
-    // Parse and validate Binance klines
-    const rawKlines = [];
-    const seenTimestamps = {};
-    
-    for (let i = 0; i < klinesData.length; i++) {
-      const k = klinesData[i];
-      if (!k || k.length < 6) continue;
+    // ============================================
+    // INDICES, COMMODITIES (Twelve Data via proxy)
+    // ============================================
+    else if (assetType === 'indices' || assetType === 'commodities') {
+      const apiBase = getApiBase();
+      let twelveSymbol = symbol;
       
-      const time = Math.floor(k[0] / 1000);
-      const open = parseFloat(k[1]);
-      const high = parseFloat(k[2]);
-      const low = parseFloat(k[3]);
-      const close = parseFloat(k[4]);
-      const volume = parseFloat(k[5]);
+      const intervalMap = {
+        '1m': '1min', '5m': '5min', '15m': '15min', '30m': '30min',
+        '1h': '1h', '4h': '4h', '1d': '1day', '1w': '1week', '1M': '1month'
+      };
+      const twelveInterval = intervalMap[interval] || '1day';
       
-      if (isNaN(time) || time <= 0) continue;
-      if (isNaN(open) || open <= 0) continue;
-      if (isNaN(high) || high <= 0) continue;
-      if (isNaN(low) || low <= 0) continue;
-      if (isNaN(close) || close <= 0) continue;
+      const url = `${apiBase}/proxy?endpoint=twelvedata&symbol=${twelveSymbol}&interval=${twelveInterval}&outputsize=200`;
       
-      const adjustedHigh = Math.max(high, open, close);
-      const adjustedLow = Math.min(low, open, close);
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`Twelve Data HTTP ${response.status}`);
       
-      if (seenTimestamps[time]) continue;
-      seenTimestamps[time] = true;
+      const data = await response.json();
       
-      rawKlines.push({
-        time: time,
-        open: open,
-        high: adjustedHigh,
-        low: adjustedLow,
-        close: close,
-        volume: Math.max(0, volume)
-      });
+      if (data.values && data.values.length > 0) {
+        klinesData = data.values.map(v => ({
+          time: Math.floor(new Date(v.datetime).getTime() / 1000),
+          open: parseFloat(v.open),
+          high: parseFloat(v.high),
+          low: parseFloat(v.low),
+          close: parseFloat(v.close),
+          volume: parseFloat(v.volume || 0)
+        })).filter(c => !isNaN(c.time) && !isNaN(c.close));
+      } else {
+        throw new Error('No data from Twelve Data');
+      }
     }
     
-    rawKlines.sort((a, b) => a.time - b.time);
+    // ============================================
+    // STEP 4: Validate and render
+    // ============================================
+    if (!klinesData || klinesData.length === 0) {
+      throw new Error('No data received');
+    }
+    
+    // Parse and validate
+    const rawKlines = this._parseKlines(klinesData);
+    const validCandles = this._validateCandles(rawKlines);
+    
+    if (validCandles.length === 0) {
+      throw new Error('No valid candles after validation');
+    }
+    
+    // ============================================
+    // STEP 5: Update state and render
+    // ============================================
+    STATE.candles = validCandles;
+    
+    // Render the chart (this will clear and redraw cleanly)
+    this._renderChart(STATE.candles);
+    
+    // Load 24h stats
+    await this.load24h(symbol);
+    
+  } catch (error) {
+    console.error('❌ loadHistory FAILED:', error.message);
+    ErrorHandler.handle(error, 'DataManager.loadHistory', 'critical');
+  } finally {
+    // Hide loading state
+    if (chartContainer) {
+      setTimeout(() => {
+        chartContainer.style.opacity = '1';
+      }, 200);
+    }
+  }
+},
+
+
+// ============================================
+// NEW: _fetchFreshData - Background refresh
+// ============================================
+async _fetchFreshData(symbol, interval, assetType) {
+  console.log(`🔄 Fetching fresh data for ${symbol}...`);
+  
+  try {
+    let klinesData;
+    
+    // ============================================
+    // CRYPTO - DIRECT BINANCE (NO PROXY)
+    // ============================================
+    if (assetType === 'crypto' || assetType === 'futures') {
+      const directUrl = `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${CONFIG.INITIAL_CANDLE_LIMIT || 200}`;
+      
+      try {
+        console.log(`🟢 CRYPTO DIRECT: ${directUrl}`);
+        const response = await fetch(directUrl);
+        if (response.ok) {
+          klinesData = await response.json();
+        } else {
+          throw new Error(`Binance HTTP ${response.status}`);
+        }
+      } catch(e) {
+        // Fallback to proxy only if direct fails
+        console.warn(`⚠️ Direct Binance failed, using proxy fallback:`, e.message);
+        klinesData = await fetchWithFailover(
+          `endpoint=klines&symbol=${symbol}&interval=${interval}&limit=${CONFIG.INITIAL_CANDLE_LIMIT || 200}`
+        );
+      }
+    }
+    
+    // ============================================
+    // STOCKS & FOREX - BACKEND (YAHOO)
+    // ============================================
+    else if (assetType === 'stocks' || assetType === 'forex') {
+      // Determine range based on interval
+      let range = '3mo';
+      if (['1m', '3m', '5m', '15m', '30m'].includes(interval)) {
+        range = '5d';
+      } else if (interval === '1h' || interval === '2h' || interval === '4h') {
+        range = '1mo';
+      } else if (interval === '1d') {
+        range = '3mo';
+      } else if (interval === '1w') {
+        range = '1y';
+      }
+      
+      const apiBase = 'https://coingecko-proxy-eight.vercel.app/api/coingecko';
+      const url = `${apiBase}?endpoint=market-data&symbol=${encodeURIComponent(symbol)}&interval=${encodeURIComponent(interval)}&range=${encodeURIComponent(range)}`;
+      
+      console.log(`📡 Stocks/Forex via backend: ${url}`);
+      
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
+      const response = await fetch(url, { signal: controller.signal });
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        throw new Error(`Backend HTTP ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      if (!data.candles || data.candles.length === 0) {
+        throw new Error('No candles returned from backend');
+      }
+      
+      klinesData = data.candles;
+      console.log(`✅ Backend returned ${klinesData.length} candles from ${data.source}`);
+    }
+    
+    // ============================================
+    // INDICES, COMMODITIES (Twelve Data via proxy)
+    // ============================================
+    else if (assetType === 'indices' || assetType === 'commodities') {
+      const apiBase = getApiBase();
+      let twelveSymbol = symbol;
+      
+      const intervalMap = {
+        '1m': '1min', '5m': '5min', '15m': '15min', '30m': '30min',
+        '1h': '1h', '4h': '4h', '1d': '1day', '1w': '1week', '1M': '1month'
+      };
+      const twelveInterval = intervalMap[interval] || '1day';
+      
+      const url = `${apiBase}/proxy?endpoint=twelvedata&symbol=${twelveSymbol}&interval=${twelveInterval}&outputsize=200`;
+      
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`Twelve Data HTTP ${response.status}`);
+      
+      const data = await response.json();
+      
+      if (data.values && data.values.length > 0) {
+        klinesData = data.values.map(v => ({
+          time: Math.floor(new Date(v.datetime).getTime() / 1000),
+          open: parseFloat(v.open),
+          high: parseFloat(v.high),
+          low: parseFloat(v.low),
+          close: parseFloat(v.close),
+          volume: parseFloat(v.volume || 0)
+        })).filter(c => !isNaN(c.time) && !isNaN(c.close));
+      } else {
+        throw new Error('No data from Twelve Data');
+      }
+    }
+    
+    // ============================================
+    // STEP 6: Process, validate, and render
+    // ============================================
+    if (!klinesData || (Array.isArray(klinesData) && klinesData.length === 0)) {
+      throw new Error('No data received');
+    }
+    
+    // Parse and sanitize
+    const rawKlines = this._parseKlines(klinesData);
     
     if (rawKlines.length === 0) {
       throw new Error('No valid candles after parsing');
     }
     
-    STATE.candles = rawKlines;
-    console.log(`✅ Loaded ${STATE.candles.length} LIVE candles for ${symbol}`);
+    // === CRITICAL: VALIDATE BEFORE STORING ===
+    const validCandles = this._validateCandles(rawKlines);
     
-    if (STATE.symbol !== symbol) {
-      console.warn('⚠️ Symbol changed during fetch, discarding data for', symbol);
-      this._loadingInProgress = false;
-      return;
+    if (validCandles.length === 0) {
+      throw new Error('No valid candles after validation');
     }
     
-    // Update charts
-    ChartEngine.updateMain(STATE.candles);
-	
-	// Add this to DataManager.loadHistory after chart update
-setTimeout(() => {
-  if (typeof ChartEngine !== 'undefined' && ChartEngine.limitVisibleCandles) {
-    ChartEngine.limitVisibleCandles();
+    STATE.candles = validCandles;
+    
+    // ============================================
+    // STEP 7: Cache the result
+    // ============================================
+    const cacheKey = `history_${symbol}_${interval}`;
+    StorageManager.set(cacheKey, {
+      candles: STATE.candles,
+      timestamp: Date.now()
+    });
+    console.log(`💾 Cached ${STATE.candles.length} candles for ${symbol}`);
+    
+    // ============================================
+    // STEP 8: Render the chart
+    // ============================================
+    this._renderChart(STATE.candles);
+    
+    // ============================================
+    // STEP 9: Load 24h stats
+    // ============================================
+    await this.load24h(symbol);
+    
+  } catch (error) {
+    console.error('❌ _fetchFreshData FAILED:', error.message);
+    ErrorHandler.handle(error, 'DataManager._fetchFreshData', 'critical');
+    
+    // ============================================
+    // STEP 10: Try fallback (Local cache or static)
+    // ============================================
+    const fallbackCandles = this._getFallbackData(symbol, interval);
+    if (fallbackCandles && fallbackCandles.length > 0) {
+      const validFallback = this._validateCandles(fallbackCandles);
+      if (validFallback.length > 0) {
+        STATE.candles = validFallback;
+        this._renderChart(STATE.candles);
+        if (typeof Toast !== 'undefined') {
+          Toast.warning('Using fallback data. Live data unavailable.', 5000);
+        }
+      }
+    }
   }
-}, 300);
+},
+
+// ============================================
+// UPDATED _renderChart - WITH PROPER RENDER ORDER
+// ============================================
+_renderChart(candles) {
+  if (!candles || candles.length === 0) return;
+  
+  // Update main chart with proper render order
+  if (typeof ChartEngine !== 'undefined') {
+    // Clear first
+    ChartEngine.mainSeries.setData([]);
+    if (ChartEngine.series && ChartEngine.series.volume) {
+      ChartEngine.series.volume.setData([]);
+    }
     
-    setTimeout(() => {
-      ChartEngine.updateVolume(STATE.candles);
+    // Render in the correct order using requestAnimationFrame
+    requestAnimationFrame(() => {
+      ChartEngine.updateMain(candles);
+      ChartEngine.updateVolume(candles);
       ChartEngine.fitContent();
-    }, 150);
+    });
+    
+    // Update indicators AFTER chart render
+    if (STATE.activeIndicators && STATE.activeIndicators.size > 0) {
+      requestAnimationFrame(() => {
+        if (typeof IndicatorEngine !== 'undefined') {
+          IndicatorEngine.calculateAll();
+        }
+      });
+    }
+  }
+  
+  // Update price display
+  const lastCandle = candles[candles.length - 1];
+  if (lastCandle && typeof this.updatePriceDisplay === 'function') {
+    this.updatePriceDisplay(lastCandle);
+  }
+  
+  console.log(`✅ Chart rendered with ${candles.length} candles`);
+},
+
+// ============================================
+// NEW HELPER: _renderChart
+// ============================================
+_renderChart(candles) {
+  if (!candles || candles.length === 0) return;
+  
+  // Update main chart
+  if (typeof ChartEngine !== 'undefined') {
+    ChartEngine.updateMain(candles);
     
     setTimeout(() => {
+      ChartEngine.updateVolume(candles);
+      ChartEngine.fitContent();
+      
       if (typeof IndicatorEngine !== 'undefined' && STATE.activeIndicators && STATE.activeIndicators.size > 0) {
         IndicatorEngine.calculateAll();
       }
-    }, 500);
-    
-    this.updatePriceDisplay(STATE.candles[STATE.candles.length - 1]);
-    await this.load24h(symbol);
-    
-  } catch (e) {
-    console.error('❌ loadHistory FAILED:', e.message);
-    ErrorHandler.handle(e, 'DataManager.loadHistory', 'critical');
-  } finally {
-    this._loadingInProgress = false;
+    }, 100);
   }
+  
+  // Update price display
+  const lastCandle = candles[candles.length - 1];
+  if (lastCandle && typeof this.updatePriceDisplay === 'function') {
+    this.updatePriceDisplay(lastCandle);
+  }
+  
+  console.log(`✅ Chart rendered with ${candles.length} candles`);
 },
-// Add this to DataManager.loadHistory after chart update
 
+// ============================================
+// NEW HELPER: _getFallbackData
+// ============================================
+_getFallbackData(symbol, interval) {
+  // Try to get from cache
+  const cacheKey = `history_${symbol}_${interval}`;
+  const cached = StorageManager.get(cacheKey);
+  if (cached && cached.candles && cached.candles.length > 0) {
+    return cached.candles;
+  }
+  
+  // Generate synthetic data as last resort
+  const price = 100;
+  const candles = [];
+  const now = Math.floor(Date.now() / 1000);
+  const intervalSeconds = this._intervalToSeconds(interval) || 900;
+  
+  for (let i = 0; i < 200; i++) {
+    const time = now - (i * intervalSeconds);
+    const open = price + (Math.random() - 0.5) * 2;
+    const close = open + (Math.random() - 0.5) * 2;
+    candles.push({
+      time: time,
+      open: open,
+      high: Math.max(open, close) + Math.random() * 0.5,
+      low: Math.min(open, close) - Math.random() * 0.5,
+      close: close,
+      volume: Math.random() * 100000
+    });
+  }
+  
+  return candles.sort((a, b) => a.time - b.time);
+},
+
+// ============================================
+// NEW HELPER: _intervalToSeconds
+// ============================================
+_intervalToSeconds(interval) {
+  const map = {
+    '1m': 60, '3m': 180, '5m': 300, '15m': 900,
+    '30m': 1800, '1h': 3600, '2h': 7200, '4h': 14400,
+    '6h': 21600, '8h': 28800, '12h': 43200,
+    '1d': 86400, '3d': 259200, '1w': 604800, '1M': 2592000
+  };
+  return map[interval] || 900;
+},
+
+// ============================================
+// CORRECTED load24h WITH PROPER ROUTING
+// ============================================
 async load24h(symbol) {
   try {
-    let data;
+    const assetType = AssetTypeManager.detectAssetType(symbol);
     
-    if (STATE.assetType === 'crypto') {
+    // ============================================
+    // CRYPTO - DIRECT BINANCE (NO PROXY)
+    // ============================================
+    if (assetType === 'crypto' || assetType === 'futures') {
       const apiBase = getApiBase();
-      // USE RATE LIMITED FETCH
-      const response = await this._rateLimitFetch(`${apiBase}/proxy?endpoint=ticker&symbol=${symbol}`);
+      const response = await this._rateLimitFetch(
+        `${apiBase}/proxy?endpoint=ticker&symbol=${symbol}`
+      );
       
-      if (!response.ok) {
-        if (response.status === 429) {
-          console.warn(`⚠️ Rate limited for ${symbol}, waiting 2 seconds...`);
-          await new Promise(resolve => setTimeout(resolve, 2000));
-          return this.load24h(symbol); // Retry once
+      if (response.ok) {
+        const data = await response.json();
+        if (data && !data.error) {
+          STATE.change24h = parseFloat(data.priceChangePercent);
+          STATE.high24h = parseFloat(data.highPrice);
+          STATE.low24h = parseFloat(data.lowPrice);
+          STATE.volume24h = parseFloat(data.volume);
+          STATE.currentPrice = parseFloat(data.lastPrice);
         }
-        throw new Error(`HTTP ${response.status}`);
-      }
-      
-      data = await response.json();
-      
-      if (data && !data.error) {
-        STATE.change24h = parseFloat(data.priceChangePercent);
-        STATE.high24h = parseFloat(data.highPrice);
-        STATE.low24h = parseFloat(data.lowPrice);
-        STATE.volume24h = parseFloat(data.volume);
-        STATE.currentPrice = parseFloat(data.lastPrice);
-        
-        console.log(`✅ Crypto 24h data loaded for ${symbol}:`, {
-          price: STATE.currentPrice,
-          change: STATE.change24h,
-          high: STATE.high24h,
-          low: STATE.low24h,
-          volume: STATE.volume24h
-        });
-      } else {
-        throw new Error(data?.error || 'No ticker data');
       }
     }
     
     // ============================================
-    // STOCKS - Finnhub via Cloudflare Worker
+    // STOCKS & FOREX - BACKEND (YAHOO)
     // ============================================
-    else if (STATE.assetType === 'stocks') {
-      const apiBase = 'https://tradevision-backend.wambuamwanza6.workers.dev/api';
-      const stockSymbol = symbol.replace('USDT', '');
+    else if (assetType === 'stocks' || assetType === 'forex') {
+      const apiBase = 'https://coingecko-proxy-eight.vercel.app/api/coingecko';
+      const url = `${apiBase}?endpoint=quote&symbol=${encodeURIComponent(symbol)}`;
       
-      const response = await fetch(`${apiBase}/proxy?endpoint=finnhub&symbol=${stockSymbol}`);
+      console.log(`📡 Stocks/Forex 24h via backend: ${url}`);
       
-      if (response.ok) {
-        const quote = await response.json();
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
+      const response = await fetch(url, { signal: controller.signal });
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) throw new Error(`Backend HTTP ${response.status}`);
+      
+      const data = await response.json();
+      
+      if (data.quote) {
+        STATE.currentPrice = data.quote.price;
+        STATE.change24h = data.quote.change;
+        STATE.high24h = data.quote.high;
+        STATE.low24h = data.quote.low;
+        STATE.volume24h = data.quote.volume;
+        STATE.open24h = data.quote.open;
         
-        if (quote && typeof quote.c === 'number' && quote.c > 0) {
-          STATE.currentPrice = quote.c;
-          
-          // Calculate 24h change from previous close
-          const prevClose = quote.pc || quote.c * 0.98;
-          STATE.change24h = ((quote.c - prevClose) / prevClose) * 100;
-          STATE.high24h = quote.h || quote.c * 1.02;
-          STATE.low24h = quote.l || quote.c * 0.98;
-          STATE.volume24h = quote.v || 0;
-          
-          console.log(`✅ Stock 24h data loaded for ${stockSymbol}:`, {
-            price: STATE.currentPrice,
-            change: STATE.change24h,
-            high: STATE.high24h,
-            low: STATE.low24h,
-            volume: STATE.volume24h
-          });
-        } else {
-          console.warn(`⚠️ Invalid stock quote for ${stockSymbol}, using fallback`);
-          this.setStockFallbackValues(symbol);
-        }
+        console.log(`✅ 24h quote from ${data.source}: $${STATE.currentPrice} (${STATE.change24h.toFixed(2)}%)`);
       } else {
-        console.warn(`⚠️ Finnhub API returned ${response.status} for ${stockSymbol}, using fallback`);
-        this.setStockFallbackValues(symbol);
+        throw new Error('No quote data');
       }
     }
     
     // ============================================
-    // FOREX - Twelve Data via Cloudflare Worker
+    // INDICES, COMMODITIES (Twelve Data via proxy)
     // ============================================
-    else if (STATE.assetType === 'forex') {
-      const apiBase = 'https://tradevision-backend.wambuamwanza6.workers.dev/api';
-      let forexSymbol = symbol;
-      if (symbol.length === 6) {
-        forexSymbol = symbol.slice(0, 3) + '/' + symbol.slice(3);
-      }
+    else if (assetType === 'indices' || assetType === 'commodities') {
+      const apiBase = getApiBase();
+      let twelveSymbol = symbol;
       
-      const response = await fetch(`${apiBase}/proxy?endpoint=twelvedata&symbol=${forexSymbol}&interval=1day`);
+      const response = await fetch(`${apiBase}/proxy?endpoint=twelvedata&symbol=${twelveSymbol}&interval=1day`);
       
       if (response.ok) {
-        const forexData = await response.json();
-        
-        if (forexData.values && forexData.values.length > 0) {
-          const current = parseFloat(forexData.values[0].close);
-          const previous = parseFloat(forexData.values[1]?.close || current * 0.998);
+        const data = await response.json();
+        if (data.values && data.values.length > 0) {
+          const current = parseFloat(data.values[0].close);
+          const previous = parseFloat(data.values[1]?.close || current * 0.998);
           
           STATE.currentPrice = current;
           STATE.change24h = ((current - previous) / previous) * 100;
           
-          // Calculate 24h high/low from last 24 data points (approximately 1 day)
-          const last24Points = forexData.values.slice(0, 24);
+          const last24Points = data.values.slice(0, 24);
           const highs = last24Points.map(v => parseFloat(v.high));
           const lows = last24Points.map(v => parseFloat(v.low));
           
           STATE.high24h = Math.max(...highs);
           STATE.low24h = Math.min(...lows);
-          STATE.volume24h = 0; // Forex doesn't have volume
-          
-          console.log(`✅ Forex 24h data loaded for ${forexSymbol}:`, {
-            price: STATE.currentPrice,
-            change: STATE.change24h,
-            high: STATE.high24h,
-            low: STATE.low24h
-          });
-        } else {
-          console.warn(`⚠️ No forex data for ${forexSymbol}, using fallback`);
-          this.setForexFallbackValues(symbol);
+          STATE.volume24h = 0;
         }
-      } else {
-        console.warn(`⚠️ Twelve Data API returned ${response.status} for ${forexSymbol}, using fallback`);
-        this.setForexFallbackValues(symbol);
       }
     }
     
     // ============================================
-    // UPDATE UI COMPONENTS
+    // UPDATE UI
     // ============================================
     this.updateStats();
     this.updatePriceDisplay({ 
       close: STATE.currentPrice, 
-      open: STATE.currentPrice, 
+      open: STATE.open24h || STATE.currentPrice, 
       high: STATE.high24h, 
       low: STATE.low24h 
     });
     
-    // Update watchlist if needed
-    if (typeof WatchlistManager !== 'undefined' && WatchlistManager.updatePrice) {
-      WatchlistManager.updatePrice(symbol, STATE.currentPrice, STATE.change24h);
-    }
-    
-    // Update trade manager prices
-    if (typeof TradeManager !== 'undefined' && TradeManager.updatePrices) {
-      TradeManager.updatePrices();
-    }
-    
-    // Force update of ticker display
-    const tickerPriceEl = document.getElementById(`tp-${symbol}`);
-    if (tickerPriceEl && STATE.currentPrice) {
-      tickerPriceEl.textContent = '$' + U.formatPrice(STATE.currentPrice);
-      tickerPriceEl.style.color = STATE.change24h >= 0 ? 'var(--up-color)' : 'var(--down-color)';
-    }
-    
-    const tickerChangeEl = document.getElementById(`tc-${symbol}`);
-    if (tickerChangeEl && STATE.change24h !== null) {
-      tickerChangeEl.textContent = `${STATE.change24h >= 0 ? '+' : ''}${U.formatNum(STATE.change24h, 2)}%`;
-      tickerChangeEl.className = `ticker-change ${STATE.change24h >= 0 ? 'positive' : 'negative'}`;
-    }
-    
   } catch(error) {
-    console.error('❌ load24h fatal error:', error.message);
-	   if (error.message.includes('429')) {
-      // Silent retry after delay
-      setTimeout(() => this.load24h(symbol), 3000);
-    }
-    
-    // Set fallback values to prevent UI from showing empty
+    console.error('❌ load24h error:', error.message);
     this.setFallbackValues();
-    
-    // Update UI with whatever we have
     this.updateStats();
-    if (STATE.currentPrice) {
-      this.updatePriceDisplay({ close: STATE.currentPrice });
-    }
   }
 },
+
 
 // ============================================
 // COMPLETE STOCK FALLBACK VALUES
@@ -11710,14 +13803,48 @@ setFallbackValues() {
 // COMPLETE REPLACEMENT: DataManager.connectWS()
 // NO REST FALLBACK - PURE WEBSOCKET
 // ============================================
-connectWS() {
-  if (this._wsConnecting) {
+// ============================================
+// PRODUCTION-GRADE WEBSOCKET MANAGER
+// Complete reconnection system with caching, health checks, and failover
+// ============================================
+
+/**
+ * WebSocket Manager Configuration
+ */
+
+/**
+ * WebSocket State Manager
+ * Centralized state tracking with recovery capabilities
+ */
+
+// Initialize state manager
+
+
+/**
+ * Production-grade WebSocket connection with failover and caching
+ */
+async connectWS() {
+  // ============================================
+  // STEP 1: Prevent concurrent connection attempts
+  // ============================================
+  if (this._wsState.isConnecting) {
     console.log('⏳ WebSocket connection already in progress');
     return;
   }
   
+  if (this._wsState.isReconnecting) {
+    console.log('⏳ WebSocket reconnect already in progress');
+    return;
+  }
+  
+  // ============================================
+  // STEP 2: Clean up existing connection
+  // ============================================
   this.cleanupConnection();
   
+  // ============================================
+  // STEP 3: Validate connection prerequisites
+  // ============================================
   const symbol = STATE.symbol;
   if (!symbol || symbol.length < 3) {
     console.warn('⚠️ Invalid symbol for WebSocket');
@@ -11737,7 +13864,7 @@ connectWS() {
   }
   
   // ============================================
-  // DIRECT BINANCE WEBSOCKET - NO PROXY
+  // STEP 4: Build connection URL with failover
   // ============================================
   const streams = [
     `${sym}@kline_${interval}`,
@@ -11745,169 +13872,411 @@ connectWS() {
     `${sym}@depth20@100ms`
   ];
   
-  const streamUrl = `wss://stream.binance.com:9443/stream?streams=${streams.join('/')}`;
-  console.log(`🔌 Connecting WebSocket directly to Binance: ${streamUrl.substring(0, 70)}...`);
+  // Try multiple stream URLs for failover
+  const streamUrls = [
+    `wss://stream.binance.com:9443/stream?streams=${streams.join('/')}`,
+    `wss://stream.binance.com:9443/ws/${sym}@kline_${interval}/${sym}@trade/${sym}@depth20@100ms`,
+    `wss://testnet.binance.vision/stream?streams=${streams.join('/')}`
+  ];
   
-  this._wsConnecting = true;
+  let ws = null;
+  let connectionError = null;
   
-  try {
-    const ws = new WebSocket(streamUrl);
-    STATE.websockets.multi = ws;
-    
-    // Initialize health tracking
-    if (!STATE._wsHealth) {
-      STATE._wsHealth = {
-        lastMessageTime: Date.now(),
-        reconnectAttempts: 0,
-        isHealthy: false
-      };
+  // Try each URL with timeout
+  for (let i = 0; i < streamUrls.length && !ws; i++) {
+    try {
+      console.log(`🔌 Connecting WebSocket (attempt ${i + 1}/${streamUrls.length}): ${streamUrls[i].substring(0, 70)}...`);
+      
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), WS_CONFIG.CONNECTION_TIMEOUT);
+      
+      // Use Promise.race to handle connection timeout
+      ws = await this._createWebSocketWithTimeout(streamUrls[i], controller);
+      
+      clearTimeout(timeoutId);
+      
+      if (ws) {
+        console.log(`✅ WebSocket connected successfully using URL ${i + 1}`);
+        break;
+      }
+      
+    } catch (err) {
+      console.warn(`⚠️ WebSocket URL ${i + 1} failed:`, err.message);
+      connectionError = err;
     }
-    
-    STATE.reconnectAttempts = 0;
-    STATE._wsHealth.reconnectAttempts = 0;
-    
-    ws.onopen = () => {
-      console.log('✅ WebSocket connected to Binance');
-      STATE.isConnected = true;
-      STATE._wsHealth.isHealthy = true;
-      STATE._wsHealth.lastMessageTime = Date.now();
-      this._wsConnecting = false;
-      
-      // Keep status hidden
-      const statusDot = document.getElementById('status-dot');
-      const statusText = document.getElementById('status-text');
-      if (statusDot) statusDot.style.display = 'none';
-      if (statusText) statusText.style.display = 'none';
-      
-      // Ping interval
-      if (STATE._wsHealth.pingIntervalId) IntervalManager.clear(STATE._wsHealth.pingIntervalId);
-      STATE._wsHealth.pingIntervalId = IntervalManager.register(() => {
-        if (ws && ws.readyState === WebSocket.OPEN) {
-          try { ws.send(JSON.stringify({ method: 'ping' })); } catch(e) {}
-        }
-      }, 30000, 'WS-ping');
-    };
-    
-    ws.onmessage = (e) => {
-      STATE._wsHealth.lastMessageTime = Date.now();
-      
-      try {
-        const m = JSON.parse(e.data);
-        
-        if (m.result === 'pong' || m.pong) return;
-        
-        if (m.stream && m.data) {
-          if (m.stream.includes('@kline')) {
-            this.handleKline(m.data.k);
-          } else if (m.stream.includes('@depth')) {
-            this.handleDepth(m.data);
-          }
-        }
-      } catch(ex) {
-        console.warn('WebSocket parse error:', ex.message);
-      }
-    };
-    
-  ws.onerror = (error) => {
-  console.error('🔴 WebSocket error:', error);
-  STATE._wsHealth.isHealthy = false;
-  this._wsConnecting = false;
-  
-  // Don't show error to user - just log
-  const statusDot = document.getElementById('status-dot');
-  const statusText = document.getElementById('status-text');
-  if (statusDot) statusDot.style.display = 'none';
-  if (statusText) statusText.style.display = 'none';
-};
-    
-    ws.onclose = (event) => {
-      console.log(`🔴 WebSocket closed: code=${event.code}, reason=${event.reason || 'none'}`);
-      STATE.isConnected = false;
-      STATE._wsHealth.isHealthy = false;
-      this._wsConnecting = false;
-      
-      if (STATE._wsHealth.pingIntervalId) {
-        IntervalManager.clear(STATE._wsHealth.pingIntervalId);
-        STATE._wsHealth.pingIntervalId = null;
-      }
-      
-      // Only reconnect for recoverable errors (not normal closure)
-      if (event.code !== 1000 && event.code !== 1001) {
-        console.log('🔄 Scheduling reconnect in 3 seconds...');
-        setTimeout(() => this.reconnect(), 3000);
-      }
-    };
-    
-  } catch(e) {
-    console.error('❌ Failed to create WebSocket:', e.message);
-    this._wsConnecting = false;
-    setTimeout(() => this.reconnect(), 3000);
   }
-},
-
-// ============================================
-// CODE BLOCK 3: Modify reconnect() - remove REST polling
-// ============================================
-reconnect(forceImmediate = false) {
-  if (this._reconnecting) {
-    console.log('⏳ Reconnect already in progress, skipping');
+  
+  if (!ws) {
+    console.error('❌ All WebSocket connection attempts failed');
+    this._wsState.isConnecting = false;
+    this.reconnect(true);
     return;
   }
   
-  this._reconnecting = true;
+  // ============================================
+  // STEP 5: Configure the WebSocket
+  // ============================================
+  this._wsState.ws = ws;
+  this._wsState.isConnecting = false;
+  this._wsState.isHealthy = false;
+  this._wsState.lastMessageTime = Date.now();
+  this._wsState.connectionStartTime = Date.now();
   
-  const maxAttempts = CONFIG.MAX_RECONNECT_ATTEMPTS || 10;
+  // ============================================
+  // STEP 6: Set up event handlers
+  // ============================================
   
-  if (STATE.reconnectAttempts >= maxAttempts) {
-    console.error('❌ Max reconnection attempts reached (' + maxAttempts + ')');
+  // onopen handler
+  ws.onopen = () => {
+    console.log('✅ WebSocket connected to Binance');
+    STATE.isConnected = true;
+    this._wsState.isHealthy = true;
+    this._wsState.lastMessageTime = Date.now();
+    this._wsState.reconnectAttempts = 0;
     
-    // ============================================
-    // REMOVED: this.startRestPolling();
-    // Just reset attempts and retry after longer delay
-    // ============================================
-    STATE.reconnectAttempts = 0;
-    this._reconnecting = false;
-    
-    console.log('🔌 WebSocket: Max attempts reached, will retry in 60 seconds');
-    
-    // Keep status elements hidden
+    // Hide status indicators
     const statusDot = document.getElementById('status-dot');
     const statusText = document.getElementById('status-text');
     if (statusDot) statusDot.style.display = 'none';
     if (statusText) statusText.style.display = 'none';
     
-    // Schedule retry after 60 seconds
+    // Flush any queued messages
+    const queuedMessages = this._wsState.flushMessageQueue();
+    if (queuedMessages.length > 0) {
+      console.log(`📤 Flushing ${queuedMessages.length} queued messages`);
+      queuedMessages.forEach(msg => {
+        try {
+          ws.send(msg);
+        } catch(e) {
+          console.warn('Failed to send queued message:', e.message);
+        }
+      });
+    }
+    
+    // Start ping interval
+    this._startPingInterval();
+  };
+  
+  // onmessage handler
+  ws.onmessage = (e) => {
+    this._wsState.lastMessageTime = Date.now();
+    
+    try {
+      const m = JSON.parse(e.data);
+      
+      // Handle ping/pong
+      if (m.result === 'pong' || m.pong) {
+        this._wsState.lastPingTime = Date.now();
+        return;
+      }
+      
+      // Process data
+      if (m.stream && m.data) {
+        if (m.stream.includes('@kline')) {
+          this.handleKline(m.data.k);
+        } else if (m.stream.includes('@depth')) {
+          this.handleDepth(m.data);
+        }
+      }
+    } catch(ex) {
+      console.warn('WebSocket parse error:', ex.message);
+    }
+  };
+  
+  // onerror handler
+  ws.onerror = (error) => {
+    console.error('🔴 WebSocket error:', error);
+    this._wsState.isHealthy = false;
+    
+    // Don't show error to user - just log
+    const statusDot = document.getElementById('status-dot');
+    const statusText = document.getElementById('status-text');
+    if (statusDot) statusDot.style.display = 'none';
+    if (statusText) statusText.style.display = 'none';
+  };
+  
+  // onclose handler
+  ws.onclose = (event) => {
+    console.log(`🔴 WebSocket closed: code=${event.code}, reason=${event.reason || 'none'}`);
+    STATE.isConnected = false;
+    this._wsState.isHealthy = false;
+    this._wsState.isConnecting = false;
+    
+    // Stop ping interval
+    this._stopPingInterval();
+    
+    // Queue any pending messages
+    if (this._wsState.messageQueue.length > 0) {
+      console.log(`📥 ${this._wsState.messageQueue.length} messages queued for reconnection`);
+    }
+    
+    // Handle reconnection for recoverable errors
+    if (event.code !== 1000 && event.code !== 1001) {
+      console.log('🔄 Scheduling reconnect...');
+      this.reconnect(true);
+    } else {
+      // Normal closure - reconnect if needed
+      setTimeout(() => this.reconnect(), 3000);
+    }
+  };
+  
+  // ============================================
+  // STEP 7: Start health monitoring
+  // ============================================
+  this._startHealthMonitor();
+  
+  console.log('✅ WebSocket connection process completed');
+},
+
+/**
+ * Create WebSocket with timeout
+ */
+_createWebSocketWithTimeout(url, controller) {
+  return new Promise((resolve, reject) => {
+    try {
+      const ws = new WebSocket(url);
+      
+      const timeoutHandler = setTimeout(() => {
+        if (ws.readyState === WebSocket.CONNECTING) {
+          ws.close();
+          reject(new Error('Connection timeout'));
+        }
+      }, WS_CONFIG.CONNECTION_TIMEOUT);
+      
+      ws.onopen = () => {
+        clearTimeout(timeoutHandler);
+        resolve(ws);
+      };
+      
+      ws.onerror = (err) => {
+        clearTimeout(timeoutHandler);
+        reject(err);
+      };
+      
+      ws.onclose = () => {
+        clearTimeout(timeoutHandler);
+        reject(new Error('Connection closed'));
+      };
+      
+    } catch(e) {
+      reject(e);
+    }
+  });
+},
+
+/**
+ * Production-grade reconnect with exponential backoff + jitter
+ */
+reconnect(forceImmediate = false) {
+  // ============================================
+  // STEP 1: Prevent reconnect storms
+  // ============================================
+  if (this._wsState.isReconnecting) {
+    console.log('⏳ Reconnect already in progress, skipping');
+    return;
+  }
+  
+  if (this._wsState.isConnecting) {
+    console.log('⏳ Connection already in progress, skipping reconnect');
+    return;
+  }
+  
+  this._wsState.isReconnecting = true;
+  
+  // ============================================
+  // STEP 2: Check max attempts
+  // ============================================
+  const maxAttempts = this.WS_CONFIG.MAX_RECONNECT_ATTEMPTS;
+  
+  if (this._wsState.reconnectAttempts >= maxAttempts) {
+    console.error('❌ Max reconnection attempts reached (' + maxAttempts + ')');
+    
+    // Reset for future retry
+    this._wsState.reset();
+    this._wsState.isReconnecting = false;
+    
+    // Stop health monitoring
+    this._stopHealthMonitor();
+    
+    // Wait 60 seconds before full reset
     setTimeout(() => {
-      STATE.reconnectAttempts = 0;
+      this._wsState.reconnectAttempts = 0;
       this.connectWS();
     }, 60000);
     
     return;
   }
   
-  STATE.reconnectAttempts++;
-  
-  const baseDelay = forceImmediate ? 1000 : (CONFIG.RECONNECT_BASE_DELAY || 2000);
-  const delay = Math.min(
-    baseDelay * Math.pow(1.5, STATE.reconnectAttempts - 1),
-    CONFIG.RECONNECT_MAX_DELAY || 30000
+  // ============================================
+  // STEP 3: Calculate delay with exponential backoff
+  // ============================================
+  const baseDelay = forceImmediate ? 500 : WS_CONFIG.BASE_RECONNECT_DELAY;
+  const expDelay = baseDelay * Math.pow(1.5, this._wsState.reconnectAttempts);
+  const jitter = (Math.random() - 0.5) * 2 * expDelay * WS_CONFIG.RECONNECT_JITTER;
+  const totalDelay = Math.min(
+    Math.max(expDelay + jitter, baseDelay),
+    WS_CONFIG.MAX_RECONNECT_DELAY
   );
   
-  const jitter = Math.random() * 500;
-  const totalDelay = Math.round(delay + jitter);
+  this._wsState.incrementReconnectAttempts();
   
-  console.log(`🔄 Reconnecting in ${totalDelay}ms (attempt ${STATE.reconnectAttempts}/${maxAttempts})`);
+  console.log(`🔄 Reconnecting in ${Math.round(totalDelay)}ms (attempt ${this._wsState.reconnectAttempts}/${maxAttempts})`);
   
-  const reconnectId = IntervalManager.registerTimeout(() => {
-    this._reconnecting = false;
+  // ============================================
+  // STEP 4: Schedule reconnection
+  // ============================================
+  const reconnectId = setTimeout(() => {
+    this._wsState.isReconnecting = false;
     this.connectWS();
-  }, totalDelay, 'WS-reconnect-attempt-' + STATE.reconnectAttempts);
+  }, totalDelay);
   
-  if (!STATE._wsHealth) STATE._wsHealth = {};
-  if (STATE._wsHealth.reconnectTimeoutId) {
-    IntervalManager.clear(STATE._wsHealth.reconnectTimeoutId);
+  // Store for cleanup
+  if (this._wsState.reconnectTimeoutId) {
+    clearTimeout(this._wsState.reconnectTimeoutId);
   }
-  STATE._wsHealth.reconnectTimeoutId = reconnectId;
+  this._wsState.reconnectTimeoutId = reconnectId;
+},
+
+/**
+ * Start ping interval for connection health
+ */
+_startPingInterval() {
+  this._stopPingInterval();
+  
+  const self = this;
+  this._wsState.pingIntervalId = setInterval(() => {
+    const ws = this._wsState.ws;
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      try {
+        ws.send(JSON.stringify({ method: 'ping' }));
+        this._wsState.lastPingTime = Date.now();
+      } catch(e) {
+        console.warn('Ping failed:', e.message);
+      }
+    }
+  }, WS_CONFIG.PING_INTERVAL);
+},
+
+/**
+ * Stop ping interval
+ */
+_stopPingInterval() {
+  if (this._wsState.pingIntervalId) {
+    clearInterval(this._wsState.pingIntervalId);
+    this._wsState.pingIntervalId = null;
+  }
+},
+
+/**
+ * Start health monitor for connection health
+ */
+_startHealthMonitor() {
+  this._stopHealthMonitor();
+  
+  const self = this;
+  this._wsState.healthIntervalId = setInterval(() => {
+    if (!STATE.isConnected) return;
+    
+    const now = Date.now();
+    const timeSinceLastMessage = now - this._wsState.lastMessageTime;
+    
+    // If no message in threshold, consider connection stale
+    if (timeSinceLastMessage > WS_CONFIG.STALE_CONNECTION_THRESHOLD) {
+      console.warn(`⚠️ WebSocket stale (${Math.round(timeSinceLastMessage/1000)}s no data), reconnecting...`);
+      
+      // Close existing connection
+      if (this._wsState.ws) {
+        try {
+          this._wsState.ws.close();
+        } catch(e) {}
+        this._wsState.ws = null;
+      }
+      
+      STATE.isConnected = false;
+      this._wsState.isHealthy = false;
+      this.reconnect(true);
+    }
+  }, 30000);
+},
+
+/**
+ * Stop health monitor
+ */
+_stopHealthMonitor() {
+  if (this._wsState.healthIntervalId) {
+    clearInterval(this._wsState.healthIntervalId);
+    this._wsState.healthIntervalId = null;
+  }
+},
+
+/**
+ * Complete connection cleanup
+ */
+cleanupConnection() {
+  // ============================================
+  // STEP 1: Reset connection flags
+  // ============================================
+  this._wsState.isConnecting = false;
+  this._wsState.isReconnecting = false;
+  
+  // ============================================
+  // STEP 2: Stop all intervals
+  // ============================================
+  this._stopPingInterval();
+  this._stopHealthMonitor();
+  
+  // ============================================
+  // STEP 3: Clear reconnect timeout
+  // ============================================
+  if (this._wsState.reconnectTimeoutId) {
+    clearTimeout(this._wsState.reconnectTimeoutId);
+    this._wsState.reconnectTimeoutId = null;
+  }
+  
+  // ============================================
+  // STEP 4: Close existing WebSocket
+  // ============================================
+  if (this._wsState.ws) {
+    try {
+      this._wsState.ws.close(1000, 'Normal closure');
+    } catch(e) {
+      console.warn('Error closing WebSocket:', e.message);
+    }
+    this._wsState.ws = null;
+  }
+  
+  // ============================================
+  // STEP 5: Reset state
+  // ============================================
+  STATE.isConnected = false;
+  this._wsState.isHealthy = false;
+  this._wsState.lastMessageTime = 0;
+  
+  console.log('🧹 WebSocket connection cleaned up');
+},
+
+/**
+ * Disconnect completely (user-initiated)
+ */
+disconnect() {
+  this.cleanupConnection();
+  this._wsState.reset();
+  console.log('🔌 Disconnected from all data sources');
+},
+
+/**
+ * Get connection health status
+ */
+getConnectionStatus() {
+  return {
+    isConnected: STATE.isConnected,
+    isHealthy: this._wsState.isHealthy,
+    reconnectAttempts: this._wsState.reconnectAttempts,
+    lastMessageTime: this._wsState.lastMessageTime,
+    lastPingTime: this._wsState.lastPingTime,
+    connectionDuration: this._wsState.connectionStartTime > 0 ? 
+      Date.now() - this._wsState.connectionStartTime : 0
+  };
 },
 
 	  // ============================================
@@ -11942,56 +14311,7 @@ startHealthMonitor() {
     }
   }, 30000, 'WS-health-monitor');
 },
-// ============================================
-// PHASE 1 FIX: Add connection cleanup method
-// ============================================
-cleanupConnection() {
-  // ============================================
-  // RESET CONNECTION FLAGS
-  // ============================================
-  this._wsConnecting = false;
-  this._reconnecting = false;
-  
-  // Clean up old intervals
-  if (STATE._wsHealth) {
-    if (STATE._wsHealth.pingIntervalId) {
-      IntervalManager.clear(STATE._wsHealth.pingIntervalId);
-      STATE._wsHealth.pingIntervalId = null;
-    }
-    if (STATE._wsHealth.healthIntervalId) {
-      IntervalManager.clear(STATE._wsHealth.healthIntervalId);
-      STATE._wsHealth.healthIntervalId = null;
-    }
-    if (STATE._wsHealth.reconnectTimeoutId) {
-      IntervalManager.clear(STATE._wsHealth.reconnectTimeoutId);
-      STATE._wsHealth.reconnectTimeoutId = null;
-    }
-  }
-  
-  // Reset health state
-  STATE._wsHealth = {
-    lastMessageTime: 0,
-    lastPingTime: 0,
-    messageCount: 0,
-    reconnectAttempts: 0,
-    isHealthy: false,
-    pingIntervalId: null,
-    healthIntervalId: null,
-    reconnectTimeoutId: null
-  };
-  
-  // Close existing WebSocket
-  if (STATE.websockets.multi) {
-    try {
-      STATE.websockets.multi.close(1000, 'Normal closure');
-    } catch(e) {
-      console.warn('Error closing WebSocket:', e.message);
-    }
-    STATE.websockets.multi = null;
-  }
-  
-  STATE.isConnected = false;
-},
+
    // ⬇️⬇️⬇️ PASTE HERE ⬇️⬇️⬇️
     measureLatency(ws) {
       var originalHandler = ws.onmessage;
@@ -12145,7 +14465,7 @@ cleanupConnection() {
   // ============================================
   // PHASE 1 FIX: Tracked reconnection with exponential backoff
   // ============================================
-  const maxAttempts = CONFIG.MAX_RECONNECT_ATTEMPTS || 10;
+  const maxAttempts = this.WS_CONFIG.MAX_RECONNECT_ATTEMPTS || 10;
   
   if (STATE.reconnectAttempts >= maxAttempts) {
     console.error('❌ Max reconnection attempts reached (' + maxAttempts + ')');
@@ -12711,8 +15031,21 @@ async switchSymbol(newSymbol) {
       precision: ChartEngine?.mainSeries?.options()?.priceFormat?.precision || 5
     });
   }
-  
+  // Add to switchSymbol in DataManager
+const futuresSection = document.getElementById('futures-info');
+if (futuresSection) {
+  futuresSection.style.display = STATE.assetType === 'futures' ? 'block' : 'none';
+}
   console.log(`✅ Symbol switched to ${newSymbol} (${STATE.assetType}) with TradingView-style precision`);
+  // ============================================
+// ADD THIS AT THE END OF switchSymbol
+// ============================================
+setTimeout(() => {
+  if (typeof MultiTimeframeMonitor !== 'undefined' && MultiTimeframeMonitor.forceRefresh) {
+    MultiTimeframeMonitor.forceRefresh();
+    console.log('🔄 Forced MTF refresh after symbol switch');
+  }
+}, 1500);
 },
     
       async switchInterval(i) {
@@ -12768,6 +15101,14 @@ async switchSymbol(newSymbol) {
       IndicatorEngine.calculateAll();
     }
   }, 500);
+  // ============================================
+// ADD THIS AT THE END OF switchInterval
+// ============================================
+setTimeout(() => {
+  if (typeof MultiTimeframeMonitor !== 'undefined' && MultiTimeframeMonitor.forceRefresh) {
+    MultiTimeframeMonitor.forceRefresh();
+  }
+}, 500);
 },
     
     updateWatchlistStar() {
@@ -13171,9 +15512,120 @@ async searchAllSymbols(query) {
     console.log('✅ DataManager.forceReloadChart() complete');
   }
   };
+  
+  DataManager._wsState = WebSocketStateManager;
+ // ============================================
+// ADD THIS TO engine.js
+// ============================================
+const AssetTypeManager = {
   // ============================================
-  // MARKET OVERVIEW MANAGER (FIXED - WORKING)
+  // DETECT ASSET TYPE
   // ============================================
+  detectAssetType(symbol) {
+    // Crypto (Binance)
+    if (symbol.endsWith('USDT') || symbol.endsWith('USDC')) {
+      return 'crypto';
+    }
+    
+    // Futures (Binance or CME)
+    if (symbol.endsWith('USDT') && CONFIG.FUTURES_SYMBOLS.some(f => f.symbol === symbol)) {
+      return 'futures';
+    }
+    
+    // Stock symbols (1-5 letters, uppercase)
+    if (/^[A-Z]{1,5}$/.test(symbol) && !symbol.endsWith('USDT')) {
+      return 'stocks';
+    }
+    
+    // Forex (6 letters)
+    if (/^[A-Z]{6}$/.test(symbol)) {
+      return 'forex';
+    }
+    
+    // Indices (SPX, NDX, DJI, etc.)
+    if (CONFIG.INDICES_SYMBOLS.some(i => i.symbol === symbol)) {
+      return 'indices';
+    }
+    
+    // Commodities
+    if (CONFIG.COMMODITIES_SYMBOLS.some(c => c.symbol === symbol)) {
+      return 'commodities';
+    }
+    
+    // Default to stocks
+    return 'stocks';
+  },
+  
+  // ============================================
+  // GET ASSET LABEL
+  // ============================================
+  getAssetLabel(assetType) {
+    const labels = {
+      'crypto': 'Cryptocurrency',
+      'futures': 'Futures',
+      'stocks': 'US Stocks',
+      'forex': 'Forex',
+      'indices': 'Indices',
+      'commodities': 'Commodities'
+    };
+    return labels[assetType] || 'Unknown';
+  },
+  
+  // ============================================
+  // GET DATA SOURCE FOR ASSET
+  // ============================================
+  getDataSource(symbol) {
+    const type = this.detectAssetType(symbol);
+    
+    switch(type) {
+      case 'crypto':
+        return 'binance';
+      case 'futures':
+        return 'binance';
+      case 'stocks':
+        return 'finnhub';
+      case 'forex':
+        return 'twelvedata';
+      case 'indices':
+        return 'twelvedata';
+      case 'commodities':
+        return 'twelvedata';
+      default:
+        return 'unknown';
+    }
+  },
+  
+  // ============================================
+  // GET API ENDPOINT FOR ASSET
+  // ============================================
+  getApiEndpoint(symbol, interval) {
+    const type = this.detectAssetType(symbol);
+    const apiBase = getApiBase();
+    
+    switch(type) {
+      case 'crypto':
+      case 'futures':
+        return `${apiBase}/proxy?endpoint=klines&symbol=${symbol}&interval=${interval}&limit=${CONFIG.CANDLE_LIMIT}`;
+        
+      case 'stocks':
+        return `${apiBase}/proxy?endpoint=finnhub&symbol=${symbol.replace('USDT', '')}`;
+        
+      case 'forex':
+      case 'indices':
+      case 'commodities':
+        // Format symbol for Twelve Data
+        let twelveSymbol = symbol;
+        if (symbol.length === 6) {
+          twelveSymbol = symbol.slice(0, 3) + '/' + symbol.slice(3);
+        }
+        return `${apiBase}/proxy?endpoint=twelvedata&symbol=${twelveSymbol}&interval=${interval}&outputsize=200`;
+        
+      default:
+        return null;
+    }
+  },
+}; 
+  
  // ============================================
 // MARKET OVERVIEW MANAGER - DYNAMIC ASSETS
 // ============================================
@@ -14228,12 +16680,9 @@ const WatchlistManager = {
   }
 };
      
-
-// =============================================
-// COMPLETE REPLACEMENT: DataManager.loadNews()
-// Uses ONLY Coinpedia RSS feed through your backend proxy
-// API key stored securely in backend .env
-// =============================================
+// ============================================
+// NEWS MANAGER 
+// ============================================
 const NewsManager = {
   async init() {
     await this.fetchNews();
@@ -14249,16 +16698,15 @@ const NewsManager = {
     grid.innerHTML = '<div class="news-loading"><i class="fas fa-spinner fa-spin"></i><span>Loading latest news from Coinpedia...</span></div>';
     
     try {
-      // Get API base from failover system
-      const apiBase = getApiBase();
+      // DIRECT RSS FEED URL - No proxy
+      const rssUrl = 'https://coinpedia.org/feed/';
       
-      // Coinpedia RSS feed through your backend proxy
-      // Your backend will fetch the RSS feed using its stored API key (if needed)
-      const rssUrl = `${apiBase}/proxy?endpoint=rss&url=https://coinpedia.org/feed/`;
+      // Use CORS proxy ONLY for the RSS fetch (this is temporary - see below for better solution)
+      const corsProxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(rssUrl)}`;
       
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8000);
-      const response = await fetch(rssUrl, { signal: controller.signal });
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      const response = await fetch(corsProxyUrl, { signal: controller.signal });
       clearTimeout(timeoutId);
       
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -14307,13 +16755,19 @@ const NewsManager = {
       const dateMatch = content.match(/<pubDate>(.*?)<\/pubDate>/);
       if (dateMatch) date = dateMatch[1];
       
+      // Extract image
+      let image = '';
+      const imgMatch = content.match(/<enclosure[^>]*url="([^"]+)"/i) || content.match(/<img[^>]*src="([^"]+)"/i);
+      if (imgMatch) image = imgMatch[1];
+      
       if (title && link) {
         items.push({
           title: title,
           link: link,
           description: description,
           date: date,
-          source: 'Coinpedia'
+          source: 'Coinpedia',
+          image: image
         });
       }
     }
@@ -14332,6 +16786,9 @@ const NewsManager = {
     
     const html = articles.map(article => `
       <div class="news-card" onclick="window.open('${article.link}', '_blank')" style="cursor:pointer;">
+        ${article.image ? `<div class="news-card-image" style="width:100%;height:120px;overflow:hidden;border-radius:8px 8px 0 0;">
+          <img src="${article.image}" alt="${article.title}" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'">
+        </div>` : ''}
         <div class="news-card-content">
           <div class="news-card-header">
             <span class="news-source-badge" style="background:rgba(88,166,255,0.1);color:var(--accent-primary);padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;">
@@ -14369,53 +16826,300 @@ const NewsManager = {
 // ============================================
 // STOCK & FOREX MANAGER (Finnhub + Twelve Data)
 // ============================================
+// ============================================
+// STOCK & FOREX MANAGER - YAHOO FIRST
+// ============================================
 const StockDataManager = {
   pollInterval: null,
-  
+  yahooEnabled: true,
 
   init() {
-  this.loadStockSymbols();
-  // Also ensure fallback symbols are loaded immediately
-  if (!STATE.stockSymbols || STATE.stockSymbols.length === 0) {
-    STATE.stockSymbols = CONFIG.STOCK_SYMBOLS_FALLBACK || [];
-    console.log(`📊 Using fallback stock symbols: ${STATE.stockSymbols.length} symbols`);
-  }
-  console.log('✅ StockDataManager ready');
-},
+    this.loadStockSymbols();
+    if (!STATE.stockSymbols || STATE.stockSymbols.length === 0) {
+      STATE.stockSymbols = CONFIG.STOCK_SYMBOLS_FALLBACK || [];
+      console.log(`📊 Using fallback stock symbols: ${STATE.stockSymbols.length} symbols`);
+    }
+    console.log('✅ StockDataManager ready (Yahoo First)');
+  },
 
-  // ---------- LIVE QUOTES (Finnhub REST polling) ----------
+  // ============================================
+  // YAHOO DIRECT - PRIMARY DATA SOURCE
+  // ============================================
+  async loadCandles(symbol, interval) {
+    if (!symbol || !interval) {
+      console.warn('⚠️ StockDataManager: Missing symbol or interval');
+      return [];
+    }
+    
+    // Detect asset type
+    const assetType = AssetTypeManager.detectAssetType(symbol);
+    
+    try {
+      // ============================================
+      // STOCKS - YAHOO DIRECT
+      // ============================================
+      if (assetType === 'stocks') {
+        const stockSymbol = symbol.replace('USDT', '');
+        const intervalMap = {
+          '1m': '1m', '3m': '5m', '5m': '5m', '15m': '15m',
+          '30m': '30m', '1h': '1h', '2h': '1h', '4h': '1h',
+          '6h': '1h', '8h': '1h', '12h': '1h', '1d': '1d',
+          '3d': '5d', '1w': '1wk', '1M': '1mo'
+        };
+        const yahooInterval = intervalMap[interval] || '1d';
+        
+        console.log(`📈 Yahoo Direct: Fetching ${stockSymbol} ${yahooInterval}`);
+        
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+        const url = `https://query1.finance.yahoo.com/v8/finance/chart/${stockSymbol}?interval=${yahooInterval}&range=3mo`;
+        const response = await fetch(url, { signal: controller.signal });
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) throw new Error(`Yahoo HTTP ${response.status}`);
+        
+        const data = await response.json();
+        if (!data.chart || !data.chart.result || !data.chart.result[0]) {
+          throw new Error('No data returned from Yahoo');
+        }
+        
+        const result = data.chart.result[0];
+        const timestamps = result.timestamp;
+        const quotes = result.indicators.quote[0];
+        const adjClose = result.indicators.adjclose ? result.indicators.adjclose[0] : null;
+        
+        // Convert to candles
+        const candles = timestamps.map((time, index) => ({
+          time: time,
+          open: quotes.open[index],
+          high: quotes.high[index],
+          low: quotes.low[index],
+          close: adjClose ? adjClose[index] : quotes.close[index],
+          volume: quotes.volume[index] || 0
+        })).filter(c => c.open !== null && c.close !== null);
+        
+        console.log(`✅ Yahoo: ${candles.length} candles for ${stockSymbol}`);
+        return candles;
+      }
+      
+      // ============================================
+      // FOREX - YAHOO DIRECT
+      // ============================================
+      else if (assetType === 'forex') {
+        let yahooPair = symbol;
+        if (symbol.length === 6 && !symbol.includes('=')) {
+          yahooPair = symbol.slice(0, 3) + symbol.slice(3) + '=X';
+        }
+        
+        const intervalMap = {
+          '1m': '1m', '3m': '5m', '5m': '5m', '15m': '15m',
+          '30m': '30m', '1h': '1h', '2h': '1h', '4h': '1h',
+          '6h': '1h', '8h': '1h', '12h': '1h', '1d': '1d',
+          '3d': '5d', '1w': '1wk', '1M': '1mo'
+        };
+        const yahooInterval = intervalMap[interval] || '1d';
+        
+        console.log(`💱 Yahoo Direct: Fetching ${yahooPair} ${yahooInterval}`);
+        
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+        const url = `https://query1.finance.yahoo.com/v8/finance/chart/${yahooPair}?interval=${yahooInterval}&range=3mo`;
+        const response = await fetch(url, { signal: controller.signal });
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) throw new Error(`Yahoo HTTP ${response.status}`);
+        
+        const data = await response.json();
+        if (!data.chart || !data.chart.result || !data.chart.result[0]) {
+          throw new Error('No data returned from Yahoo');
+        }
+        
+        const result = data.chart.result[0];
+        const timestamps = result.timestamp;
+        const quotes = result.indicators.quote[0];
+        const adjClose = result.indicators.adjclose ? result.indicators.adjclose[0] : null;
+        
+        // Convert to candles
+        const candles = timestamps.map((time, index) => ({
+          time: time,
+          open: quotes.open[index],
+          high: quotes.high[index],
+          low: quotes.low[index],
+          close: adjClose ? adjClose[index] : quotes.close[index],
+          volume: quotes.volume[index] || 0
+        })).filter(c => c.open !== null && c.close !== null);
+        
+        console.log(`✅ Yahoo: ${candles.length} candles for ${yahooPair}`);
+        return candles;
+      }
+      
+      // ============================================
+      // FALLBACK: TWELVE DATA VIA PROXY
+      // ============================================
+      else {
+        throw new Error('Unsupported asset type for StockDataManager');
+      }
+      
+    } catch (e) {
+      console.warn(`⚠️ Yahoo failed for ${symbol}, trying fallback:`, e.message);
+      
+      // ============================================
+      // FALLBACK: TWELVE DATA VIA PROXY
+      // ============================================
+      try {
+        const intervalMap = {
+          '1m': '1min', '5m': '5min', '15m': '15min', '30m': '30min',
+          '1h': '1h', '4h': '4h', '1d': '1day', '1w': '1week', '1M': '1month'
+        };
+        const twelveInterval = intervalMap[interval] || '1day';
+        
+        let twelveSymbol = symbol;
+        if (assetType === 'forex' && symbol.length === 6) {
+          twelveSymbol = symbol.slice(0, 3) + '/' + symbol.slice(3);
+        }
+        
+        const apiBase = getApiBase();
+        const url = `${apiBase}/proxy?endpoint=twelvedata&symbol=${twelveSymbol}&interval=${twelveInterval}&outputsize=200`;
+        
+        console.log(`📈 Fallback: Fetching from Twelve Data: ${url}`);
+        
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+        const response = await fetch(url, { signal: controller.signal });
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) throw new Error(`Fallback HTTP ${response.status}`);
+        
+        const responseData = await response.json();
+        if (!responseData.values || responseData.values.length === 0) {
+          throw new Error('No candle data from Twelve Data');
+        }
+        
+        const candles = responseData.values.map(val => ({
+          time: Math.floor(new Date(val.datetime).getTime() / 1000),
+          open: parseFloat(val.open),
+          high: parseFloat(val.high),
+          low: parseFloat(val.low),
+          close: parseFloat(val.close),
+          volume: parseFloat(val.volume || 0)
+        })).filter(c => !isNaN(c.time) && !isNaN(c.close));
+        
+        candles.sort((a, b) => a.time - b.time);
+        console.log(`✅ Fallback: ${candles.length} candles for ${symbol}`);
+        return candles;
+        
+      } catch (fallbackError) {
+        console.error(`❌ All data sources failed for ${symbol}:`, fallbackError.message);
+        return [];
+      }
+    }
+  },
+
+  // ============================================
+  // POLLING FOR LIVE QUOTES (Yahoo First)
+  // ============================================
  startPolling(symbol) {
   this.stopPolling();
-  console.log(`⏱️ Polling ${symbol} every 10s`);
+  console.log(`⏱️ Polling ${symbol} every 10s (via corsproxy.io)`);
+  
+  // CORS proxy for Yahoo
+  const corsProxy = 'https://corsproxy.io/?';
+  
   this.pollInterval = setInterval(async () => {
     try {
-      if (STATE.assetType === 'stocks') {
-        const url = `https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${CONFIG.FINNHUB_API_KEY}`;
-        const res = await fetch(url);
-        const data = await res.json();
-        console.log('Stock quote:', data);
-        if (data.c > 0) {
-          STATE.currentPrice = data.c;
-          DataManager.updatePriceDisplay({ close: data.c, open: data.o, high: data.h, low: data.l });
-          // Force update of floating buttons immediately
-          updateChartTradeButtons();
-        }
-      } else if (STATE.assetType === 'forex') {
-        let forexSymbol = symbol;
-        if (symbol.length === 6) forexSymbol = symbol.slice(0, 3) + '/' + symbol.slice(3);
-        const url = `${CONFIG.TWELVEDATA_BASE}/price?symbol=${forexSymbol}&apikey=${CONFIG.TWELVEDATA_API_KEY}`;
-        const res = await fetch(url);
-        const data = await res.json();
-        console.log('Forex price:', data);
-        if (data.price) {
-          const price = parseFloat(data.price);
-          STATE.currentPrice = price;
-          DataManager.updatePriceDisplay({ close: price, open: price, high: price, low: price });
-          updateChartTradeButtons();
+      const assetType = AssetTypeManager.detectAssetType(symbol);
+      let price, change, high, low, volume, open;
+      
+      // ============================================
+      // STOCKS - YAHOO via corsproxy.io
+      // ============================================
+      if (assetType === 'stocks') {
+        const stockSymbol = symbol.replace('USDT', '');
+        const url = `https://query1.finance.yahoo.com/v8/finance/chart/${stockSymbol}?interval=1d&range=1d`;
+        const proxyUrl = `${corsProxy}${encodeURIComponent(url)}`;
+        
+        try {
+          const response = await fetch(proxyUrl);
+          
+          if (response.ok) {
+            const data = await response.json();
+            if (data.chart && data.chart.result && data.chart.result[0]) {
+              const result = data.chart.result[0];
+              const meta = result.meta;
+              const quote = result.indicators.quote[0];
+              
+              price = meta.regularMarketPrice || quote.close[quote.close.length - 1];
+              change = meta.regularMarketChangePercent || 0;
+              high = meta.regularMarketDayHigh || Math.max(...quote.high);
+              low = meta.regularMarketDayLow || Math.min(...quote.low);
+              volume = meta.regularMarketVolume || quote.volume[quote.volume.length - 1];
+              open = quote.open[0];
+              
+              STATE.currentPrice = price;
+              STATE.change24h = change;
+              STATE.high24h = high;
+              STATE.low24h = low;
+              STATE.volume24h = volume;
+              STATE.open24h = open;
+              
+              DataManager.updatePriceDisplay({ close: price, open: open, high: high, low: low });
+              updateChartTradeButtons();
+              console.log(`📊 Yahoo via proxy: ${stockSymbol} @ $${price} (${change.toFixed(2)}%)`);
+            }
+          }
+        } catch(e) {
+          console.warn(`Yahoo proxy fetch failed for ${stockSymbol}:`, e.message);
         }
       }
+      
+      // ============================================
+      // FOREX - YAHOO via corsproxy.io
+      // ============================================
+      else if (assetType === 'forex') {
+        let yahooPair = symbol;
+        if (symbol.length === 6 && !symbol.includes('=')) {
+          yahooPair = symbol.slice(0, 3) + symbol.slice(3) + '=X';
+        }
+        
+        const url = `https://query1.finance.yahoo.com/v8/finance/chart/${yahooPair}?interval=1d&range=1d`;
+        const proxyUrl = `${corsProxy}${encodeURIComponent(url)}`;
+        
+        try {
+          const response = await fetch(proxyUrl);
+          
+          if (response.ok) {
+            const data = await response.json();
+            if (data.chart && data.chart.result && data.chart.result[0]) {
+              const result = data.chart.result[0];
+              const meta = result.meta;
+              const quote = result.indicators.quote[0];
+              
+              price = meta.regularMarketPrice || quote.close[quote.close.length - 1];
+              change = meta.regularMarketChangePercent || 0;
+              high = meta.regularMarketDayHigh || Math.max(...quote.high);
+              low = meta.regularMarketDayLow || Math.min(...quote.low);
+              volume = meta.regularMarketVolume || quote.volume[quote.volume.length - 1];
+              open = quote.open[0];
+              
+              STATE.currentPrice = price;
+              STATE.change24h = change;
+              STATE.high24h = high;
+              STATE.low24h = low;
+              STATE.volume24h = volume;
+              STATE.open24h = open;
+              
+              DataManager.updatePriceDisplay({ close: price, open: open, high: high, low: low });
+              updateChartTradeButtons();
+              console.log(`📊 Yahoo forex via proxy: ${yahooPair} @ $${price} (${change.toFixed(2)}%)`);
+            }
+          }
+        } catch(e) {
+          console.warn(`Yahoo proxy fetch failed for ${yahooPair}:`, e.message);
+        }
+      }
+      
     } catch (e) {
-      console.error('Polling error:', e);
+      console.warn('Polling error (Yahoo via proxy):', e.message);
     }
   }, 10000);
 },
@@ -14427,117 +17131,86 @@ const StockDataManager = {
     }
   },
 
-  // ---------- SYMBOL SEARCH & LOADING (Twelve Data) ----------
+  // ============================================
+  // SYMBOL SEARCH (Yahoo First)
+  // ============================================
   async loadStockSymbols() {
     try {
-      // Fetch a list of US stocks from Twelve Data
-      const url = `${CONFIG.TWELVEDATA_BASE}/stocks?exchange=NASDAQ&apikey=${CONFIG.TWELVEDATA_API_KEY}`;
-      const res = await fetch(url);
-      const data = await res.json();
-      if (data.data) {
-        STATE.stockSymbols = data.data.map(s => ({
-          symbol: s.symbol,
-          description: s.name || s.symbol
-        }));
-        console.log(`✅ Loaded ${STATE.stockSymbols.length} US stocks (Twelve Data)`);
-      } else {
-    // Fallback to full stock list from CONFIG
-    STATE.stockSymbols = CONFIG.STOCK_SYMBOLS_FALLBACK || [
-      {symbol:'AAPL', description:'Apple Inc.'}, {symbol:'MSFT', description:'Microsoft Corp.'},
-      {symbol:'GOOGL', description:'Alphabet Inc.'}, {symbol:'AMZN', description:'Amazon.com Inc.'},
-      {symbol:'TSLA', description:'Tesla Inc.'}, {symbol:'META', description:'Meta Platforms Inc.'},
-      {symbol:'NVDA', description:'NVIDIA Corp.'}, {symbol:'NFLX', description:'Netflix Inc.'}
-    ];
-    console.warn('⚠️ Using fallback stock list with ' + STATE.stockSymbols.length + ' symbols');
-}
+      // Try Yahoo first for symbol search
+      const url = 'https://query1.finance.yahoo.com/v1/finance/search?q=stock&quotesCount=100&newsCount=0';
+      const response = await fetch(url);
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.quotes && data.quotes.length > 0) {
+          STATE.stockSymbols = data.quotes
+            .filter(q => q.quoteType === 'EQUITY' || q.quoteType === 'ETF')
+            .map(q => ({
+              symbol: q.symbol,
+              description: q.shortname || q.longname || q.symbol,
+              exchange: q.exchange || 'NYSE'
+            }));
+          console.log(`✅ Loaded ${STATE.stockSymbols.length} stock symbols from Yahoo`);
+          return;
+        }
+      }
+      
+      throw new Error('Yahoo search returned no results');
+      
     } catch (e) {
-  console.error('Failed to load stock symbols', e);
-  STATE.stockSymbols = CONFIG.STOCK_SYMBOLS_FALLBACK;
-  console.warn('⚠️ Using fallback stock list with ' + STATE.stockSymbols.length + ' symbols');
-}
+      console.warn('Yahoo symbol search failed, using fallback:', e.message);
+      
+      // ============================================
+      // FALLBACK: Twelve Data
+      // ============================================
+      try {
+        const url = `${CONFIG.TWELVEDATA_BASE}/stocks?exchange=NASDAQ&apikey=${CONFIG.TWELVEDATA_API_KEY}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.data) {
+          STATE.stockSymbols = data.data.map(s => ({
+            symbol: s.symbol,
+            description: s.name || s.symbol
+          }));
+          console.log(`✅ Loaded ${STATE.stockSymbols.length} US stocks (Twelve Data)`);
+          return;
+        }
+      } catch (fallbackError) {
+        console.error('Twelve Data fallback failed:', fallbackError.message);
+      }
+      
+      // ============================================
+      // ULTIMATE FALLBACK: CONFIG
+      // ============================================
+      STATE.stockSymbols = CONFIG.STOCK_SYMBOLS_FALLBACK || [
+        {symbol:'AAPL', description:'Apple Inc.'},
+        {symbol:'MSFT', description:'Microsoft Corp.'},
+        {symbol:'GOOGL', description:'Alphabet Inc.'},
+        {symbol:'AMZN', description:'Amazon.com Inc.'},
+        {symbol:'TSLA', description:'Tesla Inc.'},
+        {symbol:'META', description:'Meta Platforms Inc.'},
+        {symbol:'NVDA', description:'NVIDIA Corp.'},
+        {symbol:'NFLX', description:'Netflix Inc.'}
+      ];
+      console.warn('⚠️ Using fallback stock list with ' + STATE.stockSymbols.length + ' symbols');
+    }
   },
-
-
-async loadCandles(symbol, interval) {
-  if (!symbol || !interval) {
-    console.warn('⚠️ StockDataManager: Missing symbol or interval');
-    return [];
-  }
-  
-  const intervalMap = {
-    '1m': '1min', '5m': '5min', '15m': '15min', '30m': '30min',
-    '1h': '1h', '4h': '4h', '1d': '1day', '1w': '1week', '1M': '1month'
-  };
-  const twelveInterval = intervalMap[interval] || '1day';
-  
-  let twelveSymbol = symbol;
-  if (STATE.assetType === 'forex' && symbol.length === 6) {
-    twelveSymbol = symbol.slice(0, 3) + '/' + symbol.slice(3);
-  }
-  
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000);
-    
-    const apiBase = getApiBase();
-    const url = `${apiBase}/proxy?endpoint=twelvedata&symbol=${twelveSymbol}&interval=${twelveInterval}&outputsize=200`;
-    
-    console.log(`📈 Fetching stock/forex data: ${url}`);
-    
-    const response = await fetch(url, { signal: controller.signal });
-    clearTimeout(timeoutId);
-    
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
-    
-    const responseData = await response.json();
-    
-    // NO FALLBACK - just throw error
-    if (responseData.code === 401 || responseData.status === 'error') {
-      throw new Error(responseData.message || 'Twelve Data API error');
-    }
-    
-    if (!responseData.values || responseData.values.length === 0) {
-      throw new Error('No candle data from Twelve Data');
-    }
-    
-    const candles = [];
-    for (let i = 0; i < responseData.values.length; i++) {
-      const val = responseData.values[i];
-      if (!val || !val.datetime) continue;
-      
-      const date = new Date(val.datetime);
-      const time = Math.floor(date.getTime() / 1000);
-      if (isNaN(time)) continue;
-      
-      const open = parseFloat(val.open);
-      const high = parseFloat(val.high);
-      const low = parseFloat(val.low);
-      const close = parseFloat(val.close);
-      const volume = parseFloat(val.volume || 0);
-      
-      if (isNaN(open) || isNaN(high) || isNaN(low) || isNaN(close)) continue;
-      
-      candles.push({ time, open, high, low, close, volume });
-    }
-    
-    if (candles.length === 0) {
-      throw new Error('No valid candles after parsing');
-    }
-    
-    candles.sort((a, b) => a.time - b.time);
-    console.log(`✅ Loaded ${candles.length} LIVE candles for ${symbol}`);
-    return candles;
-    
-  } catch (e) {
-    console.error('❌ Failed to load candles:', e.message);
-    // NO FALLBACK - return empty array, chart stays blank
-    return [];
-  }
-},
-  
 };
+
+// ============================================
+// Helper function to update trade buttons
+// ============================================
+function updateChartTradeButtons() {
+  const buyPriceEl = document.getElementById('chart-buy-price');
+  const sellPriceEl = document.getElementById('chart-sell-price');
+  if (STATE.currentPrice > 0) {
+    const formatted = typeof U !== 'undefined' && U.formatPrice 
+      ? U.formatPrice(STATE.currentPrice) 
+      : STATE.currentPrice.toFixed(2);
+    if (buyPriceEl) buyPriceEl.textContent = formatted;
+    if (sellPriceEl) sellPriceEl.textContent = formatted;
+  }
+}
 
 		// Helper to instantly refresh the floating buttons
 function updateChartTradeButtons() {
@@ -15033,84 +17706,88 @@ const TradeManager = {
   /**
    * Connect to Binance Testnet
    */
-  async connectTestnet() {
-    console.log('🧪 Connecting to Binance Testnet...');
-    
-    // Reset testnet account
-    this.testnetBalance = 10000;
-    this.testnetPositions = [];
-    
-    // Switch data source to testnet
-    if (typeof DataManager !== 'undefined') {
-      // Disconnect mainnet WebSocket
-      DataManager.disconnect();
-      
-      // Update config for testnet
-      var originalBase = CONFIG.BINANCE_REST;
-      var originalWs = CONFIG.BINANCE_WS_BASE;
-      
-      // Store originals for restoration
-      this._mainnetRest = originalBase;
-      this._mainnetWs = originalWs;
-      
-      // Switch to testnet
-      CONFIG.BINANCE_REST = this.testnetBase;
-      CONFIG.BINANCE_WS_BASE = this.testnetWs;
-      
-      // Reconnect with testnet streams
-      DataManager.connectWS();
-      
-      // Reload current symbol data from testnet
-      if (STATE.symbol) {
-        await DataManager.loadHistory(STATE.symbol, STATE.interval);
-        await DataManager.load24h(STATE.symbol);
-      }
-    }
-    
-    // Show testnet indicator
-    this.showTestnetIndicator();
-    
-    if (typeof Toast !== 'undefined') {
-      Toast.success('🧪 Connected to Binance Testnet - Paper trading with real market data', 6000);
-    }
-    
-    // Save preference
-    StorageManager.set('tvp_testnet_mode', true);
-  },
+  // ============================================
+// REPLACE connectTestnet() WITH THIS
+// ============================================
+connectTestnet: function() {
+  if (!this.testnetMode) {
+    console.log('❌ Testnet mode not enabled');
+    return false;
+  }
   
-  /**
-   * Disconnect from Testnet
-   */
-  disconnectTestnet() {
-    console.log('🔌 Disconnecting from Binance Testnet...');
+  console.log('🧪 Connecting to Binance Testnet WebSocket...');
+  
+  // Close existing connection
+  this.disconnectTestnet();
+  
+  // Build WebSocket URL
+  const symbol = STATE.symbol.toLowerCase();
+  const interval = STATE.interval || '15m';
+  const streams = [
+    `${symbol}@kline_${interval}`,
+    `${symbol}@depth20@100ms`
+  ];
+  const streamUrl = `wss://testnet.binance.vision/ws/${streams.join('/')}`;
+  
+  try {
+    this._ws = new WebSocket(streamUrl);
     
-    // Restore mainnet config
-    if (this._mainnetRest) {
-      CONFIG.BINANCE_REST = this._mainnetRest;
-      CONFIG.BINANCE_WS_BASE = this._mainnetWs;
-    }
+    this._ws.onopen = function() {
+      console.log('✅ Testnet WebSocket connected');
+      this._reconnectAttempts = 0;
+    }.bind(this);
     
-    // Reconnect to mainnet
-    if (typeof DataManager !== 'undefined') {
-      DataManager.disconnect();
-      DataManager.connectWS();
-      
-      if (STATE.symbol) {
-        DataManager.loadHistory(STATE.symbol, STATE.interval);
-        DataManager.load24h(STATE.symbol);
+    this._ws.onmessage = this._handleTestnetMessage.bind(this);
+    
+    this._ws.onerror = function(error) {
+      console.error('🔴 Testnet WebSocket error:', error);
+    }.bind(this);
+    
+    this._ws.onclose = function(event) {
+      console.log(`🔴 Testnet WebSocket closed: code=${event.code}`);
+      if (event.code !== 1000 && event.code !== 1001) {
+        this._reconnectTestnet();
       }
-    }
+    }.bind(this);
     
-    // Hide testnet indicator
-    this.hideTestnetIndicator();
+    // Start ping interval
+    this._pingIntervalId = setInterval(function() {
+      if (this._ws && this._ws.readyState === WebSocket.OPEN) {
+        try {
+          this._ws.send(JSON.stringify({ method: 'ping' }));
+        } catch(e) {}
+      }
+    }.bind(this), 30000);
     
-    if (typeof Toast !== 'undefined') {
-      Toast.info('Switched back to live market data');
-    }
+    return true;
     
-    // Save preference
-    StorageManager.set('tvp_testnet_mode', false);
-  },
+  } catch(e) {
+    console.error('❌ Testnet connection failed:', e.message);
+    return false;
+  }
+},
+
+// ============================================
+// REPLACE disconnectTestnet() WITH THIS
+// ============================================
+disconnectTestnet: function() {
+  if (this._ws) {
+    try {
+      this._ws.close(1000, 'Normal closure');
+    } catch(e) {}
+    this._ws = null;
+  }
+  
+  if (this._pingIntervalId) {
+    clearInterval(this._pingIntervalId);
+    this._pingIntervalId = null;
+  }
+  
+  this._reconnectAttempts = 0;
+  console.log('🔌 Disconnected from Testnet');
+},
+
+
   
   /**
    * Show testnet indicator on chart
@@ -15182,32 +17859,135 @@ const TradeManager = {
   /**
    * Place testnet order (simulated with real market data)
    */
-  async placeTestnetOrder(side, quantity, price) {
-    if (!this.testnetMode) return null;
+  // ============================================
+// REPLACE placeTestnetOrder() WITH THIS
+// ============================================
+placeTestnetOrder: function(side, quantity, price) {
+  if (!this.testnetMode || !this._ws || this._ws.readyState !== WebSocket.OPEN) {
+    console.warn('⚠️ Testnet not connected');
+    return null;
+  }
+  
+  // Send order via WebSocket
+  const order = {
+    id: 'testnet_' + Date.now().toString(36) + Math.random().toString(36).substr(2, 6),
+    symbol: STATE.symbol,
+    side: side.toUpperCase(),
+    type: 'LIMIT',
+    price: price,
+    quantity: quantity,
+    timestamp: Date.now(),
+    status: 'FILLED',
+    testnet: true
+  };
+  
+  // Update testnet balance
+  const total = price * quantity;
+  if (side === 'buy') {
+    this.testnetBalance -= total;
+  } else {
+    this.testnetBalance += total;
+  }
+  
+  // Add to positions
+  STATE.positions.push({
+    id: order.id,
+    symbol: STATE.symbol,
+    type: side,
+    side: side === 'buy' ? 'long' : 'short',
+    entryPrice: price,
+    amount: quantity,
+    leverage: this.leverage || 1,
+    entryTime: Date.now(),
+    status: 'open'
+  });
+  
+  this.savePositions();
+  this.renderPositions();
+  this.updateAccountDisplay();
+  
+  console.log('🧪 Testnet Order Executed:', order);
+  
+  if (typeof Toast !== 'undefined') {
+    Toast.success('🧪 Testnet: ' + side.toUpperCase() + ' ' + quantity + ' @ $' + this._formatPrice(price));
+  }
+  
+  return order;
+},
+
+// ============================================
+// ADD THESE NEW METHODS (put after placeTestnetOrder)
+// ============================================
+_handleTestnetMessage: function(e) {
+  try {
+    const data = JSON.parse(e.data);
     
-    var order = {
-      id: U.genId(),
-      symbol: STATE.symbol,
-      side: side.toUpperCase(),
-      type: this.orderType === 'market' ? 'MARKET' : 'LIMIT',
-      price: price,
-      quantity: quantity,
-      timestamp: Date.now(),
-      status: 'FILLED',
-      testnet: true
-    };
+    if (data.result === 'pong' || data.pong) return;
     
-    // Simulate small delay like real API
-    await new Promise(function(resolve) { setTimeout(resolve, 300); });
-    
-    console.log('🧪 Testnet Order Executed:', order);
-    
-    if (typeof Toast !== 'undefined') {
-      Toast.success('🧪 Testnet: ' + side.toUpperCase() + ' ' + quantity + ' @ $' + U.formatPrice(price));
+    if (data.stream && data.data && data.data.k) {
+      this._handleTestnetKline(data.data.k);
     }
     
-    return order;
-  },
+  } catch(ex) {
+    console.warn('Testnet message parse error:', ex.message);
+  }
+},
+
+_handleTestnetKline: function(k) {
+  const candle = {
+    time: Math.floor(k.t / 1000),
+    open: parseFloat(k.o),
+    high: parseFloat(k.h),
+    low: parseFloat(k.l),
+    close: parseFloat(k.c),
+    volume: parseFloat(k.v)
+  };
+  
+  if (k.x) {
+    const last = STATE.candles[STATE.candles.length - 1];
+    if (!last || candle.time > last.time) {
+      STATE.candles.push(candle);
+      if (STATE.candles.length > 500) {
+        STATE.candles = STATE.candles.slice(-500);
+      }
+      ChartEngine.updateMain(STATE.candles);
+      ChartEngine.updateVolume(STATE.candles);
+    } else if (candle.time === last.time) {
+      STATE.candles[STATE.candles.length - 1] = candle;
+    }
+    STATE.currentPrice = candle.close;
+    DataManager.updatePriceDisplay(candle);
+  } else {
+    ChartEngine.updateLastCandle(candle);
+  }
+},
+
+_reconnectTestnet: function() {
+  if (this._reconnectAttempts >= 5) {
+    console.error('❌ Max testnet reconnect attempts reached');
+    return;
+  }
+  
+  this._reconnectAttempts++;
+  const delay = 2000 * Math.pow(1.5, this._reconnectAttempts - 1);
+  
+  console.log(`🔄 Reconnecting to Testnet in ${delay}ms (attempt ${this._reconnectAttempts})`);
+  
+  setTimeout(function() {
+    this.connectTestnet();
+  }.bind(this), delay);
+},
+
+_formatPrice: function(p) {
+  if (p == null || isNaN(p)) return '--';
+  if (p >= 1000) return p.toFixed(2);
+  if (p >= 100) return p.toFixed(3);
+  if (p >= 10) return p.toFixed(4);
+  if (p >= 1) return p.toFixed(5);
+  if (p >= 0.1) return p.toFixed(6);
+  return p.toFixed(8);
+},
+
 // OCO Order (One-Cancels-Other / Bracket Order)
 async placeOCOOrder(side, quantity, price, stopPrice, limitPrice) {
   const position = {
@@ -18451,7 +21231,7 @@ document.querySelectorAll('[data-open-modal="drawing-tools-modal"]').forEach(btn
             Toast.success('Theme: ' + (next === 'dark' ? '🌙 Dark' : '☀️ Light'));
         });
     }
-    
+ 
     // Chart controls
     const zoomIn = document.getElementById('zoom-in-btn');
     const zoomOut = document.getElementById('zoom-out-btn');
@@ -18977,7 +21757,10 @@ window.ChartEngine = ChartEngine;
 window.IndicatorEngine = IndicatorEngine;
 window.DrawingEngine = DrawingEngine;
 window.TradeManager = TradeManager;
+window.YahooDataManager = YahooDataManager;
 window.DataManager = DataManager;
+window.VolumeProfileEngine = VolumeProfileEngine;
+window.RightSidebarCharts = RightSidebarCharts;
 window.StateManager = { getState: () => STATE };
 window.STATE = STATE;  // For debugging
 
@@ -19057,23 +21840,19 @@ console.log('✅ Debug functions ready. Try: debugIndicators() or addRSI() or ad
 // INSTITUTIONAL STOCK DATA MODULE (Vercel Proxy)
 // All calls routed through your secure backend
 // ============================================
+// ============================================
+// STOCK FINANCIAL DATA - YAHOO via corsproxy.io
+// ============================================
 const StockFinancialData = {
   cache: {},
   cacheTimeout: 300000,
   
-  /**
-   * Get the current active API base URL from the failover system
-   * This ensures stock data also uses the working backend
-   */
-  getApiBase() {
-    // Use the global getApiBase function from the failover system
-    if (typeof getApiBase === 'function') {
-      return getApiBase();
-    }
-    // Fallback in case getApiBase is not defined yet
-    return 'https://tradevision-backend.wambuamwanza6.workers.dev/api';
-  },
+  // CORS proxy for Yahoo
+  _corsProxy: 'https://corsproxy.io/?',
   
+  // ============================================
+  // CORE FETCH METHOD - Yahoo via corsproxy.io
+  // ============================================
   async fetchWithCache(key, endpoint, params = {}) {
     var now = Date.now();
     var cacheKey = key + '_' + JSON.stringify(params);
@@ -19084,25 +21863,25 @@ const StockFinancialData = {
     }
     
     try {
-      // Build URL using the failover API base
-      const apiBase = this.getApiBase();
       let url;
       
       // Handle different endpoint types
       if (endpoint === 'quote') {
-        url = `${apiBase}/proxy?endpoint=finnhub&symbol=${params.symbol}`;
+        url = `https://query1.finance.yahoo.com/v8/finance/chart/${params.symbol}?interval=1d&range=1d`;
       } else if (endpoint === 'profile') {
-        url = `${apiBase}/proxy?endpoint=finnhub&symbol=${params.symbol}`;
+        url = `https://query1.finance.yahoo.com/v8/finance/chart/${params.symbol}?interval=1d&range=1d`;
       } else if (endpoint === 'metrics') {
-        url = `${apiBase}/proxy?endpoint=finnhub&symbol=${params.symbol}`;
+        url = `https://query1.finance.yahoo.com/v8/finance/chart/${params.symbol}?interval=1d&range=1d`;
       } else {
-        // Fallback to generic proxy
-        url = `${apiBase}/proxy?${new URLSearchParams(params).toString()}`;
+        // Fallback to generic Yahoo quote
+        url = `https://query1.finance.yahoo.com/v8/finance/chart/${params.symbol}?interval=1d&range=1d`;
       }
       
-      console.log(`📡 StockFinancialData fetching: ${url}`);
+      // Use corsproxy.io
+      const proxyUrl = `${this._corsProxy}${encodeURIComponent(url)}`;
+      console.log(`📡 StockFinancialData via corsproxy.io: ${proxyUrl}`);
       
-      const res = await fetch(url);
+      const res = await fetch(proxyUrl);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       
@@ -19116,6 +21895,9 @@ const StockFinancialData = {
     }
   },
   
+  // ============================================
+  // HELPER METHODS
+  // ============================================
   isStock: function() {
     return (STATE.assetType || 'crypto') === 'stocks';
   },
@@ -19124,7 +21906,9 @@ const StockFinancialData = {
     return (STATE.symbol || 'AAPL').replace('USDT', '');
   },
   
-  // Updated fetch methods using the new fetchWithCache
+  // ============================================
+  // FETCH METHODS
+  // ============================================
   async fetchQuote(symbol) {
     return this.fetchWithCache('quote_' + symbol, 'quote', { symbol: symbol });
   },
@@ -19137,6 +21921,9 @@ const StockFinancialData = {
     return this.fetchWithCache('metrics_' + symbol, 'metrics', { symbol: symbol });
   },
   
+  // ============================================
+  // UPDATE ALL PANELS
+  // ============================================
   async updateAllPanels() {
     if (!this.isStock()) {
       console.log('Not a stock, skipping financial data fetch');
@@ -19144,17 +21931,32 @@ const StockFinancialData = {
     }
     
     var symbol = this.getStockSymbol();
-    console.log('Fetching live stock data for ' + symbol + ' via failover backend...');
+    console.log('Fetching live stock data for ' + symbol + ' via corsproxy.io...');
     
     try {
       var quote = await this.fetchQuote(symbol);
       console.log('Quote received:', quote);
       
-      if (quote && !quote.error) {
-        this.updateKeyStatsLive(quote, symbol);
-        this.updatePerformanceLive(quote);
+      if (quote && quote.chart && quote.chart.result && quote.chart.result[0]) {
+        const result = quote.chart.result[0];
+        const meta = result.meta;
+        const quoteData = result.indicators.quote[0];
+        
+        // Extract data from Yahoo format
+        const stockData = {
+          c: meta.regularMarketPrice || quoteData.close[quoteData.close.length - 1],
+          dp: meta.regularMarketChangePercent || 0,
+          h: meta.regularMarketDayHigh || Math.max(...quoteData.high),
+          l: meta.regularMarketDayLow || Math.min(...quoteData.low),
+          o: quoteData.open[0],
+          pc: meta.previousClose || quoteData.close[quoteData.close.length - 2] || 0,
+          v: meta.regularMarketVolume || quoteData.volume[quoteData.volume.length - 1]
+        };
+        
+        this.updateKeyStatsLive(stockData, symbol);
+        this.updatePerformanceLive(stockData);
       } else {
-        console.warn('Quote data unavailable or error:', quote?.error);
+        console.warn('Quote data unavailable or error:', quote);
       }
       
     } catch(e) {
@@ -19162,6 +21964,9 @@ const StockFinancialData = {
     }
   },
   
+  // ============================================
+  // UPDATE KEY STATS
+  // ============================================
   updateKeyStatsLive: function(quote, symbol) {
     var setEl = function(id, val) {
       var el = document.getElementById(id);
@@ -19204,6 +22009,9 @@ const StockFinancialData = {
     console.log('Key stats updated for ' + symbol);
   },
   
+  // ============================================
+  // UPDATE PERFORMANCE
+  // ============================================
   updatePerformanceLive: function(quote) {
     var setEl = function(id, val, cls) {
       var el = document.getElementById(id);
@@ -19231,6 +22039,9 @@ const StockFinancialData = {
     console.log('Performance updated');
   },
   
+  // ============================================
+  // INITIALIZATION
+  // ============================================
   init: function() {
     var self = this;
     
@@ -19249,7 +22060,7 @@ const StockFinancialData = {
       setTimeout(function() { self.updateAllPanels(); }, 2000);
     }
     
-    console.log('Stock Financial Data module ready (failover proxy mode)');
+    console.log('Stock Financial Data module ready (Yahoo via corsproxy.io)');
   }
 };
 // ============================================
@@ -21435,6 +24246,9 @@ var proxyUrl = `${apiBase}/proxy?endpoint=klines&symbol=${symbol}&interval=1d&li
 // ============================================
 // EQUITY CURVE CHART
 // ============================================
+// ============================================
+// EQUITY CURVE WITH TIME LABELS
+// ============================================
 function initEquityCurve() {
   const canvas = document.getElementById('equity-canvas');
   const placeholder = document.getElementById('equity-placeholder');
@@ -21442,10 +24256,15 @@ function initEquityCurve() {
   
   const ctx = canvas.getContext('2d');
   
+  // ============================================
+  // DRAW EQUITY CURVE WITH TIME AXIS
+  // ============================================
   function drawEquityCurve() {
     // Get trade history
     const history = TradeManager.orderHistory || [];
-    const closedTrades = history.filter(t => t.action === 'close' && t.pnl !== undefined);
+    const closedTrades = history.filter(function(t) { 
+      return t.action === 'close' && t.pnl !== undefined; 
+    });
     
     if (closedTrades.length === 0) {
       if (placeholder) placeholder.style.display = 'block';
@@ -21459,17 +24278,22 @@ function initEquityCurve() {
     // Build equity curve points
     const initialBalance = TradeManager.account.initialBalance || 10000;
     let equity = initialBalance;
-    const points = [{ x: 0, y: 0, equity: initialBalance }];
+    const points = [{ x: 0, y: 0, equity: initialBalance, time: null }];
     
-    closedTrades.forEach((trade, i) => {
+    closedTrades.forEach(function(trade, i) {
       equity += (trade.pnl || 0);
-      points.push({ x: i + 1, y: 0, equity: equity });
+      points.push({ 
+        x: i + 1, 
+        y: 0, 
+        equity: equity, 
+        time: trade.timestamp || Date.now() 
+      });
     });
     
     // Add current unrealized PnL
     let unrealizedPnl = 0;
     if (STATE.positions) {
-      STATE.positions.forEach(pos => {
+      STATE.positions.forEach(function(pos) {
         if (!pos.side) pos.side = (pos.type === 'buy') ? 'long' : 'short';
         const currentPrice = STATE.currentPrice || 0;
         if (currentPrice > 0 && pos.entryPrice > 0) {
@@ -21483,70 +24307,139 @@ function initEquityCurve() {
     }
     
     const currentEquity = equity + unrealizedPnl;
-    points.push({ x: closedTrades.length + (STATE.positions?.length > 0 ? 0.5 : 0), y: 0, equity: currentEquity });
+    points.push({ 
+      x: closedTrades.length + (STATE.positions && STATE.positions.length > 0 ? 0.5 : 0), 
+      y: 0, 
+      equity: currentEquity, 
+      time: Date.now() 
+    });
     
-    // Draw
+    // Canvas setup with DPI scaling
     const w = canvas.parentElement.clientWidth || 280;
-    const h = 120;
-    canvas.width = w * 2; // For retina
-    canvas.height = h * 2;
+    const h = 140;
+    const dpr = window.devicePixelRatio || 1;
+    
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
     canvas.style.width = w + 'px';
     canvas.style.height = h + 'px';
-    ctx.scale(2, 2);
+    ctx.scale(dpr, dpr);
     
     ctx.clearRect(0, 0, w, h);
     
     // Find min/max for scaling
-    const equities = points.map(p => p.equity);
-    const minEq = Math.min(...equities) * 0.995;
-    const maxEq = Math.max(...equities) * 1.005;
+    const equities = points.map(function(p) { return p.equity; });
+    const minEq = Math.min.apply(null, equities) * 0.995;
+    const maxEq = Math.max.apply(null, equities) * 1.005;
     const range = maxEq - minEq || 1;
     
-    // Grid lines
-    ctx.strokeStyle = 'rgba(48,54,61,0.5)';
+    // Margins
+    const margin = { top: 15, right: 10, bottom: 35, left: 10 };
+    const chartW = w - margin.left - margin.right;
+    const chartH = h - margin.top - margin.bottom;
+    
+    // ============================================
+    // DRAW GRID LINES
+    // ============================================
+    ctx.strokeStyle = 'rgba(48, 54, 61, 0.4)';
     ctx.lineWidth = 0.5;
+    ctx.setLineDash([2, 2]);
+    
     for (let i = 0; i <= 4; i++) {
-      const y = 10 + (h - 20) * (i / 4);
+      const y = margin.top + (chartH * (i / 4));
       ctx.beginPath();
-      ctx.moveTo(30, y);
-      ctx.lineTo(w - 10, y);
+      ctx.moveTo(margin.left, y);
+      ctx.lineTo(margin.left + chartW, y);
       ctx.stroke();
       
-      // Labels
+      // Price labels
+      const priceVal = maxEq - (range * (i / 4));
       ctx.fillStyle = '#6e7681';
       ctx.font = '8px Inter';
       ctx.textAlign = 'right';
-      ctx.fillText('$' + U.formatLargeNum(maxEq - (range * i / 4)), 28, y + 3);
+      ctx.textBaseline = 'middle';
+      ctx.fillText('$' + _formatLargeNum(priceVal), margin.left - 6, y);
+    }
+    ctx.setLineDash([]);
+    
+    // ============================================
+    // DRAW TIME LABELS ON X-AXIS
+    // ============================================
+    const timePoints = points.filter(function(p) { return p.time !== null; });
+    if (timePoints.length >= 2) {
+      const firstTime = timePoints[0].time;
+      const lastTime = timePoints[timePoints.length - 1].time;
+      const timeRange = lastTime - firstTime;
+      
+      // Draw 4 time markers
+      for (let i = 0; i <= 4; i++) {
+        const t = firstTime + (timeRange * (i / 4));
+        const x = margin.left + (chartW * (i / 4));
+        
+        ctx.fillStyle = '#6e7681';
+        ctx.font = '8px Inter';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+        
+        const date = new Date(t);
+        let label;
+        if (timeRange < 86400000) {
+          // Less than 1 day - show time
+          label = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        } else if (timeRange < 604800000) {
+          // Less than 1 week - show day
+          label = date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+        } else {
+          // More than 1 week - show date
+          label = date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+        }
+        ctx.fillText(label, x, margin.top + chartH + 8);
+      }
     }
     
-    // Draw equity line
+    // ============================================
+    // DRAW EQUITY LINE
+    // ============================================
     ctx.strokeStyle = '#58a6ff';
     ctx.lineWidth = 2;
     ctx.beginPath();
     
-    points.forEach((p, i) => {
-      const x = 30 + ((w - 40) * (p.x / (points[points.length - 1].x || 1)));
-      const y = 10 + (h - 20) * (1 - (p.equity - minEq) / range);
+    let first = true;
+    points.forEach(function(p) {
+      const x = margin.left + (chartW * (p.x / (points[points.length - 1].x || 1)));
+      const y = margin.top + (chartH * (1 - (p.equity - minEq) / range));
       
-      if (i === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
+      if (first) {
+        ctx.moveTo(x, y);
+        first = false;
+      } else {
+        ctx.lineTo(x, y);
+      }
     });
     ctx.stroke();
     
-    // Fill under curve
-    ctx.lineTo(30 + ((w - 40) * (points[points.length - 1].x / (points[points.length - 1].x || 1))), h - 10);
-    ctx.lineTo(30, h - 10);
+    // ============================================
+    // FILL UNDER CURVE
+    // ============================================
+    const lastX = margin.left + (chartW * (points[points.length - 1].x / (points[points.length - 1].x || 1)));
+    const lastY = margin.top + (chartH * (1 - (points[points.length - 1].equity - minEq) / range));
+    
+    ctx.lineTo(lastX, margin.top + chartH);
+    ctx.lineTo(margin.left, margin.top + chartH);
     ctx.closePath();
+    
     const gradient = ctx.createLinearGradient(0, 0, 0, h);
-    gradient.addColorStop(0, 'rgba(88,166,255,0.2)');
-    gradient.addColorStop(1, 'rgba(88,166,255,0.0)');
+    gradient.addColorStop(0, 'rgba(88, 166, 255, 0.3)');
+    gradient.addColorStop(1, 'rgba(88, 166, 255, 0.0)');
     ctx.fillStyle = gradient;
     ctx.fill();
     
-    // Current equity dot
+    // ============================================
+    // DRAW CURRENT EQUITY DOT
+    // ============================================
     const lastPoint = points[points.length - 1];
-    const lx = 30 + ((w - 40) * (lastPoint.x / (points[points.length - 1].x || 1)));
-    const ly = 10 + (h - 20) * (1 - (lastPoint.equity - minEq) / range);
+    const lx = margin.left + (chartW * (lastPoint.x / (points[points.length - 1].x || 1)));
+    const ly = margin.top + (chartH * (1 - (lastPoint.equity - minEq) / range));
     
     ctx.beginPath();
     ctx.arc(lx, ly, 4, 0, Math.PI * 2);
@@ -21556,28 +24449,98 @@ function initEquityCurve() {
     ctx.lineWidth = 1.5;
     ctx.stroke();
     
-    // P&L label
+    // ============================================
+    // DRAW P&L LABEL
+    // ============================================
     const totalPnl = currentEquity - initialBalance;
     const pnlSign = totalPnl >= 0 ? '+' : '';
     ctx.fillStyle = totalPnl >= 0 ? '#26a69a' : '#ef5350';
     ctx.font = 'bold 9px Inter';
     ctx.textAlign = 'left';
-    ctx.fillText(pnlSign + '$' + U.formatNum(Math.abs(totalPnl), 2), lx + 8, ly - 4);
-    ctx.fillText('(' + pnlSign + U.formatNum((totalPnl/initialBalance)*100, 1) + '%)', lx + 8, ly + 8);
+    ctx.textBaseline = 'bottom';
+    ctx.fillText(pnlSign + '$' + _formatNum(Math.abs(totalPnl), 2), lx + 8, ly - 2);
+    ctx.font = '8px Inter';
+    ctx.fillText('(' + pnlSign + _formatNum((totalPnl / initialBalance) * 100, 1) + '%)', lx + 8, ly - 14);
+    
+    // ============================================
+    // DRAW DRAWDOWN MARKER (optional)
+    // ============================================
+    let peak = initialBalance;
+    let maxDD = 0;
+    let ddIndex = 0;
+    
+    points.forEach(function(p, idx) {
+      if (p.equity > peak) {
+        peak = p.equity;
+      }
+      const dd = (peak - p.equity) / peak;
+      if (dd > maxDD) {
+        maxDD = dd;
+        ddIndex = idx;
+      }
+    });
+    
+    if (maxDD > 0.05) {
+      const ddX = margin.left + (chartW * (points[ddIndex].x / (points[points.length - 1].x || 1)));
+      const ddY = margin.top + (chartH * (1 - (points[ddIndex].equity - minEq) / range));
+      
+      ctx.fillStyle = 'rgba(239, 83, 80, 0.15)';
+      ctx.beginPath();
+      ctx.arc(ddX, ddY, 6, 0, Math.PI * 2);
+      ctx.fill();
+      
+      ctx.fillStyle = '#ef5350';
+      ctx.font = '7px Inter';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      ctx.fillText('-' + (maxDD * 100).toFixed(1) + '%', ddX, ddY + 8);
+    }
   }
   
-  // Draw initially
+  // ============================================
+  // HELPER FUNCTIONS
+  // ============================================
+  function _formatLargeNum(n) {
+    if (!n) return '--';
+    if (n >= 1e12) return (n / 1e12).toFixed(2) + 'T';
+    if (n >= 1e9) return (n / 1e9).toFixed(2) + 'B';
+    if (n >= 1e6) return (n / 1e6).toFixed(2) + 'M';
+    if (n >= 1e3) return (n / 1e3).toFixed(2) + 'K';
+    return n.toFixed(2);
+  }
+  
+  function _formatNum(n, d) {
+    if (n == null || isNaN(n)) return '--';
+    return Number(n).toFixed(d || 2);
+  }
+  
+  // ============================================
+  // INITIAL DRAW
+  // ============================================
   setTimeout(drawEquityCurve, 1000);
   
-  // Update every 5 seconds
-  IntervalManager.register(drawEquityCurve, 5000, 'EquityCurve-update');
+  // ============================================
+  // UPDATE EVERY 5 SECONDS
+  // ============================================
+  setInterval(drawEquityCurve, 5000);
   
-  // Update on position changes
+  // ============================================
+  // UPDATE ON POSITION CHANGES
+  // ============================================
   const originalRenderPositions = TradeManager.renderPositions.bind(TradeManager);
   TradeManager.renderPositions = function() {
     originalRenderPositions();
     drawEquityCurve();
   };
+  
+  // ============================================
+  // RESPONSIVE RESIZE
+  // ============================================
+  let resizeTimeout;
+  window.addEventListener('resize', function() {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(drawEquityCurve, 200);
+  });
 }
 
 // ============================================
@@ -21819,6 +24782,57 @@ if (chartContainer && chartContainer.parentNode) {
 
   fetchTimeframeData: function(symbol, interval) {
   var self = this;
+  
+  // Check if it's Yahoo data (stocks or forex)
+  const assetType = AssetTypeManager.detectAssetType(symbol);
+  
+  // ============================================
+  // YAHOO DATA (Stocks & Forex)
+  // ============================================
+  if (assetType === 'stocks' || assetType === 'forex') {
+    const corsProxy = 'https://corsproxy.io/?';
+    let yahooSymbol = symbol;
+    if (assetType === 'forex' && symbol.length === 6 && !symbol.includes('=')) {
+      yahooSymbol = symbol.slice(0, 3) + symbol.slice(3) + '=X';
+    }
+    
+    // Determine range based on interval
+    let yahooRange = '3mo';
+    const intradayIntervals = ['1m', '2m', '5m', '15m', '30m', '60m', '90m', '1h'];
+    if (intradayIntervals.includes(interval)) {
+      yahooRange = '5d';
+    } else if (interval === '1d') {
+      yahooRange = '3mo';
+    } else if (interval === '1wk') {
+      yahooRange = '1y';
+    }
+    
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${yahooSymbol}?interval=${interval}&range=${yahooRange}`;
+    const proxyUrl = `${corsProxy}${encodeURIComponent(url)}`;
+    
+    fetch(proxyUrl)
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        if (data.chart && data.chart.result && data.chart.result[0]) {
+          const result = data.chart.result[0];
+          const quotes = result.indicators.quote[0];
+          const close = quotes.close[quotes.close.length - 1];
+          const open = quotes.open[0];
+          const change = open > 0 ? ((close - open) / open) * 100 : 0;
+          
+          self.timeframeData[interval] = { price: close, change: change };
+          self.updateCard(interval);
+        }
+      })
+      .catch(function(e) {
+        console.warn('MTF Yahoo fetch failed for', interval, ':', e.message);
+      });
+    return;
+  }
+  
+  // ============================================
+  // CRYPTO DATA (Binance) - Existing logic
+  // ============================================
   if (interval === STATE.interval) {
     this.updateCardFromState(interval);
     return;
@@ -21896,7 +24910,30 @@ if (chartContainer && chartContainer.parentNode) {
       self.updateCard(tf);
     });
   },
-
+// ============================================
+// ADD THIS METHOD TO MultiTimeframeMonitor
+// ============================================
+forceRefresh: function() {
+  console.log('🔄 Force refreshing MTF bar...');
+  this.timeframeData = {};
+  const self = this;
+  
+  // Fetch all active timeframes
+  this.activeTimeframes.forEach(function(tf) {
+    if (tf !== STATE.interval) {
+      self.fetchTimeframeData(STATE.symbol, tf);
+    } else {
+      // Update current timeframe from state
+      if (STATE.candles && STATE.candles.length > 0) {
+        const last = STATE.candles[STATE.candles.length - 1];
+        const prev = STATE.candles.length > 1 ? STATE.candles[STATE.candles.length - 2] : last;
+        const change = prev.close > 0 ? ((last.close - prev.close) / prev.close) * 100 : 0;
+        self.timeframeData[tf] = { price: last.close, change: change };
+        self.updateCard(tf);
+      }
+    }
+  });
+},
   // ADD this new method to start periodic refresh
   startPeriodicRefresh: function() {
     if (this.refreshInterval) clearInterval(this.refreshInterval);
@@ -25870,6 +28907,9 @@ function initTVPanels() {
 // ============================================
 // MAIN INITIALIZATION
 // ============================================
+// ============================================
+// FIXED main() - PROPER ORDER, NO DUPLICATES
+// ============================================
 async function main() {
   if (window.__tradevision_initialized) {
     console.warn('⚠️ TradeVision already initialized');
@@ -25885,7 +28925,7 @@ async function main() {
     chartContainer.style.opacity = '0.5';
   }
   
-  // SAFETY FIX #1: Force hide loader after 15 seconds (prevents infinite loading)
+  // SAFETY FIX #1: Force hide loader after 15 seconds
   const forceHideTimeout = setTimeout(() => {
     console.warn('⚠️ Force hiding loader after timeout - initialization may have stalled');
     const loader = document.getElementById('app-loader');
@@ -25897,8 +28937,6 @@ async function main() {
       }, 300);
     }
     if (chartContainer) chartContainer.style.opacity = '1';
-    
-    // Show user-friendly message
     if (typeof Toast !== 'undefined') {
       Toast.warning('Loading took longer than expected. You can refresh if issues persist.', 8000);
     }
@@ -25910,7 +28948,7 @@ async function main() {
     // ============================================
     console.log('📱 STEP 1: Setting up UI...');
     setupUI();
-	setupActionBar();
+    setupActionBar();
     DrawingEngine.init();
     DrawingToolsModal.init();
     
@@ -25921,55 +28959,55 @@ async function main() {
     WatchlistManager.init();
     
     // ============================================
-    // STEP 2: Initialize ChartEngine (but no data yet)
+    // STEP 2: Initialize ChartEngine
     // ============================================
     console.log('📊 STEP 2: Initializing ChartEngine...');
     ChartEngine.init();
-	
-// Double‑force volume pane visibility after a short delay
-setTimeout(() => {
-  const vPane = document.getElementById('volume-chart-pane');
-  const vChart = document.getElementById('volume-chart');
-  if (vPane && vChart) {
-    vPane.style.display = 'flex';
-    vPane.style.flex = '0 0 80px';
-    vPane.style.height = '80px';
-    if (ChartEngine.charts.volume) {
-      ChartEngine.charts.volume.resize(vChart.clientWidth || 300, 80);
-    }
-  }
-}, 300);
+    
+    // Double‑force volume pane visibility after a short delay
+    setTimeout(() => {
+      const vPane = document.getElementById('volume-chart-pane');
+      const vChart = document.getElementById('volume-chart');
+      if (vPane && vChart) {
+        vPane.style.display = 'flex';
+        vPane.style.flex = '0 0 80px';
+        vPane.style.height = '80px';
+        if (ChartEngine.charts.volume) {
+          ChartEngine.charts.volume.resize(vChart.clientWidth || 300, 80);
+        }
+      }
+    }, 300);
     
     // ============================================
-    // STEP 3: Initialize DataManager and LOAD REAL DATA
+    // STEP 3: Load symbols
     // ============================================
-    console.log('📈 STEP 3: Loading LIVE data from Binance...');
-    
+    console.log('📈 STEP 3: Loading symbols...');
     await DataManager.loadSymbols();
-    await DataManager.loadHistory(STATE.symbol, STATE.interval);
-    await DataManager.load24h(STATE.symbol);
-    
-    console.log('✅ STEP 3: Live data loaded successfully');
     
     // ============================================
-    // STEP 4: Connect WebSocket for real-time updates
+    // STEP 4: Load DEFAULT asset (BTCUSDT)
     // ============================================
-    console.log('🔌 STEP 4: Connecting WebSocket...');
+    console.log('🚀 Loading default asset: BTCUSDT');
+    await DataManager.loadHistory('BTCUSDT', '15m');
+    await DataManager.load24h('BTCUSDT');
+    
+    console.log('✅ Default asset loaded successfully');
+    
+    // ============================================
+    // STEP 5: Connect WebSocket for real-time updates
+    // ============================================
+    console.log('🔌 STEP 5: Connecting WebSocket...');
     DataManager.connectWS();
     
-	
-	
     // ============================================
-    // STEP 5: Initialize remaining systems with safety checks
+    // STEP 6: Initialize remaining systems
     // ============================================
-    console.log('⚙️ STEP 5: Initializing remaining systems...');
+    console.log('⚙️ STEP 6: Initializing remaining systems...');
     
-    // SAFETY FIX #3: Initialize each system with try-catch
     try { IndicatorsModal.init(); } catch(e) { console.warn('IndicatorsModal init failed:', e.message); }
     try { PineEditor.init(); } catch(e) { console.warn('PineEditor init failed:', e.message); }
     try { TradeManager.init(); } catch(e) { console.warn('TradeManager init failed:', e.message); }
     
-    // Initialize Smart Order System (after TradeManager is ready)
     if (typeof SmartOrderSystem !== 'undefined') {
       setTimeout(function() {
         try { SmartOrderSystem.init(); } catch(e) { console.warn('SmartOrderSystem init failed:', e.message); }
@@ -25981,33 +29019,33 @@ setTimeout(() => {
     try { NewsManager.init(); } catch(e) { console.warn('NewsManager init failed:', e.message); }
     try { EconomicCalendar.init(); } catch(e) { console.warn('EconomicCalendar init failed:', e.message); }
     try { MarketOverview.init(); } catch(e) { console.warn('MarketOverview init failed:', e.message); }
-	if (typeof AIAssistant !== 'undefined' && AIAssistant.init) {
-    AIAssistant.init();
-    console.log('🤖 AI Assistant initialized from main()');
-  }
-    // Initialize alternative chart engines
-if (typeof TickChartEngine !== 'undefined') TickChartEngine.init();
-if (typeof RenkoChartEngine !== 'undefined') RenkoChartEngine.init();
-if (typeof KagiChartEngine !== 'undefined') KagiChartEngine.init();
-if (typeof PointFigureEngine !== 'undefined') PointFigureEngine.init();
-
-// Initialize institutional features
-if (typeof MarketProfileEngine !== 'undefined') MarketProfileEngine.init();
-if (typeof OrderFlowEngine !== 'undefined') OrderFlowEngine.init();
-if (typeof WebhookEngine !== 'undefined') WebhookEngine.init();
-if (typeof PublicScriptLibrary !== 'undefined') PublicScriptLibrary.init();
-if (typeof TickHistoryEngine !== 'undefined') TickHistoryEngine.init();
-if (typeof ExtendedHoursEngine !== 'undefined') ExtendedHoursEngine.init();
-if (typeof setupChartTypeDropdown === 'function') {
-    setupChartTypeDropdown();
-}
-    // Initialize mobile features if on mobile
+    
+    if (typeof AIAssistant !== 'undefined' && AIAssistant.init) {
+      AIAssistant.init();
+      console.log('🤖 AI Assistant initialized');
+    }
+    
+    if (typeof TickChartEngine !== 'undefined') TickChartEngine.init();
+    if (typeof RenkoChartEngine !== 'undefined') RenkoChartEngine.init();
+    if (typeof KagiChartEngine !== 'undefined') KagiChartEngine.init();
+    if (typeof PointFigureEngine !== 'undefined') PointFigureEngine.init();
+    
+    if (typeof MarketProfileEngine !== 'undefined') MarketProfileEngine.init();
+    if (typeof OrderFlowEngine !== 'undefined') OrderFlowEngine.init();
+    if (typeof WebhookEngine !== 'undefined') WebhookEngine.init();
+    if (typeof PublicScriptLibrary !== 'undefined') PublicScriptLibrary.init();
+    if (typeof TickHistoryEngine !== 'undefined') TickHistoryEngine.init();
+    if (typeof ExtendedHoursEngine !== 'undefined') ExtendedHoursEngine.init();
+    if (typeof setupChartTypeDropdown === 'function') {
+      setupChartTypeDropdown();
+    }
+    
     if (window.innerWidth <= 768) {
       try { initAllMobileFeatures(); } catch(e) { console.warn('Mobile features init failed:', e.message); }
     }
     
     // ============================================
-    // STEP 6: Start periodic checks
+    // STEP 7: Start periodic checks
     // ============================================
     IntervalManager.register(() => {
       if (typeof AlertSystem2 !== 'undefined') AlertSystem2.checkAlerts();
@@ -26018,7 +29056,26 @@ if (typeof setupChartTypeDropdown === 'function') {
     }, 1000, 'TradeManager-updatePrices');
     
     // ============================================
-    // STEP 7: Hide loader on success
+    // STEP 8: Preload default assets in background (for faster switching)
+    // ============================================
+    setTimeout(() => {
+      const defaultAssets = [
+        { symbol: 'AAPL', interval: '1d' },
+        { symbol: 'TSLA', interval: '1d' },
+        { symbol: 'MSFT', interval: '1d' },
+        { symbol: 'EURUSD', interval: '1d' },
+        { symbol: 'GBPUSD', interval: '1d' }
+      ];
+      
+      console.log('🔄 Preloading default assets in background...');
+      
+      for (const asset of defaultAssets) {
+        DataManager.loadHistory(asset.symbol, asset.interval).catch(() => {});
+      }
+    }, 3000);
+    
+    // ============================================
+    // STEP 9: Hide loader on success
     // ============================================
     clearTimeout(forceHideTimeout);
     
@@ -26042,12 +29099,10 @@ if (typeof setupChartTypeDropdown === 'function') {
     clearTimeout(forceHideTimeout);
     if (chartContainer) chartContainer.style.opacity = '1';
     
-    // Show user-friendly error
     if (typeof Toast !== 'undefined') {
       Toast.error('Failed to load. Please refresh the page.', 10000);
     }
     
-    // Force hide loader even on error
     const loader = document.getElementById('app-loader');
     if (loader && loader.style.display !== 'none') {
       loader.style.opacity = '0';
@@ -28085,21 +31140,20 @@ function initAllMobileFeatures() {
     // 6. Start live price updates
     updateMobilePrices();
 
-	// P0 FIX #1: Ensure volume chart is visible immediately
-fixMobileVolumeChart();
-
-// Double-check volume chart after indicators load
-setTimeout(function() {
-  fixMobileVolumeChart();
-  if (typeof ChartEngine !== 'undefined' && ChartEngine.resizeAll) {
-    ChartEngine.resizeAll();
-  }
-}, 500);
-
-// Triple-check after all data loads
-setTimeout(function() {
-  fixMobileVolumeChart();
-}, 2000);
+ fixMobileVolumeChart();
+  
+  // Double-check volume chart after indicators load
+  setTimeout(function() {
+    fixMobileVolumeChart();
+    if (typeof ChartEngine !== 'undefined' && ChartEngine.resizeAll) {
+      ChartEngine.resizeAll();
+    }
+  }, 500);
+  
+  // Triple-check after all data loads
+  setTimeout(function() {
+    fixMobileVolumeChart();
+  }, 2000);
 
 	// P0 FIX: Mobile AI button handler
 setTimeout(function() {
@@ -28169,7 +31223,158 @@ setTimeout(function() {
     
     console.log('✅ All mobile features initialized successfully');
 }
-
+// ============================================
+// MOBILE VOLUME CHART DEFAULT VIEW FIX
+// Forces volume chart to render correctly on mobile
+// ============================================
+function fixMobileVolumeChart() {
+  if (window.innerWidth > 768) {
+    console.log('🖥️ Desktop mode - volume chart fix not needed');
+    return;
+  }
+  
+  console.log('📱 Applying mobile volume chart default view fix...');
+  
+  // ============================================
+  // STEP 1: Get DOM elements
+  // ============================================
+  const volumePane = document.getElementById('volume-chart-pane');
+  const volumeChart = document.getElementById('volume-chart');
+  const mainPane = document.getElementById('main-chart-pane');
+  const chartContainer = document.getElementById('chart-container');
+  
+  if (!volumePane || !volumeChart) {
+    console.warn('⚠️ Volume chart elements not found');
+    return;
+  }
+  
+  // ============================================
+  // STEP 2: Force volume pane visibility and dimensions
+  // ============================================
+  const fixedHeight = 80; // Fixed height for mobile
+  
+  volumePane.style.cssText = [
+    'display: flex !important',
+    'flex-direction: column !important',
+    'flex: 0 0 ' + fixedHeight + 'px !important',
+    'min-height: ' + fixedHeight + 'px !important',
+    'height: ' + fixedHeight + 'px !important',
+    'max-height: ' + fixedHeight + 'px !important',
+    'width: 100% !important',
+    'overflow: hidden !important',
+    'border-top: 1px solid var(--border-primary) !important',
+    'border-bottom: 1px solid var(--border-primary) !important',
+    'visibility: visible !important',
+    'opacity: 1 !important',
+    'z-index: 5 !important',
+    'position: relative !important'
+  ].join(';');
+  
+  // ============================================
+  // STEP 3: Force volume chart container dimensions
+  // ============================================
+  volumeChart.style.cssText = [
+    'display: block !important',
+    'width: 100% !important',
+    'height: ' + fixedHeight + 'px !important',
+    'min-height: ' + fixedHeight + 'px !important',
+    'max-height: ' + fixedHeight + 'px !important',
+    'visibility: visible !important',
+    'opacity: 1 !important',
+    'position: relative !important'
+  ].join(';');
+  
+  // ============================================
+  // STEP 4: Ensure main chart pane doesn't overlap
+  // ============================================
+  if (mainPane) {
+    mainPane.style.cssText = [
+      'flex: 1 1 auto !important',
+      'min-height: 200px !important',
+      'position: relative !important',
+      'overflow: hidden !important',
+      'width: 100% !important'
+    ].join(';');
+  }
+  
+  // ============================================
+  // STEP 5: Ensure chart container has correct layout
+  // ============================================
+  if (chartContainer) {
+    chartContainer.style.cssText = [
+      'display: flex !important',
+      'flex-direction: column !important',
+      'flex: 1 !important',
+      'min-height: 0 !important',
+      'overflow: hidden !important',
+      'width: 100% !important',
+      'height: 100% !important'
+    ].join(';');
+  }
+  
+  // ============================================
+  // STEP 6: Resize the volume chart instance
+  // ============================================
+  if (typeof ChartEngine !== 'undefined' && 
+      ChartEngine.charts && 
+      ChartEngine.charts.volume) {
+    
+    setTimeout(function() {
+      try {
+        const width = volumeChart.clientWidth || window.innerWidth;
+        const height = fixedHeight;
+        
+        ChartEngine.charts.volume.resize(width, height);
+        console.log('✅ Volume chart resized to ' + width + 'x' + height);
+        
+        // Force redraw of volume data
+        if (STATE.candles && STATE.candles.length > 0) {
+          ChartEngine.updateVolume(STATE.candles);
+        }
+        
+      } catch(e) {
+        console.warn('⚠️ Volume chart resize failed:', e.message);
+      }
+    }, 200);
+  }
+  
+  // ============================================
+  // STEP 7: Double-check after indicators load
+  // ============================================
+  setTimeout(function() {
+    if (ChartEngine && ChartEngine.resizeAll) {
+      ChartEngine.resizeAll();
+    }
+    console.log('✅ Mobile volume chart fix applied');
+  }, 500);
+  
+  // ============================================
+  // STEP 8: Add mutation observer for stability
+  // ============================================
+  if (volumePane && typeof MutationObserver !== 'undefined') {
+    const observer = new MutationObserver(function(mutations) {
+      mutations.forEach(function(mutation) {
+        if (mutation.attributeName === 'style' || mutation.attributeName === 'class') {
+          const display = window.getComputedStyle(volumePane).display;
+          if (display === 'none') {
+            volumePane.style.display = 'flex !important';
+            console.log('🔄 Volume chart visibility restored');
+          }
+        }
+      });
+    });
+    
+    observer.observe(volumePane, { 
+      attributes: true, 
+      attributeFilter: ['style', 'class'] 
+    });
+    
+    // Disconnect observer after 10 seconds to prevent memory leak
+    setTimeout(function() {
+      observer.disconnect();
+    }, 10000);
+  }
+}
 // ============================================
 // SETUP MOBILE TIMEFRAME PILLS
 // ============================================
@@ -30637,7 +33842,8 @@ window.TradeVisionEngine = {
     if (modal) modal.classList.add('visible');
   },
   
-  toggleTheme() {
+  // Replace the theme toggle handler with this robust version:
+ toggleTheme() {
     const body = document.body;
     const current = body.getAttribute('data-theme');
     const next = current === 'dark' ? 'light' : 'dark';
@@ -30974,199 +34180,372 @@ const AIAssistant = {
     return 'You are a professional crypto/stocks/forex trading assistant. Be concise (2-3 paragraphs max). Current data: ' + sym + ' at $' + price + ' (' + change + '), ' + (STATE.interval || '15m') + ' timeframe. Latest candle: ' + candleStr + '. Active indicators: ' + inds + '. Provide actionable trading insights. Include: this is not financial advice.';
   },
   
- async send() {
+ // ============================================
+// PRODUCTION-GRADE AI ASSISTANT WITH CACHING & FALLBACK
+// ============================================
+
+/**
+ * Send a message to AI Assistant with automatic fallback
+ * @param {string} text - User's message
+ * @returns {Promise<string>} AI response
+ */
+async send(text) {
   console.log('🔍 [AI] send() called');
   
-  var input = document.getElementById('ai-chat-input');
-  if (!input) {
-    console.error('❌ [AI] Chat input element not found');
-    return;
-  }
-  
-  var text = input.value.trim();
-  console.log('📝 [AI] User input:', text);
-  
-  if (!text) {
+  // ============================================
+  // STEP 1: INPUT VALIDATION & PERMISSION CHECK
+  // ============================================
+  if (!text || typeof text !== 'string' || !text.trim()) {
     console.warn('⚠️ [AI] Empty input, ignoring');
-    return;
+    if (typeof Toast !== 'undefined') {
+      Toast.warning('Please enter a question or command');
+    }
+    return null;
   }
   
-  console.log('🔍 [AI] Checking permissions...');
-  var check = this.canUse();
-  console.log('📊 [AI] canUse result:', check);
-  
+  const check = this.canUse();
   if (!check.allowed) {
     if (typeof Toast !== 'undefined') Toast.warning(check.reason);
-    return;
+    return null;
   }
   
-  if (this.isProcessing) { 
+  if (this.isProcessing) {
     console.warn('⚠️ [AI] Already processing, ignoring duplicate request');
-    if (typeof Toast !== 'undefined') Toast.warning('Please wait...'); 
-    return; 
+    if (typeof Toast !== 'undefined') Toast.warning('Please wait...');
+    return null;
   }
   
-  input.value = '';
-  var messagesEl = document.getElementById('ai-messages');
+  // ============================================
+  // STEP 2: CACHE CHECK (Production optimization)
+  // ============================================
+  const cacheKey = `ai_response_${text.toLowerCase().trim().replace(/\s+/g, '_')}`;
+  const cached = localStorage.getItem(cacheKey);
+  const cacheTimestamp = localStorage.getItem(`${cacheKey}_timestamp`);
+  
+  // Cache valid for 5 minutes
+  if (cached && cacheTimestamp && (Date.now() - parseInt(cacheTimestamp)) < 300000) {
+    console.log('📦 [AI] Using cached response for:', text);
+    this._addResponseToDOM(cached);
+    return cached;
+  }
+  
+  // ============================================
+  // STEP 3: PREPARE UI
+  // ============================================
+  const input = document.getElementById('ai-chat-input');
+  if (input) input.value = '';
+  
+  const messagesEl = document.getElementById('ai-messages');
   if (!messagesEl) {
     console.error('❌ [AI] Messages element not found');
-    return;
+    return null;
   }
   
-  console.log('✅ [AI] Adding user message to DOM');
   // Add user message
-  var userDiv = document.createElement('div');
-  userDiv.style.cssText = 'display:flex;gap:8px;flex-direction:row-reverse;margin-bottom:10px;';
-  userDiv.innerHTML = '<div style="width:26px;height:26px;border-radius:50%;background:var(--accent-primary);display:flex;align-items:center;justify-content:center;color:white;font-size:9px;font-weight:700;">YOU</div><div style="background:var(--accent-muted);padding:10px 14px;border-radius:12px;font-size:12px;color:var(--text-primary);max-width:80%;line-height:1.5;">' + text.replace(/</g,'&lt;') + '</div>';
-  messagesEl.appendChild(userDiv);
+  this._addUserMessage(messagesEl, text);
   
-  // Typing indicator
-  console.log('💬 [AI] Adding typing indicator');
-  var typingDiv = document.createElement('div');
-  typingDiv.id = 'ai-typing';
-  typingDiv.style.cssText = 'display:flex;gap:8px;margin-bottom:10px;';
-  typingDiv.innerHTML = '<span style="font-size:20px;">🤖</span><div class="ai-typing"><span></span><span></span><span></span></div>';
-  messagesEl.appendChild(typingDiv);
-  messagesEl.scrollTop = messagesEl.scrollHeight;
+  // Add typing indicator
+  const typingDiv = this._addTypingIndicator(messagesEl);
   
   this.isProcessing = true;
   
-  try {
-    var aiResponse = null;
-    var lowerText = text.toLowerCase();
-    
-    console.log('🔍 [AI] useLocalAnalysis:', this.useLocalAnalysis);
-    console.log('🔍 [AI] lowerText:', lowerText);
-    console.log('🔍 [AI] STATE.candles length:', STATE.candles ? STATE.candles.length : 'STATE undefined');
-    
-    // LOCAL ANALYSIS MODE - NO API CALLS
-    if (this.useLocalAnalysis) {
-      console.log('📊 [AI] LOCAL ANALYSIS MODE ACTIVE');
+  // ============================================
+  // STEP 4: ATTEMPT DEEPSEEK API WITH RETRY
+  // ============================================
+  let aiResponse = null;
+  let usedFallback = false;
+  let attempt = 0;
+  const maxAttempts = 2;
+  
+  // Determine mode
+  const useDeepSeek = !this.useLocalAnalysis;
+  
+  if (useDeepSeek) {
+    // Retry loop for API calls
+    while (attempt < maxAttempts && aiResponse === null) {
+      attempt++;
+      console.log(`🌐 [AI] DeepSeek API attempt ${attempt}/${maxAttempts}`);
       
-      // Check if we have data
-      if (!STATE.candles || STATE.candles.length < 30) {
-        console.warn('⚠️ [AI] Not enough candles:', STATE.candles ? STATE.candles.length : 0);
-        aiResponse = "⚠️ Not enough chart data. Please wait for more candles to load.\n\nCurrent candles: " + (STATE.candles ? STATE.candles.length : 0);
-      } else {
-        console.log('✅ [AI] Candles available:', STATE.candles.length);
+      try {
+        aiResponse = await this._callDeepSeekAPI(text);
+        console.log('✅ [AI] DeepSeek API success on attempt', attempt);
+      } catch (apiError) {
+        console.warn(`⚠️ [AI] DeepSeek API attempt ${attempt} failed:`, apiError.message);
         
-        // Route to appropriate analysis
-        if (lowerText.includes('trend') && !lowerText.includes('full') && !lowerText.includes('complete')) {
-          console.log('📈 [AI] Routing to extractTrendOnly()');
-          aiResponse = this.extractTrendOnly();
-          console.log('✅ [AI] extractTrendOnly returned, length:', aiResponse ? aiResponse.length : 0);
-        } else if (lowerText.includes('rsi')) {
-          console.log('⚡ [AI] Routing to extractRSIOnly()');
-          aiResponse = this.extractRSIOnly();
-        } else if (lowerText.includes('volume')) {
-          console.log('📊 [AI] Routing to extractVolumeOnly()');
-          aiResponse = this.extractVolumeOnly();
-        } else if (lowerText.includes('support') || lowerText.includes('resistance') || lowerText.includes('s/r')) {
-          console.log('📏 [AI] Routing to extractSROnly()');
-          aiResponse = this.extractSROnly();
-        } else if (lowerText.includes('setup') || lowerText.includes('entry') || lowerText.includes('trade') || lowerText.includes('recommendation')) {
-          console.log('🎯 [AI] Routing to generateTradeSetup()');
-          aiResponse = this.generateTradeSetup();
-        } else {
-          console.log('📊 [AI] Routing to full analyzeLocalChart()');
-          aiResponse = this.analyzeLocalChart();
+        // Wait before retry (exponential backoff)
+        if (attempt < maxAttempts) {
+          const delay = attempt * 1000;
+          console.log(`⏳ [AI] Retrying in ${delay}ms...`);
+          await new Promise(resolve => setTimeout(resolve, delay));
         }
       }
-    } 
-    // DEEPSEEK API MODE
-    else {
-      console.log('🌐 [AI] DEEPSEEK API MODE ACTIVE');
-      var systemPrompt = this.buildSystemPrompt();
-      this.messages.push({ role: 'user', content: text });
-      var allMessages = [{ role: 'system', content: systemPrompt }].concat(this.messages.slice(-8));
-      
-      var backends = [
-        this.apiEndpoint,
-        'https://tradevision-backend.wambuamwanza6.workers.dev/api',
-      ];
-      
-      for (var i = 0; i < backends.length; i++) {
-        try {
-          console.log('🌐 [AI] Trying backend:', backends[i]);
-          var controller = new AbortController();
-          var timeoutId = setTimeout(function() { controller.abort(); }, 15000);
-          
-          var res = await fetch(backends[i] + '/proxy?endpoint=deepseek', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ messages: allMessages }),
-            signal: controller.signal
-          });
-          
-          clearTimeout(timeoutId);
-          
-          if (res.ok) {
-            var data = await res.json();
-            aiResponse = data.choices && data.choices[0] && data.choices[0].message ? data.choices[0].message.content : null;
-            if (aiResponse) {
-              this.messages.push({ role: 'assistant', content: aiResponse });
-              this.dailyCount++;
-              localStorage.setItem('tvp_ai_count', this.dailyCount);
-              this.updateUsageCounter();
-              console.log('✅ [AI] DeepSeek response received');
-              break;
-            }
-          }
-        } catch(err) {
-          console.warn('⚠️ [AI] Backend failed:', err.message);
-        }
-      }
-      
-      if (!aiResponse) {
-        console.warn('⚠️ [AI] All backends failed, using fallback');
-        aiResponse = "⚠️ DeepSeek API temporarily unavailable. Using local analysis instead:\n\n" + this.analyzeLocalChart();
-      }
     }
+  }
+  
+  // ============================================
+  // STEP 5: FALLBACK TO LOCAL ANALYSIS
+  // ============================================
+  if (aiResponse === null) {
+    console.log('📊 [AI] All API attempts failed, using local analysis fallback');
+    usedFallback = true;
     
-    // Remove typing indicator
-    var typing = document.getElementById('ai-typing');
-    if (typing) {
-      console.log('🗑️ [AI] Removing typing indicator');
-      typing.remove();
+    try {
+      aiResponse = this._getLocalAnalysis(text);
+      console.log('✅ [AI] Local analysis successful');
+    } catch (localError) {
+      console.error('❌ [AI] Local analysis also failed:', localError.message);
+      aiResponse = this._getEmergencyResponse(text);
     }
-    
-    if (!aiResponse) {
-      console.warn('⚠️ [AI] No response generated, using default');
-      aiResponse = "I'm having trouble analyzing the chart right now. Please try again in a moment.";
+  }
+  
+  // ============================================
+  // STEP 6: REMOVE TYPING INDICATOR
+  // ============================================
+  if (typingDiv && typingDiv.parentNode) {
+    typingDiv.remove();
+  }
+  
+  // ============================================
+  // STEP 7: VALIDATE RESPONSE
+  // ============================================
+  if (!aiResponse || aiResponse.length === 0) {
+    aiResponse = this._getEmergencyResponse(text);
+  }
+  
+  // ============================================
+  // STEP 8: CACHE THE RESPONSE (if not fallback)
+  // ============================================
+  if (!usedFallback) {
+    try {
+      localStorage.setItem(cacheKey, aiResponse);
+      localStorage.setItem(`${cacheKey}_timestamp`, Date.now().toString());
+    } catch (e) {
+      // Cache storage failed - continue silently
     }
-    
-    console.log('✅ [AI] Adding assistant response to DOM, length:', aiResponse.length);
-    // Add assistant message
-    var aiDiv = document.createElement('div');
-    aiDiv.style.cssText = 'display:flex;gap:8px;margin-bottom:10px;';
-    aiDiv.innerHTML = '<span style="font-size:20px;">🤖</span><div style="background:var(--bg-tertiary);padding:10px 14px;border-radius:12px;font-size:12px;color:var(--text-primary);max-width:85%;line-height:1.6;">' + 
-      aiResponse.replace(/\*\*(.*?)\*\*/g,'<b>$1</b>').replace(/\n/g,'<br>') + 
-      '</div>';
-    messagesEl.appendChild(aiDiv);
-    messagesEl.scrollTop = messagesEl.scrollHeight;
-    
-    if (this.messages.length > 16) this.messages = this.messages.slice(-8);
-    
-  } catch(e) {
-    console.error('❌ [AI] Critical error in send():', e.message);
-    console.error('❌ [AI] Error stack:', e.stack);
-    
-    var typing = document.getElementById('ai-typing');
-    if (typing) typing.remove();
-    
-    // FALLBACK: Try to respond even if error occurred
-    console.log('🔄 [AI] Attempting fallback response');
-    var fallbackResponse = this.getFallbackResponse(text);
-    var aiDiv = document.createElement('div');
-    aiDiv.style.cssText = 'display:flex;gap:8px;margin-bottom:10px;';
-    aiDiv.innerHTML = '<span style="font-size:20px;">🤖</span><div style="background:var(--bg-tertiary);padding:10px 14px;border-radius:12px;font-size:12px;color:var(--text-primary);max-width:85%;line-height:1.6;">' + 
-      fallbackResponse.replace(/\n/g,'<br>') + 
-      '</div>';
-    messagesEl.appendChild(aiDiv);
+  }
+  
+  // ============================================
+  // STEP 9: ADD RESPONSE TO DOM
+  // ============================================
+  this._addResponseToDOM(messagesEl, aiResponse);
+  
+  // ============================================
+  // STEP 10: UPDATE STATE
+  // ============================================
+  if (!usedFallback) {
+    this.dailyCount++;
+    localStorage.setItem('tvp_ai_count', this.dailyCount);
+    this.updateUsageCounter();
+  }
+  
+  if (this.messages.length > 16) {
+    this.messages = this.messages.slice(-8);
   }
   
   this.isProcessing = false;
-  console.log('🏁 [AI] send() completed');
+  console.log('🏁 [AI] send() completed with', usedFallback ? 'fallback' : 'API', 'response');
+  
+  return aiResponse;
+},
+
+// ============================================
+// HELPER: Call DeepSeek API with timeout
+// ============================================
+async _callDeepSeekAPI(text) {
+  console.log('🌐 [AI] Calling DeepSeek API...');
+  
+  // Build system prompt
+  const systemPrompt = this.buildSystemPrompt();
+  
+  // Prepare messages
+  const allMessages = [
+    { role: 'system', content: systemPrompt }
+  ].concat(this.messages.slice(-8));
+  allMessages.push({ role: 'user', content: text });
+  
+  // Backend endpoints with failover
+  const backends = [
+    this.apiEndpoint,
+    'https://tradevision-backend.wambuamwanza6.workers.dev/api',
+    'https://tradevision-backend.vercel.app/api'
+  ];
+  
+  let lastError = null;
+  
+  for (let i = 0; i < backends.length; i++) {
+    try {
+      console.log(`🌐 [AI] Trying backend ${i + 1}/${backends.length}: ${backends[i]}`);
+      
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
+      
+      const res = await fetch(backends[i] + '/proxy?endpoint=deepseek', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: allMessages }),
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+      }
+      
+      const data = await res.json();
+      
+      let response = null;
+      if (data.choices && data.choices[0] && data.choices[0].message) {
+        response = data.choices[0].message.content;
+      } else if (data.response) {
+        response = data.response;
+      } else if (data.content) {
+        response = data.content;
+      }
+      
+      if (response) {
+        // Store in conversation history
+        this.messages.push({ role: 'assistant', content: response });
+        return response;
+      }
+      
+      throw new Error('Invalid response format');
+      
+    } catch (err) {
+      console.warn(`⚠️ [AI] Backend ${i + 1} failed:`, err.message);
+      lastError = err;
+      
+      // Continue to next backend
+      continue;
+    }
+  }
+  
+  throw lastError || new Error('All backends failed');
+},
+
+// ============================================
+// HELPER: Get local analysis with fallback
+// ============================================
+_getLocalAnalysis(text) {
+  console.log('📊 [AI] Generating local analysis...');
+  
+  // Check if we have sufficient data
+  if (!STATE.candles || STATE.candles.length < 30) {
+    return `⚠️ Not enough chart data for analysis. Please wait for more candles to load.\n\nCurrent candles available: ${STATE.candles ? STATE.candles.length : 0}`;
+  }
+  
+  const lowerText = text.toLowerCase();
+  
+  // Route to appropriate analysis type
+  if (lowerText.includes('trend') && !lowerText.includes('full') && !lowerText.includes('complete')) {
+    return this.extractTrendOnly();
+  } else if (lowerText.includes('rsi')) {
+    return this.extractRSIOnly();
+  } else if (lowerText.includes('volume')) {
+    return this.extractVolumeOnly();
+  } else if (lowerText.includes('support') || lowerText.includes('resistance') || lowerText.includes('s/r')) {
+    return this.extractSROnly();
+  } else if (lowerText.includes('setup') || lowerText.includes('entry') || lowerText.includes('trade') || lowerText.includes('recommendation')) {
+    return this.generateTradeSetup();
+  } else {
+    return this.analyzeLocalChart();
+  }
+},
+
+// ============================================
+// HELPER: Emergency response (last resort)
+// ============================================
+_getEmergencyResponse(text) {
+  console.warn('🚨 [AI] Emergency fallback response triggered');
+  
+  const lowerText = text.toLowerCase();
+  
+  if (lowerText.includes('trend')) {
+    return 'The current trend appears to be mixed based on available data. Please ensure you have at least 50 candles loaded for accurate trend analysis.';
+  } else if (lowerText.includes('rsi')) {
+    return 'RSI data is currently unavailable. Please ensure RSI indicator is active or wait for more data points.';
+  } else if (lowerText.includes('volume')) {
+    return 'Volume analysis requires at least 30 candles of data. Please wait for more data to load.';
+  } else if (lowerText.includes('support') || lowerText.includes('resistance')) {
+    return 'Support and resistance levels require at least 50 candles for reliable identification. Please load more historical data.';
+  } else {
+    return `I'm unable to analyze the chart at this moment. Please ensure:\n\n1. Chart data is fully loaded\n2. You have at least 50 candles visible\n3. The symbol is valid and trading\n\nIf the issue persists, try refreshing the page or switching symbols.`;
+  }
+},
+
+// ============================================
+// HELPER: Add user message to DOM
+// ============================================
+_addUserMessage(container, text) {
+  const userDiv = document.createElement('div');
+  userDiv.style.cssText = 'display:flex;gap:8px;flex-direction:row-reverse;margin-bottom:10px;';
+  userDiv.innerHTML = `
+    <div style="width:26px;height:26px;border-radius:50%;background:var(--accent-primary);display:flex;align-items:center;justify-content:center;color:white;font-size:9px;font-weight:700;">YOU</div>
+    <div style="background:var(--accent-muted);padding:10px 14px;border-radius:12px;font-size:12px;color:var(--text-primary);max-width:80%;line-height:1.5;">${text.replace(/</g,'&lt;')}</div>
+  `;
+  container.appendChild(userDiv);
+  container.scrollTop = container.scrollHeight;
+},
+
+// ============================================
+// HELPER: Add typing indicator
+// ============================================
+_addTypingIndicator(container) {
+  const typingDiv = document.createElement('div');
+  typingDiv.id = 'ai-typing';
+  typingDiv.style.cssText = 'display:flex;gap:8px;margin-bottom:10px;';
+  typingDiv.innerHTML = '<span style="font-size:20px;">🤖</span><div class="ai-typing"><span></span><span></span><span></span></div>';
+  container.appendChild(typingDiv);
+  container.scrollTop = container.scrollHeight;
+  return typingDiv;
+},
+
+// ============================================
+// HELPER: Add AI response to DOM
+// ============================================
+_addResponseToDOM(container, response) {
+  const aiDiv = document.createElement('div');
+  aiDiv.style.cssText = 'display:flex;gap:8px;margin-bottom:10px;';
+  aiDiv.innerHTML = `
+    <span style="font-size:20px;">🤖</span>
+    <div style="background:var(--bg-tertiary);padding:10px 14px;border-radius:12px;font-size:12px;color:var(--text-primary);max-width:85%;line-height:1.6;">
+      ${response.replace(/\*\*(.*?)\*\*/g,'<b>$1</b>').replace(/\n/g,'<br>')}
+    </div>
+  `;
+  container.appendChild(aiDiv);
+  container.scrollTop = container.scrollHeight;
+},
+
+// ============================================
+// CACHE CLEARING METHOD (for admin use)
+// ============================================
+clearCache() {
+  const keys = Object.keys(localStorage).filter(k => k.startsWith('ai_response_'));
+  keys.forEach(k => localStorage.removeItem(k));
+  console.log('🧹 [AI] Cleared ${keys.length} cached responses');
+  if (typeof Toast !== 'undefined') {
+    Toast.info('AI cache cleared');
+  }
+},
+
+// ============================================
+// PERFORMANCE OPTIMIZATION: Batch analysis
+// ============================================
+batchAnalyze(questions) {
+  if (!Array.isArray(questions) || questions.length === 0) {
+    return Promise.resolve([]);
+  }
+  
+  console.log(`📊 [AI] Batch analyzing ${questions.length} questions...`);
+  
+  // Limit batch size
+  const batch = questions.slice(0, 10);
+  
+  return Promise.all(batch.map(q => {
+    return this.send(q).catch(() => {
+      return this._getEmergencyResponse(q);
+    });
+  }));
 },
 
 // Add this debug helper method
@@ -33723,218 +37102,259 @@ const OnboardingTour = {
   }
 };
 
-// ============================================
-// ACTION BAR SETUP - COPY EXACTLY FROM ENGINECLEAN
-// ============================================
+
 function setupActionBar() {
-    const actionBar = document.getElementById('action-bar');
-    if (!actionBar) {
-        console.warn('Action bar not found, retrying...');
-        setTimeout(setupActionBar, 500);
+  const actionBar = document.getElementById('action-bar');
+  if (!actionBar) {
+    console.warn('Action bar not found, retrying...');
+    setTimeout(setupActionBar, 500);
+    return;
+  }
+  
+  console.log('🔧 Setting up action bar...');
+  
+  // Helper to safely initialize an engine
+  function safeInit(engineName, engineObj) {
+    if (engineObj && typeof engineObj.init === 'function') {
+      try {
+        engineObj.init();
+        console.log(`✅ ${engineName} initialized`);
+        return true;
+      } catch(e) {
+        console.warn(`⚠️ ${engineName} init failed:`, e.message);
+      }
+    } else if (engineObj) {
+      console.log(`ℹ️ ${engineName} exists but has no init method`);
+    } else {
+      console.warn(`⚠️ ${engineName} not defined`);
+    }
+    return false;
+  }
+  
+  // Initialize all engines
+  safeInit('MarketProfileEngine', window.MarketProfileEngine);
+  safeInit('OrderFlowEngine', window.OrderFlowEngine);
+  safeInit('WebhookEngine', window.WebhookEngine);
+  safeInit('PublicScriptLibrary', window.PublicScriptLibrary);
+  safeInit('TickHistoryEngine', window.TickHistoryEngine);
+  safeInit('ExtendedHoursEngine', window.ExtendedHoursEngine);
+  
+  // Ensure DataExportEngine has the method
+  if (window.DataExportEngine && typeof window.DataExportEngine.exportAllIndicators !== 'function') {
+    window.DataExportEngine.exportAllIndicators = function() {
+      const state = window.TV ? window.TV.getState() : STATE;
+      if (!state || state.activeIndicators.size === 0) {
+        if (typeof Toast !== 'undefined') Toast.warning('No active indicators to export');
         return;
-    }
+      }
+      const exportData = {
+        symbol: state.symbol,
+        interval: state.interval,
+        chartType: state.chartType,
+        indicators: Array.from(state.activeIndicators),
+        indicatorSettings: state.indicatorSettings,
+        exportedAt: new Date().toISOString()
+      };
+      const json = JSON.stringify(exportData, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `TradeVision_Indicators_${state.symbol}_${new Date().toISOString().slice(0,10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      if (typeof Toast !== 'undefined') Toast.success('Indicators exported');
+    };
+  }
+  
+  // ============================================
+  // SET UP CLICK HANDLERS FOR ALL BUTTONS
+  // ============================================
+  
+  actionBar.addEventListener('click', function(e) {
+    const target = e.target.closest('.action-btn');
+    if (!target) return;
     
-    console.log('🔧 Setting up action bar...');
-    console.log('Available engines - MarketProfileEngine:', typeof window.MarketProfileEngine);
-    console.log('Available engines - OrderFlowEngine:', typeof window.OrderFlowEngine);
+    e.preventDefault();
+    e.stopPropagation();
     
-    // ============================================
-    // STEP 1: Initialize ALL engines with safety checks
-    // ============================================
+    const action = target.dataset.action;
+    console.log(`🔘 Action bar clicked: ${action}`);
     
-    // Helper to safely initialize an engine
-    function safeInit(engineName, engineObj) {
-        if (engineObj && typeof engineObj.init === 'function') {
-            try {
-                engineObj.init();
-                console.log(`✅ ${engineName} initialized`);
-                return true;
-            } catch(e) {
-                console.warn(`⚠️ ${engineName} init failed:`, e.message);
-            }
-        } else if (engineObj) {
-            console.log(`ℹ️ ${engineName} exists but has no init method`);
+    // Visual feedback
+    target.style.transform = 'scale(0.92)';
+    setTimeout(() => { target.style.transform = ''; }, 150);
+    
+    switch(action) {
+      // ============================================
+      // TPO - MARKET PROFILE
+      // ============================================
+      case 'tpo':
+        if (window.MarketProfileEngine && typeof window.MarketProfileEngine.toggle === 'function') {
+          const result = window.MarketProfileEngine.toggle();
+          target.classList.toggle('active', result);
+          if (typeof Toast !== 'undefined') {
+            Toast.info(result ? 'Market Profile ON - POC, VAH, VAL displayed' : 'Market Profile OFF');
+          }
         } else {
-            console.warn(`⚠️ ${engineName} not defined`);
+          console.error('MarketProfileEngine not available');
+          if (typeof Toast !== 'undefined') Toast.error('Market Profile feature not available');
         }
-        return false;
-    }
-    
-    // Initialize all engines
-    safeInit('MarketProfileEngine', window.MarketProfileEngine);
-    safeInit('OrderFlowEngine', window.OrderFlowEngine);
-    safeInit('WebhookEngine', window.WebhookEngine);
-    safeInit('PublicScriptLibrary', window.PublicScriptLibrary);
-    safeInit('TickHistoryEngine', window.TickHistoryEngine);
-    safeInit('ExtendedHoursEngine', window.ExtendedHoursEngine);
-    
-    // Ensure DataExportEngine has the method
-    if (window.DataExportEngine && typeof window.DataExportEngine.exportAllIndicators !== 'function') {
-        window.DataExportEngine.exportAllIndicators = function() {
-            const state = window.TV ? window.TV.getState() : STATE;
-            if (!state || state.activeIndicators.size === 0) {
-                if (typeof Toast !== 'undefined') Toast.warning('No active indicators to export');
-                return;
-            }
-            const exportData = {
-                symbol: state.symbol,
-                interval: state.interval,
-                chartType: state.chartType,
-                indicators: Array.from(state.activeIndicators),
-                indicatorSettings: state.indicatorSettings,
-                exportedAt: new Date().toISOString()
-            };
-            const json = JSON.stringify(exportData, null, 2);
-            const blob = new Blob([json], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `TradeVision_Indicators_${state.symbol}_${new Date().toISOString().slice(0,10)}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
-            if (typeof Toast !== 'undefined') Toast.success('Indicators exported');
-        };
-    }
-    
-    // ============================================
-    // STEP 2: Set up click handlers
-    // ============================================
-    
-    actionBar.addEventListener('click', function(e) {
-        const target = e.target.closest('.action-btn');
-        if (!target) return;
-        
-        e.preventDefault();
-        e.stopPropagation();
-        
-        const action = target.dataset.action;
-        console.log(`🔘 Action bar clicked: ${action}`);
-        
-        // Visual feedback
-        target.style.transform = 'scale(0.92)';
-        setTimeout(() => { target.style.transform = ''; }, 150);
-        
-        switch(action) {
-            case 'tpo':
-                if (window.MarketProfileEngine) {
-                    const result = window.MarketProfileEngine.toggle();
-                    target.classList.toggle('active', result);
-                    if (typeof Toast !== 'undefined') {
-                        Toast.info(result ? 'Market Profile ON - POC, VAH, VAL displayed' : 'Market Profile OFF');
-                    }
-                    console.log('TPO toggled, enabled:', result);
-                } else {
-                    console.error('MarketProfileEngine not available');
-                    if (typeof Toast !== 'undefined') Toast.error('Market Profile feature not available');
-                }
-                break;
-                
-            case 'orderflow':
-                if (window.OrderFlowEngine) {
-                    const result = window.OrderFlowEngine.toggle();
-                    target.classList.toggle('active', result);
-                    if (typeof Toast !== 'undefined') {
-                        Toast.info(result ? 'Order Flow ON - Watch order book' : 'Order Flow OFF');
-                    }
-                    console.log('OrderFlow toggled, enabled:', result);
-                } else {
-                    console.error('OrderFlowEngine not available');
-                    if (typeof Toast !== 'undefined') Toast.error('Order Flow feature not available');
-                }
-                break;
-                
-            case 'export':
-                if (window.DataExportEngine) {
-                    window.DataExportEngine.exportAllIndicators();
-                    console.log('Export triggered');
-                } else {
-                    console.error('DataExportEngine not available');
-                    if (typeof Toast !== 'undefined') Toast.error('Export feature not available');
-                }
-                break;
-                
-            case 'webhooks':
-                if (window.WebhookEngine && typeof window.WebhookEngine.openConfig === 'function') {
-                    window.WebhookEngine.openConfig();
-                    console.log('Webhook config opened');
-                } else {
-                    console.warn('WebhookEngine.openConfig not available');
-                    if (typeof Toast !== 'undefined') Toast.info('Webhook configuration coming soon');
-                }
-                break;
-                
-            case 'scripts':
-                if (window.PublicScriptLibrary && typeof window.PublicScriptLibrary.openLibrary === 'function') {
-                    window.PublicScriptLibrary.openLibrary();
-                    console.log('Script library opened');
-                } else {
-                    console.warn('PublicScriptLibrary.openLibrary not available');
-                    if (typeof Toast !== 'undefined') Toast.info('Script library coming soon');
-                }
-                break;
-                
-            case 'ticks':
-                if (window.TickHistoryEngine && typeof window.TickHistoryEngine.openPanel === 'function') {
-                    window.TickHistoryEngine.openPanel();
-                    console.log('Tick history panel opened');
-                } else {
-                    console.warn('TickHistoryEngine.openPanel not available');
-                    if (typeof Toast !== 'undefined') Toast.info('Tick history coming soon');
-                }
-                break;
-                
-            case 'extended':
-                if (window.ExtendedHoursEngine) {
-                    const result = window.ExtendedHoursEngine.toggle();
-                    target.classList.toggle('active', result);
-                    if (typeof Toast !== 'undefined') {
-                        Toast.info(result ? 'Extended Hours ON - Pre/After market data' : 'Extended Hours OFF');
-                    }
-                    console.log('ExtendedHours toggled, enabled:', result);
-                } else {
-                    console.error('ExtendedHoursEngine not available');
-                    if (typeof Toast !== 'undefined') Toast.error('Extended hours feature not available');
-                }
-                break;
-				case 'tick':
-  if (window.TickChartEngine) {
-    window.TickChartEngine.toggle();
-    target.classList.toggle('active', window.TickChartEngine.enabled);
-    if (typeof Toast !== 'undefined')
-      Toast.info(window.TickChartEngine.enabled ? 'Tick Chart ON' : 'Tick Chart OFF');
-  }
-  break;
-case 'renko':
-  if (window.RenkoChartEngine) {
-    window.RenkoChartEngine.toggle();
-    target.classList.toggle('active', window.RenkoChartEngine.enabled);
-    if (typeof Toast !== 'undefined')
-      Toast.info(window.RenkoChartEngine.enabled ? 'Renko Chart ON' : 'Renko Chart OFF');
-  }
-  break;
-case 'kagi':
-  if (window.KagiChartEngine) {
-    window.KagiChartEngine.toggle();
-    target.classList.toggle('active', window.KagiChartEngine.enabled);
-    if (typeof Toast !== 'undefined')
-      Toast.info(window.KagiChartEngine.enabled ? 'Kagi Chart ON' : 'Kagi Chart OFF');
-  }
-  break;
-case 'pnf':
-  if (window.PointFigureEngine) {
-    window.PointFigureEngine.toggle();
-    target.classList.toggle('active', window.PointFigureEngine.enabled);
-    if (typeof Toast !== 'undefined')
-      Toast.info(window.PointFigureEngine.enabled ? 'Point & Figure ON' : 'Point & Figure OFF');
-  }
-  break;
-                
-            default:
-                console.log('Unknown action:', action);
+        break;
+      
+      // ============================================
+      // ORDER FLOW
+      // ============================================
+      case 'orderflow':
+        if (window.OrderFlowEngine && typeof window.OrderFlowEngine.toggle === 'function') {
+          const result = window.OrderFlowEngine.toggle();
+          target.classList.toggle('active', result);
+          if (typeof Toast !== 'undefined') {
+            Toast.info(result ? 'Order Flow ON - Watch order book' : 'Order Flow OFF');
+          }
+        } else {
+          console.error('OrderFlowEngine not available');
+          if (typeof Toast !== 'undefined') Toast.error('Order Flow feature not available');
         }
-    });
-    
-    console.log('✅ Action Bar Ready with', actionBar.children.length, 'buttons');
+        break;
+      
+      // ============================================
+      // EXPORT INDICATORS
+      // ============================================
+      case 'export':
+        if (window.DataExportEngine && typeof window.DataExportEngine.exportAllIndicators === 'function') {
+          window.DataExportEngine.exportAllIndicators();
+        } else {
+          console.error('DataExportEngine not available');
+          if (typeof Toast !== 'undefined') Toast.error('Export feature not available');
+        }
+        break;
+      
+      // ============================================
+      // WEBHOOKS
+      // ============================================
+      case 'webhooks':
+        if (window.WebhookEngine && typeof window.WebhookEngine.openConfig === 'function') {
+          window.WebhookEngine.openConfig();
+        } else {
+          console.warn('WebhookEngine.openConfig not available');
+          if (typeof Toast !== 'undefined') Toast.info('Webhook configuration coming soon');
+        }
+        break;
+      
+      // ============================================
+      // SCRIPTS (Public Script Library)
+      // ============================================
+      case 'scripts':
+        if (window.PublicScriptLibrary && typeof window.PublicScriptLibrary.openLibrary === 'function') {
+          window.PublicScriptLibrary.openLibrary();
+        } else {
+          console.warn('PublicScriptLibrary.openLibrary not available');
+          if (typeof Toast !== 'undefined') Toast.info('Script library coming soon');
+        }
+        break;
+      
+      // ============================================
+      // TICKS (Tick History)
+      // ============================================
+      case 'ticks':
+        if (window.TickHistoryEngine && typeof window.TickHistoryEngine.openPanel === 'function') {
+          window.TickHistoryEngine.openPanel();
+        } else {
+          console.warn('TickHistoryEngine.openPanel not available');
+          if (typeof Toast !== 'undefined') Toast.info('Tick history coming soon');
+        }
+        break;
+      
+      // ============================================
+      // EXTENDED HOURS
+      // ============================================
+      case 'extended':
+        if (window.ExtendedHoursEngine && typeof window.ExtendedHoursEngine.toggle === 'function') {
+          const result = window.ExtendedHoursEngine.toggle();
+          target.classList.toggle('active', result);
+          if (typeof Toast !== 'undefined') {
+            Toast.info(result ? 'Extended Hours ON - Pre/After market data' : 'Extended Hours OFF');
+          }
+        } else {
+          console.error('ExtendedHoursEngine not available');
+          if (typeof Toast !== 'undefined') Toast.error('Extended hours feature not available');
+        }
+        break;
+      
+      // ============================================
+      // TICK CHART
+      // ============================================
+      case 'tick':
+        if (window.TickChartEngine && typeof window.TickChartEngine.toggle === 'function') {
+          const result = window.TickChartEngine.toggle();
+          target.classList.toggle('active', result);
+          if (typeof Toast !== 'undefined') {
+            Toast.info(result ? 'Tick Chart ON' : 'Tick Chart OFF');
+          }
+        } else {
+          console.error('TickChartEngine not available');
+          if (typeof Toast !== 'undefined') Toast.error('Tick Chart feature not available');
+        }
+        break;
+      
+      // ============================================
+      // RENKO CHART
+      // ============================================
+      case 'renko':
+        if (window.RenkoChartEngine && typeof window.RenkoChartEngine.toggle === 'function') {
+          const result = window.RenkoChartEngine.toggle();
+          target.classList.toggle('active', result);
+          if (typeof Toast !== 'undefined') {
+            Toast.info(result ? 'Renko Chart ON' : 'Renko Chart OFF');
+          }
+        } else {
+          console.error('RenkoChartEngine not available');
+          if (typeof Toast !== 'undefined') Toast.error('Renko Chart feature not available');
+        }
+        break;
+      
+      // ============================================
+      // KAGI CHART
+      // ============================================
+      case 'kagi':
+        if (window.KagiChartEngine && typeof window.KagiChartEngine.toggle === 'function') {
+          const result = window.KagiChartEngine.toggle();
+          target.classList.toggle('active', result);
+          if (typeof Toast !== 'undefined') {
+            Toast.info(result ? 'Kagi Chart ON' : 'Kagi Chart OFF');
+          }
+        } else {
+          console.error('KagiChartEngine not available');
+          if (typeof Toast !== 'undefined') Toast.error('Kagi Chart feature not available');
+        }
+        break;
+      
+      // ============================================
+      // POINT & FIGURE
+      // ============================================
+      case 'pnf':
+        if (window.PointFigureEngine && typeof window.PointFigureEngine.toggle === 'function') {
+          const result = window.PointFigureEngine.toggle();
+          target.classList.toggle('active', result);
+          if (typeof Toast !== 'undefined') {
+            Toast.info(result ? 'Point & Figure ON' : 'Point & Figure OFF');
+          }
+        } else {
+          console.error('PointFigureEngine not available');
+          if (typeof Toast !== 'undefined') Toast.error('Point & Figure feature not available');
+        }
+        break;
+      
+      // ============================================
+      // UNKNOWN ACTION
+      // ============================================
+      default:
+        console.log('Unknown action:', action);
+    }
+  });
+  
+  console.log('✅ Action Bar Ready with', actionBar.children.length, 'buttons');
 }
 
 // Call setupActionBar when DOM is ready
@@ -34070,3 +37490,723 @@ function setupChartTypeDropdown() {
     
     console.log('✅ Chart Type Dropdown Ready');
 };
+
+// ============================================
+// ADD FUTURES MANAGER
+// ============================================
+const FuturesManager = {
+  // ============================================
+  // FUTURES DATA
+  // ============================================
+  async getFuturesData(symbol, interval) {
+    const apiBase = getApiBase();
+    const url = `${apiBase}/proxy?endpoint=futures&symbol=${symbol}&interval=${interval}&limit=200`;
+    
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`Futures API error: ${response.status}`);
+      return await response.json();
+    } catch(e) {
+      console.warn('Futures data error:', e);
+      return null;
+    }
+  },
+  
+  // ============================================
+  // GET FUNDING RATE
+  // ============================================
+  async getFundingRate(symbol) {
+    const apiBase = getApiBase();
+    const url = `${apiBase}/proxy?endpoint=funding-rate&symbol=${symbol}`;
+    
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Funding rate error');
+      const data = await response.json();
+      return parseFloat(data.fundingRate) * 100;
+    } catch(e) {
+      console.warn('Funding rate error:', e);
+      return null;
+    }
+  },
+  
+  // ============================================
+  // GET OPEN INTEREST
+  // ============================================
+  async getOpenInterest(symbol) {
+    const apiBase = getApiBase();
+    const url = `${apiBase}/proxy?endpoint=open-interest&symbol=${symbol}`;
+    
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Open interest error');
+      const data = await response.json();
+      return data.openInterest;
+    } catch(e) {
+      console.warn('Open interest error:', e);
+      return null;
+    }
+  },
+  
+  // ============================================
+  // DISPLAY FUTURES INFO
+  // ============================================
+  async displayFuturesInfo(symbol) {
+    if (STATE.assetType !== 'futures') return;
+    
+    const fundingRate = await this.getFundingRate(symbol);
+    const openInterest = await this.getOpenInterest(symbol);
+    
+    if (fundingRate !== null) {
+      const fundingEl = document.getElementById('funding-rate');
+      if (fundingEl) {
+        fundingEl.textContent = fundingRate.toFixed(4) + '%';
+        fundingEl.style.color = fundingRate > 0 ? 'var(--up-color)' : 'var(--down-color)';
+      }
+    }
+    
+    if (openInterest !== null) {
+      const oiEl = document.getElementById('open-interest');
+      if (oiEl) {
+        oiEl.textContent = typeof U !== 'undefined' ? U.formatVolume(openInterest) : openInterest.toLocaleString();
+      }
+    }
+  },
+};
+
+// ============================================
+// INIT FUTURES MANAGER ON LOAD
+// ============================================
+DataManager.loadHistory = (function(original) {
+  return async function(symbol, interval) {
+    await original.call(this, symbol, interval);
+    
+    if (typeof FuturesManager !== 'undefined' && STATE.assetType === 'futures') {
+      setTimeout(() => FuturesManager.displayFuturesInfo(symbol), 1000);
+    }
+  };
+})(DataManager.loadHistory);
+
+// ============================================
+// MARKETS MANAGER v3.0 - INSTITUTIONAL GRADE
+// TradingView-style market overview with proper grid rendering
+// ============================================
+const MarketsManager = {
+  // ============================================
+  // CONFIGURATION
+  // ============================================
+  symbols: {
+    indices: [
+      { symbol: 'SPX', name: 'S&P 500', exchange: 'US', source: 'alphavantage' },
+      { symbol: 'NDX', name: 'NASDAQ 100', exchange: 'US', source: 'alphavantage' },
+      { symbol: 'DJI', name: 'Dow Jones', exchange: 'US', source: 'alphavantage' },
+      { symbol: 'RUT', name: 'Russell 2000', exchange: 'US', source: 'alphavantage' },
+      { symbol: 'VIX', name: 'Volatility Index', exchange: 'US', source: 'alphavantage' },
+      { symbol: 'DAX', name: 'German DAX', exchange: 'Germany', source: 'alphavantage' },
+      { symbol: 'FTSE', name: 'FTSE 100', exchange: 'UK', source: 'alphavantage' },
+      { symbol: 'CAC', name: 'French CAC 40', exchange: 'France', source: 'alphavantage' },
+      { symbol: 'STOXX50', name: 'Euro Stoxx 50', exchange: 'Europe', source: 'alphavantage' },
+      { symbol: 'NIKKEI', name: 'Nikkei 225', exchange: 'Japan', source: 'alphavantage' },
+      { symbol: 'HSI', name: 'Hang Seng', exchange: 'Hong Kong', source: 'alphavantage' },
+      { symbol: 'SSEC', name: 'Shanghai Composite', exchange: 'China', source: 'alphavantage' },
+      { symbol: 'SENSEX', name: 'BSE Sensex', exchange: 'India', source: 'alphavantage' },
+      { symbol: 'AORD', name: 'Australian All Ords', exchange: 'Australia', source: 'alphavantage' },
+      { symbol: 'BVSP', name: 'Brazil Bovespa', exchange: 'Brazil', source: 'alphavantage' }
+    ],
+    futures: [
+      { symbol: 'BTCUSDT', name: 'Bitcoin Perpetual', exchange: 'Binance', source: 'binance' },
+      { symbol: 'ETHUSDT', name: 'Ethereum Perpetual', exchange: 'Binance', source: 'binance' },
+      { symbol: 'BNBUSDT', name: 'BNB Perpetual', exchange: 'Binance', source: 'binance' },
+      { symbol: 'SOLUSDT', name: 'Solana Perpetual', exchange: 'Binance', source: 'binance' },
+      { symbol: 'XRPUSDT', name: 'XRP Perpetual', exchange: 'Binance', source: 'binance' },
+      { symbol: 'ADAUSDT', name: 'Cardano Perpetual', exchange: 'Binance', source: 'binance' },
+      { symbol: 'DOGEUSDT', name: 'Dogecoin Perpetual', exchange: 'Binance', source: 'binance' },
+      { symbol: 'DOTUSDT', name: 'Polkadot Perpetual', exchange: 'Binance', source: 'binance' },
+      { symbol: 'LINKUSDT', name: 'Chainlink Perpetual', exchange: 'Binance', source: 'binance' },
+      { symbol: 'MATICUSDT', name: 'Polygon Perpetual', exchange: 'Binance', source: 'binance' },
+      { symbol: 'LTCUSDT', name: 'Litecoin Perpetual', exchange: 'Binance', source: 'binance' },
+      { symbol: 'ATOMUSDT', name: 'Cosmos Perpetual', exchange: 'Binance', source: 'binance' },
+      { symbol: 'UNIUSDT', name: 'Uniswap Perpetual', exchange: 'Binance', source: 'binance' },
+      { symbol: 'AVAXUSDT', name: 'Avalanche Perpetual', exchange: 'Binance', source: 'binance' },
+      { symbol: 'ETCUSDT', name: 'Ethereum Classic Perpetual', exchange: 'Binance', source: 'binance' },
+      { symbol: 'FILUSDT', name: 'Filecoin Perpetual', exchange: 'Binance', source: 'binance' },
+      { symbol: 'NEARUSDT', name: 'Near Protocol Perpetual', exchange: 'Binance', source: 'binance' },
+      { symbol: 'FTMUSDT', name: 'Fantom Perpetual', exchange: 'Binance', source: 'binance' },
+      { symbol: 'SANDUSDT', name: 'The Sandbox Perpetual', exchange: 'Binance', source: 'binance' },
+      { symbol: 'MANAUSDT', name: 'Decentraland Perpetual', exchange: 'Binance', source: 'binance' },
+      { symbol: 'AAVEUSDT', name: 'Aave Perpetual', exchange: 'Binance', source: 'binance' },
+      { symbol: 'ARBUSDT', name: 'Arbitrum Perpetual', exchange: 'Binance', source: 'binance' },
+      { symbol: 'OPUSDT', name: 'Optimism Perpetual', exchange: 'Binance', source: 'binance' },
+      { symbol: 'SUIUSDT', name: 'Sui Perpetual', exchange: 'Binance', source: 'binance' },
+      { symbol: 'APTUSDT', name: 'Aptos Perpetual', exchange: 'Binance', source: 'binance' },
+      { symbol: 'SEIUSDT', name: 'Sei Perpetual', exchange: 'Binance', source: 'binance' },
+      { symbol: 'TIAUSDT', name: 'Celestia Perpetual', exchange: 'Binance', source: 'binance' },
+      { symbol: 'INJUSDT', name: 'Injective Perpetual', exchange: 'Binance', source: 'binance' },
+      { symbol: 'PEPEUSDT', name: 'Pepe Perpetual', exchange: 'Binance', source: 'binance' },
+      { symbol: 'WIFUSDT', name: 'Dogwifhat Perpetual', exchange: 'Binance', source: 'binance' },
+      { symbol: 'BONKUSDT', name: 'Bonk Perpetual', exchange: 'Binance', source: 'binance' },
+      { symbol: 'FLOKIUSDT', name: 'Floki Perpetual', exchange: 'Binance', source: 'binance' },
+      { symbol: 'SHIBUSDT', name: 'Shiba Inu Perpetual', exchange: 'Binance', source: 'binance' },
+      { symbol: 'ES', name: 'E-mini S&P 500', exchange: 'CME', source: 'alphavantage' },
+      { symbol: 'NQ', name: 'E-mini NASDAQ', exchange: 'CME', source: 'alphavantage' },
+      { symbol: 'YM', name: 'E-mini Dow', exchange: 'CME', source: 'alphavantage' },
+      { symbol: 'RTY', name: 'E-mini Russell', exchange: 'CME', source: 'alphavantage' }
+    ],
+    commodities: [
+      { symbol: 'XAUUSD', name: 'Gold', exchange: 'COMEX', source: 'alphavantage' },
+      { symbol: 'XAGUSD', name: 'Silver', exchange: 'COMEX', source: 'alphavantage' },
+      { symbol: 'XPTUSD', name: 'Platinum', exchange: 'COMEX', source: 'alphavantage' },
+      { symbol: 'XPDUSD', name: 'Palladium', exchange: 'COMEX', source: 'alphavantage' },
+      { symbol: 'WTI', name: 'Crude Oil WTI', exchange: 'NYMEX', source: 'alphavantage' },
+      { symbol: 'BRENT', name: 'Brent Crude Oil', exchange: 'ICE', source: 'alphavantage' },
+      { symbol: 'NATURALGAS', name: 'Natural Gas', exchange: 'NYMEX', source: 'alphavantage' },
+      { symbol: 'GASOLINE', name: 'Gasoline', exchange: 'NYMEX', source: 'alphavantage' },
+      { symbol: 'HEATINGOIL', name: 'Heating Oil', exchange: 'NYMEX', source: 'alphavantage' },
+      { symbol: 'WHEAT', name: 'Wheat', exchange: 'CBOT', source: 'alphavantage' },
+      { symbol: 'CORN', name: 'Corn', exchange: 'CBOT', source: 'alphavantage' },
+      { symbol: 'SOYBEAN', name: 'Soybean', exchange: 'CBOT', source: 'alphavantage' },
+      { symbol: 'SOYBEANOIL', name: 'Soybean Oil', exchange: 'CBOT', source: 'alphavantage' },
+      { symbol: 'SOYBEANMEAL', name: 'Soybean Meal', exchange: 'CBOT', source: 'alphavantage' },
+      { symbol: 'COFFEE', name: 'Coffee', exchange: 'ICE', source: 'alphavantage' },
+      { symbol: 'COTTON', name: 'Cotton', exchange: 'ICE', source: 'alphavantage' },
+      { symbol: 'SUGAR', name: 'Sugar', exchange: 'ICE', source: 'alphavantage' },
+      { symbol: 'COCOA', name: 'Cocoa', exchange: 'ICE', source: 'alphavantage' },
+      { symbol: 'LUMBER', name: 'Lumber', exchange: 'CME', source: 'alphavantage' },
+      { symbol: 'ORANGEJUICE', name: 'Orange Juice', exchange: 'ICE', source: 'alphavantage' },
+      { symbol: 'LIVEHOG', name: 'Live Hogs', exchange: 'CME', source: 'alphavantage' },
+      { symbol: 'CATTLE', name: 'Live Cattle', exchange: 'CME', source: 'alphavantage' }
+    ]
+  },
+
+  currentAsset: 'indices',
+  charts: {},
+  data: {},
+  _isInitialized: false,
+  _isLoading: false,
+  
+  // ============================================
+  // INITIALIZATION
+  // ============================================
+  init() {
+    if (this._isInitialized) return;
+    this._isInitialized = true;
+    
+    this.setupDropdown();
+    this.setupModal();
+    this.setupTabs();
+    this.setupKeyboardShortcuts();
+    
+    console.log('✅ Markets Manager v3.0 initialized');
+    console.log(`   ${this.symbols.indices.length} indices`);
+    console.log(`   ${this.symbols.futures.length} futures`);
+    console.log(`   ${this.symbols.commodities.length} commodities`);
+  },
+  
+  // ============================================
+  // DROPDOWN SETUP
+  // ============================================
+  setupDropdown() {
+    const dropdownBtn = document.getElementById('markets-dropdown-btn');
+    const dropdownMenu = document.getElementById('markets-dropdown-menu');
+    
+    if (!dropdownBtn || !dropdownMenu) {
+      setTimeout(() => this.setupDropdown(), 500);
+      return;
+    }
+    
+    dropdownBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      dropdownMenu.classList.toggle('visible');
+    });
+    
+    document.addEventListener('click', (e) => {
+      if (!dropdownBtn.contains(e.target) && !dropdownMenu.contains(e.target)) {
+        dropdownMenu.classList.remove('visible');
+      }
+    });
+    
+    dropdownMenu.querySelectorAll('.ctrl-dropdown-item').forEach((item) => {
+      item.addEventListener('click', () => {
+        const asset = item.dataset.market;
+        if (asset) {
+          this.currentAsset = asset;
+          dropdownMenu.classList.remove('visible');
+          document.getElementById('markets-modal').classList.add('visible');
+          this.loadMarkets(asset);
+        }
+      });
+    });
+  },
+  
+  // ============================================ 
+  // MODAL SETUP
+  // ============================================
+  setupModal() {
+    const modal = document.getElementById('markets-modal');
+    if (!modal) return;
+    
+    modal.querySelectorAll('.modal-close').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        modal.classList.remove('visible');
+        this.destroyCharts();
+      });
+    });
+    
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.classList.remove('visible');
+        this.destroyCharts();
+      }
+    });
+    
+    const refreshBtn = document.getElementById('markets-refresh-btn');
+    if (refreshBtn) {
+      refreshBtn.addEventListener('click', () => {
+        this.loadMarkets(this.currentAsset);
+      });
+    }
+  },
+  
+  // ============================================
+  // TABS SETUP
+  // ============================================
+  setupTabs() {
+    document.querySelectorAll('#markets-tabs .cat-tab').forEach((tab) => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('#markets-tabs .cat-tab').forEach((t) => {
+          t.classList.remove('active');
+        });
+        tab.classList.add('active');
+        
+        const asset = tab.dataset.asset;
+        if (asset) {
+          this.currentAsset = asset;
+          this.loadMarkets(asset);
+        }
+      });
+    });
+  },
+  
+  // ============================================
+  // KEYBOARD SHORTCUTS
+  // ============================================
+  setupKeyboardShortcuts() {
+    document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'm') {
+        e.preventDefault();
+        const modal = document.getElementById('markets-modal');
+        if (modal) {
+          modal.classList.toggle('visible');
+          if (modal.classList.contains('visible')) {
+            this.loadMarkets(this.currentAsset);
+          } else {
+            this.destroyCharts();
+          }
+        }
+      }
+    });
+  },
+  
+  // ============================================
+  // LOAD MARKETS WITH PROFESSIONAL GRID
+  // ============================================
+  loadMarkets(asset) {
+    if (this._isLoading) return;
+    this._isLoading = true;
+    
+    const loading = document.getElementById('markets-loading');
+    const grid = document.getElementById('markets-chart-grid');
+    const title = document.getElementById('markets-modal-title');
+    const subtitle = document.getElementById('markets-modal-subtitle');
+    
+    if (!grid) return;
+    
+    // Show loading
+    if (loading) loading.style.display = 'flex';
+    grid.innerHTML = '';
+    
+    // Update titles
+    const titles = {
+      indices: '📊 Global Indices',
+      futures: '⚡ Futures & Perpetuals',
+      commodities: '🛢️ Commodities'
+    };
+    const subtitles = {
+      indices: `${this.symbols.indices.length} major global indices`,
+      futures: `${this.symbols.futures.length} futures contracts`,
+      commodities: `${this.symbols.commodities.length} commodities`
+    };
+    if (title) title.textContent = titles[asset] || 'Markets';
+    if (subtitle) subtitle.textContent = subtitles[asset] || '';
+    
+    // Get symbols
+    const symbols = this.symbols[asset] || [];
+    const displaySymbols = symbols.slice(0, 24); // Show up to 24 symbols
+    
+    // Set grid based on count
+    let gridColumns = '1fr 1fr 1fr';
+    if (displaySymbols.length <= 6) gridColumns = '1fr 1fr';
+    if (displaySymbols.length <= 3) gridColumns = '1fr';
+    
+    grid.style.display = 'grid';
+    grid.style.gridTemplateColumns = gridColumns;
+    grid.style.gap = '16px';
+    grid.style.padding = '4px';
+    grid.style.height = 'auto';
+    grid.style.minHeight = '400px';
+    grid.style.maxHeight = '600px';
+    grid.style.overflowY = 'auto';
+    
+    // Create grid items
+    displaySymbols.forEach((item) => {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'market-chart-wrapper';
+      wrapper.dataset.symbol = item.symbol;
+      wrapper.dataset.name = item.name;
+      wrapper.dataset.source = item.source || 'alphavantage';
+      
+      wrapper.style.cssText = `
+        background: var(--bg-tertiary);
+        border-radius: 12px;
+        padding: 16px;
+        border: 1px solid var(--border-primary);
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
+        height: 200px;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+      `;
+      
+      wrapper.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; flex-shrink: 0;">
+          <div>
+            <span style="font-weight: 700; font-size: 14px; color: var(--text-primary);">${item.symbol}</span>
+            <span style="font-size: 10px; color: var(--text-muted); margin-left: 8px;">${item.exchange}</span>
+          </div>
+          <span style="font-size: 10px; padding: 2px 10px; border-radius: 12px; background: var(--accent-muted); color: var(--accent-primary);">
+            ${item.source === 'binance' ? '⚡' : '📊'}
+          </span>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; flex-shrink: 0;">
+          <div style="font-size: 20px; font-weight: 700; color: var(--text-primary); font-family: 'SF Mono', monospace;" id="market-price-${item.symbol}">--</div>
+          <div style="font-size: 13px; font-weight: 600; padding: 2px 10px; border-radius: 6px;" id="market-change-${item.symbol}">--</div>
+        </div>
+        <div id="market-chart-${item.symbol}" style="flex: 1; min-height: 0; width: 100%;"></div>
+        <div style="position: absolute; bottom: 12px; right: 12px; font-size: 8px; color: var(--text-muted); opacity: 0.5;">
+          <i class="fas fa-chart-line"></i>
+        </div>
+      `;
+      
+      grid.appendChild(wrapper);
+      
+      // Click handler
+      wrapper.addEventListener('click', () => {
+        const modal = document.getElementById('markets-modal');
+        if (modal) modal.classList.remove('visible');
+        this.destroyCharts();
+        if (typeof window.TV !== 'undefined' && window.TV.switchSymbol) {
+          window.TV.switchSymbol(item.symbol);
+        }
+      });
+    });
+    
+    // Hide loading
+    if (loading) loading.style.display = 'none';
+    
+    // Fetch data for all symbols with proper queue
+    this._fetchBatchData(displaySymbols);
+    
+    this._isLoading = false;
+  },
+  
+  // ============================================
+  // BATCH DATA FETCHING WITH RATE LIMITING
+  // ============================================
+  async _fetchBatchData(symbols, batchSize = 4) {
+    const totalSymbols = symbols.length;
+    let processed = 0;
+    
+    for (let i = 0; i < totalSymbols; i += batchSize) {
+      const batch = symbols.slice(i, i + batchSize);
+      const promises = batch.map(item => this._fetchSymbolData(item));
+      await Promise.allSettled(promises);
+      processed += batch.length;
+      
+      // Small delay between batches
+      if (i + batchSize < totalSymbols) {
+        await new Promise(resolve => setTimeout(resolve, 300));
+      }
+    }
+    
+    console.log(`✅ Loaded ${processed} market symbols`);
+  },
+  
+  // ============================================
+  // FETCH SINGLE SYMBOL DATA
+  // ============================================
+  async _fetchSymbolData(item) {
+    const symbol = item.symbol;
+    const source = item.source || 'alphavantage';
+    
+    try {
+      let candles = [];
+      let lastPrice = 0;
+      let firstPrice = 0;
+      
+      // BINANCE FUTURES - DIRECT API
+      if (source === 'binance' || symbol.endsWith('USDT')) {
+        const url = `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=1d&limit=30`;
+        const response = await fetch(url);
+        if (response.ok) {
+          const rawData = await response.json();
+          if (Array.isArray(rawData) && rawData.length > 0) {
+            candles = rawData.map(k => ({
+              time: Math.floor(k[0] / 1000),
+              value: parseFloat(k[4])
+            }));
+          }
+        }
+      }
+      
+      // ALPHA VANTAGE - FREE API
+      else if (source === 'alphavantage') {
+        const apiKey = 'demo';
+        const url = `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${symbol}&apikey=${apiKey}&outputsize=compact`;
+        const response = await fetch(url);
+        if (response.ok) {
+          const rawData = await response.json();
+          const timeSeries = rawData['Time Series (Daily)'];
+          if (timeSeries) {
+            const dates = Object.keys(timeSeries).sort().slice(-30);
+            candles = dates.map(date => ({
+              time: Math.floor(new Date(date).getTime() / 1000),
+              value: parseFloat(timeSeries[date]['4. close'])
+            }));
+          }
+        }
+      }
+      
+      // VALIDATE AND RENDER
+      if (candles.length > 0) {
+        lastPrice = candles[candles.length - 1].value;
+        firstPrice = candles[0].value;
+        
+        this.data[symbol] = { candles, lastPrice, change: ((lastPrice - firstPrice) / firstPrice) * 100 };
+        this._renderMiniChart(symbol, candles);
+        
+        // Update price display
+        const priceEl = document.getElementById(`market-price-${symbol}`);
+        const changeEl = document.getElementById(`market-change-${symbol}`);
+        
+        if (priceEl) {
+          priceEl.textContent = typeof U !== 'undefined' ? U.formatPrice(lastPrice) : lastPrice.toFixed(2);
+        }
+        if (changeEl) {
+          const change = ((lastPrice - firstPrice) / firstPrice) * 100;
+          changeEl.textContent = `${change >= 0 ? '+' : ''}${change.toFixed(2)}%`;
+          changeEl.style.color = change >= 0 ? 'var(--up-color)' : 'var(--down-color)';
+          changeEl.style.background = change >= 0 ? 'var(--up-muted)' : 'var(--down-muted)';
+        }
+      } else {
+        throw new Error('No data');
+      }
+      
+    } catch(e) {
+      this._showChartError(symbol, e.message);
+    }
+  },
+  
+  // ============================================
+  // RENDER MINI CHART - PROFESSIONAL STYLE
+  // ============================================
+  _renderMiniChart(symbol, data) {
+    const container = document.getElementById(`market-chart-${symbol}`);
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    const isLightTheme = document.body.getAttribute('data-theme') === 'light';
+    const width = container.clientWidth || 200;
+    const height = container.clientHeight || 110;
+    
+    const chart = LightweightCharts.createChart(container, {
+      width: width,
+      height: height,
+      layout: {
+        background: { type: 'solid', color: 'transparent' },
+        textColor: isLightTheme ? '#1f2328' : '#c9d1d9'
+      },
+      grid: { vertLines: { visible: false }, horzLines: { visible: false } },
+      rightPriceScale: { 
+        visible: false,
+        autoScale: true
+      },
+      timeScale: { visible: false },
+      crosshair: { mode: 0, vertLine: { visible: false }, horzLine: { visible: false } },
+      handleScroll: false,
+      handleScale: false
+    });
+    
+    // Determine color
+    const firstPrice = data[0].value;
+    const lastPrice = data[data.length - 1].value;
+    const isPositive = lastPrice >= firstPrice;
+    const lineColor = isPositive ? '#26a69a' : '#ef5350';
+    const fillColor = isPositive ? 'rgba(38,166,154,0.2)' : 'rgba(239,83,80,0.2)';
+    
+    // Use area series for professional look
+    const series = chart.addAreaSeries({
+      topColor: fillColor,
+      bottomColor: 'rgba(0,0,0,0)',
+      lineColor: lineColor,
+      lineWidth: 2,
+      priceLineVisible: false,
+      lastValueVisible: false,
+      crosshairMarkerVisible: false
+    });
+    
+    series.setData(data);
+    chart.timeScale().fitContent();
+    
+    // Store chart for cleanup
+    this.charts[symbol] = chart;
+    
+    // Resize when container size changes
+    const resizeObserver = new ResizeObserver(() => {
+      if (this.charts[symbol] && container.clientWidth > 0) {
+        this.charts[symbol].resize(container.clientWidth, container.clientHeight);
+      }
+    });
+    resizeObserver.observe(container);
+  },
+  
+  // ============================================
+  // SHOW CHART ERROR
+  // ============================================
+  _showChartError(symbol, message) {
+    const container = document.getElementById(`market-chart-${symbol}`);
+    if (container) {
+      container.innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted);font-size:10px;flex-direction:column;gap:4px;">
+          <i class="fas fa-exclamation-triangle" style="font-size:16px;color:var(--warning);"></i>
+          <span>${message}</span>
+        </div>
+      `;
+    }
+  },
+  
+  // ============================================
+  // DESTROY CHARTS
+  // ============================================
+  destroyCharts() {
+    Object.keys(this.charts).forEach((symbol) => {
+      try {
+        this.charts[symbol].remove();
+        delete this.charts[symbol];
+      } catch(e) {}
+    });
+    this.charts = {};
+    this.data = {};
+  },
+  
+  // ============================================
+  // REFRESH CURRENT ASSET
+  // ============================================
+  refresh() {
+    this.loadMarkets(this.currentAsset);
+  },
+  
+  // ============================================
+  // GET SYMBOL DATA
+  // ============================================
+  getSymbolData(symbol) {
+    return this.data[symbol] || null;
+  },
+  
+  // ============================================
+  // GET ALL SYMBOLS FOR ASSET
+  // ============================================
+  getSymbols(asset) {
+    return this.symbols[asset] || [];
+  },
+  
+  // ============================================
+  // GET CURRENT ASSET
+  // ============================================
+  getCurrentAsset() {
+    return this.currentAsset;
+  },
+  
+  // ============================================
+  // SET CURRENT ASSET
+  // ============================================
+  setCurrentAsset(asset) {
+    if (this.symbols[asset]) {
+      this.currentAsset = asset;
+      return true;
+    }
+    return false;
+  },
+  
+  // ============================================
+  // GET TOTAL SYMBOLS COUNT
+  // ============================================
+  getTotalSymbols() {
+    return Object.values(this.symbols).reduce((total, arr) => total + arr.length, 0);
+  }
+};
+
+// ============================================
+// INITIALIZE MARKETS MANAGER
+// ============================================
+setTimeout(() => {
+  if (typeof MarketsManager !== 'undefined') {
+    MarketsManager.init();
+    console.log('✅ Markets Manager v2.0 ready');
+    console.log(`   Total symbols: ${MarketsManager.getTotalSymbols()}`);
+  }
+}, 1500);
+// Add this at the end of your engine.js file, after all initialization
+document.addEventListener('DOMContentLoaded', function() {
+  setTimeout(function() {
+    var themeBtn = document.getElementById('theme-toggle-btn');
+    if (!themeBtn) return;
+    
+    // Completely replace the button with a fresh one
+    var newBtn = document.createElement('button');
+    newBtn.id = 'theme-toggle-btn';
+    newBtn.className = 'action-btn';
+    newBtn.setAttribute('data-tooltip', 'Toggle Theme');
+    
+    // Set initial icon
+    var currentTheme = document.body.getAttribute('data-theme') || 'dark';
+    newBtn.innerHTML = currentTheme === 'dark' ? '<i class="fas fa-moon"></i>' : '<i class="fas fa-sun"></i>';
+    
+    themeBtn.parentNode.replaceChild(newBtn, themeBtn);
+    
+    newBtn.addEventListener('click', function() {
+      var current = document.body.getAttribute('data-theme') || 'dark';
+      var next = current === 'dark' ? 'light' : 'dark';
+      document.body.setAttribute('data-theme', next);
+      
+      var icon = this.querySelector('i');
+      if (icon) {
+        icon.className = next === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+      }
+      
+      localStorage.setItem('tvp_theme', next);
+      
+      // Update charts if available
+      if (typeof ChartEngine !== 'undefined' && ChartEngine.updateChartTheme) {
+        ChartEngine.updateChartTheme();
+      }
+      
+      if (typeof Toast !== 'undefined') {
+        Toast.info('Theme: ' + (next === 'dark' ? '🌙 Dark' : '☀️ Light'));
+      }
+    });
+    
+    console.log('✅ Theme toggle fixed with direct replacement');
+  }, 2000);
+});
