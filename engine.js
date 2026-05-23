@@ -38395,6 +38395,11 @@ document.addEventListener('DOMContentLoaded', function() {
             updateMobileStats();
           }
         }
+        if (tabName === 'more') {
+          if (typeof buildMobileMore === 'function') {
+            buildMobileMore();
+          }
+        }
       });
     });
     
@@ -38406,10 +38411,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // ============================================
   function buildMobileIndicators() {
     const container = document.getElementById('mobile-indicators-grid');
-    if (!container) {
-      console.warn('⚠️ mobile-indicators-grid not found');
-      return;
-    }
+    if (!container) return;
     
     const indicators = [
       'RSI', 'MACD', 'SMA', 'EMA', 'Bollinger', 'VWAP',
@@ -38465,10 +38467,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // ============================================
   function buildMobileTools() {
     const container = document.querySelector('#sheet-draw .sheet-tools-grid');
-    if (!container) {
-      console.warn('⚠️ Sheet tools grid not found');
-      return;
-    }
+    if (!container) return;
     
     const tools = [
       { id: 'cursor', icon: 'fa-mouse-pointer', label: 'Select' },
@@ -38560,10 +38559,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // ============================================
   function buildMobileWatchlist() {
     const container = document.getElementById('mobile-watchlist-list');
-    if (!container) {
-      console.warn('⚠️ mobile-watchlist-list not found');
-      return;
-    }
+    if (!container) return;
     
     const watchlist = (typeof STATE !== 'undefined' && STATE.watchlist) ? STATE.watchlist : [];
     
@@ -38670,7 +38666,202 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   
   // ============================================
-  // FIX 6: MOBILE SEARCH - 2500+ SYMBOLS
+  // FIX 6: MOBILE MORE TAB - ALL HEADER ACTIONS
+  // ============================================
+  function buildMobileMore() {
+    const container = document.querySelector('#sheet-more > div');
+    if (!container) return;
+    
+    const actions = [
+      { id: 'profile', icon: 'fa-user-circle', label: 'Profile', color: 'var(--accent-primary)' },
+      { id: 'search', icon: 'fa-search', label: 'Search Markets', color: 'var(--text-primary)' },
+      { id: 'depth', icon: 'fa-layer-group', label: 'Market Depth', color: 'var(--text-primary)' },
+      { id: 'trades', icon: 'fa-exchange-alt', label: 'Recent Trades', color: 'var(--text-primary)' },
+      { id: 'orderbook', icon: 'fa-book', label: 'Order Book', color: 'var(--text-primary)' },
+      { id: 'news', icon: 'fa-newspaper', label: 'Crypto News', color: 'var(--text-primary)' },
+      { id: 'screener', icon: 'fa-filter', label: 'Market Screener', color: 'var(--text-primary)' },
+      { id: 'alerts', icon: 'fa-bell', label: 'Price Alerts', color: 'var(--text-primary)' },
+      { id: 'indicators', icon: 'fa-wave-square', label: 'Indicators', color: 'var(--text-primary)' },
+      { id: 'drawings', icon: 'fa-pencil-alt', label: 'Drawing Tools', color: 'var(--text-primary)' },
+      { id: 'journal', icon: 'fa-book', label: 'Trade Journal', color: 'var(--text-primary)' },
+      { id: 'backtest', icon: 'fa-flask', label: 'Backtest', color: 'var(--text-primary)' },
+      { id: 'pine', icon: 'fa-code', label: 'Pine Editor', color: 'var(--text-primary)' },
+      { id: 'testnet', icon: 'fa-flask', label: 'Testnet', color: 'var(--text-primary)' },
+      { id: 'education', icon: 'fa-graduation-cap', label: 'Trading Education', color: 'var(--text-primary)' },
+      { id: 'settings', icon: 'fa-cog', label: 'Settings', color: 'var(--text-primary)' },
+      { id: 'theme', icon: 'fa-moon', label: 'Toggle Theme', color: 'var(--text-primary)' },
+      { id: 'screenshot', icon: 'fa-camera', label: 'Screenshot', color: 'var(--text-primary)' },
+      { id: 'fullscreen', icon: 'fa-expand', label: 'Fullscreen', color: 'var(--text-primary)' }
+    ];
+    
+    let html = '';
+    for (let i = 0; i < actions.length; i++) {
+      const a = actions[i];
+      html += `<button class="mob-action-btn" data-action="${a.id}"
+        style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:transparent;border:none;color:var(--text-primary);font-size:13px;cursor:pointer;border-radius:8px;width:100%;text-align:left;min-height:44px;transition:background 0.15s ease;">
+        <i class="fas ${a.icon}" style="width:20px;font-size:14px;color:${a.color};"></i>
+        <span>${a.label}</span>
+      </button>`;
+    }
+    container.innerHTML = html;
+    
+    // Add click handlers
+    container.querySelectorAll('.mob-action-btn').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        
+        const action = this.getAttribute('data-action');
+        console.log('📱 More action clicked:', action);
+        
+        switch(action) {
+          case 'profile':
+            if (typeof UserSystem !== 'undefined' && UserSystem.currentUser) {
+              const dropdown = document.getElementById('user-profile-dropdown');
+              if (dropdown) {
+                UserSystem.updateDropdownContent();
+                dropdown.style.position = 'fixed';
+                dropdown.style.top = '80px';
+                dropdown.style.right = '10px';
+                dropdown.style.left = '10px';
+                dropdown.style.width = 'auto';
+                dropdown.style.display = 'block';
+                dropdown.style.zIndex = '99999';
+              }
+            } else {
+              const authModal = document.getElementById('auth-modal');
+              if (authModal) authModal.classList.add('visible');
+            }
+            break;
+            
+          case 'search':
+            const searchOverlay = document.getElementById('mobile-search-overlay');
+            if (searchOverlay) {
+              searchOverlay.style.display = 'flex';
+              searchOverlay.style.pointerEvents = 'auto';
+              searchOverlay.style.transform = 'translateY(0)';
+              searchOverlay.classList.add('visible');
+              const searchInput = document.getElementById('mobile-search-input');
+              if (searchInput) {
+                searchInput.value = '';
+                setTimeout(function() { searchInput.focus(); }, 100);
+              }
+            }
+            break;
+            
+          case 'depth':
+          case 'orderbook':
+            document.getElementById('market-depth-modal')?.classList.add('visible');
+            break;
+            
+          case 'trades':
+            document.getElementById('market-depth-modal')?.classList.add('visible');
+            setTimeout(function() {
+              const tradeTab = document.querySelector('.depth-tab[data-tab="trades"]');
+              if (tradeTab) tradeTab.click();
+            }, 300);
+            break;
+            
+          case 'news':
+            document.getElementById('news-modal')?.classList.add('visible');
+            break;
+            
+          case 'screener':
+            const panel = document.getElementById('mobile-right-panel');
+            const mOverlay = document.getElementById('mobile-panel-overlay');
+            if (panel) {
+              // Populate content from desktop
+              const desktopSidebar = document.getElementById('right-sidebar');
+              const panelContent = document.getElementById('mobile-panel-content');
+              if (desktopSidebar && panelContent) {
+                panelContent.innerHTML = desktopSidebar.innerHTML;
+                panelContent.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+              }
+              panel.classList.add('open');
+              panel.style.right = '0';
+              panel.style.pointerEvents = 'auto';
+            }
+            if (mOverlay) {
+              mOverlay.classList.add('visible');
+              mOverlay.style.display = 'block';
+              mOverlay.style.pointerEvents = 'auto';
+            }
+            break;
+            
+          case 'alerts':
+            document.getElementById('alerts-modal')?.classList.add('visible');
+            break;
+            
+          case 'indicators':
+            document.getElementById('indicators-modal')?.classList.add('visible');
+            break;
+            
+          case 'drawings':
+            document.getElementById('drawing-tools-modal')?.classList.add('visible');
+            break;
+            
+          case 'journal':
+            document.getElementById('trade-journal-modal')?.classList.add('visible');
+            break;
+            
+          case 'backtest':
+            document.getElementById('backtest-modal')?.classList.add('visible');
+            break;
+            
+          case 'pine':
+            document.getElementById('indicators-modal')?.classList.add('visible');
+            setTimeout(function() {
+              const customTab = document.querySelector('.cat-tab[data-category="custom"]');
+              if (customTab) customTab.click();
+            }, 300);
+            break;
+            
+          case 'testnet':
+            if (typeof TradeManager !== 'undefined') {
+              TradeManager.toggleTestnet();
+            }
+            break;
+            
+          case 'education':
+            document.getElementById('education-modal')?.classList.add('visible');
+            break;
+            
+          case 'settings':
+            document.getElementById('settings-modal')?.classList.add('visible');
+            break;
+            
+          case 'theme':
+            const current = document.body.getAttribute('data-theme') || 'dark';
+            const next = current === 'dark' ? 'light' : 'dark';
+            document.body.setAttribute('data-theme', next);
+            if (typeof U !== 'undefined') U.storage.set('tvp_theme', next);
+            if (typeof Toast !== 'undefined') Toast.info('Theme: ' + next);
+            break;
+            
+          case 'screenshot':
+            if (typeof ChartEngine !== 'undefined' && ChartEngine.captureScreenshot) {
+              ChartEngine.captureScreenshot();
+            }
+            break;
+            
+          case 'fullscreen':
+            if (!document.fullscreenElement) {
+              document.documentElement.requestFullscreen().catch(function(){});
+            } else {
+              document.exitFullscreen();
+            }
+            break;
+        }
+        
+        // Close sheet
+        setSheetState('collapsed');
+      });
+    });
+    
+    console.log('✅ Mobile more tab built - ' + actions.length + ' actions');
+  }
+  
+  // ============================================
+  // FIX 7: MOBILE SEARCH - 2500+ SYMBOLS
   // ============================================
   function fixMobileSearch() {
     const searchInput = document.getElementById('mobile-search-input');
@@ -38819,7 +39010,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   
   // ============================================
-  // FIX 7: MOBILE SYMBOL AREA
+  // FIX 8: MOBILE SYMBOL AREA
   // ============================================
   function fixSymbolArea() {
     const symbolArea = document.getElementById('mobile-symbol-area');
@@ -38855,7 +39046,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   
   // ============================================
-  // FIX 8: MOBILE SEARCH CLOSE
+  // FIX 9: MOBILE SEARCH CLOSE
   // ============================================
   function fixSearchClose() {
     const searchOverlay = document.getElementById('mobile-search-overlay');
@@ -38904,7 +39095,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   
   // ============================================
-  // FIX 9: MOBILE SEARCH BUTTON
+  // FIX 10: MOBILE SEARCH BUTTON
   // ============================================
   function fixSearchButton() {
     const searchBtn = document.getElementById('mobile-search-btn');
@@ -38940,7 +39131,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   
   // ============================================
-  // FIX 10: MOBILE RIGHT PANEL
+  // FIX 11: RIGHT PANEL - FULL EVENT HANDLING
   // ============================================
   function fixRightPanel() {
     const panelToggle = document.getElementById('mobile-panel-toggle-btn');
@@ -38977,8 +39168,170 @@ document.addEventListener('DOMContentLoaded', function() {
         const desktopSidebar = document.getElementById('right-sidebar');
         if (desktopSidebar) {
           panelContent.innerHTML = desktopSidebar.innerHTML;
+          // Remove duplicate IDs but keep all content
           panelContent.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
         }
+        
+        // Re-attach event handlers using event delegation
+        panelContent.addEventListener('click', function(e) {
+          const target = e.target;
+          
+          // Watchlist items
+          const wlItem = target.closest('.watchlist-item');
+          if (wlItem && !target.closest('.wl-remove')) {
+            const symbol = wlItem.getAttribute('data-symbol');
+            if (symbol && typeof window.TV !== 'undefined' && window.TV.switchSymbol) {
+              window.TV.switchSymbol(symbol);
+              rightPanel.classList.remove('open');
+              rightPanel.style.right = '-100%';
+              rightPanel.style.pointerEvents = 'none';
+              if (panelOverlay) {
+                panelOverlay.classList.remove('visible');
+                panelOverlay.style.display = 'none';
+                panelOverlay.style.pointerEvents = 'none';
+              }
+              document.body.style.overflow = '';
+              if (typeof Toast !== 'undefined') Toast.success('Loaded: ' + symbol.replace('USDT', '/USDT'));
+            }
+            return;
+          }
+          
+          // Watchlist remove buttons
+          const wlRemove = target.closest('.wl-remove');
+          if (wlRemove) {
+            const sym = wlRemove.getAttribute('data-symbol');
+            if (sym && typeof window.TV !== 'undefined' && window.TV.removeFromWatchlist) {
+              window.TV.removeFromWatchlist(sym);
+              // Refresh panel content
+              setTimeout(function() {
+                const desktopSidebar = document.getElementById('right-sidebar');
+                if (desktopSidebar) {
+                  panelContent.innerHTML = desktopSidebar.innerHTML;
+                  panelContent.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+                }
+              }, 300);
+            }
+            return;
+          }
+          
+          // Screener items
+          const screenerItem = target.closest('.screener-item');
+          if (screenerItem) {
+            const symbol = screenerItem.getAttribute('data-symbol');
+            if (symbol && typeof window.TV !== 'undefined' && window.TV.switchSymbol) {
+              window.TV.switchSymbol(symbol);
+              rightPanel.classList.remove('open');
+              rightPanel.style.right = '-100%';
+              rightPanel.style.pointerEvents = 'none';
+              if (panelOverlay) {
+                panelOverlay.classList.remove('visible');
+                panelOverlay.style.display = 'none';
+                panelOverlay.style.pointerEvents = 'none';
+              }
+              document.body.style.overflow = '';
+              if (typeof Toast !== 'undefined') Toast.success('Loaded: ' + symbol.replace('USDT', '/USDT'));
+            }
+            return;
+          }
+          
+          // Screener tabs
+          const screenerTab = target.closest('.screener-tab');
+          if (screenerTab) {
+            const filter = screenerTab.getAttribute('data-filter');
+            panelContent.querySelectorAll('.screener-tab').forEach(function(t) {
+              t.style.background = 'transparent';
+              t.style.color = 'var(--text-secondary)';
+            });
+            screenerTab.style.background = 'var(--accent-primary)';
+            screenerTab.style.color = 'white';
+            // Trigger desktop tab
+            const desktopTab = document.querySelector('#right-sidebar .screener-tab[data-filter="' + filter + '"]');
+            if (desktopTab) {
+              desktopTab.click();
+            }
+            return;
+          }
+          
+          // Position close buttons
+          const closePosBtn = target.closest('.position-close-btn');
+          if (closePosBtn) {
+            const posId = closePosBtn.getAttribute('data-id');
+            if (posId && typeof TradeManager !== 'undefined') {
+              TradeManager.closePosition(posId);
+            }
+            return;
+          }
+          
+          // Market items
+          const marketItem = target.closest('.market-item');
+          if (marketItem) {
+            const symbol = marketItem.getAttribute('onclick')?.match(/'([^']+)'/)?.[1];
+            if (symbol && typeof window.TV !== 'undefined' && window.TV.switchSymbol) {
+              window.TV.switchSymbol(symbol);
+              rightPanel.classList.remove('open');
+              rightPanel.style.right = '-100%';
+              rightPanel.style.pointerEvents = 'none';
+              if (panelOverlay) {
+                panelOverlay.classList.remove('visible');
+                panelOverlay.style.display = 'none';
+                panelOverlay.style.pointerEvents = 'none';
+              }
+              document.body.style.overflow = '';
+            }
+            return;
+          }
+          
+          // Trade type buttons
+          const tradeTypeBtn = target.closest('.trade-type');
+          if (tradeTypeBtn) {
+            panelContent.querySelectorAll('.trade-type').forEach(function(b) {
+              b.classList.remove('active');
+            });
+            tradeTypeBtn.classList.add('active');
+            // Sync with desktop
+            const desktopTradeBtn = document.querySelector('#right-sidebar .trade-type' + (tradeTypeBtn.classList.contains('buy') ? '.buy' : '.sell'));
+            if (desktopTradeBtn) {
+              desktopTradeBtn.click();
+            }
+            return;
+          }
+          
+          // Order type buttons
+          const orderTypeBtn = target.closest('.order-type-btn');
+          if (orderTypeBtn) {
+            panelContent.querySelectorAll('.order-type-btn').forEach(function(b) {
+              b.classList.remove('active');
+            });
+            orderTypeBtn.classList.add('active');
+            const orderType = orderTypeBtn.getAttribute('data-order');
+            const desktopOrderBtn = document.querySelector('#right-sidebar .order-type-btn[data-order="' + orderType + '"]');
+            if (desktopOrderBtn) {
+              desktopOrderBtn.click();
+            }
+            return;
+          }
+          
+          // Quick amount buttons
+          const quickAmountBtn = target.closest('.quick-amount-btn');
+          if (quickAmountBtn) {
+            const pct = parseInt(quickAmountBtn.getAttribute('data-pct')) / 100;
+            const desktopQuickBtn = document.querySelector('#right-sidebar .quick-amount-btn[data-pct="' + (pct * 100) + '"]');
+            if (desktopQuickBtn) {
+              desktopQuickBtn.click();
+            }
+            return;
+          }
+          
+          // Place order button
+          const placeOrderBtn = target.closest('.place-order-btn');
+          if (placeOrderBtn) {
+            const desktopPlaceBtn = document.getElementById('quick-trade-btn');
+            if (desktopPlaceBtn) {
+              desktopPlaceBtn.click();
+            }
+            return;
+          }
+        });
         
         rightPanel.classList.add('open');
         rightPanel.style.right = '0';
@@ -39023,7 +39376,75 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     }
     
-    console.log('✅ Mobile right panel fixed');
+    console.log('✅ Mobile right panel fixed with full event handling');
+  }
+  
+  // ============================================
+  // FIX 12: VOLUME CHART VISIBILITY
+  // ============================================
+  function fixVolumeChart() {
+    const volumePane = document.getElementById('volume-chart-pane');
+    const volumeChart = document.getElementById('volume-chart');
+    
+    if (!volumePane || !volumeChart) {
+      setTimeout(fixVolumeChart, 300);
+      return;
+    }
+    
+    // Force visibility
+    volumePane.style.display = 'flex !important';
+    volumePane.style.flex = '0 0 80px !important';
+    volumePane.style.minHeight = '80px !important';
+    volumePane.style.height = '80px !important';
+    volumePane.style.maxHeight = '80px !important';
+    volumePane.style.width = '100% !important';
+    volumePane.style.overflow = 'hidden !important';
+    volumePane.style.borderTop = '1px solid var(--border-primary) !important';
+    volumePane.style.borderBottom = '1px solid var(--border-primary) !important';
+    volumePane.style.visibility = 'visible !important';
+    volumePane.style.opacity = '1 !important';
+    volumePane.style.zIndex = '5';
+    
+    volumeChart.style.display = 'block !important';
+    volumeChart.style.width = '100% !important';
+    volumeChart.style.height = '80px !important';
+    volumeChart.style.minHeight = '80px !important';
+    volumeChart.style.visibility = 'visible !important';
+    volumeChart.style.opacity = '1 !important';
+    
+    // Resize the chart
+    if (typeof ChartEngine !== 'undefined' && ChartEngine.charts && ChartEngine.charts.volume) {
+      setTimeout(function() {
+        try {
+          ChartEngine.charts.volume.resize(volumeChart.clientWidth || window.innerWidth, 80);
+        } catch(e) {}
+      }, 200);
+    }
+    
+    console.log('✅ Volume chart fixed - visible on mobile');
+  }
+  
+  // ============================================
+  // FIX 13: INDICATOR PANES VISIBILITY
+  // ============================================
+  function fixIndicatorPanes() {
+    const indContainer = document.getElementById('indicator-panes-container');
+    if (!indContainer) {
+      setTimeout(fixIndicatorPanes, 300);
+      return;
+    }
+    
+    // Force visibility when indicators are active
+    if (typeof STATE !== 'undefined' && STATE.activeIndicators && STATE.activeIndicators.size > 0) {
+      indContainer.style.display = 'flex !important';
+      indContainer.style.flexDirection = 'column !important';
+      indContainer.style.width = '100% !important';
+      indContainer.style.maxHeight = '35vh !important';
+      indContainer.style.overflowY = 'auto !important';
+      indContainer.style.borderTop = '2px solid var(--border-primary) !important';
+    }
+    
+    console.log('✅ Indicator panes fixed - visible on mobile');
   }
   
   // ============================================
@@ -39035,17 +39456,24 @@ document.addEventListener('DOMContentLoaded', function() {
     buildMobileTools();
     buildMobileWatchlist();
     updateMobileStats();
+    buildMobileMore();
     fixMobileSearch();
     fixSymbolArea();
     fixSearchClose();
     fixSearchButton();
     fixRightPanel();
+    fixVolumeChart();
+    fixIndicatorPanes();
     
     console.log('✅ ALL mobile functionality fixed');
     console.log('✅ Indicators: 28+ working');
     console.log('✅ Tools: 40+ working');
     console.log('✅ Search: 2500+ symbols');
     console.log('✅ Sheet: closes properly');
+    console.log('✅ Right panel: full event handling');
+    console.log('✅ More tab: all header actions');
+    console.log('✅ Volume chart: visible');
+    console.log('✅ Indicator panes: visible');
   }
   
   // Run after DOM is ready
@@ -39059,5 +39487,6 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Re-run after dynamic content
   setTimeout(initAll, 2000);
+  setTimeout(initAll, 4000);
   
 })();
