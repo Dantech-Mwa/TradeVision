@@ -38666,199 +38666,278 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   
   // ============================================
-  // FIX 6: MOBILE MORE TAB - ALL HEADER ACTIONS
-  // ============================================
-  function buildMobileMore() {
-    const container = document.querySelector('#sheet-more > div');
-    if (!container) return;
-    
-    const actions = [
-      { id: 'profile', icon: 'fa-user-circle', label: 'Profile', color: 'var(--accent-primary)' },
-      { id: 'search', icon: 'fa-search', label: 'Search Markets', color: 'var(--text-primary)' },
-      { id: 'depth', icon: 'fa-layer-group', label: 'Market Depth', color: 'var(--text-primary)' },
-      { id: 'trades', icon: 'fa-exchange-alt', label: 'Recent Trades', color: 'var(--text-primary)' },
-      { id: 'orderbook', icon: 'fa-book', label: 'Order Book', color: 'var(--text-primary)' },
-      { id: 'news', icon: 'fa-newspaper', label: 'Crypto News', color: 'var(--text-primary)' },
-      { id: 'screener', icon: 'fa-filter', label: 'Market Screener', color: 'var(--text-primary)' },
-      { id: 'alerts', icon: 'fa-bell', label: 'Price Alerts', color: 'var(--text-primary)' },
-      { id: 'indicators', icon: 'fa-wave-square', label: 'Indicators', color: 'var(--text-primary)' },
-      { id: 'drawings', icon: 'fa-pencil-alt', label: 'Drawing Tools', color: 'var(--text-primary)' },
-      { id: 'journal', icon: 'fa-book', label: 'Trade Journal', color: 'var(--text-primary)' },
-      { id: 'backtest', icon: 'fa-flask', label: 'Backtest', color: 'var(--text-primary)' },
-      { id: 'pine', icon: 'fa-code', label: 'Pine Editor', color: 'var(--text-primary)' },
-      { id: 'testnet', icon: 'fa-flask', label: 'Testnet', color: 'var(--text-primary)' },
-      { id: 'education', icon: 'fa-graduation-cap', label: 'Trading Education', color: 'var(--text-primary)' },
-      { id: 'settings', icon: 'fa-cog', label: 'Settings', color: 'var(--text-primary)' },
-      { id: 'theme', icon: 'fa-moon', label: 'Toggle Theme', color: 'var(--text-primary)' },
-      { id: 'screenshot', icon: 'fa-camera', label: 'Screenshot', color: 'var(--text-primary)' },
-      { id: 'fullscreen', icon: 'fa-expand', label: 'Fullscreen', color: 'var(--text-primary)' }
-    ];
-    
-    let html = '';
-    for (let i = 0; i < actions.length; i++) {
-      const a = actions[i];
-      html += `<button class="mob-action-btn" data-action="${a.id}"
-        style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:transparent;border:none;color:var(--text-primary);font-size:13px;cursor:pointer;border-radius:8px;width:100%;text-align:left;min-height:44px;transition:background 0.15s ease;">
-        <i class="fas ${a.icon}" style="width:20px;font-size:14px;color:${a.color};"></i>
-        <span>${a.label}</span>
-      </button>`;
-    }
-    container.innerHTML = html;
-    
-    // Add click handlers
-    container.querySelectorAll('.mob-action-btn').forEach(function(btn) {
-      btn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        
-        const action = this.getAttribute('data-action');
-        console.log('📱 More action clicked:', action);
-        
-        switch(action) {
-          case 'profile':
-            if (typeof UserSystem !== 'undefined' && UserSystem.currentUser) {
-              const dropdown = document.getElementById('user-profile-dropdown');
-              if (dropdown) {
-                UserSystem.updateDropdownContent();
-                dropdown.style.position = 'fixed';
-                dropdown.style.top = '80px';
-                dropdown.style.right = '10px';
-                dropdown.style.left = '10px';
-                dropdown.style.width = 'auto';
-                dropdown.style.display = 'block';
-                dropdown.style.zIndex = '99999';
-              }
-            } else {
-              const authModal = document.getElementById('auth-modal');
-              if (authModal) authModal.classList.add('visible');
-            }
-            break;
-            
-          case 'search':
-            const searchOverlay = document.getElementById('mobile-search-overlay');
-            if (searchOverlay) {
-              searchOverlay.style.display = 'flex';
-              searchOverlay.style.pointerEvents = 'auto';
-              searchOverlay.style.transform = 'translateY(0)';
-              searchOverlay.classList.add('visible');
-              const searchInput = document.getElementById('mobile-search-input');
-              if (searchInput) {
-                searchInput.value = '';
-                setTimeout(function() { searchInput.focus(); }, 100);
-              }
-            }
-            break;
-            
-          case 'depth':
-          case 'orderbook':
-            document.getElementById('market-depth-modal')?.classList.add('visible');
-            break;
-            
-          case 'trades':
-            document.getElementById('market-depth-modal')?.classList.add('visible');
-            setTimeout(function() {
-              const tradeTab = document.querySelector('.depth-tab[data-tab="trades"]');
-              if (tradeTab) tradeTab.click();
-            }, 300);
-            break;
-            
-          case 'news':
-            document.getElementById('news-modal')?.classList.add('visible');
-            break;
-            
-          case 'screener':
-            const panel = document.getElementById('mobile-right-panel');
-            const mOverlay = document.getElementById('mobile-panel-overlay');
-            if (panel) {
-              // Populate content from desktop
-              const desktopSidebar = document.getElementById('right-sidebar');
-              const panelContent = document.getElementById('mobile-panel-content');
-              if (desktopSidebar && panelContent) {
-                panelContent.innerHTML = desktopSidebar.innerHTML;
-                panelContent.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
-              }
-              panel.classList.add('open');
-              panel.style.right = '0';
-              panel.style.pointerEvents = 'auto';
-            }
-            if (mOverlay) {
-              mOverlay.classList.add('visible');
-              mOverlay.style.display = 'block';
-              mOverlay.style.pointerEvents = 'auto';
-            }
-            break;
-            
-          case 'alerts':
-            document.getElementById('alerts-modal')?.classList.add('visible');
-            break;
-            
-          case 'indicators':
-            document.getElementById('indicators-modal')?.classList.add('visible');
-            break;
-            
-          case 'drawings':
-            document.getElementById('drawing-tools-modal')?.classList.add('visible');
-            break;
-            
-          case 'journal':
-            document.getElementById('trade-journal-modal')?.classList.add('visible');
-            break;
-            
-          case 'backtest':
-            document.getElementById('backtest-modal')?.classList.add('visible');
-            break;
-            
-          case 'pine':
-            document.getElementById('indicators-modal')?.classList.add('visible');
-            setTimeout(function() {
-              const customTab = document.querySelector('.cat-tab[data-category="custom"]');
-              if (customTab) customTab.click();
-            }, 300);
-            break;
-            
-          case 'testnet':
-            if (typeof TradeManager !== 'undefined') {
-              TradeManager.toggleTestnet();
-            }
-            break;
-            
-          case 'education':
-            document.getElementById('education-modal')?.classList.add('visible');
-            break;
-            
-          case 'settings':
-            document.getElementById('settings-modal')?.classList.add('visible');
-            break;
-            
-          case 'theme':
-            const current = document.body.getAttribute('data-theme') || 'dark';
-            const next = current === 'dark' ? 'light' : 'dark';
-            document.body.setAttribute('data-theme', next);
-            if (typeof U !== 'undefined') U.storage.set('tvp_theme', next);
-            if (typeof Toast !== 'undefined') Toast.info('Theme: ' + next);
-            break;
-            
-          case 'screenshot':
-            if (typeof ChartEngine !== 'undefined' && ChartEngine.captureScreenshot) {
-              ChartEngine.captureScreenshot();
-            }
-            break;
-            
-          case 'fullscreen':
-            if (!document.fullscreenElement) {
-              document.documentElement.requestFullscreen().catch(function(){});
-            } else {
-              document.exitFullscreen();
-            }
-            break;
-        }
-        
-        // Close sheet
-        setSheetState('collapsed');
-      });
-    });
-    
-    console.log('✅ Mobile more tab built - ' + actions.length + ' actions');
+// COMPLETE MOBILE MORE TAB - ALL FEATURES
+// ============================================
+function buildMobileMore() {
+  const container = document.querySelector('#sheet-more > div');
+  if (!container) return;
+  
+  const actions = [
+    { id: 'profile', icon: 'fa-user-circle', label: 'Profile', color: 'var(--accent-primary)' },
+    { id: 'search', icon: 'fa-search', label: 'Search Markets', color: 'var(--text-primary)' },
+    { id: 'depth', icon: 'fa-layer-group', label: 'Market Depth', color: 'var(--text-primary)' },
+    { id: 'trades', icon: 'fa-exchange-alt', label: 'Recent Trades', color: 'var(--text-primary)' },
+    { id: 'orderbook', icon: 'fa-book', label: 'Order Book', color: 'var(--text-primary)' },
+    { id: 'news', icon: 'fa-newspaper', label: 'Crypto News', color: 'var(--text-primary)' },
+    { id: 'screener', icon: 'fa-filter', label: 'Market Screener', color: 'var(--text-primary)' },
+    { id: 'alerts', icon: 'fa-bell', label: 'Price Alerts', color: 'var(--text-primary)' },
+    { id: 'indicators', icon: 'fa-wave-square', label: 'Indicators', color: 'var(--text-primary)' },
+    { id: 'drawings', icon: 'fa-pencil-alt', label: 'Drawing Tools', color: 'var(--text-primary)' },
+    { id: 'journal', icon: 'fa-book', label: 'Trade Journal', color: 'var(--text-primary)' },
+    { id: 'backtest', icon: 'fa-flask', label: 'Backtest', color: 'var(--text-primary)' },
+    { id: 'pine', icon: 'fa-code', label: 'Pine Editor', color: 'var(--text-primary)' },
+    { id: 'charttype', icon: 'fa-chart-bar', label: 'Chart Type', color: 'var(--text-primary)' },
+    { id: 'community', icon: 'fa-comments', label: 'Community Chat', color: 'var(--accent-primary)' },
+    { id: 'markets', icon: 'fa-globe', label: 'Markets (Indices/Futures/Commodities)', color: 'var(--accent-primary)' },
+    { id: 'testnet', icon: 'fa-flask', label: 'Testnet', color: 'var(--text-primary)' },
+    { id: 'education', icon: 'fa-graduation-cap', label: 'Trading Education', color: 'var(--text-primary)' },
+    { id: 'settings', icon: 'fa-cog', label: 'Settings', color: 'var(--text-primary)' },
+    { id: 'theme', icon: 'fa-moon', label: 'Toggle Theme', color: 'var(--text-primary)' },
+    { id: 'screenshot', icon: 'fa-camera', label: 'Screenshot', color: 'var(--text-primary)' },
+    { id: 'fullscreen', icon: 'fa-expand', label: 'Fullscreen', color: 'var(--text-primary)' }
+  ];
+  
+  let html = '';
+  for (let i = 0; i < actions.length; i++) {
+    const a = actions[i];
+    html += `<button class="mob-action-btn" data-action="${a.id}"
+      style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:transparent;border:none;color:var(--text-primary);font-size:13px;cursor:pointer;border-radius:8px;width:100%;text-align:left;min-height:44px;transition:background 0.15s ease;">
+      <i class="fas ${a.icon}" style="width:20px;font-size:14px;color:${a.color};"></i>
+      <span>${a.label}</span>
+    </button>`;
   }
+  container.innerHTML = html;
+  
+  // Add click handlers
+  container.querySelectorAll('.mob-action-btn').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      
+      const action = this.getAttribute('data-action');
+      console.log('📱 More action clicked:', action);
+      
+      switch(action) {
+        case 'profile':
+          if (typeof UserSystem !== 'undefined' && UserSystem.currentUser) {
+            const dropdown = document.getElementById('user-profile-dropdown');
+            if (dropdown) {
+              UserSystem.updateDropdownContent();
+              dropdown.style.position = 'fixed';
+              dropdown.style.top = '80px';
+              dropdown.style.right = '10px';
+              dropdown.style.left = '10px';
+              dropdown.style.width = 'auto';
+              dropdown.style.display = 'block';
+              dropdown.style.zIndex = '99999';
+            }
+          } else {
+            const authModal = document.getElementById('auth-modal');
+            if (authModal) authModal.classList.add('visible');
+          }
+          break;
+          
+        case 'search':
+          const searchOverlay = document.getElementById('mobile-search-overlay');
+          if (searchOverlay) {
+            searchOverlay.style.display = 'flex';
+            searchOverlay.style.pointerEvents = 'auto';
+            searchOverlay.style.transform = 'translateY(0)';
+            searchOverlay.classList.add('visible');
+            const searchInput = document.getElementById('mobile-search-input');
+            if (searchInput) {
+              searchInput.value = '';
+              setTimeout(function() { searchInput.focus(); }, 100);
+            }
+          }
+          break;
+          
+        case 'depth':
+        case 'orderbook':
+          document.getElementById('market-depth-modal')?.classList.add('visible');
+          break;
+          
+        case 'trades':
+          document.getElementById('market-depth-modal')?.classList.add('visible');
+          setTimeout(function() {
+            const tradeTab = document.querySelector('.depth-tab[data-tab="trades"]');
+            if (tradeTab) tradeTab.click();
+          }, 300);
+          break;
+          
+        case 'news':
+          document.getElementById('news-modal')?.classList.add('visible');
+          break;
+          
+        case 'screener':
+          const panel = document.getElementById('mobile-right-panel');
+          const mOverlay = document.getElementById('mobile-panel-overlay');
+          if (panel) {
+            // Populate content from desktop
+            const desktopSidebar = document.getElementById('right-sidebar');
+            const panelContent = document.getElementById('mobile-panel-content');
+            if (desktopSidebar && panelContent) {
+              panelContent.innerHTML = desktopSidebar.innerHTML;
+              panelContent.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+            }
+            panel.classList.add('open');
+            panel.style.right = '0';
+            panel.style.pointerEvents = 'auto';
+          }
+          if (mOverlay) {
+            mOverlay.classList.add('visible');
+            mOverlay.style.display = 'block';
+            mOverlay.style.pointerEvents = 'auto';
+          }
+          break;
+          
+        case 'alerts':
+          document.getElementById('alerts-modal')?.classList.add('visible');
+          break;
+          
+        case 'indicators':
+          document.getElementById('indicators-modal')?.classList.add('visible');
+          break;
+          
+        case 'drawings':
+          document.getElementById('drawing-tools-modal')?.classList.add('visible');
+          break;
+          
+        case 'journal':
+          document.getElementById('trade-journal-modal')?.classList.add('visible');
+          break;
+          
+        case 'backtest':
+          document.getElementById('backtest-modal')?.classList.add('visible');
+          break;
+          
+        case 'pine':
+          document.getElementById('indicators-modal')?.classList.add('visible');
+          setTimeout(function() {
+            const customTab = document.querySelector('.cat-tab[data-category="custom"]');
+            if (customTab) customTab.click();
+          }, 300);
+          break;
+          
+        case 'charttype':
+          // Open chart type dropdown instead of timeframe modal
+          const chartTypeDropdown = document.getElementById('chart-type-dropdown');
+          if (chartTypeDropdown) {
+            // Toggle visibility
+            const isVisible = chartTypeDropdown.style.display === 'block';
+            chartTypeDropdown.style.display = isVisible ? 'none' : 'block';
+            
+            // Position it properly on mobile
+            if (!isVisible) {
+              const mainBtn = document.getElementById('chart-type-main-btn');
+              if (mainBtn) {
+                const rect = mainBtn.getBoundingClientRect();
+                chartTypeDropdown.style.position = 'fixed';
+                chartTypeDropdown.style.top = (rect.bottom + 5) + 'px';
+                chartTypeDropdown.style.left = (rect.left) + 'px';
+                chartTypeDropdown.style.zIndex = '10000';
+                chartTypeDropdown.style.background = 'var(--bg-card)';
+                chartTypeDropdown.style.border = '1px solid var(--border-primary)';
+                chartTypeDropdown.style.borderRadius = '12px';
+                chartTypeDropdown.style.padding = '8px';
+                chartTypeDropdown.style.boxShadow = '0 12px 40px rgba(0,0,0,0.6)';
+                chartTypeDropdown.style.minWidth = '200px';
+              }
+            }
+            
+            // Add click handlers for chart type items if not already done
+            if (!chartTypeDropdown._handlersAttached) {
+              chartTypeDropdown.querySelectorAll('.chart-type-item').forEach(function(item) {
+                item.addEventListener('click', function() {
+                  const type = this.getAttribute('data-type');
+                  if (type && typeof ChartEngine !== 'undefined') {
+                    if (typeof ChartEngine.changeChartType === 'function') {
+                      ChartEngine.changeChartType(type);
+                    }
+                    chartTypeDropdown.style.display = 'none';
+                    if (typeof Toast !== 'undefined') {
+                      const names = {
+                        'candlestick': 'Candlestick',
+                        'line': 'Line',
+                        'area': 'Area',
+                        'bar': 'Bar',
+                        'heikinashi': 'Heikin Ashi'
+                      };
+                      Toast.info('Chart type: ' + (names[type] || type));
+                    }
+                  }
+                });
+              });
+              chartTypeDropdown._handlersAttached = true;
+            }
+          }
+          break;
+          
+        case 'community':
+          // Open community chat modal
+          const communityModal = document.getElementById('community-modal');
+          if (communityModal) {
+            communityModal.classList.add('visible');
+            if (typeof ChatSystem !== 'undefined' && ChatSystem.subscribe) {
+              ChatSystem.subscribe('general');
+            }
+          }
+          break;
+          
+        case 'markets':
+          // Open markets modal
+          const marketsModal = document.getElementById('markets-modal');
+          if (marketsModal) {
+            marketsModal.classList.add('visible');
+            if (typeof MarketsManager !== 'undefined' && MarketsManager.loadMarkets) {
+              MarketsManager.loadMarkets('indices');
+            }
+          }
+          break;
+          
+        case 'testnet':
+          if (typeof TradeManager !== 'undefined') {
+            TradeManager.toggleTestnet();
+          }
+          break;
+          
+        case 'education':
+          document.getElementById('education-modal')?.classList.add('visible');
+          break;
+          
+        case 'settings':
+          document.getElementById('settings-modal')?.classList.add('visible');
+          break;
+          
+        case 'theme':
+          const current = document.body.getAttribute('data-theme') || 'dark';
+          const next = current === 'dark' ? 'light' : 'dark';
+          document.body.setAttribute('data-theme', next);
+          if (typeof U !== 'undefined') U.storage.set('tvp_theme', next);
+          if (typeof Toast !== 'undefined') Toast.info('Theme: ' + next);
+          break;
+          
+        case 'screenshot':
+          if (typeof ChartEngine !== 'undefined' && ChartEngine.captureScreenshot) {
+            ChartEngine.captureScreenshot();
+          }
+          break;
+          
+        case 'fullscreen':
+          if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(function(){});
+          } else {
+            document.exitFullscreen();
+          }
+          break;
+      }
+      
+      // Close sheet
+      setSheetState('collapsed');
+    });
+  });
+  
+  console.log('✅ Mobile more tab built - ' + actions.length + ' actions');
+}
   
   // ============================================
   // FIX 7: MOBILE SEARCH - 2500+ SYMBOLS
@@ -39489,4 +39568,521 @@ document.addEventListener('DOMContentLoaded', function() {
   setTimeout(initAll, 2000);
   setTimeout(initAll, 4000);
   
+})();
+
+// ============================================
+// FIX 1: Theme Toggle - Chart Background
+// ============================================
+(function fixThemeToggle() {
+  'use strict';
+  
+  const themeBtn = document.getElementById('theme-toggle-btn');
+  if (!themeBtn) {
+    setTimeout(fixThemeToggle, 500);
+    return;
+  }
+  
+  // Replace the theme button with a fresh one
+  const newBtn = themeBtn.cloneNode(true);
+  themeBtn.parentNode.replaceChild(newBtn, themeBtn);
+  
+  newBtn.addEventListener('click', function() {
+    const current = document.body.getAttribute('data-theme') || 'dark';
+    const next = current === 'dark' ? 'light' : 'dark';
+    document.body.setAttribute('data-theme', next);
+    
+    const icon = this.querySelector('i');
+    if (icon) icon.className = next === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+    
+    localStorage.setItem('tvp_theme', next);
+    
+    // Force chart rebuild with new theme
+    if (typeof ChartEngine !== 'undefined') {
+      // Update all chart instances
+      if (ChartEngine.charts && ChartEngine.charts.price) {
+        const isLight = next === 'light';
+        ChartEngine.charts.price.applyOptions({
+          layout: {
+            background: { type: 'solid', color: isLight ? '#ffffff' : '#0d1117' },
+            textColor: isLight ? '#1f2328' : '#c9d1d9'
+          },
+          grid: {
+            vertLines: { color: isLight ? '#f0f2f5' : '#21262d' },
+            horzLines: { color: isLight ? '#f0f2f5' : '#21262d' }
+          }
+        });
+      }
+      
+      if (ChartEngine.charts && ChartEngine.charts.volume) {
+        const isLight = next === 'light';
+        ChartEngine.charts.volume.applyOptions({
+          layout: {
+            background: { type: 'solid', color: isLight ? '#ffffff' : '#0d1117' },
+            textColor: isLight ? '#1f2328' : '#c9d1d9'
+          }
+        });
+      }
+      
+      // Update indicator charts
+      if (ChartEngine._indicatorCharts) {
+        const isLight = next === 'light';
+        Object.keys(ChartEngine._indicatorCharts).forEach(function(id) {
+          try {
+            ChartEngine._indicatorCharts[id].applyOptions({
+              layout: {
+                background: { type: 'solid', color: isLight ? '#ffffff' : '#0d1117' },
+                textColor: isLight ? '#1f2328' : '#c9d1d9'
+              }
+            });
+          } catch(e) {}
+        });
+      }
+      
+      // Force redraw
+      if (STATE.candles && STATE.candles.length > 0) {
+        ChartEngine.updateMain(STATE.candles);
+        ChartEngine.updateVolume(STATE.candles);
+        if (STATE.activeIndicators && STATE.activeIndicators.size > 0) {
+          IndicatorEngine.calculateAll();
+        }
+      }
+    }
+    
+    if (typeof Toast !== 'undefined') {
+      Toast.info('Theme: ' + (next === 'dark' ? '🌙 Dark' : '☀️ Light'));
+    }
+  });
+  
+  console.log('✅ Theme toggle fixed - chart background updates');
+})();
+
+// ============================================
+// FIX 2: Volume Chart Always Visible
+// ============================================
+(function fixVolumeChartVisibility() {
+  'use strict';
+  
+  function ensureVolumeVisible() {
+    const volumePane = document.getElementById('volume-chart-pane');
+    const volumeChart = document.getElementById('volume-chart');
+    
+    if (!volumePane || !volumeChart) {
+      setTimeout(ensureVolumeVisible, 300);
+      return;
+    }
+    
+    // Force visibility
+    volumePane.style.display = 'flex !important';
+    volumePane.style.flex = '0 0 80px !important';
+    volumePane.style.minHeight = '80px !important';
+    volumePane.style.height = '80px !important';
+    volumePane.style.maxHeight = '80px !important';
+    volumePane.style.width = '100% !important';
+    volumePane.style.overflow = 'hidden !important';
+    volumePane.style.borderTop = '1px solid var(--border-primary) !important';
+    volumePane.style.borderBottom = '1px solid var(--border-primary) !important';
+    volumePane.style.visibility = 'visible !important';
+    volumePane.style.opacity = '1 !important';
+    volumePane.style.zIndex = '5 !important';
+    volumePane.style.position = 'relative !important';
+    
+    volumeChart.style.display = 'block !important';
+    volumeChart.style.width = '100% !important';
+    volumeChart.style.height = '80px !important';
+    volumeChart.style.minHeight = '80px !important';
+    volumeChart.style.maxHeight = '80px !important';
+    volumeChart.style.visibility = 'visible !important';
+    volumeChart.style.opacity = '1 !important';
+    volumeChart.style.position = 'relative !important';
+    
+    // Ensure volume data is rendered
+    if (typeof ChartEngine !== 'undefined' && STATE.candles && STATE.candles.length > 0) {
+      setTimeout(function() {
+        ChartEngine.updateVolume(STATE.candles);
+        if (ChartEngine.charts && ChartEngine.charts.volume) {
+          ChartEngine.charts.volume.resize(volumeChart.clientWidth || window.innerWidth, 80);
+        }
+      }, 200);
+    }
+  }
+  
+  // Run on load and after data changes
+  ensureVolumeVisible();
+  setTimeout(ensureVolumeVisible, 1000);
+  setTimeout(ensureVolumeVisible, 3000);
+  
+  // Monitor for changes
+  if (typeof MutationObserver !== 'undefined') {
+    const observer = new MutationObserver(function() {
+      ensureVolumeVisible();
+    });
+    const chartContainer = document.getElementById('chart-container');
+    if (chartContainer) {
+      observer.observe(chartContainer, { childList: true, subtree: true });
+    }
+    setTimeout(function() { observer.disconnect(); }, 10000);
+  }
+  
+  console.log('✅ Volume chart visibility fixed - always shows');
+})();
+
+// ============================================
+// FIX 5: Timeframe Modal - Make Buttons Clickable
+// ============================================
+(function fixTimeframeModal() {
+  'use strict';
+  
+  // Check for the modal
+  function setupTimeframeModal() {
+    const modal = document.getElementById('timeframe-modal');
+    if (!modal) {
+      setTimeout(setupTimeframeModal, 500);
+      return;
+    }
+    
+    // Remove all existing listeners from modal buttons
+    modal.querySelectorAll('.timeframe-modal-btn').forEach(function(btn) {
+      const newBtn = btn.cloneNode(true);
+      btn.parentNode.replaceChild(newBtn, btn);
+      
+      newBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const interval = this.getAttribute('data-interval');
+        console.log('📊 Timeframe selected:', interval);
+        
+        if (interval && typeof DataManager !== 'undefined') {
+          DataManager.switchInterval(interval);
+          
+          // Close modal
+          modal.classList.remove('visible');
+          
+          // Update active state on all timeframe buttons
+          document.querySelectorAll('.tf-btn, .ftf-btn').forEach(function(b) {
+            b.classList.toggle('active', b.getAttribute('data-interval') === interval);
+          });
+          
+          // Update mobile timeframe display
+          const mobileTfLabel = document.getElementById('mobile-tf-label-fixed');
+          if (mobileTfLabel) mobileTfLabel.textContent = interval;
+          
+          if (typeof Toast !== 'undefined') {
+            Toast.info('Timeframe: ' + interval, 1500);
+          }
+        }
+      });
+    });
+    
+    // Close on overlay click
+    modal.addEventListener('click', function(e) {
+      if (e.target === modal) {
+        modal.classList.remove('visible');
+      }
+    });
+    
+    // Close on Escape
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && modal.classList.contains('visible')) {
+        modal.classList.remove('visible');
+      }
+    });
+    
+    console.log('✅ Timeframe modal fixed - buttons clickable');
+  }
+  
+  setupTimeframeModal();
+})();
+// ============================================
+// FIX 6: Footer Elements - Desktop and Mobile
+// ============================================
+(function fixFooter() {
+  'use strict';
+  
+  // Fix footer links
+  document.querySelectorAll('.footer-link, .footer-btn').forEach(function(el) {
+    const newEl = el.cloneNode(true);
+    el.parentNode.replaceChild(newEl, el);
+    
+    // Keep original click behavior
+  });
+  
+  // Fix shortcuts button
+  const shortcutsBtn = document.getElementById('shortcuts-btn');
+  if (shortcutsBtn) {
+    const newBtn = shortcutsBtn.cloneNode(true);
+    shortcutsBtn.parentNode.replaceChild(newBtn, shortcutsBtn);
+    
+    newBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      const modal = document.getElementById('shortcuts-modal');
+      if (modal) modal.classList.add('visible');
+    });
+  }
+  
+  // Fix timeframe buttons in footer
+  document.querySelectorAll('.ftf-btn').forEach(function(btn) {
+    const newBtn = btn.cloneNode(true);
+    btn.parentNode.replaceChild(newBtn, btn);
+    
+    newBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      const interval = this.getAttribute('data-interval');
+      if (interval && typeof DataManager !== 'undefined') {
+        DataManager.switchInterval(interval);
+      }
+    });
+  });
+  
+  // Fix mobile footer - ensure it shows on mobile
+  if (window.innerWidth <= 768) {
+    const footer = document.querySelector('.footer');
+    if (footer) {
+      footer.style.display = 'flex !important';
+      footer.style.alignItems = 'center !important';
+      footer.style.justifyContent = 'center !important';
+      footer.style.padding = '4px 12px !important';
+      footer.style.height = '40px !important';
+      footer.style.minHeight = '40px !important';
+      footer.style.position = 'fixed !important';
+      footer.style.bottom = '0 !important';
+      footer.style.left = '0 !important';
+      footer.style.right = '0 !important';
+      footer.style.zIndex = '95 !important';
+      footer.style.background = 'var(--bg-secondary) !important';
+      footer.style.borderTop = '1px solid var(--border-primary) !important';
+    }
+  }
+  
+  console.log('✅ Footer elements fixed');
+})();
+// ============================================
+// COMPLETE THEME TOGGLE FIX - ALL CHARTS
+// ============================================
+(function fixThemeToggleComplete() {
+  'use strict';
+  
+  const themeBtn = document.getElementById('theme-toggle-btn');
+  if (!themeBtn) {
+    setTimeout(fixThemeToggleComplete, 500);
+    return;
+  }
+  
+  // Replace the theme button with a fresh one
+  const newBtn = themeBtn.cloneNode(true);
+  themeBtn.parentNode.replaceChild(newBtn, themeBtn);
+  
+  newBtn.addEventListener('click', function() {
+    const current = document.body.getAttribute('data-theme') || 'dark';
+    const next = current === 'dark' ? 'light' : 'dark';
+    document.body.setAttribute('data-theme', next);
+    
+    const icon = this.querySelector('i');
+    if (icon) icon.className = next === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+    
+    localStorage.setItem('tvp_theme', next);
+    
+    // ============================================
+    // STEP 1: Update ALL chart instances
+    // ============================================
+    const isLight = next === 'light';
+    const bgColor = isLight ? '#ffffff' : '#0d1117';
+    const textColor = isLight ? '#1f2328' : '#c9d1d9';
+    const gridColor = isLight ? '#f0f2f5' : '#21262d';
+    const borderColor = isLight ? '#d0d7de' : '#30363d';
+    
+    if (typeof ChartEngine !== 'undefined') {
+      
+      // ============================================
+      // UPDATE MAIN PRICE CHART
+      // ============================================
+      if (ChartEngine.charts && ChartEngine.charts.price) {
+        try {
+          ChartEngine.charts.price.applyOptions({
+            layout: {
+              background: { type: 'solid', color: bgColor },
+              textColor: textColor
+            },
+            grid: {
+              vertLines: { color: gridColor },
+              horzLines: { color: gridColor }
+            },
+            rightPriceScale: {
+              borderColor: borderColor,
+              textColor: textColor
+            },
+            timeScale: {
+              borderColor: borderColor,
+              textColor: textColor
+            }
+          });
+          console.log('✅ Price chart theme updated to', next);
+        } catch(e) {
+          console.warn('Price chart update error:', e.message);
+        }
+      }
+      
+      // ============================================
+      // UPDATE VOLUME CHART
+      // ============================================
+      if (ChartEngine.charts && ChartEngine.charts.volume) {
+        try {
+          ChartEngine.charts.volume.applyOptions({
+            layout: {
+              background: { type: 'solid', color: bgColor },
+              textColor: textColor
+            },
+            grid: {
+              vertLines: { color: gridColor },
+              horzLines: { color: gridColor }
+            },
+            rightPriceScale: {
+              borderColor: borderColor,
+              textColor: textColor
+            },
+            timeScale: {
+              borderColor: borderColor,
+              textColor: textColor
+            }
+          });
+          console.log('✅ Volume chart theme updated to', next);
+        } catch(e) {
+          console.warn('Volume chart update error:', e.message);
+        }
+      }
+      
+      // ============================================
+      // UPDATE INDICATOR CHARTS
+      // ============================================
+      if (ChartEngine._indicatorCharts) {
+        Object.keys(ChartEngine._indicatorCharts).forEach(function(id) {
+          try {
+            ChartEngine._indicatorCharts[id].applyOptions({
+              layout: {
+                background: { type: 'solid', color: bgColor },
+                textColor: textColor
+              },
+              grid: {
+                vertLines: { color: gridColor },
+                horzLines: { color: gridColor }
+              },
+              rightPriceScale: {
+                borderColor: borderColor,
+                textColor: textColor
+              },
+              timeScale: {
+                borderColor: borderColor,
+                textColor: textColor
+              }
+            });
+          } catch(e) {
+            // Silent fail for indicator charts
+          }
+        });
+        console.log('✅ Indicator charts theme updated');
+      }
+      
+      // ============================================
+      // UPDATE SECONDARY CHARTS (Multi-chart)
+      // ============================================
+      if (ChartEngine._secondaryCharts) {
+        Object.keys(ChartEngine._secondaryCharts).forEach(function(id) {
+          try {
+            ChartEngine._secondaryCharts[id].applyOptions({
+              layout: {
+                background: { type: 'solid', color: bgColor },
+                textColor: textColor
+              },
+              grid: {
+                vertLines: { color: gridColor },
+                horzLines: { color: gridColor }
+              }
+            });
+          } catch(e) {}
+        });
+      }
+      
+      // ============================================
+      // FORCE REDRAW OF ALL CHARTS
+      // ============================================
+      if (STATE.candles && STATE.candles.length > 0) {
+        setTimeout(function() {
+          try {
+            // Re-render main chart
+            ChartEngine.updateMain(STATE.candles);
+            // Re-render volume
+            ChartEngine.updateVolume(STATE.candles);
+            // Re-calculate indicators
+            if (STATE.activeIndicators && STATE.activeIndicators.size > 0) {
+              IndicatorEngine.calculateAll();
+            }
+            // Force resize
+            ChartEngine.resizeAll();
+            console.log('✅ Charts redrawn with', next, 'theme');
+          } catch(e) {
+            console.warn('Chart redraw error:', e.message);
+          }
+        }, 100);
+      }
+    }
+    
+    if (typeof Toast !== 'undefined') {
+      Toast.info('Theme: ' + (next === 'dark' ? '🌙 Dark' : '☀️ Light'));
+    }
+  });
+  
+  console.log('✅ Complete theme toggle fix applied');
+})();
+// ============================================
+// FORCE CHART THEME ON LOAD
+// ============================================
+(function forceChartThemeOnLoad() {
+  'use strict';
+  
+  // Run after chart initialization
+  setTimeout(function() {
+    const theme = document.body.getAttribute('data-theme') || 'dark';
+    const isLight = theme === 'light';
+    const bgColor = isLight ? '#ffffff' : '#0d1117';
+    const textColor = isLight ? '#1f2328' : '#c9d1d9';
+    const gridColor = isLight ? '#f0f2f5' : '#21262d';
+    const borderColor = isLight ? '#d0d7de' : '#30363d';
+    
+    if (typeof ChartEngine !== 'undefined') {
+      
+      // Update price chart
+      if (ChartEngine.charts && ChartEngine.charts.price) {
+        try {
+          ChartEngine.charts.price.applyOptions({
+            layout: {
+              background: { type: 'solid', color: bgColor },
+              textColor: textColor
+            },
+            grid: {
+              vertLines: { color: gridColor },
+              horzLines: { color: gridColor }
+            }
+          });
+        } catch(e) {}
+      }
+      
+      // Update volume chart
+      if (ChartEngine.charts && ChartEngine.charts.volume) {
+        try {
+          ChartEngine.charts.volume.applyOptions({
+            layout: {
+              background: { type: 'solid', color: bgColor },
+              textColor: textColor
+            },
+            grid: {
+              vertLines: { color: gridColor },
+              horzLines: { color: gridColor }
+            }
+          });
+        } catch(e) {}
+      }
+      
+      console.log('✅ Charts forced to', theme, 'theme on load');
+    }
+  }, 2000);
 })();
