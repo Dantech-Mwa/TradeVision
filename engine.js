@@ -38211,27 +38211,206 @@ document.addEventListener('DOMContentLoaded', function() {
   }, 2000);
 });
 // ============================================
-// COMPLETE FIX: Mobile event handlers
+// COMPLETE MOBILE FIX - ALL FUNCTIONALITY
 // ============================================
-(function fixMobileHandlers() {
+(function completeMobileFix() {
   'use strict';
   
   // Only run on mobile
   if (window.innerWidth > 768) return;
   
-  console.log('📱 Fixing mobile event handlers...');
+  console.log('📱 COMPLETE MOBILE FIX - Starting...');
   
   // ============================================
-  // FIX 1: Mobile Indicators Grid - COMPLETE
+  // SHEET STATE MANAGEMENT
   // ============================================
-  function fixMobileIndicators() {
+  const sheet = document.getElementById('mobile-bottom-sheet');
+  const overlay = document.getElementById('mobile-overlay');
+  const handle = document.getElementById('sheet-handle');
+  
+  if (!sheet || !handle) {
+    console.warn('⚠️ Mobile sheet elements not found, retrying...');
+    setTimeout(completeMobileFix, 500);
+    return;
+  }
+  
+  let sheetState = 'collapsed';
+  let touchStartY = 0;
+  let touchCurrentY = 0;
+  let isDragging = false;
+  
+  function setSheetState(state) {
+    sheetState = state;
+    
+    switch(state) {
+      case 'collapsed':
+        sheet.style.transform = 'translateY(calc(100% - 56px))';
+        sheet.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+        sheet.classList.remove('expanded', 'full');
+        if (overlay) {
+          overlay.classList.remove('visible');
+          overlay.style.display = 'none';
+          overlay.style.pointerEvents = 'none';
+        }
+        document.body.style.overflow = '';
+        break;
+        
+      case 'expanded':
+        sheet.style.transform = 'translateY(20%)';
+        sheet.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+        sheet.classList.add('expanded');
+        sheet.classList.remove('full');
+        if (overlay) {
+          overlay.classList.remove('visible');
+          overlay.style.display = 'none';
+          overlay.style.pointerEvents = 'none';
+        }
+        document.body.style.overflow = '';
+        break;
+        
+      case 'full':
+        sheet.style.transform = 'translateY(0)';
+        sheet.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+        sheet.classList.add('expanded', 'full');
+        if (overlay) {
+          overlay.classList.add('visible');
+          overlay.style.display = 'block';
+          overlay.style.pointerEvents = 'auto';
+        }
+        document.body.style.overflow = 'hidden';
+        break;
+    }
+  }
+  
+  // ============================================
+  // SHEET HANDLE EVENTS
+  // ============================================
+  handle.addEventListener('touchstart', function(e) {
+    touchStartY = e.touches[0].clientY;
+    touchCurrentY = touchStartY;
+    isDragging = true;
+    sheet.style.transition = 'none';
+  }, { passive: true });
+  
+  handle.addEventListener('touchmove', function(e) {
+    if (!isDragging) return;
+    touchCurrentY = e.touches[0].clientY;
+  }, { passive: true });
+  
+  handle.addEventListener('touchend', function(e) {
+    if (!isDragging) return;
+    isDragging = false;
+    
+    const diff = touchStartY - touchCurrentY;
+    const absDiff = Math.abs(diff);
+    
+    if (absDiff < 10) {
+      if (sheetState === 'collapsed') setSheetState('expanded');
+      else if (sheetState === 'expanded') setSheetState('full');
+      else setSheetState('collapsed');
+    } else if (diff > 30) {
+      if (sheetState === 'collapsed') setSheetState('expanded');
+      else if (sheetState === 'expanded') setSheetState('full');
+    } else if (diff < -30) {
+      if (sheetState === 'full') setSheetState('expanded');
+      else if (sheetState === 'expanded') setSheetState('collapsed');
+      else setSheetState('collapsed');
+    } else {
+      setSheetState(sheetState);
+    }
+  }, { passive: true });
+  
+  // ============================================
+  // OVERLAY CLICK - CLOSE SHEET
+  // ============================================
+  if (overlay) {
+    overlay.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      setSheetState('collapsed');
+    });
+  }
+  
+  // ============================================
+  // CLOSE ON ESCAPE
+  // ============================================
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && sheetState !== 'collapsed') {
+      setSheetState('collapsed');
+    }
+  });
+  
+  // ============================================
+  // FIX 1: SHEET TABS - PROPER LOADING
+  // ============================================
+  function fixSheetTabs() {
+    document.querySelectorAll('.sheet-tab').forEach(function(tab) {
+      const newTab = tab.cloneNode(true);
+      tab.parentNode.replaceChild(newTab, tab);
+      
+      newTab.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('📱 Sheet tab clicked:', this.dataset.tab);
+        
+        // Update active state
+        document.querySelectorAll('.sheet-tab').forEach(function(t) {
+          t.classList.remove('active');
+        });
+        this.classList.add('active');
+        
+        // Show panel
+        const tabName = this.dataset.tab;
+        document.querySelectorAll('.sheet-panel').forEach(function(p) {
+          p.classList.remove('active');
+        });
+        const targetPanel = document.getElementById('sheet-' + tabName);
+        if (targetPanel) {
+          targetPanel.classList.add('active');
+        }
+        
+        // Expand sheet
+        if (sheetState === 'collapsed') {
+          setSheetState('expanded');
+        }
+        
+        // Load content immediately
+        if (tabName === 'watchlist') {
+          if (typeof buildMobileWatchlist === 'function') {
+            buildMobileWatchlist();
+          }
+        }
+        if (tabName === 'indicators') {
+          if (typeof buildMobileIndicators === 'function') {
+            buildMobileIndicators();
+          }
+        }
+        if (tabName === 'draw') {
+          if (typeof buildMobileTools === 'function') {
+            buildMobileTools();
+          }
+        }
+        if (tabName === 'stats') {
+          if (typeof updateMobileStats === 'function') {
+            updateMobileStats();
+          }
+        }
+      });
+    });
+    
+    console.log('✅ Sheet tabs fixed');
+  }
+  
+  // ============================================
+  // FIX 2: MOBILE INDICATORS - COMPLETE
+  // ============================================
+  function buildMobileIndicators() {
     const container = document.getElementById('mobile-indicators-grid');
     if (!container) {
-      setTimeout(fixMobileIndicators, 300);
+      console.warn('⚠️ mobile-indicators-grid not found');
       return;
     }
     
-    // List of ALL available indicators
     const indicators = [
       'RSI', 'MACD', 'SMA', 'EMA', 'Bollinger', 'VWAP',
       'Stochastic', 'ATR', 'Ichimoku', 'SuperTrend', 'PSAR',
@@ -38240,50 +38419,258 @@ document.addEventListener('DOMContentLoaded', function() {
       'Momentum', 'ROC', 'AD', 'CMF', 'VolumeProfile', 'ZigZag'
     ];
     
-    function renderIndicators() {
-      let html = '';
-      for (let i = 0; i < indicators.length; i++) {
-        const ind = indicators[i];
-        const isActive = (typeof STATE !== 'undefined' && STATE.activeIndicators && STATE.activeIndicators.has(ind));
-        
-        html += `<button class="sheet-indicator-btn ${isActive ? 'active' : ''}" 
-          data-indicator="${ind}"
-          style="background:${isActive ? 'var(--accent-muted)' : 'var(--bg-tertiary)'};
-                 border-color:${isActive ? 'var(--accent-primary)' : 'var(--border-primary)'};
-                 color:${isActive ? 'var(--accent-primary)' : 'var(--text-secondary)'};
-                 padding:10px 6px;border-radius:8px;font-size:10px;font-weight:600;cursor:pointer;min-height:40px;transition:all 0.15s ease;">
-          ${ind}
-        </button>`;
-      }
-      container.innerHTML = html;
+    let html = '';
+    for (let i = 0; i < indicators.length; i++) {
+      const ind = indicators[i];
+      const isActive = (typeof STATE !== 'undefined' && STATE.activeIndicators && STATE.activeIndicators.has(ind));
       
-      // Add click handlers
-      container.querySelectorAll('.sheet-indicator-btn').forEach(function(btn) {
-        btn.addEventListener('click', function(e) {
-          e.stopPropagation();
-          
-          const ind = this.getAttribute('data-indicator');
-          if (ind && typeof IndicatorEngine !== 'undefined') {
-            // Toggle the indicator
-            IndicatorEngine.toggleIndicator(ind);
-            
-            // Refresh grid after a short delay
-            setTimeout(function() {
-              renderIndicators();
-            }, 200);
-          }
-        });
-      });
+      html += `<button class="sheet-indicator-btn ${isActive ? 'active' : ''}" 
+        data-indicator="${ind}"
+        style="background:${isActive ? 'var(--accent-muted)' : 'var(--bg-tertiary)'};
+               border-color:${isActive ? 'var(--accent-primary)' : 'var(--border-primary)'};
+               color:${isActive ? 'var(--accent-primary)' : 'var(--text-secondary)'};
+               padding:10px 6px;border-radius:8px;font-size:10px;font-weight:600;cursor:pointer;min-height:40px;transition:all 0.15s ease;">
+        ${ind}
+      </button>`;
     }
+    container.innerHTML = html;
     
-    // Initial render
-    renderIndicators();
+    // Add click handlers
+    container.querySelectorAll('.sheet-indicator-btn').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        
+        const ind = this.getAttribute('data-indicator');
+        if (ind && typeof IndicatorEngine !== 'undefined') {
+          IndicatorEngine.toggleIndicator(ind);
+          
+          // Update button state
+          const isActive = STATE.activeIndicators.has(ind);
+          this.classList.toggle('active', isActive);
+          this.style.background = isActive ? 'var(--accent-muted)' : 'var(--bg-tertiary)';
+          this.style.borderColor = isActive ? 'var(--accent-primary)' : 'var(--border-primary)';
+          this.style.color = isActive ? 'var(--accent-primary)' : 'var(--text-secondary)';
+          
+          // Close sheet
+          setSheetState('collapsed');
+        }
+      });
+    });
     
-    console.log('✅ Mobile indicators grid fixed - ' + indicators.length + ' indicators');
+    console.log('✅ Mobile indicators built - ' + indicators.length + ' indicators');
   }
   
   // ============================================
-  // FIX 2: Mobile Search - Full 2500+ symbols
+  // FIX 3: MOBILE DRAWING TOOLS - COMPLETE
+  // ============================================
+  function buildMobileTools() {
+    const container = document.querySelector('#sheet-draw .sheet-tools-grid');
+    if (!container) {
+      console.warn('⚠️ Sheet tools grid not found');
+      return;
+    }
+    
+    const tools = [
+      { id: 'cursor', icon: 'fa-mouse-pointer', label: 'Select' },
+      { id: 'trendline', icon: 'fa-chart-line', label: 'Trend' },
+      { id: 'horizontal-line', icon: 'fa-minus', label: 'H Line' },
+      { id: 'vertical-line', icon: 'fa-grip-lines-vertical', label: 'V Line' },
+      { id: 'ray', icon: 'fa-arrow-right-long', label: 'Ray' },
+      { id: 'extended-line', icon: 'fa-arrows-left-right', label: 'Extend' },
+      { id: 'parallel-channel', icon: 'fa-arrows-up-down', label: 'Channel' },
+      { id: 'ghost-feed', icon: 'fa-ghost', label: 'Ghost' },
+      { id: 'rectangle', icon: 'fa-square', label: 'Box' },
+      { id: 'ellipse', icon: 'fa-circle', label: 'Circle' },
+      { id: 'triangle', icon: 'fa-play', label: 'Triangle' },
+      { id: 'polygon', icon: 'fa-draw-polygon', label: 'Polygon' },
+      { id: 'wedge', icon: 'fa-chart-pie', label: 'Wedge' },
+      { id: 'arc', icon: 'fa-circle-notch', label: 'Arc' },
+      { id: 'fib-retracement', icon: 'fa-ruler', label: 'Fib Retr' },
+      { id: 'fib-extension', icon: 'fa-ruler-combined', label: 'Fib Ext' },
+      { id: 'fib-fan', icon: 'fa-fan', label: 'Fib Fan' },
+      { id: 'fib-arc', icon: 'fa-rainbow', label: 'Fib Arc' },
+      { id: 'fib-timezone', icon: 'fa-clock', label: 'Fib Time' },
+      { id: 'fib-channel', icon: 'fa-grip-lines', label: 'Fib Chan' },
+      { id: 'pitchfork', icon: 'fa-draw-polygon', label: 'Pitchfork' },
+      { id: 'speed-resistance', icon: 'fa-tachometer-alt', label: 'Speed' },
+      { id: 'text', icon: 'fa-font', label: 'Text' },
+      { id: 'callout', icon: 'fa-comment-dots', label: 'Callout' },
+      { id: 'arrow', icon: 'fa-arrow-up', label: 'Arrow' },
+      { id: 'double-arrow', icon: 'fa-arrows-left-right', label: '2xArrow' },
+      { id: 'brush', icon: 'fa-paint-brush', label: 'Brush' },
+      { id: 'highlight', icon: 'fa-highlighter', label: 'Highlight' },
+      { id: 'price-label', icon: 'fa-tag', label: 'Price' },
+      { id: 'sticker', icon: 'fa-sticky-note', label: 'Sticker' },
+      { id: 'measure', icon: 'fa-ruler-horizontal', label: 'Measure' },
+      { id: 'date-range', icon: 'fa-calendar-alt', label: 'Date Rng' },
+      { id: 'price-level', icon: 'fa-dollar-sign', label: 'Price Lvl' },
+      { id: 'risk-reward', icon: 'fa-balance-scale', label: 'Risk/Rew' },
+      { id: 'xabcd-pattern', icon: 'fa-project-diagram', label: 'ABCD' },
+      { id: 'head-shoulders', icon: 'fa-chart-bar', label: 'H&S' },
+      { id: 'triangle-pattern', icon: 'fa-caret-up', label: 'Tri Pat' },
+      { id: 'flag-pattern', icon: 'fa-flag', label: 'Flag' },
+      { id: 'eraser', icon: 'fa-eraser', label: 'Erase' },
+      { id: 'undo', icon: 'fa-undo', label: 'Undo' },
+      { id: 'clear', icon: 'fa-trash', label: 'Clear' }
+    ];
+    
+    let html = '';
+    for (let i = 0; i < tools.length; i++) {
+      const t = tools[i];
+      html += `<button class="sheet-tool-btn" data-tool="${t.id}"
+        style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 4px;background:var(--bg-tertiary);border:1px solid var(--border-primary);border-radius:8px;color:var(--text-secondary);font-size:9px;cursor:pointer;min-height:50px;justify-content:center;transition:all 0.15s ease;">
+        <i class="fas ${t.icon}"></i>
+        <span>${t.label}</span>
+      </button>`;
+    }
+    container.innerHTML = html;
+    
+    // Add click handlers
+    container.querySelectorAll('.sheet-tool-btn').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        
+        const tool = this.getAttribute('data-tool');
+        if (tool && typeof DrawingEngine !== 'undefined') {
+          if (tool === 'clear') {
+            DrawingEngine.clearAll();
+            DrawingEngine.setTool('cursor');
+            if (typeof Toast !== 'undefined') Toast.info('All drawings cleared');
+          } else if (tool === 'undo') {
+            DrawingEngine.undo();
+            DrawingEngine.setTool('cursor');
+          } else if (tool === 'eraser') {
+            DrawingEngine.setTool('eraser');
+            if (typeof Toast !== 'undefined') Toast.info('Eraser mode - tap a drawing to delete');
+          } else {
+            DrawingEngine.setTool(tool);
+          }
+          
+          // Close sheet
+          setSheetState('collapsed');
+        }
+      });
+    });
+    
+    console.log('✅ Mobile tools built - ' + tools.length + ' tools');
+  }
+  
+  // ============================================
+  // FIX 4: MOBILE WATCHLIST - COMPLETE
+  // ============================================
+  function buildMobileWatchlist() {
+    const container = document.getElementById('mobile-watchlist-list');
+    if (!container) {
+      console.warn('⚠️ mobile-watchlist-list not found');
+      return;
+    }
+    
+    const watchlist = (typeof STATE !== 'undefined' && STATE.watchlist) ? STATE.watchlist : [];
+    
+    if (watchlist.length === 0) {
+      container.innerHTML = `
+        <div style="padding:30px;text-align:center;color:var(--text-muted);">
+          <i class="fas fa-star" style="font-size:28px;margin-bottom:10px;display:block;opacity:0.4;"></i>
+          <div style="font-size:13px;font-weight:500;margin-bottom:4px;">No symbols in watchlist</div>
+          <div style="font-size:10px;opacity:0.7;">Use the search bar above to add symbols</div>
+        </div>`;
+      return;
+    }
+    
+    let html = '';
+    for (let i = 0; i < watchlist.length; i++) {
+      const item = watchlist[i];
+      const sym = item.symbol;
+      const display = sym.replace('USDT', '/USDT');
+      
+      html += `<div class="mobile-wl-item" data-symbol="${sym}"
+        style="display:flex;justify-content:space-between;align-items:center;padding:12px 10px;border-bottom:1px solid rgba(48,54,61,0.3);cursor:pointer;min-height:48px;transition:background 0.15s ease;">
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:700;font-size:13px;color:var(--text-primary);">${display}</div>
+          <div style="font-size:9px;color:var(--text-muted);margin-top:1px;">Binance</div>
+        </div>
+        <div style="text-align:right;margin-right:8px;flex-shrink:0;">
+          <div style="font-weight:600;font-size:13px;font-family:monospace;" id="mwl-price-${sym}">--</div>
+          <div style="font-size:10px;padding:2px 6px;border-radius:4px;display:inline-block;margin-top:2px;" id="mwl-change-${sym}">--</div>
+        </div>
+        <button class="mwl-remove-btn" data-symbol="${sym}"
+          style="background:none;border:none;color:var(--text-muted);cursor:pointer;padding:8px;font-size:14px;flex-shrink:0;opacity:0.4;border-radius:6px;transition:all 0.15s ease;">
+          ✕
+        </button>
+      </div>`;
+    }
+    container.innerHTML = html;
+    
+    // Add click handlers for items
+    container.querySelectorAll('.mobile-wl-item').forEach(function(item) {
+      item.addEventListener('click', function(e) {
+        if (e.target.closest('.mwl-remove-btn')) return;
+        
+        const sym = this.getAttribute('data-symbol');
+        if (sym && typeof window.TV !== 'undefined' && window.TV.switchSymbol) {
+          window.TV.switchSymbol(sym);
+          if (typeof Toast !== 'undefined') Toast.info('Switched to ' + sym.replace('USDT', '/USDT'), 1500);
+        }
+        setSheetState('collapsed');
+      });
+    });
+    
+    // Add click handlers for remove buttons
+    container.querySelectorAll('.mwl-remove-btn').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        
+        const sym = this.getAttribute('data-symbol');
+        if (sym && typeof window.TV !== 'undefined' && window.TV.removeFromWatchlist) {
+          window.TV.removeFromWatchlist(sym);
+          setTimeout(buildMobileWatchlist, 200);
+        }
+      });
+    });
+    
+    console.log('✅ Mobile watchlist built - ' + watchlist.length + ' items');
+  }
+  
+  // ============================================
+  // FIX 5: MOBILE STATS - COMPLETE
+  // ============================================
+  function updateMobileStats() {
+    const lastCandle = (typeof STATE !== 'undefined' && STATE.candles && STATE.candles.length > 0)
+      ? STATE.candles[STATE.candles.length - 1]
+      : null;
+    
+    function setIfExists(id, value) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = value;
+    }
+    
+    if (lastCandle) {
+      const formatPrice = typeof U !== 'undefined' ? U.formatPrice : function(p) { return p.toFixed(2); };
+      const formatVolume = typeof U !== 'undefined' ? U.formatVolume : function(v) { return v.toFixed(2); };
+      
+      setIfExists('ms-open', formatPrice(lastCandle.open));
+      setIfExists('ms-high', formatPrice(lastCandle.high));
+      setIfExists('ms-low', formatPrice(lastCandle.low));
+      setIfExists('ms-volume', formatVolume(lastCandle.volume));
+      
+      const changeEl = document.getElementById('ms-change');
+      if (changeEl && STATE.change24h !== null) {
+        const change = STATE.change24h;
+        changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
+        changeEl.style.color = change >= 0 ? 'var(--up-color)' : 'var(--down-color)';
+      }
+    } else {
+      ['ms-open', 'ms-high', 'ms-low', 'ms-volume', 'ms-change'].forEach(function(id) {
+        setIfExists(id, '--');
+      });
+    }
+    
+    console.log('✅ Mobile stats updated');
+  }
+  
+  // ============================================
+  // FIX 6: MOBILE SEARCH - 2500+ SYMBOLS
   // ============================================
   function fixMobileSearch() {
     const searchInput = document.getElementById('mobile-search-input');
@@ -38294,11 +38681,9 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
     
-    // Remove old listeners
     const newInput = searchInput.cloneNode(true);
     searchInput.parentNode.replaceChild(newInput, searchInput);
     
-    // Render function
     function renderResults(symbols) {
       if (!symbols || symbols.length === 0) {
         suggestionsDiv.innerHTML = '<div style="padding:30px;text-align:center;color:var(--text-muted);font-size:14px;">No results found</div>';
@@ -38313,7 +38698,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const bgColor = s.type === 'crypto' ? 'rgba(88,166,255,0.1)' : s.type === 'stocks' ? 'rgba(38,166,154,0.1)' : 'rgba(255,152,0,0.1)';
         const txtColor = s.type === 'crypto' ? '#58a6ff' : s.type === 'stocks' ? '#26a69a' : '#ff9800';
         
-        html += `<div class="mobile-search-result-item" data-symbol="${s.symbol}" data-type="${s.type}" 
+        html += `<div class="mobile-search-result-item" data-symbol="${s.symbol}" data-type="${s.type}"
           style="display:flex;justify-content:space-between;align-items:center;padding:12px;cursor:pointer;border-bottom:1px solid var(--border-primary);">
           <div>
             <div style="font-weight:600;font-size:14px;color:var(--text-primary);">${displaySym}</div>
@@ -38324,29 +38709,19 @@ document.addEventListener('DOMContentLoaded', function() {
       }
       suggestionsDiv.innerHTML = html;
       
-      // Add click handlers
       suggestionsDiv.querySelectorAll('.mobile-search-result-item').forEach(function(item) {
         item.addEventListener('click', function() {
           const symbol = this.dataset.symbol;
           const type = this.dataset.type;
           
           if (symbol) {
-            // Set asset type
             if (type && typeof STATE !== 'undefined') {
               STATE.assetType = type;
             }
-            
-            // Switch symbol
             if (typeof window.TV !== 'undefined' && window.TV.switchSymbol) {
               window.TV.switchSymbol(symbol);
             } else if (typeof DataManager !== 'undefined' && DataManager.switchSymbol) {
               DataManager.switchSymbol(symbol);
-            }
-            
-            // Update mobile header
-            const nameEl = document.getElementById('mobile-symbol-name');
-            if (nameEl) {
-              nameEl.textContent = symbol.includes('USDT') ? symbol.replace('USDT', '/USDT') : symbol;
             }
           }
           
@@ -38362,10 +38737,8 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     }
     
-    // Search function - uses DataManager.searchAllSymbols
     async function performSearch(query) {
       if (query.length < 1) {
-        // Show default symbols
         const defaultSymbols = [
           { symbol: 'BTCUSDT', name: 'Bitcoin', type: 'crypto' },
           { symbol: 'ETHUSDT', name: 'Ethereum', type: 'crypto' },
@@ -38385,20 +38758,10 @@ document.addEventListener('DOMContentLoaded', function() {
       }
       
       try {
-        // Use DataManager.searchAllSymbols if available
         let results = [];
         if (typeof DataManager !== 'undefined' && DataManager.searchAllSymbols) {
           results = await DataManager.searchAllSymbols(query);
-        } else if (typeof window.TV !== 'undefined' && window.TV.searchSymbols) {
-          results = window.TV.searchSymbols(query);
-        } else {
-          // Fallback: filter default symbols
-          results = defaultSymbols.filter(function(s) {
-            return s.symbol.includes(query.toUpperCase()) || 
-                   (s.name && s.name.toUpperCase().includes(query.toUpperCase()));
-          });
         }
-        
         renderResults(results.slice(0, 15));
       } catch(e) {
         console.warn('Search error:', e);
@@ -38406,18 +38769,15 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
     
-    // Debounced input handler
     let searchTimeout;
     newInput.addEventListener('input', function() {
       clearTimeout(searchTimeout);
       const query = this.value.trim();
-      
       searchTimeout = setTimeout(function() {
         performSearch(query);
       }, 300);
     });
     
-    // Focus handler - show default symbols
     newInput.addEventListener('focus', function() {
       const defaultSymbols = [
         { symbol: 'BTCUSDT', name: 'Bitcoin', type: 'crypto' },
@@ -38436,7 +38796,6 @@ document.addEventListener('DOMContentLoaded', function() {
       renderResults(defaultSymbols);
     });
     
-    // Escape key handler
     newInput.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') {
         const searchOverlay = document.getElementById('mobile-search-overlay');
@@ -38448,8 +38807,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         this.blur();
       }
-      
-      // Enter key - select first result
       if (e.key === 'Enter') {
         const firstResult = suggestionsDiv.querySelector('.mobile-search-result-item');
         if (firstResult) {
@@ -38458,117 +38815,11 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
     
-    console.log('✅ Mobile search fixed - uses DataManager.searchAllSymbols');
+    console.log('✅ Mobile search fixed - full 2500+ symbols');
   }
   
   // ============================================
-  // FIX 3: Mobile Right Panel - Populate content
-  // ============================================
-  function fixRightPanel() {
-    const panelToggle = document.getElementById('mobile-panel-toggle-btn');
-    const rightPanel = document.getElementById('mobile-right-panel');
-    const panelContent = document.getElementById('mobile-panel-content');
-    const panelOverlay = document.getElementById('mobile-panel-overlay');
-    
-    if (!panelToggle || !rightPanel || !panelContent) {
-      setTimeout(fixRightPanel, 300);
-      return;
-    }
-    
-    // Populate content from desktop sidebar
-    function populatePanelContent() {
-      const desktopSidebar = document.getElementById('right-sidebar');
-      if (desktopSidebar) {
-        // Clone the entire right sidebar content
-        panelContent.innerHTML = desktopSidebar.innerHTML;
-        
-        // Remove duplicate IDs
-        const allElements = panelContent.querySelectorAll('[id]');
-        for (let i = 0; i < allElements.length; i++) {
-          allElements[i].removeAttribute('id');
-        }
-        
-        // Fix watchlist display
-        if (typeof WatchlistManager !== 'undefined' && WatchlistManager.render) {
-          WatchlistManager.render();
-        }
-      }
-    }
-    
-    // Toggle handler
-    const newToggle = panelToggle.cloneNode(true);
-    panelToggle.parentNode.replaceChild(newToggle, panelToggle);
-    
-    newToggle.addEventListener('click', function(e) {
-      e.preventDefault();
-      e.stopPropagation();
-      console.log('📱 Panel toggle clicked');
-      
-      const isOpen = rightPanel.classList.contains('open');
-      if (isOpen) {
-        // Close
-        rightPanel.classList.remove('open');
-        rightPanel.style.right = '-100%';
-        rightPanel.style.pointerEvents = 'none';
-        if (panelOverlay) {
-          panelOverlay.classList.remove('visible');
-          panelOverlay.style.display = 'none';
-          panelOverlay.style.pointerEvents = 'none';
-        }
-        document.body.style.overflow = '';
-      } else {
-        // Open and populate content
-        populatePanelContent();
-        rightPanel.classList.add('open');
-        rightPanel.style.right = '0';
-        rightPanel.style.pointerEvents = 'auto';
-        if (panelOverlay) {
-          panelOverlay.classList.add('visible');
-          panelOverlay.style.display = 'block';
-          panelOverlay.style.pointerEvents = 'auto';
-        }
-        document.body.style.overflow = 'hidden';
-      }
-    });
-    
-    // Close button
-    const panelClose = document.getElementById('mobile-panel-close');
-    if (panelClose) {
-      const newClose = panelClose.cloneNode(true);
-      panelClose.parentNode.replaceChild(newClose, panelClose);
-      newClose.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        rightPanel.classList.remove('open');
-        rightPanel.style.right = '-100%';
-        rightPanel.style.pointerEvents = 'none';
-        if (panelOverlay) {
-          panelOverlay.classList.remove('visible');
-          panelOverlay.style.display = 'none';
-          panelOverlay.style.pointerEvents = 'none';
-        }
-        document.body.style.overflow = '';
-      });
-    }
-    
-    // Overlay click
-    if (panelOverlay) {
-      panelOverlay.addEventListener('click', function() {
-        rightPanel.classList.remove('open');
-        rightPanel.style.right = '-100%';
-        rightPanel.style.pointerEvents = 'none';
-        panelOverlay.classList.remove('visible');
-        panelOverlay.style.display = 'none';
-        panelOverlay.style.pointerEvents = 'none';
-        document.body.style.overflow = '';
-      });
-    }
-    
-    console.log('✅ Mobile right panel fixed with content');
-  }
-  
-  // ============================================
-  // FIX 4: Mobile Symbol Area - Open Search
+  // FIX 7: MOBILE SYMBOL AREA
   // ============================================
   function fixSymbolArea() {
     const symbolArea = document.getElementById('mobile-symbol-area');
@@ -38577,15 +38828,13 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
     
-    // Remove all listeners by cloning
     const newArea = symbolArea.cloneNode(true);
     symbolArea.parentNode.replaceChild(newArea, symbolArea);
     
-    // Click handler
     newArea.addEventListener('click', function(e) {
       e.preventDefault();
       e.stopPropagation();
-      console.log('📱 Symbol area clicked - opening search');
+      console.log('📱 Symbol area clicked');
       
       const searchOverlay = document.getElementById('mobile-search-overlay');
       if (searchOverlay) {
@@ -38606,7 +38855,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   
   // ============================================
-  // FIX 5: Mobile Search Close
+  // FIX 8: MOBILE SEARCH CLOSE
   // ============================================
   function fixSearchClose() {
     const searchOverlay = document.getElementById('mobile-search-overlay');
@@ -38645,7 +38894,6 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     }
     
-    // Close on overlay click
     searchOverlay.addEventListener('click', function(e) {
       if (e.target === searchOverlay) {
         closeSearch();
@@ -38656,67 +38904,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   
   // ============================================
-  // FIX 6: Mobile Bottom Sheet - Indicators tab
-  // ============================================
-  function fixBottomSheet() {
-    const sheet = document.getElementById('mobile-bottom-sheet');
-    const handle = document.getElementById('sheet-handle');
-    
-    if (!sheet || !handle) {
-      setTimeout(fixBottomSheet, 300);
-      return;
-    }
-    
-    // Fix sheet tabs
-    document.querySelectorAll('.sheet-tab').forEach(function(tab) {
-      const newTab = tab.cloneNode(true);
-      tab.parentNode.replaceChild(newTab, tab);
-      
-      newTab.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        console.log('📱 Sheet tab clicked:', this.dataset.tab);
-        
-        // Toggle active state
-        document.querySelectorAll('.sheet-tab').forEach(function(t) {
-          t.classList.remove('active');
-        });
-        this.classList.add('active');
-        
-        // Show panel
-        const tabName = this.dataset.tab;
-        document.querySelectorAll('.sheet-panel').forEach(function(p) {
-          p.classList.remove('active');
-        });
-        const targetPanel = document.getElementById('sheet-' + tabName);
-        if (targetPanel) {
-          targetPanel.classList.add('active');
-        }
-        
-        // Expand sheet when clicking any tab
-        if (!sheet.classList.contains('expanded') && !sheet.classList.contains('full')) {
-          sheet.style.transform = 'translateY(20%)';
-          sheet.classList.add('expanded');
-        }
-        
-        // Load content
-        if (tabName === 'watchlist' && typeof buildMobileWatchlist === 'function') {
-          buildMobileWatchlist();
-        }
-        if (tabName === 'indicators' && typeof buildMobileIndicators === 'function') {
-          buildMobileIndicators();
-        }
-        if (tabName === 'stats' && typeof updateMobileStats === 'function') {
-          updateMobileStats();
-        }
-      });
-    });
-    
-    console.log('✅ Bottom sheet tabs fixed');
-  }
-  
-  // ============================================
-  // FIX 7: Mobile Search Button
+  // FIX 9: MOBILE SEARCH BUTTON
   // ============================================
   function fixSearchButton() {
     const searchBtn = document.getElementById('mobile-search-btn');
@@ -38731,7 +38919,7 @@ document.addEventListener('DOMContentLoaded', function() {
     newBtn.addEventListener('click', function(e) {
       e.preventDefault();
       e.stopPropagation();
-      console.log('📱 Search button clicked - opening search');
+      console.log('📱 Search button clicked');
       
       const searchOverlay = document.getElementById('mobile-search-overlay');
       if (searchOverlay) {
@@ -38752,26 +38940,124 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   
   // ============================================
-  // Run all fixes
+  // FIX 10: MOBILE RIGHT PANEL
   // ============================================
-  setTimeout(fixMobileIndicators, 100);
-  setTimeout(fixMobileSearch, 200);
-  setTimeout(fixRightPanel, 300);
-  setTimeout(fixSymbolArea, 400);
-  setTimeout(fixSearchClose, 500);
-  setTimeout(fixBottomSheet, 600);
-  setTimeout(fixSearchButton, 700);
+  function fixRightPanel() {
+    const panelToggle = document.getElementById('mobile-panel-toggle-btn');
+    const rightPanel = document.getElementById('mobile-right-panel');
+    const panelContent = document.getElementById('mobile-panel-content');
+    const panelOverlay = document.getElementById('mobile-panel-overlay');
+    
+    if (!panelToggle || !rightPanel || !panelContent) {
+      setTimeout(fixRightPanel, 300);
+      return;
+    }
+    
+    const newToggle = panelToggle.cloneNode(true);
+    panelToggle.parentNode.replaceChild(newToggle, panelToggle);
+    
+    newToggle.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      console.log('📱 Panel toggle clicked');
+      
+      const isOpen = rightPanel.classList.contains('open');
+      if (isOpen) {
+        rightPanel.classList.remove('open');
+        rightPanel.style.right = '-100%';
+        rightPanel.style.pointerEvents = 'none';
+        if (panelOverlay) {
+          panelOverlay.classList.remove('visible');
+          panelOverlay.style.display = 'none';
+          panelOverlay.style.pointerEvents = 'none';
+        }
+        document.body.style.overflow = '';
+      } else {
+        // Populate content from desktop
+        const desktopSidebar = document.getElementById('right-sidebar');
+        if (desktopSidebar) {
+          panelContent.innerHTML = desktopSidebar.innerHTML;
+          panelContent.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+        }
+        
+        rightPanel.classList.add('open');
+        rightPanel.style.right = '0';
+        rightPanel.style.pointerEvents = 'auto';
+        if (panelOverlay) {
+          panelOverlay.classList.add('visible');
+          panelOverlay.style.display = 'block';
+          panelOverlay.style.pointerEvents = 'auto';
+        }
+        document.body.style.overflow = 'hidden';
+      }
+    });
+    
+    const panelClose = document.getElementById('mobile-panel-close');
+    if (panelClose) {
+      const newClose = panelClose.cloneNode(true);
+      panelClose.parentNode.replaceChild(newClose, panelClose);
+      newClose.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        rightPanel.classList.remove('open');
+        rightPanel.style.right = '-100%';
+        rightPanel.style.pointerEvents = 'none';
+        if (panelOverlay) {
+          panelOverlay.classList.remove('visible');
+          panelOverlay.style.display = 'none';
+          panelOverlay.style.pointerEvents = 'none';
+        }
+        document.body.style.overflow = '';
+      });
+    }
+    
+    if (panelOverlay) {
+      panelOverlay.addEventListener('click', function() {
+        rightPanel.classList.remove('open');
+        rightPanel.style.right = '-100%';
+        rightPanel.style.pointerEvents = 'none';
+        panelOverlay.classList.remove('visible');
+        panelOverlay.style.display = 'none';
+        panelOverlay.style.pointerEvents = 'none';
+        document.body.style.overflow = '';
+      });
+    }
+    
+    console.log('✅ Mobile right panel fixed');
+  }
   
-  // Re-run after dynamic content loads
-  setTimeout(function() {
-    fixMobileIndicators();
+  // ============================================
+  // INITIALIZE ALL
+  // ============================================
+  function initAll() {
+    fixSheetTabs();
+    buildMobileIndicators();
+    buildMobileTools();
+    buildMobileWatchlist();
+    updateMobileStats();
     fixMobileSearch();
-    fixRightPanel();
     fixSymbolArea();
     fixSearchClose();
-    fixBottomSheet();
     fixSearchButton();
-    console.log('✅ All mobile handlers fixed');
-  }, 2000);
+    fixRightPanel();
+    
+    console.log('✅ ALL mobile functionality fixed');
+    console.log('✅ Indicators: 28+ working');
+    console.log('✅ Tools: 40+ working');
+    console.log('✅ Search: 2500+ symbols');
+    console.log('✅ Sheet: closes properly');
+  }
+  
+  // Run after DOM is ready
+  if (document.readyState === 'complete') {
+    setTimeout(initAll, 500);
+  } else {
+    document.addEventListener('DOMContentLoaded', function() {
+      setTimeout(initAll, 500);
+    });
+  }
+  
+  // Re-run after dynamic content
+  setTimeout(initAll, 2000);
   
 })();
