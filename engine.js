@@ -13585,102 +13585,120 @@ _intervalToSeconds(interval) {
 // CORRECTED load24h WITH PROPER ROUTING
 // ============================================
 async load24h(symbol) {
+  // Ensure we have a valid symbol
+  if (!symbol || typeof symbol !== 'string') {
+    console.error('❌ load24h called with invalid symbol:', symbol);
+    return;
+  }
+  
+  const upperSymbol = symbol.toUpperCase();
+  console.log(`📊 load24h for: ${upperSymbol}`);
+  
   try {
-    const assetType = AssetTypeManager.detectAssetType(symbol);
+    const assetType = AssetTypeManager.detectAssetType(upperSymbol);
     
-    // CRYPTO - DIRECT BINANCE (NO BACKEND NEEDED!)
+    // ============================================
+    // CRYPTO - DIRECT BINANCE
+    // ============================================
     if (assetType === 'crypto' || assetType === 'futures') {
-      const url = `https://api.binance.com/api/v3/ticker/24hr?symbol=${symbol}`;
-      const response = await fetch(url);
-      
-      if (response.ok) {
-        const data = await response.json();
-        STATE.change24h = parseFloat(data.priceChangePercent);
-        STATE.high24h = parseFloat(data.highPrice);
-        STATE.low24h = parseFloat(data.lowPrice);
-        STATE.volume24h = parseFloat(data.volume);
-        STATE.currentPrice = parseFloat(data.lastPrice);
-        
-        this.updateStats();
-        this.updatePriceDisplay({ close: STATE.currentPrice });
-        return;
-      }
-    }
-    
-    // ============================================
-    // STOCKS & FOREX - BACKEND (YAHOO)
-    // ============================================
-    else if (assetType === 'stocks' || assetType === 'forex') {
-      const apiBase = 'https://coingecko-proxy-eight.vercel.app/api/coingecko';
-      const url = `${apiBase}?endpoint=quote&symbol=${encodeURIComponent(symbol)}`;
-      
-      console.log(`📡 Stocks/Forex 24h via backend: ${url}`);
+      const url = `https://api.binance.com/api/v3/ticker/24hr?symbol=${upperSymbol}`;
       
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8000);
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
       const response = await fetch(url, { signal: controller.signal });
       clearTimeout(timeoutId);
       
-      if (!response.ok) throw new Error(`Backend HTTP ${response.status}`);
+      if (!response.ok) {
+        throw new Error(`Binance HTTP ${response.status}`);
+      }
       
       const data = await response.json();
       
-      if (data.quote) {
-        STATE.currentPrice = data.quote.price;
-        STATE.change24h = data.quote.change;
-        STATE.high24h = data.quote.high;
-        STATE.low24h = data.quote.low;
-        STATE.volume24h = data.quote.volume;
-        STATE.open24h = data.quote.open;
+      // Validate data
+      if (!data || data.symbol !== upperSymbol) {
+        throw new Error('Invalid response from Binance');
+      }
+      
+      // Update STATE
+      STATE.change24h = parseFloat(data.priceChangePercent);
+      STATE.high24h = parseFloat(data.highPrice);
+      STATE.low24h = parseFloat(data.lowPrice);
+      STATE.volume24h = parseFloat(data.volume);
+      STATE.currentPrice = parseFloat(data.lastPrice);
+      
+      console.log(`✅ ${upperSymbol} 24h: $${STATE.currentPrice} (${STATE.change24h.toFixed(2)}%)`);
+      
+      // Update UI
+      this.updateStats();
+      this.updatePriceDisplay({ 
+        close: STATE.currentPrice,
+        open: parseFloat(data.openPrice),
+        high: STATE.high24h,
+        low: STATE.low24h
+      });
+      return;
+    }
+    
+    // ============================================
+    // STOCKS & FOREX - YAHOO DIRECT (CORS PROXY)
+    // ============================================
+    if (assetType === 'stocks' || assetType === 'forex') {
+      let yahooSymbol = upperSymbol;
+      if (assetType === 'forex' && upperSymbol.length === 6) {
+        yahooSymbol = upperSymbol.slice(0, 3) + upperSymbol.slice(3) + '=X';
+      }
+      
+      const corsProxy = 'https://corsproxy.io/?';
+      const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${yahooSymbol}?interval=1d&range=1d`;
+      const proxyUrl = `${corsProxy}${encodeURIComponent(yahooUrl)}`;
+      
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
+      const response = await fetch(proxyUrl, { signal: controller.signal });
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        throw new Error(`Yahoo HTTP ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      if (data.chart?.result?.[0]) {
+        const result = data.chart.result[0];
+        const meta = result.meta;
+        const quote = result.indicators.quote[0];
         
-        console.log(`✅ 24h quote from ${data.source}: $${STATE.currentPrice} (${STATE.change24h.toFixed(2)}%)`);
-      } else {
-        throw new Error('No quote data');
+        STATE.currentPrice = meta.regularMarketPrice || quote.close[quote.close.length - 1];
+        STATE.change24h = meta.regularMarketChangePercent || 0;
+        STATE.high24h = meta.regularMarketDayHigh || Math.max(...quote.high);
+        STATE.low24h = meta.regularMarketDayLow || Math.min(...quote.low);
+        STATE.volume24h = meta.regularMarketVolume || quote.volume[quote.volume.length - 1];
+        STATE.open24h = quote.open[0];
+        
+        console.log(`✅ ${upperSymbol} quote: $${STATE.currentPrice} (${STATE.change24h.toFixed(2)}%)`);
+        
+        this.updateStats();
+        this.updatePriceDisplay({ 
+          close: STATE.currentPrice,
+          open: STATE.open24h,
+          high: STATE.high24h,
+          low: STATE.low24h
+        });
+        return;
       }
+      
+      throw new Error('No quote data from Yahoo');
     }
     
     // ============================================
-    // INDICES, COMMODITIES (Twelve Data via proxy)
+    // FALLBACK
     // ============================================
-    else if (assetType === 'indices' || assetType === 'commodities') {
-      const apiBase = getApiBase();
-      let twelveSymbol = symbol;
-      
-      const response = await fetch(`${apiBase}/proxy?endpoint=twelvedata&symbol=${twelveSymbol}&interval=1day`);
-      
-      if (response.ok) {
-        const data = await response.json();
-        if (data.values && data.values.length > 0) {
-          const current = parseFloat(data.values[0].close);
-          const previous = parseFloat(data.values[1]?.close || current * 0.998);
-          
-          STATE.currentPrice = current;
-          STATE.change24h = ((current - previous) / previous) * 100;
-          
-          const last24Points = data.values.slice(0, 24);
-          const highs = last24Points.map(v => parseFloat(v.high));
-          const lows = last24Points.map(v => parseFloat(v.low));
-          
-          STATE.high24h = Math.max(...highs);
-          STATE.low24h = Math.min(...lows);
-          STATE.volume24h = 0;
-        }
-      }
-    }
-    
-    // ============================================
-    // UPDATE UI
-    // ============================================
+    console.warn(`⚠️ No 24h data for ${upperSymbol}, using fallback`);
+    this.setFallbackValues();
     this.updateStats();
-    this.updatePriceDisplay({ 
-      close: STATE.currentPrice, 
-      open: STATE.open24h || STATE.currentPrice, 
-      high: STATE.high24h, 
-      low: STATE.low24h 
-    });
     
-  } catch(error) {
-    console.error('❌ load24h error:', error.message);
+  } catch (error) {
+    console.error(`❌ load24h error for ${upperSymbol}:`, error.message);
     this.setFallbackValues();
     this.updateStats();
   }
