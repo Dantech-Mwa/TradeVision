@@ -4,6 +4,29 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
   <title>TradeVision Pro - Advanced Trading Platform</title>
+
+	<!-- ============================================
+PWA IMPLEMENTATION
+============================================ -->
+<link rel="manifest" href="/manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TradeVision">
+
+<!-- Service Worker Registration -->
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/sw.js')
+      .then(function(registration) {
+        console.log('✅ ServiceWorker registered:', registration.scope);
+      })
+      .catch(function(err) {
+        console.log('❌ ServiceWorker registration failed:', err);
+      });
+  });
+}
+</script>
   
   <!-- SEO Meta Tags -->
   <meta name="description" content="Professional crypto, stocks,and forex analysis trading platform with 100+ technical indicators, advanced drawing tools, real-time data via Binance WebSocket, AI-powered analysis, and Coinpedia news integration">
