@@ -13588,24 +13588,22 @@ async load24h(symbol) {
   try {
     const assetType = AssetTypeManager.detectAssetType(symbol);
     
-    // ============================================
-    // CRYPTO - DIRECT BINANCE (NO PROXY)
-    // ============================================
+    // CRYPTO - DIRECT BINANCE (NO BACKEND NEEDED!)
     if (assetType === 'crypto' || assetType === 'futures') {
-      const apiBase = getApiBase();
-      const response = await this._rateLimitFetch(
-        `${apiBase}/proxy?endpoint=ticker&symbol=${symbol}`
-      );
+      const url = `https://api.binance.com/api/v3/ticker/24hr?symbol=${symbol}`;
+      const response = await fetch(url);
       
       if (response.ok) {
         const data = await response.json();
-        if (data && !data.error) {
-          STATE.change24h = parseFloat(data.priceChangePercent);
-          STATE.high24h = parseFloat(data.highPrice);
-          STATE.low24h = parseFloat(data.lowPrice);
-          STATE.volume24h = parseFloat(data.volume);
-          STATE.currentPrice = parseFloat(data.lastPrice);
-        }
+        STATE.change24h = parseFloat(data.priceChangePercent);
+        STATE.high24h = parseFloat(data.highPrice);
+        STATE.low24h = parseFloat(data.lowPrice);
+        STATE.volume24h = parseFloat(data.volume);
+        STATE.currentPrice = parseFloat(data.lastPrice);
+        
+        this.updateStats();
+        this.updatePriceDisplay({ close: STATE.currentPrice });
+        return;
       }
     }
     
