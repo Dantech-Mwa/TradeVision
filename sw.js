@@ -182,15 +182,232 @@ self.addEventListener('fetch', event => {
 // ============================================
 // PUSH EVENT (Keep existing)
 // ============================================
+// ============================================
+// PUSH EVENT - Handle push notifications
+// ============================================
 self.addEventListener('push', event => {
-  // Your existing push handler
+  let data = {
+    title: 'TradeVision Pro',
+    body: 'You have a new alert!',
+    icon: '/icons/icon-192.png',
+    badge: '/icons/icon-96.png',
+    tag: 'tradevision-alert',
+    vibrate: [200, 100, 200],
+    data: {
+      url: '/',
+      symbol: null,
+      price: null,
+      type: 'alert'
+    }
+  };
+  
+  // Parse incoming data if available
+  if (event.data) {
+    try {
+      const parsedData = JSON.parse(event.data.text());
+      data = { ...data, ...parsedData };
+    } catch (e) {
+      data.body = event.data.text();
+    }
+  }
+  
+  const options = {
+    body: data.body,
+    icon: data.icon || '/icons/icon-192.png',
+    badge: data.badge || '/icons/icon-96.png',
+    tag: data.tag || 'tradevision-alert',
+    vibrate: data.vibrate || [200, 100, 200],
+    data: data.data || {
+      url: '/',
+      symbol: null,
+      price: null,
+      type: 'alert'
+    },
+    actions: [
+      {
+        action: 'open',
+        title: 'Open Chart',
+        icon: '/icons/icon-96.png'
+      },
+      {
+        action: 'dismiss',
+        title: 'Dismiss',
+        icon: '/icons/icon-96.png'
+      }
+    ],
+    requireInteraction: true,
+    silent: false,
+    renotify: true,
+    timestamp: Date.now()
+  };
+  
+  event.waitUntil(
+    self.registration.showNotification(data.title || 'TradeVision Pro', options)
+  );
 });
 
 // ============================================
-// NOTIFICATION CLICK EVENT (Keep existing)
+// NOTIFICATION CLICK EVENT - Handle notification clicks
 // ============================================
 self.addEventListener('notificationclick', event => {
-  // Your existing notification handler
+  event.notification.close();
+  
+  // Handle action buttons
+  if (event.action === 'dismiss') {
+    return;
+  }
+  
+  // Get the URL from notification data
+  const url = event.notification.data?.url || '/';
+  const symbol = event.notification.data?.symbol || null;
+  const price = event.notification.data?.price || null;
+  
+  // Open or focus the app
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true })
+      .then(clientList => {
+        // Try to focus an existing window
+        for (let client of clientList) {
+          if (client.url.includes(self.location.origin) && 'focus' in client) {
+            // If we have symbol/price data, send it to the client
+            if (symbol || price) {
+              client.postMessage({
+                type: 'notification-click',
+                symbol: symbol,
+                price: price
+              });
+            }
+            return client.focus();
+          }
+        }
+        // Open new window with URL
+        return clients.openWindow(url);
+      })
+  );
+});
+
+// ============================================
+// MESSAGE EVENT - Handle messages from client
+// ============================================
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+  
+  if (event.data && event.data.type === 'CLEAR_CACHE') {
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cacheName => {
+          return caches.delete(cacheName);
+        })
+      );
+    }).then(() => {
+      console.log('[SW] Cache cleared');
+      if (event.ports && event.ports[0]) {
+        event.ports[0].postMessage({ type: 'CACHE_CLEARED' });
+      }
+    });
+  }
+});
+
+// ============================================
+// NOTIFICATION CLICK EVENT - Handle notification clicks
+// ============================================
+self.addEventListener('notificationclick', event => {
+  console.log('[SW] Notification clicked:', event.notification.tag);
+  
+  // Close the notification
+  event.notification.close();
+  
+  // Handle action buttons
+  if (event.action === 'dismiss') {
+    console.log('[SW] Notification dismissed');
+    return;
+  }
+  
+  // Get data from notification
+  const notificationData = event.notification.data || {};
+  const url = notificationData.url || '/';
+  const symbol = notificationData.symbol || null;
+  const price = notificationData.price || null;
+  const type = notificationData.type || 'alert';
+  
+  console.log('[SW] Opening URL:', url);
+  console.log('[SW] Data:', { symbol, price, type });
+  
+  // Open or focus the app
+  event.waitUntil(
+    clients.matchAll({ 
+      type: 'window', 
+      includeUncontrolled: true 
+    })
+    .then(clientList => {
+      // Try to find an existing window
+      for (let client of clientList) {
+        if (client.url.includes(self.location.origin) && 'focus' in client) {
+          console.log('[SW] Found existing client, focusing...');
+          
+          // Send data to the client
+          if (symbol || price) {
+            client.postMessage({
+              type: 'notification-click',
+              symbol: symbol,
+              price: price,
+              url: url,
+              action: event.action || 'open'
+            });
+          }
+          
+          return client.focus();
+        }
+      }
+      
+      // No existing window, open new one
+      console.log('[SW] No existing client, opening new window');
+      return clients.openWindow(url);
+    })
+  );
+});
+
+// ============================================
+// MESSAGE EVENT - Handle messages from clients
+// ============================================
+self.addEventListener('message', event => {
+  console.log('[SW] Message received:', event.data);
+  
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+  
+  if (event.data && event.data.type === 'CLEAR_CACHE') {
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cacheName => {
+          return caches.delete(cacheName);
+        })
+      );
+    }).then(() => {
+      console.log('[SW] Cache cleared');
+      if (event.ports && event.ports[0]) {
+        event.ports[0].postMessage({ type: 'CACHE_CLEARED' });
+      }
+    });
+  }
+  
+  if (event.data && event.data.type === 'NOTIFICATION_CLICKED') {
+    // Handle notification clicked from client
+    console.log('[SW] Notification clicked from client:', event.data);
+  }
+});
+
+// ============================================
+// CLIENT MESSAGE HANDLER - For sending data to client
+// ============================================
+self.addEventListener('message', event => {
+  // Handle client messages
+  if (event.data && event.data.type === 'PING') {
+    event.ports[0].postMessage({ type: 'PONG' });
+  }
 });
 
 console.log('✅ Service Worker v2.1.0 loaded');
