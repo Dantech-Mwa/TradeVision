@@ -40213,3 +40213,338 @@ function buildMobileMore() {
     }
   }, 2000);
 })();
+// ============================================
+// TRUST SIGNALS - Company Information & Legal
+// ============================================
+(function addTrustSignals() {
+  'use strict';
+  
+  // ============================================
+  // 1. Add Company Information to Footer
+  // ============================================
+  const footer = document.querySelector('.footer');
+  if (footer) {
+    // Check if company info already exists
+    if (!document.querySelector('.footer-company-info')) {
+      const companyInfo = document.createElement('span');
+      companyInfo.className = 'footer-company-info';
+      companyInfo.style.cssText = `
+        display: inline-block;
+        font-size: 10px;
+        color: var(--text-muted);
+        margin: 0 8px;
+      `;
+      companyInfo.innerHTML = `
+        <strong>TradeVision Pro</strong> · 
+        <a href="/about.html" style="color: var(--text-muted); text-decoration: none;">About</a> · 
+        <a href="/privacy.html" style="color: var(--text-muted); text-decoration: none;">Privacy</a> · 
+        <a href="/terms.html" style="color: var(--text-muted); text-decoration: none;">Terms</a> · 
+        <a href="/refund.html" style="color: var(--text-muted); text-decoration: none;">Refund Policy</a> · 
+        <span style="color: var(--text-muted);">support@tradevisionpro.online</span>
+      `;
+      
+      // Insert before the copyright text
+      const copyrightText = footer.querySelector('.footer-text');
+      if (copyrightText) {
+        footer.insertBefore(companyInfo, copyrightText);
+      } else {
+        footer.appendChild(companyInfo);
+      }
+    }
+  }
+  
+  // ============================================
+  // 2. Add Security Badges to Footer
+  // ============================================
+  const footerRight = document.querySelector('.footer-right');
+  if (footerRight) {
+    if (!document.querySelector('.security-badges')) {
+      const badges = document.createElement('div');
+      badges.className = 'security-badges';
+      badges.style.cssText = `
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        margin-right: 8px;
+      `;
+      badges.innerHTML = `
+        <span style="font-size: 9px; color: var(--text-muted); padding: 2px 8px; border: 1px solid var(--border-primary); border-radius: 4px;">
+          <i class="fas fa-lock" style="color: var(--up-color);"></i> SSL Secured
+        </span>
+        <span style="font-size: 9px; color: var(--text-muted); padding: 2px 8px; border: 1px solid var(--border-primary); border-radius: 4px;">
+          <i class="fas fa-shield-alt" style="color: var(--accent-primary);"></i> 2FA Ready
+        </span>
+        <span style="font-size: 9px; color: var(--text-muted); padding: 2px 8px; border: 1px solid var(--border-primary); border-radius: 4px;">
+          <i class="fas fa-credit-card" style="color: var(--warning);"></i> Secure Payments
+        </span>
+      `;
+      
+      // Insert before the footer partner link
+      const partnerLink = footerRight.querySelector('.footer-partner');
+      if (partnerLink) {
+        footerRight.insertBefore(badges, partnerLink);
+      } else {
+        footerRight.appendChild(badges);
+      }
+    }
+  }
+  
+  // ============================================
+  // 3. Add Trust Banner to Header
+  // ============================================
+  const headerRight = document.querySelector('.header-right');
+  if (headerRight) {
+    if (!document.querySelector('.trust-banner')) {
+      const trustBanner = document.createElement('div');
+      trustBanner.className = 'trust-banner';
+      trustBanner.style.cssText = `
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 10px;
+        background: var(--success-muted);
+        border: 1px solid var(--success);
+        border-radius: 12px;
+        font-size: 9px;
+        color: var(--success);
+        margin-right: 8px;
+      `;
+      trustBanner.innerHTML = `
+        <i class="fas fa-check-circle"></i>
+        <span>Verified Platform</span>
+        <span style="color: var(--text-muted); font-size: 8px;">|</span>
+        <span style="color: var(--text-muted); font-size: 8px;">Est. 2025</span>
+      `;
+      
+      // Insert at the beginning of header-right
+      headerRight.insertBefore(trustBanner, headerRight.firstChild);
+    }
+  }
+  
+  // ============================================
+  // 4. Add Payment Trust Modal
+  // ============================================
+  function enhancePaymentModal() {
+    const paymentModal = document.getElementById('payment-modal');
+    if (!paymentModal) {
+      setTimeout(enhancePaymentModal, 500);
+      return;
+    }
+    
+    // Add trust badges to payment modal
+    const modalBody = paymentModal.querySelector('.modal-body');
+    if (modalBody && !document.querySelector('.payment-trust-badges')) {
+      const trustSection = document.createElement('div');
+      trustSection.className = 'payment-trust-badges';
+      trustSection.style.cssText = `
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        padding: 12px 0;
+        border-top: 1px solid var(--border-primary);
+        margin-top: 12px;
+        flex-wrap: wrap;
+      `;
+      trustSection.innerHTML = `
+        <span style="font-size: 10px; color: var(--text-muted);">
+          <i class="fas fa-lock" style="color: var(--up-color);"></i> Secure Connection
+        </span>
+        <span style="font-size: 10px; color: var(--text-muted);">
+          <i class="fas fa-credit-card" style="color: var(--warning);"></i> 256-bit Encrypted
+        </span>
+        <span style="font-size: 10px; color: var(--text-muted);">
+          <i class="fas fa-shield-alt" style="color: var(--accent-primary);"></i> Verified Merchant
+        </span>
+        <span style="font-size: 10px; color: var(--text-muted);">
+          <i class="fas fa-clock" style="color: var(--text-muted);"></i> 30-Day Refund
+        </span>
+      `;
+      
+      modalBody.appendChild(trustSection);
+    }
+  }
+  
+  setTimeout(enhancePaymentModal, 1000);
+  
+  console.log('✅ Trust signals added to platform');
+})();
+
+// ============================================
+// COMPLETE MOBILE OPTIMIZATION
+// ============================================
+(function mobileOptimization() {
+  'use strict';
+  
+  // Only run on mobile
+  if (window.innerWidth > 768) return;
+  
+  console.log('📱 Applying mobile optimizations...');
+  
+  // ============================================
+  // 1. VOLUME CHART VISIBILITY - COMPLETE FIX
+  // ============================================
+  function ensureVolumeVisible() {
+    const volumePane = document.getElementById('volume-chart-pane');
+    const volumeChart = document.getElementById('volume-chart');
+    const mainPane = document.getElementById('main-chart-pane');
+    const chartContainer = document.getElementById('chart-container');
+    
+    if (!volumePane || !volumeChart) {
+      setTimeout(ensureVolumeVisible, 300);
+      return;
+    }
+    
+    // Force visibility with !important
+    volumePane.setAttribute('style', 
+      'display: flex !important; ' +
+      'flex-direction: column !important; ' +
+      'flex: 0 0 80px !important; ' +
+      'min-height: 80px !important; ' +
+      'height: 80px !important; ' +
+      'max-height: 80px !important; ' +
+      'width: 100% !important; ' +
+      'overflow: hidden !important; ' +
+      'border-top: 1px solid var(--border-primary) !important; ' +
+      'border-bottom: 1px solid var(--border-primary) !important; ' +
+      'visibility: visible !important; ' +
+      'opacity: 1 !important; ' +
+      'z-index: 5 !important; ' +
+      'position: relative !important; ' +
+      'background: var(--chart-bg) !important'
+    );
+    
+    volumeChart.setAttribute('style', 
+      'display: block !important; ' +
+      'width: 100% !important; ' +
+      'height: 80px !important; ' +
+      'min-height: 80px !important; ' +
+      'max-height: 80px !important; ' +
+      'visibility: visible !important; ' +
+      'opacity: 1 !important; ' +
+      'position: relative !important; ' +
+      'background: transparent !important'
+    );
+    
+    // Resize the chart
+    if (typeof ChartEngine !== 'undefined' && ChartEngine.charts && ChartEngine.charts.volume) {
+      setTimeout(function() {
+        try {
+          const width = volumeChart.clientWidth || window.innerWidth;
+          ChartEngine.charts.volume.resize(width, 80);
+          if (STATE.candles && STATE.candles.length > 0) {
+            ChartEngine.updateVolume(STATE.candles);
+          }
+        } catch(e) {}
+      }, 100);
+    }
+  }
+  
+  // Run multiple times
+  ensureVolumeVisible();
+  setTimeout(ensureVolumeVisible, 500);
+  setTimeout(ensureVolumeVisible, 1000);
+  setTimeout(ensureVolumeVisible, 2000);
+  setTimeout(ensureVolumeVisible, 5000);
+  
+  // ============================================
+  // 2. MOBILE TOOLBAR OPTIMIZATION
+  // ============================================
+  function optimizeMobileToolbar() {
+    const headerActions = document.querySelector('.header-actions');
+    if (!headerActions) return;
+    
+    // Hide less important buttons on mobile
+    if (window.innerWidth <= 768) {
+      const buttonsToHide = [
+        '#indicators-btn',
+        '#drawing-tools-btn',
+        '#watchlist-btn',
+        '#backtest-btn',
+        '#screenshot-btn'
+      ];
+      
+      buttonsToHide.forEach(function(selector) {
+        const btn = document.querySelector(selector);
+        if (btn) btn.style.display = 'none';
+      });
+      
+      // Show essential buttons only
+      const essentialButtons = [
+        '#theme-toggle-btn',
+        '#alerts-btn',
+        '#news-btn',
+        '#fullscreen-btn'
+      ];
+      
+      essentialButtons.forEach(function(selector) {
+        const btn = document.querySelector(selector);
+        if (btn) btn.style.display = 'flex';
+      });
+    }
+  }
+  
+  setTimeout(optimizeMobileToolbar, 500);
+  
+  // ============================================
+  // 3. MOBILE SHEET IMPROVEMENTS
+  // ============================================
+  function improveMobileSheet() {
+    const sheet = document.getElementById('mobile-bottom-sheet');
+    const handle = document.getElementById('sheet-handle');
+    
+    if (!sheet || !handle) return;
+    
+    // Add visual feedback for touch
+    handle.style.touchAction = 'none';
+    handle.style.cursor = 'grab';
+    
+    // Increase touch target size
+    sheet.querySelectorAll('.sheet-tab, .sheet-tool-btn, .sheet-indicator-btn, .mob-action-btn').forEach(function(el) {
+      el.style.minHeight = '48px';
+      el.style.minWidth = '48px';
+      el.style.touchAction = 'manipulation';
+    });
+  }
+  
+  setTimeout(improveMobileSheet, 500);
+  
+  // ============================================
+  // 4. MOBILE INDICATOR PANES
+  // ============================================
+  function fixMobileIndicatorPanes() {
+    const indContainer = document.getElementById('indicator-panes-container');
+    if (!indContainer) return;
+    
+    if (typeof STATE !== 'undefined' && STATE.activeIndicators && STATE.activeIndicators.size > 0) {
+      indContainer.style.cssText = `
+        display: flex !important;
+        flex-direction: column !important;
+        width: 100% !important;
+        max-height: 35vh !important;
+        overflow-y: auto !important;
+        border-top: 2px solid var(--border-primary) !important;
+        padding: 4px 0 !important;
+      `;
+    } else {
+      indContainer.style.display = 'none !important';
+    }
+  }
+  
+  setTimeout(fixMobileIndicatorPanes, 500);
+  setTimeout(fixMobileIndicatorPanes, 1000);
+  
+  // ============================================
+  // 5. RESPONSIVE FONT SIZES
+  // ============================================
+  function adjustFontSizes() {
+    if (window.innerWidth <= 480) {
+      document.querySelectorAll('.price-display, .current-price, .trade-input, .summary-value').forEach(function(el) {
+        el.style.fontSize = '12px';
+      });
+    }
+  }
+  
+  setTimeout(adjustFontSizes, 500);
+  
+  console.log('✅ Mobile optimizations applied');
+})();
