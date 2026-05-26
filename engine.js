@@ -3459,75 +3459,176 @@ resizeAll() {
   // ============================================
   // SCREENSHOT
   // ============================================
-  captureScreenshot() {
-    if (!this.charts.price) {
-      if (typeof Toast !== 'undefined') Toast.error('No chart to capture');
-      return;
+ // ============================================
+// COMPLETE SCREENSHOT - Includes Drawings, Indicators, Price Scale
+// ============================================
+captureScreenshot() {
+  if (!this.charts.price) {
+    if (typeof Toast !== 'undefined') Toast.error('No chart to capture');
+    return;
+  }
+  
+  try {
+    const mainPane = document.getElementById('main-chart-pane');
+    if (!mainPane) return;
+    
+    // ============================================
+    // STEP 1: Create composite canvas
+    // ============================================
+    const width = mainPane.clientWidth;
+    const height = mainPane.clientHeight;
+    
+    const compositeCanvas = document.createElement('canvas');
+    compositeCanvas.width = width;
+    compositeCanvas.height = height;
+    const ctx = compositeCanvas.getContext('2d');
+    
+    // ============================================
+    // STEP 2: Draw background
+    // ============================================
+    const bgColor = getComputedStyle(document.documentElement).getPropertyValue('--bg-primary').trim() || '#0d1117';
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(0, 0, width, height);
+    
+    // ============================================
+    // STEP 3: Capture price chart
+    // ============================================
+    const priceCanvas = mainPane.querySelector('#price-chart canvas');
+    if (priceCanvas) {
+      ctx.drawImage(priceCanvas, 0, 0, width, height);
     }
     
-    try {
-      const mainPane = document.getElementById('main-chart-pane');
-      if (!mainPane) return;
+    // ============================================
+    // STEP 4: Capture drawing canvas
+    // ============================================
+    const drawingCanvas = document.getElementById('drawing-canvas');
+    if (drawingCanvas) {
+      // Scale drawing canvas to match
+      const dpr = window.devicePixelRatio || 1;
+      const drawingWidth = drawingCanvas.width / dpr;
+      const drawingHeight = drawingCanvas.height / dpr;
       
-      const canvas = mainPane.querySelector('canvas');
-      if (!canvas) return;
-      
-      const width = mainPane.clientWidth;
-      const height = mainPane.clientHeight;
-      
-      const compositeCanvas = document.createElement('canvas');
-      compositeCanvas.width = width;
-      compositeCanvas.height = height;
-      
-      const ctx = compositeCanvas.getContext('2d');
-      const bgColor = getComputedStyle(document.documentElement).getPropertyValue('--bg-primary').trim() || '#0d1117';
-      ctx.fillStyle = bgColor;
-      ctx.fillRect(0, 0, width, height);
-      ctx.drawImage(canvas, 0, 0, width, height);
-      
-      // Add watermark
-      const symbol = STATE.symbol.replace('USDT', '/USDT');
-      const interval = STATE.interval;
-      const timestamp = new Date().toLocaleString();
-      
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-      ctx.fillRect(0, 0, width, 52);
-      
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 14px Inter, sans-serif';
-      ctx.textAlign = 'left';
-      ctx.fillText(symbol + ' · ' + interval, 16, 32);
-      
-      ctx.textAlign = 'right';
-      ctx.font = '10px Inter, sans-serif';
-      ctx.fillText(timestamp, width - 16, height - 16);
-      ctx.fillText('TradeVision Pro', width - 16, height - 32);
-      
-      // Download
-      const filename = 'TradeVision_' + symbol.replace('/', '_') + '_' + interval + '_' + new Date().toISOString().slice(0, 10) + '.png';
-      
-      compositeCanvas.toBlob((blob) => {
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = filename;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
+      // Only draw if there are drawings
+      if (DrawingEngine && DrawingEngine.drawings && DrawingEngine.drawings.length > 0) {
+        // Create a temporary canvas with the drawing content
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = width;
+        tempCanvas.height = height;
+        const tempCtx = tempCanvas.getContext('2d');
         
-        if (typeof Toast !== 'undefined') {
-          Toast.success('📸 Screenshot saved!');
-        }
-      }, 'image/png');
-      
-    } catch(e) {
-      console.error('Screenshot capture failed:', e);
-      if (typeof Toast !== 'undefined') {
-        Toast.error('Screenshot failed');
+        // Scale and draw the drawing canvas
+        tempCtx.drawImage(drawingCanvas, 0, 0, width, height);
+        
+        // Draw onto composite
+        ctx.drawImage(tempCanvas, 0, 0);
       }
     }
-  },
+    
+    // ============================================
+    // STEP 5: Capture indicator panes
+    // ============================================
+    const indicatorContainer = document.getElementById('indicator-panes-container');
+    if (indicatorContainer && indicatorContainer.children.length > 0) {
+      // Get all indicator panes
+      const panes = indicatorContainer.querySelectorAll('.chart-pane-indicator');
+      let yOffset = height;
+      
+      panes.forEach(function(pane) {
+        const paneCanvas = pane.querySelector('canvas');
+        if (paneCanvas) {
+          const paneHeight = pane.clientHeight;
+          // Draw the pane below the main chart
+          ctx.drawImage(paneCanvas, 0, yOffset, width, paneHeight);
+          yOffset += paneHeight;
+        }
+      });
+    }
+    
+    // ============================================
+    // STEP 6: Capture volume chart if visible
+    // ============================================
+    const volumePane = document.getElementById('volume-chart-pane');
+    if (volumePane && volumePane.style.display !== 'none') {
+      const volumeCanvas = volumePane.querySelector('canvas');
+      if (volumeCanvas) {
+        const volumeHeight = volumePane.clientHeight;
+        const volumeY = height + (indicatorContainer ? indicatorContainer.clientHeight : 0);
+        ctx.drawImage(volumeCanvas, 0, volumeY, width, volumeHeight);
+      }
+    }
+    
+    // ============================================
+    // STEP 7: Add watermark
+    // ============================================
+    const symbol = STATE.symbol.replace('USDT', '/USDT');
+    const interval = STATE.interval;
+    const timestamp = new Date().toLocaleString();
+    
+    // Semi-transparent header
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+    ctx.fillRect(0, 0, width, 52);
+    
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 14px Inter, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(symbol + ' · ' + interval, 16, 32);
+    
+    // TradeVision PRO badge
+    ctx.fillStyle = 'rgba(88, 166, 255, 0.8)';
+    ctx.font = 'bold 10px Inter, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText('TradeVision PRO', width - 16, 20);
+    
+    // Timestamp
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+    ctx.font = '10px Inter, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(timestamp, width - 16, 36);
+    
+    // ============================================
+    // STEP 8: Add footer with platform info
+    // ============================================
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+    ctx.fillRect(0, height - 28, width, 28);
+    
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+    ctx.font = '9px Inter, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('TradeVision Pro · tradevisionpro.online', 12, height - 8);
+    
+    // Add active indicators count
+    if (STATE.activeIndicators && STATE.activeIndicators.size > 0) {
+      ctx.textAlign = 'right';
+      ctx.fillText('Indicators: ' + STATE.activeIndicators.size, width - 12, height - 8);
+    }
+    
+    // ============================================
+    // STEP 9: Download
+    // ============================================
+    const filename = 'TradeVision_' + symbol.replace('/', '_') + '_' + interval + '_' + new Date().toISOString().slice(0, 10) + '.png';
+    
+    compositeCanvas.toBlob((blob) => {
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+      if (typeof Toast !== 'undefined') {
+        Toast.success('📸 Complete screenshot saved!');
+      }
+    }, 'image/png');
+    
+  } catch(e) {
+    console.error('Screenshot capture failed:', e);
+    if (typeof Toast !== 'undefined') {
+      Toast.error('Screenshot failed: ' + e.message);
+    }
+  }
+},
   
   // ============================================
   // OVERLAY MANAGEMENT
@@ -11485,7 +11586,33 @@ drawTempShape() {
     ctx.setLineDash([]);
     ctx.restore();
   },
+  // ============================================
+// RENDER DRAWINGS TO CANVAS FOR SCREENSHOT
+// ============================================
+renderToCanvas(targetCanvas) {
+  if (!this.drawings || this.drawings.length === 0) return;
   
+  const ctx = targetCanvas.getContext('2d');
+  
+  // Save current state
+  ctx.save();
+  
+  // Scale to match target canvas
+  const dpr = window.devicePixelRatio || 1;
+  ctx.scale(dpr, dpr);
+  
+  // Render each drawing
+  this.drawings.forEach(d => {
+    ctx.save();
+    ctx.strokeStyle = d.color || '#58a6ff';
+    ctx.fillStyle = d.fillColor || 'rgba(88,166,255,0.1)';
+    ctx.lineWidth = d.lineWidth || 2;
+    this.drawShape(d);
+    ctx.restore();
+  });
+  
+  ctx.restore();
+},
   // ============================================
 // PRIORITY #8: FULL UNDO/REDO + EXPORT
 // ============================================
