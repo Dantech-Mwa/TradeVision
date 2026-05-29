@@ -1812,13 +1812,37 @@ button:active,.trade-type:active,.order-type-btn:active,.quick-amount-btn:active
 #chart-type-dropdown .chart-type-item.active::after {
     height: 70%;
 }
-	/* Force volume chart visibility */
-@media (max-width: 768px) {
-  #volume-chart-pane {
-    flex: 0 0 80px !important;
-    display: flex !important;
-    min-height: 80px !important;
-  }
+
+/* AI Analysis Panel Styles */
+.ai-panel {
+  transition: all 0.3s ease;
+}
+
+.ai-panel button:active {
+  transform: scale(0.98);
+}
+
+/* Federation Panel Styles */
+.analysis-card {
+  transition: all 0.2s ease;
+}
+
+.analysis-card:hover {
+  transform: translateX(2px);
+}
+
+.analysis-vote-up:hover,
+.analysis-vote-down:hover {
+  opacity: 0.7;
+}
+
+.indicator-chip {
+  transition: all 0.15s ease;
+}
+
+.indicator-chip:hover {
+  background: var(--accent-muted) !important;
+  border-color: var(--accent-primary) !important;
 }
 </style>
 	
@@ -3210,6 +3234,19 @@ ADD THIS TO header-right IN index.html
     </div>
   </div>
 </div>
+<div class="right-section">
+  <div class="right-section-header">
+    <span class="section-title">🤖 AI INSTITUTIONAL ANALYSIS</span>
+    <button class="section-btn" id="refresh-ai-btn" data-tooltip="Refresh Analysis">
+      <i class="fas fa-sync-alt"></i>
+    </button>
+  </div>
+  <div id="ai-analysis-panel" class="tv-panel-section">
+    <div style="padding: 20px; text-align: center; color: var(--text-muted);">
+      <i class="fas fa-spinner fa-spin"></i> Loading AI analysis...
+    </div>
+  </div>
+</div>
       <!-- Watchlist Section -->
       <div class="right-section">
         <div class="right-section-header">
@@ -3266,6 +3303,65 @@ ADD THIS TO header-right IN index.html
           </div>
         </div>
       </div>
+	  <!-- Strategy Marketplace Panel -->
+<div class="right-section">
+  <div class="right-section-header">
+    <span class="section-title">📊 Strategy Marketplace</span>
+    <button class="section-btn" id="refresh-strategies-btn" data-tooltip="Refresh">
+      <i class="fas fa-sync-alt"></i>
+    </button>
+  </div>
+  <div id="strategy-marketplace" class="tv-panel-section" style="max-height: 400px; overflow-y: auto;">
+    <div style="padding: 20px; text-align: center; color: var(--text-muted);">
+      <i class="fas fa-spinner fa-spin"></i> Loading strategies...
+    </div>
+  </div>
+</div>
+
+<!-- Sentiment Gauge Panel -->
+<div class="right-section">
+  <div class="right-section-header">
+    <span class="section-title">🌐 Market Pulse</span>
+    <button class="section-btn" id="refresh-sentiment-btn" data-tooltip="Refresh">
+      <i class="fas fa-sync-alt"></i>
+    </button>
+  </div>
+  <div id="sentiment-gauge" class="tv-panel-section">
+    <div style="padding: 20px; text-align: center; color: var(--text-muted);">
+      <i class="fas fa-spinner fa-spin"></i> Loading sentiment...
+    </div>
+  </div>
+</div>
+
+<!-- Whale Tracker Panel -->
+<div class="right-section">
+  <div class="right-section-header">
+    <span class="section-title">🐋 Whale Tracker</span>
+    <button class="section-btn" id="refresh-whale-btn" data-tooltip="Refresh">
+      <i class="fas fa-sync-alt"></i>
+    </button>
+  </div>
+  <div id="whale-tracker-panel" class="tv-panel-section" style="max-height: 500px; overflow-y: auto;">
+    <div style="padding: 20px; text-align: center; color: var(--text-muted);">
+      <i class="fas fa-spinner fa-spin"></i> Loading order book...
+    </div>
+  </div>
+</div>
+
+<!-- ML Forecast Panel -->
+<div class="right-section">
+  <div class="right-section-header">
+    <span class="section-title">🤖 ML Forecast</span>
+    <button class="section-btn" id="refresh-ml-btn" data-tooltip="Refresh">
+      <i class="fas fa-sync-alt"></i>
+    </button>
+  </div>
+  <div id="ml-forecast-panel" class="tv-panel-section">
+    <div style="padding: 20px; text-align: center; color: var(--text-muted);">
+      <i class="fas fa-spinner fa-spin"></i> Training ML model...
+    </div>
+  </div>
+</div>
 	  
 	  <div style="padding: 8px 12px; border-top: 1px solid var(--border-primary); background: var(--bg-secondary);">
     <div style="font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Follow TradeVision Pro</div>
@@ -3325,6 +3421,21 @@ ADD THIS TO header-right IN index.html
   <div class="market-stat">
     <span class="ms-label" id="market-label-4">Fear & Greed</span>
     <span class="ms-value" id="fear-greed">--</span>
+  </div>
+</div>
+
+<!-- INSERT FEDERATION PANEL RIGHT HERE -->
+<div class="right-section">
+  <div class="right-section-header">
+    <span class="section-title">🌐 ANALYSIS FEDERATION</span>
+    <button class="section-btn" id="refresh-federation-btn" data-tooltip="Refresh Federation">
+      <i class="fas fa-sync-alt"></i>
+    </button>
+  </div>
+  <div id="federation-panel" class="tv-panel-section" style="max-height: 400px; overflow-y: auto;">
+    <div style="padding: 20px; text-align: center; color: var(--text-muted);">
+      <i class="fas fa-spinner fa-spin"></i> Loading federation...
+    </div>
   </div>
 </div>
             <!-- Key Stats -->
