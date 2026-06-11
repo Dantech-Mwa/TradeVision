@@ -1844,6 +1844,105 @@ button:active,.trade-type:active,.order-type-btn:active,.quick-amount-btn:active
   background: var(--accent-muted) !important;
   border-color: var(--accent-primary) !important;
 }
+/* Fix for panel loading states */
+#strategy-marketplace, #sentiment-gauge, #whale-tracker-panel, #ml-forecast-panel {
+    min-height: 200px;
+}
+
+.strategy-card {
+    transition: all 0.2s ease;
+}
+
+.strategy-card:hover {
+    transform: translateX(4px);
+    border-color: var(--accent-primary);
+}
+
+.subscribe-strategy-btn {
+    transition: all 0.2s ease;
+}
+
+.subscribe-strategy-btn:hover {
+    transform: scale(1.05);
+}
+
+.sentiment-container, .whale-container, .ml-forecast-container {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+/* Institutional Enhancements Styles */
+#institutional-tools .btn-sm {
+    transition: all 0.2s ease;
+}
+
+#institutional-tools .btn-sm:hover {
+    transform: translateY(-1px);
+    background: var(--accent-primary) !important;
+    color: white !important;
+}
+
+.snapshot-item {
+    transition: all 0.2s ease;
+}
+
+.snapshot-item:hover {
+    transform: translateX(4px);
+    background: var(--bg-hover) !important;
+}
+
+.snapshot-delete {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.snapshot-item:hover .snapshot-delete {
+    opacity: 1;
+}
+
+/* Order Flow Panel */
+#order-flow-panel {
+    animation: slideInRight 0.3s ease;
+}
+/* Additional animations for trial bubble */
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideInDown {
+    from {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+/* Subscription banner */
+#subscription-banner {
+    font-family: 'Inter', sans-serif;
+    backdrop-filter: blur(8px);
+}
+
+#subscription-banner button {
+    transition: all 0.2s ease;
+}
+
+#subscription-banner button:hover {
+    transform: scale(1.02);
+    opacity: 0.9;
+}
 </style>
 	
   <!-- Lightweight Charts Library - Load First -->
@@ -3248,7 +3347,7 @@ ADD THIS TO header-right IN index.html
   </div>
 </div>
 
-		<!-- ============================================ -->
+<!-- ============================================ -->
 <!-- INSTITUTIONAL MARKET INTELLIGENCE DASHBOARD -->
 <!-- Place this RIGHT AFTER the AI section -->
 <!-- ============================================ -->
@@ -3941,15 +4040,16 @@ ADD THIS TO header-right IN index.html
           <input type="text" id="indicator-search-input" placeholder="Search indicators... (e.g., RSI, MACD, Bollinger)" autocomplete="off">
         </div>
 
-        <!-- Category Tabs -->
-        <div class="category-tabs" id="indicator-categories">
-          <button class="cat-tab active" data-category="all">All</button>
-          <button class="cat-tab" data-category="trend">Trend</button>
-          <button class="cat-tab" data-category="momentum">Momentum</button>
-          <button class="cat-tab" data-category="volatility">Volatility</button>
-          <button class="cat-tab" data-category="volume">Volume</button>
-          <button class="cat-tab" data-category="custom">Custom</button>
-        </div>
+       <!-- Category Tabs -->
+<div class="category-tabs" id="indicator-categories">
+  <button class="cat-tab active" data-category="all">All</button>
+  <button class="cat-tab" data-category="trend">Trend</button>
+  <button class="cat-tab" data-category="momentum">Momentum</button>
+  <button class="cat-tab" data-category="volatility">Volatility</button>
+  <button class="cat-tab" data-category="volume">Volume</button>
+  <button class="cat-tab" data-category="institutional">🏦 Institutional</button>
+  <button class="cat-tab" data-category="custom">Custom</button>
+</div>
 
         <!-- Indicators Grid -->
         <div class="indicators-grid" id="indicators-grid">
@@ -4292,6 +4392,109 @@ ADD THIS TO header-right IN index.html
   <p class="ind-desc">Filters out noise to show significant price swings</p>
   <div class="ind-card-actions">
     <button class="ind-apply-btn" data-indicator="ZigZag">Apply</button>
+  </div>
+</div>
+<!-- Liquidity Sweep -->
+<div class="indicator-card" data-name="LiquiditySweep" data-category="institutional">
+  <div class="ind-card-header">
+    <span class="ind-settings-icon" data-indicator="LiquiditySweep" style="cursor:pointer;opacity:0.5;margin-left:auto;" title="Settings">⚙️</span>
+    <span class="ind-name">Liquidity Sweep</span>
+    <span class="ind-abbr">LS</span>
+  </div>
+  <p class="ind-desc">Detects stop-loss hunting - price breaking key levels then reversing</p>
+  <div class="ind-card-actions">
+    <button class="ind-apply-btn" data-indicator="LiquiditySweep">Apply</button>
+  </div>
+</div>
+
+<!-- Fair Value Gap (FVG) -->
+<div class="indicator-card" data-name="FVG" data-category="institutional">
+  <div class="ind-card-header">
+    <span class="ind-settings-icon" data-indicator="FVG" style="cursor:pointer;opacity:0.5;margin-left:auto;" title="Settings">⚙️</span>
+    <span class="ind-name">Fair Value Gap</span>
+    <span class="ind-abbr">FVG</span>
+  </div>
+  <p class="ind-desc">Identifies price inefficiencies/gaps between candles - ICT concept</p>
+  <div class="ind-card-actions">
+    <button class="ind-apply-btn" data-indicator="FVG">Apply</button>
+  </div>
+</div>
+
+<!-- Order Block -->
+<div class="indicator-card" data-name="OrderBlock" data-category="institutional">
+  <div class="ind-card-header">
+    <span class="ind-settings-icon" data-indicator="OrderBlock" style="cursor:pointer;opacity:0.5;margin-left:auto;" title="Settings">⚙️</span>
+    <span class="ind-name">Order Block</span>
+    <span class="ind-abbr">OB</span>
+  </div>
+  <p class="ind-desc">Supply/demand zones where institutions placed large orders</p>
+  <div class="ind-card-actions">
+    <button class="ind-apply-btn" data-indicator="OrderBlock">Apply</button>
+  </div>
+</div>
+
+<!-- OBV Divergence -->
+<div class="indicator-card" data-name="OBVDivergence" data-category="momentum">
+  <div class="ind-card-header">
+    <span class="ind-settings-icon" data-indicator="OBVDivergence" style="cursor:pointer;opacity:0.5;margin-left:auto;" title="Settings">⚙️</span>
+    <span class="ind-name">OBV Divergence</span>
+    <span class="ind-abbr">OBVD</span>
+  </div>
+  <p class="ind-desc">On-Balance Volume divergence - price/volume separation signals reversals</p>
+  <div class="ind-card-actions">
+    <button class="ind-apply-btn" data-indicator="OBVDivergence">Apply</button>
+  </div>
+</div>
+
+<!-- Wyckoff Spring -->
+<div class="indicator-card" data-name="WyckoffSpring" data-category="institutional">
+  <div class="ind-card-header">
+    <span class="ind-settings-icon" data-indicator="WyckoffSpring" style="cursor:pointer;opacity:0.5;margin-left:auto;" title="Settings">⚙️</span>
+    <span class="ind-name">Wyckoff Spring</span>
+    <span class="ind-abbr">WS</span>
+  </div>
+  <p class="ind-desc">Wyckoff method spring pattern - false breakdown with volume confirmation</p>
+  <div class="ind-card-actions">
+    <button class="ind-apply-btn" data-indicator="WyckoffSpring">Apply</button>
+  </div>
+</div>
+
+<!-- CVD (Cumulative Volume Delta) -->
+<div class="indicator-card" data-name="CVD" data-category="volume">
+  <div class="ind-card-header">
+    <span class="ind-settings-icon" data-indicator="CVD" style="cursor:pointer;opacity:0.5;margin-left:auto;" title="Settings">⚙️</span>
+    <span class="ind-name">Cumulative Delta</span>
+    <span class="ind-abbr">CVD</span>
+  </div>
+  <p class="ind-desc">Cumulative Volume Delta - measures buying vs selling pressure over time</p>
+  <div class="ind-card-actions">
+    <button class="ind-apply-btn" data-indicator="CVD">Apply</button>
+  </div>
+</div>
+
+<!-- Absorption -->
+<div class="indicator-card" data-name="Absorption" data-category="institutional">
+  <div class="ind-card-header">
+    <span class="ind-settings-icon" data-indicator="Absorption" style="cursor:pointer;opacity:0.5;margin-left:auto;" title="Settings">⚙️</span>
+    <span class="ind-name">Absorption</span>
+    <span class="ind-abbr">ABS</span>
+  </div>
+  <p class="ind-desc">Detects large orders absorbing market flow without price movement</p>
+  <div class="ind-card-actions">
+    <button class="ind-apply-btn" data-indicator="Absorption">Apply</button>
+  </div>
+</div>
+
+<!-- Delta Divergence -->
+<div class="indicator-card" data-name="DeltaDivergence" data-category="institutional">
+  <div class="ind-card-header">
+    <span class="ind-settings-icon" data-indicator="DeltaDivergence" style="cursor:pointer;opacity:0.5;margin-left:auto;" title="Settings">⚙️</span>
+    <span class="ind-name">Delta Divergence</span>
+    <span class="ind-abbr">ΔD</span>
+  </div>
+  <p class="ind-desc">Order flow delta divergence - price/delta separation shows institutional activity</p>
+  <div class="ind-card-actions">
+    <button class="ind-apply-btn" data-indicator="DeltaDivergence">Apply</button>
   </div>
 </div>
 <!-- Advanced Indicators - Add after existing indicators -->
@@ -5601,11 +5804,68 @@ MARKETS MODAL - Shows multiple charts for each asset class
     });
     paymentObserver.observe(paymentModal, { attributes: true });
   }
-  
+  // ============================================
+// START TRIAL BUTTON HANDLER
+// ============================================
+const startTrialBtn = document.getElementById('start-trial-btn');
+if (startTrialBtn) {
+    startTrialBtn.addEventListener('click', async function() {
+        let selectedTrialTier = 'pro';
+        
+        const proPlan = document.getElementById('trial-pro-plan');
+        const ultimatePlan = document.getElementById('trial-ultimate-plan');
+        
+        if (proPlan && ultimatePlan) {
+            const isProActive = proPlan.style.borderColor === 'rgb(255, 215, 0)' || 
+                               proPlan.style.borderColor === '#ffd700';
+            selectedTrialTier = isProActive ? 'pro' : 'ultimate';
+        }
+        
+        this.disabled = true;
+        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Starting trial...';
+        
+        if (typeof UserSystem !== 'undefined') {
+            const result = await UserSystem.startTrial(selectedTrialTier);
+            
+            if (result.success) {
+                const modal = document.getElementById('trial-subscription-modal');
+                if (modal) modal.classList.remove('visible');
+                const paymentModal = document.getElementById('payment-modal');
+                if (paymentModal) paymentModal.classList.remove('visible');
+            }
+        }
+        
+        this.disabled = false;
+        this.innerHTML = '<i class="fas fa-gift"></i> Start 14-Day Free Trial';
+    });
+}
+
+// Trial plan selection
+//const trialProPlan = document.getElementById('trial-pro-plan');
+//const trialUltimatePlan = document.getElementById('trial-ultimate-plan');
+
+if (trialProPlan) {
+    trialProPlan.addEventListener('click', () => {
+        trialProPlan.style.borderColor = '#ffd700';
+        trialProPlan.style.background = 'rgba(255,215,0,0.1)';
+        trialUltimatePlan.style.borderColor = '#9b6cff';
+        trialUltimatePlan.style.background = 'rgba(155,108,255,0.05)';
+    });
+}
+
+if (trialUltimatePlan) {
+    trialUltimatePlan.addEventListener('click', () => {
+        trialUltimatePlan.style.borderColor = '#9b6cff';
+        trialUltimatePlan.style.background = 'rgba(155,108,255,0.1)';
+        trialProPlan.style.borderColor = '#ffd700';
+        trialProPlan.style.background = 'rgba(255,215,0,0.05)';
+    });
+}
   console.log('✅ Dual PayPal System Ready:');
   console.log('   - Trial uses Subscription Plan IDs (14-day free)');
   console.log('   - Immediate uses Hosted Button IDs (charge now)');
   console.log('   - Both mechanisms work independently');
+  
 })();
 </script>
 
@@ -6618,6 +6878,26 @@ MARKETS MODAL - Shows multiple charts for each asset class
   </div>
 </div>
 
+<!-- Snapshot Gallery Modal -->
+<div class="modal-overlay" id="snapshot-modal">
+    <div class="modal-container modal-md">
+        <div class="modal-header">
+            <div class="modal-title">
+                <i class="fas fa-images modal-icon"></i>
+                <div>
+                    <h3>Chart Snapshots</h3>
+                    <p class="modal-subtitle">Saved chart images</p>
+                </div>
+            </div>
+            <button class="modal-close" onclick="document.getElementById('snapshot-modal').classList.remove('visible')">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body" id="snapshot-modal-gallery" style="max-height: 500px; overflow-y: auto;">
+            <!-- Snapshots will appear here -->
+        </div>
+    </div>
+</div>
 
 <!-- Mobile Overlay -->
 <div class="mobile-overlay" id="mobile-overlay"></div>
