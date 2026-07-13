@@ -1,5 +1,5 @@
 # robots.txt for TradeVision Pro
-# BALANCED ACCESS - Allow all with SEO optimization
+# BALANCED ACCESS - Allow all crawlers with SEO optimization
 
 # ============================================
 # MAIN RULE: Allow all crawlers
@@ -9,20 +9,22 @@ User-agent: *
 Allow: /
 
 # ============================================
-# SITEMAP
+# SITEMAP - CORRECT FORMAT
 # ============================================
+
+# Sitemap is a valid robots.txt directive
 Sitemap: https://tradevisionpro.online/sitemap.xml
 
 # ============================================
 # OPTIMIZED CRAWLING
 # ============================================
 
-# Google - Priority
+# Google - Priority (Google supports Crawl-delay)
 User-agent: Googlebot
 Allow: /
 Crawl-delay: 0.5
 
-# Bing - Standard
+# Bing - Standard (Bing supports Crawl-delay)
 User-agent: Bingbot
 Allow: /
 Crawl-delay: 1
@@ -40,13 +42,29 @@ User-agent: Google-Extended
 Allow: /
 Crawl-delay: 2
 
+# Block known scrapers
+User-agent: Bytespider
+Disallow: /
+
+User-agent: Amazonbot
+Disallow: /
+
+User-agent: Applebot-Extended
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: meta-externalagent
+Disallow: /
+
+User-agent: CloudflareBrowserRenderingCrawler
+Disallow: /
+
 # ============================================
-# SEO RECOMMENDATIONS
+# NO-FOLLOW SPECIFIC SECTIONS (Optional)
 # ============================================
 
-# Host directive (helps with duplicate content)
-Host: https://tradevisionpro.online
-
-# No-Follow specific sections (if needed)
+# Disallow: /admin/
+# Disallow: /private/
 # Disallow: /temp/
-# Disallow: /drafts/
