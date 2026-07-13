@@ -1,0 +1,18 @@
+# .github/workflows/submit-to-bing.yml
+name: Submit URLs to Bing
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  submit-urls:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Submit sitemap to Bing
+        uses: 3Alan/search-engines-urls-push@v0.2.2
+        with:
+          site: "https://tradevisionpro.online"
+          sitemap: "https://tradevisionpro.online/sitemap.xml"
+          bing-token: ${{ secrets.BING_API_KEY }}
