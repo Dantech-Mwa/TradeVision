@@ -2259,254 +2259,77 @@ button:active,.trade-type:active,.order-type-btn:active,.quick-amount-btn:active
     </div>
 </div>
 </div>
-    <div class="header-actions">
-      <button class="action-btn" id="indicators-btn" data-tooltip="Indicators (Ctrl+I)">
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <!-- Price line (top) -->
-        <polyline points="1,8 4,6 7,9 10,3 13,7 16,2" stroke="var(--accent-primary)" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-        <!-- RSI line (middle) -->
-        <polyline points="1,11 4,10 7,12 10,9 13,11 16,8" stroke="#9b6cff" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-        <!-- MACD histogram (bottom) -->
-        <rect x="1" y="14" width="2.5" height="3" rx="0.5" fill="var(--up-color)"/>
-        <rect x="5" y="13" width="2.5" height="4" rx="0.5" fill="var(--down-color)"/>
-        <rect x="9" y="15" width="2.5" height="2" rx="0.5" fill="var(--up-color)"/>
-        <rect x="13" y="14" width="2.5" height="3" rx="0.5" fill="var(--down-color)"/>
-        <!-- Small indicator badge -->
-        <circle cx="15" cy="3" r="3" fill="var(--accent-primary)" stroke="var(--bg-primary)" stroke-width="1"/>
-        <text x="15" y="4.5" text-anchor="middle" font-size="5" font-weight="700" fill="white">+</text>
-    </svg>
+  <div class="header-actions">
+  <!-- INDICATORS -->
+  <button class="action-btn" id="indicators-btn" data-tooltip="Indicators (Ctrl+I)">
+    <i class="fas fa-wave-square"></i>
     <span class="action-badge" id="indicator-count">0</span>
-</button>
-      <!-- DRAWING TOOLS - Professional drawing tools -->
-    <button class="action-btn" id="drawing-tools-btn" data-tooltip="Drawing Tools (Ctrl+D)">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <!-- Pencil body -->
-            <path d="M4,14 L2,16 L4,14" stroke="var(--accent-primary)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M4,14 L12,4 L14,6 L6,14 Z" fill="var(--bg-tertiary)" stroke="var(--accent-primary)" stroke-width="1.5" stroke-linejoin="round"/>
-            <path d="M12,4 L14,6 L16,4 L14,2 Z" fill="var(--accent-primary)" stroke="var(--accent-primary)" stroke-width="1" stroke-linejoin="round"/>
-            <!-- Ruler -->
-            <line x1="1" y1="1" x2="17" y2="1" stroke="var(--text-muted)" stroke-width="0.5"/>
-            <line x1="3" y1="1" x2="3" y2="3" stroke="var(--text-muted)" stroke-width="0.5"/>
-            <line x1="6" y1="1" x2="6" y2="3" stroke="var(--text-muted)" stroke-width="0.5"/>
-            <line x1="9" y1="1" x2="9" y2="3" stroke="var(--text-muted)" stroke-width="0.5"/>
-            <line x1="12" y1="1" x2="12" y2="3" stroke="var(--text-muted)" stroke-width="0.5"/>
-            <line x1="15" y1="1" x2="15" y2="3" stroke="var(--text-muted)" stroke-width="0.5"/>
-            <!-- Small ruler icon -->
-            <line x1="1" y1="17" x2="17" y2="17" stroke="var(--text-muted)" stroke-width="0.5"/>
-            <line x1="3" y1="17" x2="3" y2="15" stroke="var(--text-muted)" stroke-width="0.5"/>
-            <line x1="6" y1="17" x2="6" y2="15" stroke="var(--text-muted)" stroke-width="0.5"/>
-            <line x1="9" y1="17" x2="9" y2="15" stroke="var(--text-muted)" stroke-width="0.5"/>
-            <line x1="12" y1="17" x2="12" y2="15" stroke="var(--text-muted)" stroke-width="0.5"/>
-            <line x1="15" y1="17" x2="15" y2="15" stroke="var(--text-muted)" stroke-width="0.5"/>
-        </svg>
-    </button>
-    
-    <!-- MARKET DEPTH - Order book visualization -->
-    <button class="action-btn" id="market-depth-btn" data-tooltip="Market Depth (Ctrl+M)">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <!-- Bid side (green) -->
-            <rect x="1" y="8" width="6" height="2" rx="0.5" fill="var(--up-color)" opacity="0.6"/>
-            <rect x="1" y="6" width="4" height="2" rx="0.5" fill="var(--up-color)" opacity="0.4"/>
-            <rect x="1" y="4" width="2" height="2" rx="0.5" fill="var(--up-color)" opacity="0.2"/>
-            <!-- Ask side (red) -->
-            <rect x="11" y="8" width="6" height="2" rx="0.5" fill="var(--down-color)" opacity="0.6"/>
-            <rect x="13" y="10" width="4" height="2" rx="0.5" fill="var(--down-color)" opacity="0.4"/>
-            <rect x="15" y="12" width="2" height="2" rx="0.5" fill="var(--down-color)" opacity="0.2"/>
-            <!-- Spread line -->
-            <line x1="8" y1="9" x2="10" y2="9" stroke="var(--text-muted)" stroke-width="1" stroke-dasharray="1 1"/>
-            <!-- Best bid/ask labels -->
-            <text x="2" y="8.5" font-size="3" fill="var(--up-color)" font-weight="700">BID</text>
-            <text x="13.5" y="8.5" font-size="3" fill="var(--down-color)" font-weight="700">ASK</text>
-        </svg>
-    </button>
-    
-    <!-- NEWS - Modern newspaper with crypto indicator -->
-    <button class="action-btn" id="news-btn" data-tooltip="Coinpedia News (Ctrl+N)">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <!-- Newspaper body -->
-            <rect x="1" y="2" width="12" height="14" rx="1" fill="var(--bg-tertiary)" stroke="var(--border-primary)" stroke-width="0.5"/>
-            <!-- Folded newspaper edge -->
-            <path d="M13,2 L16,4 L16,16 L13,16 Z" fill="var(--bg-secondary)" stroke="var(--border-primary)" stroke-width="0.5"/>
-            <path d="M13,2 L13,4 L16,4" fill="var(--bg-tertiary)" stroke="var(--border-primary)" stroke-width="0.5"/>
-            <!-- News lines -->
-            <rect x="2" y="4" width="10" height="1.5" rx="0.5" fill="var(--text-muted)" opacity="0.5"/>
-            <rect x="2" y="6.5" width="8" height="1.5" rx="0.5" fill="var(--text-muted)" opacity="0.3"/>
-            <rect x="2" y="9" width="10" height="1.5" rx="0.5" fill="var(--text-muted)" opacity="0.4"/>
-            <rect x="2" y="11.5" width="6" height="1.5" rx="0.5" fill="var(--text-muted)" opacity="0.3"/>
-            <!-- Crypto indicator -->
-            <circle cx="15" cy="1" r="2.5" fill="var(--up-color)" stroke="var(--bg-primary)" stroke-width="1"/>
-            <text x="15" y="2" text-anchor="middle" font-size="3" fill="white" font-weight="700">₿</text>
-            <!-- News dot -->
-            <circle cx="14" cy="14" r="2" fill="var(--danger)" stroke="var(--bg-primary)" stroke-width="1" class="news-dot" id="news-indicator"/>
-        </svg>
-    </button>
-    
-    <!-- ALERTS - Bell with notification count -->
-    <button class="action-btn" id="alerts-btn" data-tooltip="Price Alerts (Ctrl+A)">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <!-- Bell body -->
-            <path d="M12,13 C12,14.5 10.5,16 9,16 C7.5,16 6,14.5 6,13" stroke="var(--text-primary)" stroke-width="1.5" stroke-linecap="round" fill="none"/>
-            <path d="M5,13 L13,13" stroke="var(--text-primary)" stroke-width="1.5" stroke-linecap="round"/>
-            <path d="M4,9 C4,9 3,5 9,5 C15,5 14,9 14,9" stroke="var(--text-primary)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-            <!-- Bell top -->
-            <path d="M9,5 L9,3" stroke="var(--text-primary)" stroke-width="1.5" stroke-linecap="round"/>
-            <circle cx="9" cy="2.5" r="1.5" fill="var(--text-primary)"/>
-            <!-- Sound waves -->
-            <path d="M15,7 C16.5,8.5 16.5,10.5 15,12" stroke="var(--text-primary)" stroke-width="1" fill="none" stroke-linecap="round" opacity="0.5"/>
-            <path d="M16.5,5 C19,7.5 19,11.5 16.5,14" stroke="var(--text-primary)" stroke-width="1" fill="none" stroke-linecap="round" opacity="0.3"/>
-            <!-- Badge -->
-            <circle cx="14" cy="2" r="3" fill="var(--accent-primary)" stroke="var(--bg-primary)" stroke-width="1"/>
-            <text x="14" y="3.5" text-anchor="middle" font-size="4" font-weight="700" fill="white" id="alert-count-text">0</text>
-        </svg>
-        <span class="action-badge hidden" id="alert-count">0</span>
-    </button>
-    
-    <!-- WATCHLIST - Star with sparkle -->
-    <button class="action-btn" id="watchlist-btn" data-tooltip="Watchlist (Ctrl+W)">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <!-- Star outline -->
-            <path d="M9,1 L11,7 L17,7 L12,11 L14,17 L9,13 L4,17 L6,11 L1,7 L7,7 Z" stroke="var(--text-primary)" stroke-width="1.5" fill="none" stroke-linejoin="round"/>
-            <!-- Sparkle -->
-            <circle cx="2" cy="2" r="1.5" fill="var(--accent-primary)" opacity="0.7"/>
-            <line x1="2" y1="0" x2="2" y2="0.5" stroke="var(--accent-primary)" stroke-width="0.5"/>
-            <line x1="2" y1="3.5" x2="2" y2="4" stroke="var(--accent-primary)" stroke-width="0.5"/>
-            <line x1="0" y1="2" x2="0.5" y2="2" stroke="var(--accent-primary)" stroke-width="0.5"/>
-            <line x1="3.5" y1="2" x2="4" y2="2" stroke="var(--accent-primary)" stroke-width="0.5"/>
-            <!-- Highlighted star fill (when active) -->
-            <path d="M9,3 L10.5,7.5 L15,7.5 L11.5,10.5 L12.5,15 L9,12.5 L5.5,15 L6.5,10.5 L3,7.5 L7.5,7.5 Z" fill="var(--accent-primary)" opacity="0" class="watchlist-star-fill"/>
-        </svg>
-    </button>
-    
-    <!-- TRADE JOURNAL - Book with bookmark -->
-    <button class="action-btn" id="trade-journal-btn" data-tooltip="Trade Journal (Ctrl+J)">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <!-- Book cover -->
-            <path d="M2,2 L2,16 L9,14 L16,16 L16,2 L9,4 Z" fill="var(--bg-tertiary)" stroke="var(--border-primary)" stroke-width="1" stroke-linejoin="round"/>
-            <!-- Book spine -->
-            <path d="M9,4 L9,14" stroke="var(--border-primary)" stroke-width="0.5"/>
-            <!-- Pages -->
-            <line x1="4" y1="6" x2="8" y2="6" stroke="var(--text-muted)" stroke-width="0.5" opacity="0.5"/>
-            <line x1="4" y1="7.5" x2="8" y2="7.5" stroke="var(--text-muted)" stroke-width="0.5" opacity="0.5"/>
-            <line x1="4" y1="9" x2="8" y2="9" stroke="var(--text-muted)" stroke-width="0.5" opacity="0.5"/>
-            <line x1="10" y1="6" x2="15" y2="6" stroke="var(--text-muted)" stroke-width="0.5" opacity="0.5"/>
-            <line x1="10" y1="7.5" x2="15" y2="7.5" stroke="var(--text-muted)" stroke-width="0.5" opacity="0.5"/>
-            <line x1="10" y1="9" x2="15" y2="9" stroke="var(--text-muted)" stroke-width="0.5" opacity="0.5"/>
-            <!-- Bookmark ribbon -->
-            <path d="M13,16 L13,12 L14,13 L15,12 L15,16" fill="var(--accent-primary)" stroke="var(--accent-primary)" stroke-width="0.5"/>
-            <!-- P&L indicator -->
-            <circle cx="5" cy="12" r="1.5" fill="var(--up-color)" opacity="0.8"/>
-            <circle cx="13" cy="12" r="1.5" fill="var(--down-color)" opacity="0.8"/>
-        </svg>
-    </button>
-    
-    <!-- BACKTEST - Flask with chart -->
-    <button class="action-btn" id="backtest-btn" data-tooltip="Backtest (Ctrl+B)">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <!-- Flask body -->
-            <path d="M6,2 L6,8 L3,15 C3,16 4,17 6,17 L12,17 C14,17 15,16 15,15 L12,8 L12,2" fill="var(--bg-tertiary)" stroke="var(--border-primary)" stroke-width="1" stroke-linejoin="round"/>
-            <!-- Liquid -->
-            <path d="M6,10 L5,14 C5,15 6,16 8,16 L10,16 C12,16 13,15 13,14 L12,10" fill="var(--accent-primary)" opacity="0.3"/>
-            <!-- Bubbles -->
-            <circle cx="8" cy="13" r="1" fill="var(--accent-primary)" opacity="0.5"/>
-            <circle cx="10" cy="14" r="0.8" fill="var(--accent-primary)" opacity="0.4"/>
-            <circle cx="9" cy="11.5" r="0.6" fill="var(--accent-primary)" opacity="0.3"/>
-            <!-- Chart inside flask -->
-            <polyline points="6,12 8,10 10,11 12,8" stroke="var(--up-color)" stroke-width="1" fill="none" stroke-linecap="round"/>
-            <!-- Measurement lines -->
-            <line x1="3" y1="3" x2="6" y2="3" stroke="var(--text-muted)" stroke-width="0.5"/>
-            <line x1="3" y1="5" x2="6" y2="5" stroke="var(--text-muted)" stroke-width="0.5"/>
-            <text x="2.5" y="3.5" font-size="2.5" fill="var(--text-muted)">10ml</text>
-            <text x="2.5" y="5.5" font-size="2.5" fill="var(--text-muted)">20ml</text>
-        </svg>
-    </button>
-    
-    <div class="header-divider"></div>
-    
-    <!-- SCREENSHOT - Camera with chart frame -->
-    <button class="action-btn" id="screenshot-btn" data-tooltip="Screenshot (Ctrl+S)">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <!-- Camera body -->
-            <rect x="2" y="5" width="14" height="10" rx="2" fill="var(--bg-tertiary)" stroke="var(--border-primary)" stroke-width="1"/>
-            <!-- Lens -->
-            <circle cx="9" cy="10" r="3.5" fill="var(--bg-primary)" stroke="var(--border-primary)" stroke-width="0.5"/>
-            <circle cx="9" cy="10" r="2" fill="var(--text-muted)" opacity="0.3"/>
-            <circle cx="9" cy="10" r="0.5" fill="var(--accent-primary)"/>
-            <!-- Flash -->
-            <rect x="13" y="3" width="2" height="2" rx="0.5" fill="var(--text-muted)" opacity="0.5"/>
-            <!-- Shutter button -->
-            <rect x="4" y="3" width="2" height="2" rx="0.5" fill="var(--border-primary)"/>
-            <!-- Chart grid overlay -->
-            <line x1="4" y1="8" x2="14" y2="8" stroke="var(--accent-primary)" stroke-width="0.5" opacity="0.2"/>
-            <line x1="4" y1="12" x2="14" y2="12" stroke="var(--accent-primary)" stroke-width="0.5" opacity="0.2"/>
-            <line x1="6" y1="6" x2="6" y2="14" stroke="var(--accent-primary)" stroke-width="0.5" opacity="0.2"/>
-            <line x1="12" y1="6" x2="12" y2="14" stroke="var(--accent-primary)" stroke-width="0.5" opacity="0.2"/>
-        </svg>
-    </button>
-    
-    <!-- FULLSCREEN - Expand arrows -->
-    <button class="action-btn" id="fullscreen-btn" data-tooltip="Fullscreen (F)">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <!-- Top-left corner -->
-            <path d="M1,1 L7,1" stroke="var(--text-primary)" stroke-width="1.5" stroke-linecap="round"/>
-            <path d="M1,1 L1,7" stroke="var(--text-primary)" stroke-width="1.5" stroke-linecap="round"/>
-            <!-- Top-right corner -->
-            <path d="M17,1 L11,1" stroke="var(--text-primary)" stroke-width="1.5" stroke-linecap="round"/>
-            <path d="M17,1 L17,7" stroke="var(--text-primary)" stroke-width="1.5" stroke-linecap="round"/>
-            <!-- Bottom-left corner -->
-            <path d="M1,17 L7,17" stroke="var(--text-primary)" stroke-width="1.5" stroke-linecap="round"/>
-            <path d="M1,17 L1,11" stroke="var(--text-primary)" stroke-width="1.5" stroke-linecap="round"/>
-            <!-- Bottom-right corner -->
-            <path d="M17,17 L11,17" stroke="var(--text-primary)" stroke-width="1.5" stroke-linecap="round"/>
-            <path d="M17,17 L17,11" stroke="var(--text-primary)" stroke-width="1.5" stroke-linecap="round"/>
-            <!-- Expand arrows -->
-            <path d="M3,3 L5,5" stroke="var(--accent-primary)" stroke-width="1" stroke-linecap="round" opacity="0.7"/>
-            <path d="M15,3 L13,5" stroke="var(--accent-primary)" stroke-width="1" stroke-linecap="round" opacity="0.7"/>
-            <path d="M3,15 L5,13" stroke="var(--accent-primary)" stroke-width="1" stroke-linecap="round" opacity="0.7"/>
-            <path d="M15,15 L13,13" stroke="var(--accent-primary)" stroke-width="1" stroke-linecap="round" opacity="0.7"/>
-        </svg>
-    </button>
-    
-    <!-- AI ASSISTANT - Robot with brain wave -->
-    <button class="action-btn" id="ai-assist-btn" data-tooltip="AI Assistant (Pro/Ultimate)">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <!-- Robot head -->
-            <rect x="4" y="4" width="10" height="8" rx="2" fill="var(--bg-tertiary)" stroke="#9b6cff" stroke-width="1.5"/>
-            <!-- Robot ears -->
-            <rect x="2" y="6" width="2" height="4" rx="1" fill="#9b6cff" opacity="0.7"/>
-            <rect x="14" y="6" width="2" height="4" rx="1" fill="#9b6cff" opacity="0.7"/>
-            <!-- Eyes -->
-            <circle cx="7" cy="8" r="1.5" fill="#9b6cff"/>
-            <circle cx="11" cy="8" r="1.5" fill="#9b6cff"/>
-            <!-- Brain wave -->
-            <path d="M1,12 C3,9 5,11 7,9 C9,7 11,10 13,8 C15,6 17,9 17,9" stroke="#9b6cff" stroke-width="1" fill="none" stroke-linecap="round" opacity="0.5"/>
-            <!-- Antenna -->
-            <line x1="9" y1="4" x2="9" y2="1.5" stroke="#9b6cff" stroke-width="1"/>
-            <circle cx="9" cy="1" r="1.5" fill="#9b6cff"/>
-            <!-- Sparkle -->
-            <line x1="16" y1="2" x2="16" y2="2.5" stroke="#9b6cff" stroke-width="0.5"/>
-            <line x1="16" y1="3.5" x2="16" y2="4" stroke="#9b6cff" stroke-width="0.5"/>
-            <line x1="15" y1="3" x2="15.5" y2="3" stroke="#9b6cff" stroke-width="0.5"/>
-            <line x1="16.5" y1="3" x2="17" y2="3" stroke="#9b6cff" stroke-width="0.5"/>
-        </svg>
-    </button>
-    
-    <!-- COMMUNITY CHAT - Speech bubbles -->
-    <button class="action-btn" id="community-btn" data-tooltip="Community Chat" style="display:none;">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <!-- Main bubble -->
-            <path d="M2,2 L16,2 L16,11 L12,11 L10,14 L8,11 L2,11 Z" fill="var(--bg-tertiary)" stroke="var(--accent-primary)" stroke-width="1.5" stroke-linejoin="round"/>
-            <!-- Secondary bubble -->
-            <circle cx="5" cy="6" r="1" fill="var(--accent-primary)" opacity="0.7"/>
-            <circle cx="9" cy="6" r="1" fill="var(--accent-primary)" opacity="0.7"/>
-            <circle cx="13" cy="6" r="1" fill="var(--accent-primary)" opacity="0.7"/>
-            <!-- Online indicator -->
-            <circle cx="15" cy="1.5" r="2" fill="var(--up-color)" stroke="var(--bg-primary)" stroke-width="1"/>
-            <!-- Chat dots -->
-            <line x1="4" y1="8" x2="14" y2="8" stroke="var(--text-muted)" stroke-width="0.5" opacity="0.3"/>
-            <line x1="6" y1="9.5" x2="12" y2="9.5" stroke="var(--text-muted)" stroke-width="0.5" opacity="0.3"/>
-        </svg>
-        <span class="news-dot" id="community-notification" style="display:none;"></span>
-    </button>
+  </button>
+
+  <!-- DRAWING TOOLS -->
+  <button class="action-btn" id="drawing-tools-btn" data-tooltip="Drawing Tools (Ctrl+D)">
+    <i class="fas fa-pencil-alt"></i>
+  </button>
+
+  <!-- MARKET DEPTH -->
+  <button class="action-btn" id="market-depth-btn" data-tooltip="Market Depth (Ctrl+M)">
+    <i class="fas fa-layer-group"></i>
+  </button>
+
+  <!-- NEWS -->
+  <button class="action-btn" id="news-btn" data-tooltip="Coinpedia News (Ctrl+N)">
+    <i class="fas fa-newspaper"></i>
+    <span class="news-dot" id="news-indicator"></span>
+  </button>
+
+  <!-- ALERTS -->
+  <button class="action-btn" id="alerts-btn" data-tooltip="Price Alerts (Ctrl+A)">
+    <i class="fas fa-bell"></i>
+    <span class="action-badge hidden" id="alert-count">0</span>
+  </button>
+
+  <!-- WATCHLIST -->
+  <button class="action-btn" id="watchlist-btn" data-tooltip="Watchlist (Ctrl+W)">
+    <i class="fas fa-star"></i>
+  </button>
+
+  <!-- TRADE JOURNAL -->
+  <button class="action-btn" id="trade-journal-btn" data-tooltip="Trade Journal (Ctrl+J)">
+    <i class="fas fa-book"></i>
+  </button>
+
+  <!-- BACKTEST -->
+  <button class="action-btn" id="backtest-btn" data-tooltip="Backtest (Ctrl+B)">
+    <i class="fas fa-flask"></i>
+  </button>
+
+  <div class="header-divider"></div>
+
+  <!-- ===== NEW: GUIDE BUTTON ===== -->
+  <a href="/pillar-guides/technical-analysis/index.html" class="action-btn" id="guide-btn" data-tooltip="Technical Analysis Guide (Ctrl+E)" style="color:var(--accent-primary);">
+    <i class="fas fa-graduation-cap"></i>
+  </a>
+
+  <!-- SCREENSHOT -->
+  <button class="action-btn" id="screenshot-btn" data-tooltip="Screenshot (Ctrl+S)">
+    <i class="fas fa-camera"></i>
+  </button>
+
+  <!-- FULLSCREEN -->
+  <button class="action-btn" id="fullscreen-btn" data-tooltip="Fullscreen (F)">
+    <i class="fas fa-expand"></i>
+  </button>
+
+  <!-- AI ASSISTANT -->
+  <button class="action-btn" id="ai-assist-btn" data-tooltip="AI Assistant (Pro/Ultimate)">
+    <i class="fas fa-robot"></i>
+  </button>
+
+  <!-- COMMUNITY CHAT -->
+  <button class="action-btn" id="community-btn" data-tooltip="Community Chat" style="display:none;">
+    <i class="fas fa-comments"></i>
+    <span class="news-dot" id="community-notification" style="display:none;"></span>
+  </button>
 <!-- ============================================
 ADD THIS TO header-right IN index.html
 ============================================ -->
