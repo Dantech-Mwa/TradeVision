@@ -1,0 +1,36 @@
+name: Auto-Generate Daily Analysis
+
+on:
+  schedule:
+    - cron: '0 8 * * *'   # Runs daily at 8:00 AM UTC
+    - cron: '0 20 * * *'  # Runs daily at 8:00 PM UTC
+  workflow_dispatch:      # Allows manual trigger from GitHub
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      
+      - name: Install dependencies
+        run: |
+          pip install requests
+      
+      - name: Generate daily analysis
+        run: |
+          python auto-blog-generator.py
+      
+      - name: Commit and push changes
+        run: |
+          git config user.name "TradeVision Bot"
+          git config user.email "bot@tradevisionpro.online"
+          git add pillar-guides/technical-analysis/daily-analysis/
+          git commit -m "Auto-generated daily analysis $(date +'%Y-%m-%d %H:%M')" || echo "No changes to commit"
+          git push
