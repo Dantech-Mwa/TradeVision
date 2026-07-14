@@ -1,10 +1,10 @@
-name: Auto-Generate Daily Analysis
+name: Auto-Generate Daily Analysis (50+ Assets)
 
 on:
   schedule:
-    - cron: '0 8 * * *'
-    - cron: '0 20 * * *'
-  workflow_dispatch:
+    - cron: '*/30 * * * *'   # Every 30 minutes
+    - cron: '0 0 * * *'      # Also run at midnight to reset
+  workflow_dispatch:          # Manual trigger
 
 permissions:
   contents: write
@@ -12,6 +12,7 @@ permissions:
 jobs:
   generate:
     runs-on: ubuntu-latest
+    timeout-minutes: 15       # 50 assets take ~5-8 minutes
     
     steps:
       - name: Checkout repository
@@ -28,7 +29,7 @@ jobs:
         run: |
           pip install requests matplotlib pandas
       
-      - name: Generate daily analysis
+      - name: Generate 50+ asset analyses
         run: |
           python auto-blog-generator.py
       
@@ -37,7 +38,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add pillar-guides/technical-analysis/daily-analysis/
-          git commit -m "Auto-generated daily analysis $(date +'%Y-%m-%d %H:%M')" || echo "No changes to commit"
+          git commit -m "Auto-generated analysis for $(date +'%Y-%m-%d %H:%M') - 50+ assets" || echo "No changes to commit"
           git push
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
