@@ -227,7 +227,11 @@ def generate_analysis(symbol, stats, klines, price_data=None):
     elif trend == 'bearish' and signal == 'HOLD':
         signal = 'SELL'
         confidence += 20
-     excerpt = f"{symbol.replace('USDT', '')} is trading at ${current_price:,.2f} with {trend} trend. RSI at {rsi:.1f}. {signal} signal with {confidence}% confidence."
+    
+    # Create excerpt
+    symbol_name = symbol.replace('USDT', '')
+    excerpt = f"{symbol_name} is trading at ${current_price:,.2f} with {trend} trend. RSI at {rsi:.1f}. {signal} signal with {confidence}% confidence."
+    
     return {
         'symbol': symbol,
         'date': datetime.now().strftime('%Y-%m-%d'),
@@ -246,11 +250,11 @@ def generate_analysis(symbol, stats, klines, price_data=None):
         'signal': signal,
         'confidence': min(confidence, 100),
         'signal_reason': signal_reason,
-        'excerpt': excerpt 
+        'excerpt': excerpt
     }
 
 # ============================================
-# HTML GENERATION - COMPLETELY FIXED
+# HTML GENERATION
 # ============================================
 
 def generate_html(report, chart_base64):
@@ -614,6 +618,7 @@ def main():
                 'date': now.strftime('%b %d, %Y'),
                 'time': report['time'],
                 'title': f'{symbol.replace("USDT", "")} - {report["trend"].capitalize()} at ${report["price"]:,.2f}',
+                'excerpt': report['excerpt'],  # <-- ADDED excerpt field
                 'price': f'{report["price"]:,.2f}',
                 'change': f'{report["change_pct"]:.2f}',
                 'signal': report['signal']
