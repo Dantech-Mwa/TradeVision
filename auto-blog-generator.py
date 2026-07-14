@@ -17,51 +17,20 @@ BINANCE_API = 'https://api.binance.us/api/v3'
 
 # 50+ Popular Assets from Binance
 TOP_SYMBOLS = [
-    # Top 10
     'BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT',
     'ADAUSDT', 'DOGEUSDT', 'DOTUSDT', 'LINKUSDT', 'AVAXUSDT',
-    # Next 20
     'MATICUSDT', 'UNIUSDT', 'ATOMUSDT', 'LTCUSDT', 'BCHUSDT',
     'NEARUSDT', 'FILUSDT', 'APTUSDT', 'ARBUSDT', 'OPUSDT',
     'INJUSDT', 'SUIUSDT', 'SEIUSDT', 'RNDRUSDT', 'GRTUSDT',
     'MKRUSDT', 'AAVEUSDT', 'VETUSDT', 'ICPUSDT', 'FTMUSDT',
-    # More altcoins
     'ALGOUSDT', 'EGLDUSDT', 'XLMUSDT', 'HBARUSDT', 'QNTUSDT',
     'SNXUSDT', 'EOSUSDT', 'THETAUSDT', 'KAVAUSDT', 'ZECUSDT',
     'XTZUSDT', 'MANAUSDT', 'SANDUSDT', 'GALAUSDT', 'AXSUSDT',
     'CHZUSDT', 'APEUSDT', 'ARUSDT', 'RUNEUSDT', 'FLOWUSDT',
     'NEOUSDT', 'IOTAUSDT', 'KSMUSDT', 'XMRUSDT', 'ETCUSDT',
-    # High-volume additions
     'TRXUSDT', 'TONUSDT', 'PEPEUSDT', 'WLDUSDT', 'ENAUSDT',
     'ONDOUSDT', 'FETUSDT', 'TAOUSDT', 'HYPEUSDT', 'SHIBUSDT',
-    'FLOKIUSDT', 'MEMEUSDT', 'ORDIUSDT', 'STXUSDT', 'WIFUSDT',
-    'POPCATUSDT', 'PENDLEUSDT', 'IMXUSDT', 'RENDERUSDT', 'STRKUSDT',
-    'TIAUSDT', 'POLUSDT', 'KASUSDT', 'CFXUSDT', 'ROSEUSDT',
-    'ZKUSDT', 'GMXUSDT', 'DYDXUSDT', 'CRVUSDT', 'COMPUSDT',
-    'LDOUSDT', 'ENSUSDT', 'MASKUSDT', '1INCHUSDT', 'ZROUSDT',
-    'CKBUSDT', 'BLURUSDT', 'JUPUSDT', 'JTOUSDT', 'BEAMUSDT',
-    'ONTUSDT', 'ZILUSDT', 'BATUSDT', 'RVNUSDT', 'DASHUSDT',
-    'WAVESUSDT', 'YFIUSDT', 'SUSHIUSDT', 'OMGUSDT', 'IOSTUSDT',
-    'DGBUSDT', 'BANDUSDT', 'STORJUSDT', 'KNCUSDT', 'SCUSDT',
-    'CELRUSDT', 'HOTUSDT', 'REEFUSDT', 'ANKRUSDT', 'STMXUSDT',
-    'COTIUSDT', 'ONGUSDT', 'DENTUSDT', 'CHRUSDT', 'MTLUSDT',
-    'TURBOUSDT', 'BRETTUSDT', 'MEWUSDT', 'MOODENGUSDT', 'AIXBTUSDT',
-    'GOATUSDT', 'NEIROUSDT', 'ACTUSDT', 'GRASSUSDT', 'SWARMSUSDT',
-    'BERAUSDT', 'HYPERUSDT', 'VANAUSDT', 'FARTCOINUSDT', 'MOONUSDT',
-    'CATUSDT', 'DOGUSDT', 'LUNAUSDT', 'USTCUSDT', 'ALICEUSDT',
-    'KDAUSDT', 'SYSUSDT', 'ONEUSDT', 'ZENUSDT', 'SKLUSDT',
-    'POWRUSDT', 'GLMRUSDT', 'MAGICUSDT', 'API3USDT', 'PROMUSDT',
-    'IDUSDT', 'HOOKUSDT', 'HIGHUSDT', 'EDUUSDT', 'NTRNUSDT',
-    'PHBUSDT', 'ACEUSDT', 'OMUSDT', 'MYROUSDT', 'PEOPLEUSDT',
-    'SNTUSDT', 'REQUSDT', 'LOOMUSDT', 'AMBUSDT', 'FUNUSDT',
-    'DATAUSDT', 'VTHOUSDT', 'MDTUSDT', 'KEYUSDT', 'AKTUSDT',
-    'SCRUSDT', 'LISTAUSDT', 'NOTUSDT', 'AEVOUSDT', 'METISUSDT',
-    'MANTAUSDT', 'ALTUSDT', 'NFPUSDT', 'XAIUSDT', 'DYMUSDT',
-    'OMNIUSDT', 'ZENTUSDT', 'IOUSDT', 'BOMEUSDT', 'SLERFUSDT',
-    'PORTALUSDT', 'PIXELUSDT', 'MERLUSDT', 'STEEMUSDT', 'ARKUSDT',
-    'IQUSDT', 'BICOUSDT', 'FLMUSDT', 'UMAUSDT', 'GTCUSDT',
-    'DARUSDT', 'CTKUSDT', 'AGIXUSDT', 'OCEANUSDT', 'PDAUSDT',
-    'REZUSDT', 'BBUSDT'
+    'FLOKIUSDT', 'MEMEUSDT', 'ORDIUSDT', 'STXUSDT', 'WIFUSDT'
 ]
 
 OUTPUT_DIR = 'pillar-guides/technical-analysis/daily-analysis'
@@ -71,7 +40,6 @@ OUTPUT_DIR = 'pillar-guides/technical-analysis/daily-analysis'
 # ============================================
 
 def fetch_all_prices():
-    """Fetch all prices in one API call"""
     url = f"{BINANCE_API}/ticker/price"
     try:
         response = requests.get(url, timeout=15)
@@ -82,7 +50,6 @@ def fetch_all_prices():
         return {}
 
 def fetch_all_24hr_stats():
-    """Fetch all 24hr stats in one API call"""
     url = f"{BINANCE_API}/ticker/24hr"
     try:
         response = requests.get(url, timeout=15)
@@ -93,7 +60,6 @@ def fetch_all_24hr_stats():
         return {}
 
 def fetch_klines(symbol, interval='1d', limit=30):
-    """Fetch OHLCV data for chart"""
     url = f"{BINANCE_API}/klines?symbol={symbol}&interval={interval}&limit={limit}"
     try:
         response = requests.get(url, timeout=10)
@@ -115,7 +81,6 @@ def fetch_klines(symbol, interval='1d', limit=30):
 # ============================================
 
 def generate_chart(symbol, klines):
-    """Generate chart quickly"""
     if not klines or len(klines) < 5:
         return None
     
@@ -216,7 +181,6 @@ def find_support_resistance(klines):
     return {'resistance': round(resistance, 2), 'support': round(support, 2)}
 
 def generate_analysis(symbol, stats, klines, price_data=None):
-    """Generate analysis quickly"""
     if symbol in stats:
         s = stats[symbol]
         current_price = float(s.get('lastPrice', 0))
@@ -285,7 +249,7 @@ def generate_analysis(symbol, stats, klines, price_data=None):
     }
 
 # ============================================
-# HTML GENERATION - FIXED VERSION
+# HTML GENERATION - COMPLETELY FIXED
 # ============================================
 
 def generate_html(report, chart_base64):
@@ -301,6 +265,25 @@ def generate_html(report, chart_base64):
     change_class = 'up' if report['change_pct'] > 0 else 'down'
     
     chart_img = f"<img src='data:image/png;base64,{chart_base64}' alt='{symbol_name} Price Chart' style='width:100%;border-radius:12px;' />" if chart_base64 else "<p style='color:var(--text-muted);text-align:center;'>📊 Chart unavailable</p>"
+    
+    # Use a separate string for the JavaScript to avoid f-string issues
+    js_code = """
+  const themeToggle = document.getElementById('themeToggle');
+  const themeIcon = document.getElementById('themeIcon');
+  const html = document.documentElement;
+  
+  const savedTheme = localStorage.getItem('tv-theme') || 'dark';
+  html.setAttribute('data-theme', savedTheme);
+  themeIcon.className = savedTheme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+  
+  themeToggle.addEventListener('click', function() {
+    const current = html.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    html.setAttribute('data-theme', next);
+    localStorage.setItem('tv-theme', next);
+    themeIcon.className = next === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+  });
+"""
     
     return f"""<!DOCTYPE html>
 <html lang="en" data-theme="dark">
@@ -567,21 +550,7 @@ def generate_html(report, chart_base64):
 </footer>
 
 <script>
-  const themeToggle = document.getElementById('themeToggle');
-  const themeIcon = document.getElementById('themeIcon');
-  const html = document.documentElement;
-  
-  const savedTheme = localStorage.getItem('tv-theme') || 'dark';
-  html.setAttribute('data-theme', savedTheme);
-  themeIcon.className = savedTheme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
-  
-  themeToggle.addEventListener('click', function() {
-    const current = html.getAttribute('data-theme');
-    const next = current === 'dark' ? 'light' : 'dark';
-    html.setAttribute('data-theme', next);
-    localStorage.setItem('tv-theme', next);
-    themeIcon.className = next === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
-  });
+{js_code}
 </script>
 
 </body>
