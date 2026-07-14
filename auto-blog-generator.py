@@ -227,7 +227,7 @@ def generate_analysis(symbol, stats, klines, price_data=None):
     elif trend == 'bearish' and signal == 'HOLD':
         signal = 'SELL'
         confidence += 20
-    
+     excerpt = f"{symbol.replace('USDT', '')} is trading at ${current_price:,.2f} with {trend} trend. RSI at {rsi:.1f}. {signal} signal with {confidence}% confidence."
     return {
         'symbol': symbol,
         'date': datetime.now().strftime('%Y-%m-%d'),
@@ -245,7 +245,8 @@ def generate_analysis(symbol, stats, klines, price_data=None):
         'support': levels['support'],
         'signal': signal,
         'confidence': min(confidence, 100),
-        'signal_reason': signal_reason
+        'signal_reason': signal_reason,
+        'excerpt': excerpt 
     }
 
 # ============================================
