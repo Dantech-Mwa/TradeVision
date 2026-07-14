@@ -10,7 +10,7 @@ from datetime import datetime
 # ============================================
 
 TOP_SYMBOLS = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT']
-BINANCE_API = 'https://api1.binance.com/api/v3'
+BINANCE_API = 'https://api.binance.us/api/v3'
 OUTPUT_DIR = 'pillar-guides/technical-analysis/daily-analysis'
 
 # ============================================
