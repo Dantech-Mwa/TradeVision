@@ -3,66 +3,99 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Daily Market Analysis Blog | TradeVision Pro</title>
-  <meta name="description" content="Daily crypto market analysis blog with real-time charts, technical indicators, and trading signals. Free daily analysis for BTC, ETH, SOL, and more." />
+  <title>Daily Market Analysis | TradeVision Pro</title>
+  <meta name="description" content="Real-time daily market analysis for 50+ crypto assets. Professional technical analysis, price predictions, and trading signals. Updated every 30 minutes." />
   <link rel="canonical" href="https://tradevisionpro.online/pillar-guides/technical-analysis/daily-analysis/" />
   
-  <!-- Fonts & Icons -->
+  <meta property="og:title" content="Daily Market Analysis | TradeVision Pro" />
+  <meta property="og:description" content="Professional daily market analysis for 50+ crypto assets. Real-time prices, technical indicators, and trading signals." />
+  <meta property="og:image" content="https://tradevisionpro.online/profile.png" />
+  <meta property="og:url" content="https://tradevisionpro.online/pillar-guides/technical-analysis/daily-analysis/" />
+  <meta property="og:type" content="website" />
+  
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Daily Market Analysis | TradeVision Pro" />
+  <meta name="twitter:description" content="Professional daily market analysis for 50+ crypto assets." />
+  <meta name="twitter:image" content="https://tradevisionpro.online/profile.png" />
+  
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   
   <style>
     :root {
-      --bg-primary: #0d1117;
-      --bg-secondary: #161b22;
-      --bg-tertiary: #1c2128;
-      --text-primary: #e6edf3;
-      --text-secondary: #c9d1d9;
-      --text-muted: #8b949e;
-      --accent-primary: #58a6ff;
-      --border-primary: #30363d;
-      --radius-xl: 16px;
-      --radius-lg: 12px;
+      --bg-primary: #0a0e17;
+      --bg-secondary: #111827;
+      --bg-tertiary: #1a2332;
+      --bg-card: #0f1729;
+      --bg-card-hover: #1a2744;
+      --text-primary: #f0f4ff;
+      --text-secondary: #b0c4e8;
+      --text-muted: #6b8bb0;
+      --accent-primary: #4f8cff;
+      --accent-secondary: #7c6bff;
+      --accent-glow: rgba(79, 140, 255, 0.15);
+      --gradient-main: linear-gradient(135deg, #4f8cff, #7c6bff);
+      --up-color: #00d4aa;
+      --down-color: #ff6b8a;
+      --border-primary: rgba(79, 140, 255, 0.12);
+      --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.5);
+      --shadow-glow: 0 0 60px rgba(79, 140, 255, 0.05);
+      --radius-xl: 20px;
+      --radius-lg: 14px;
+      --transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    
+
     [data-theme="light"] {
-      --bg-primary: #ffffff;
-      --bg-secondary: #f6f8fa;
-      --bg-tertiary: #f0f2f5;
-      --text-primary: #1f2328;
-      --text-secondary: #424a53;
-      --text-muted: #656d76;
-      --border-primary: #d0d7de;
+      --bg-primary: #f0f4ff;
+      --bg-secondary: #ffffff;
+      --bg-tertiary: #e8edf8;
+      --bg-card: #ffffff;
+      --bg-card-hover: #f5f8ff;
+      --text-primary: #0a1628;
+      --text-secondary: #2a3a5a;
+      --text-muted: #6b8bb0;
+      --border-primary: rgba(79, 140, 255, 0.15);
+      --shadow-lg: 0 20px 60px rgba(79, 140, 255, 0.08);
+      --shadow-glow: 0 0 60px rgba(79, 140, 255, 0.03);
     }
-    
+
     * { margin: 0; padding: 0; box-sizing: border-box; }
     
     body {
       font-family: 'Inter', -apple-system, sans-serif;
       background: var(--bg-primary);
       color: var(--text-primary);
-      line-height: 1.7;
-      transition: background 0.3s, color 0.3s;
+      line-height: 1.6;
+      transition: background var(--transition), color var(--transition);
+      min-height: 100vh;
     }
-    
-    /* Header */
+
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-secondary); }
+    ::-webkit-scrollbar-thumb { background: var(--accent-primary); border-radius: 3px; }
+
+    a { color: var(--accent-primary); text-decoration: none; transition: color var(--transition); }
+    a:hover { color: var(--accent-secondary); }
+
     .header {
       background: var(--bg-secondary);
       border-bottom: 1px solid var(--border-primary);
-      padding: 12px 24px;
+      padding: 14px 24px;
       position: sticky;
       top: 0;
       z-index: 1000;
+      backdrop-filter: blur(20px);
+      transition: background var(--transition), border-color var(--transition);
     }
-    
+
     .header-content {
-      max-width: 1200px;
+      max-width: 1400px;
       margin: 0 auto;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
-    
+
     .logo {
       display: flex;
       align-items: center;
@@ -71,46 +104,70 @@
       color: var(--text-primary);
       font-weight: 800;
       font-size: 20px;
+      transition: color var(--transition);
     }
-    
+
+    .logo svg { flex-shrink: 0; }
     .logo-pro {
-      background: rgba(88, 166, 255, 0.1);
-      color: var(--accent-primary);
-      padding: 2px 8px;
-      border-radius: 4px;
+      background: var(--gradient-main);
+      color: white;
+      padding: 2px 10px;
+      border-radius: 6px;
       font-size: 10px;
       font-weight: 700;
+      letter-spacing: 0.5px;
     }
-    
+
     .nav-links {
       display: flex;
-      gap: 20px;
+      gap: 28px;
       align-items: center;
     }
-    
+
     .nav-links a {
       color: var(--text-muted);
       text-decoration: none;
       font-size: 14px;
       font-weight: 500;
-      transition: color 0.2s;
+      transition: color var(--transition);
+      position: relative;
     }
-    
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--gradient-main);
+      transition: width var(--transition);
+    }
+
+    .nav-links a:hover::after,
+    .nav-links a.active::after { width: 100%; }
+
     .nav-links a:hover { color: var(--text-primary); }
     .nav-links a.active { color: var(--accent-primary); }
-    
+
     .nav-cta {
-      background: var(--accent-primary);
+      background: var(--gradient-main);
       color: white !important;
-      padding: 8px 20px;
-      border-radius: 8px;
+      padding: 10px 24px;
+      border-radius: 10px;
       font-weight: 600 !important;
       font-size: 13px !important;
-      transition: opacity 0.2s;
+      transition: all var(--transition);
+      box-shadow: 0 4px 20px rgba(79, 140, 255, 0.3);
     }
-    
-    .nav-cta:hover { opacity: 0.85; color: white !important; }
-    
+
+    .nav-cta::after { display: none !important; }
+    .nav-cta:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(79, 140, 255, 0.4);
+      opacity: 0.9;
+    }
+
     .menu-toggle {
       display: none;
       background: none;
@@ -118,77 +175,230 @@
       color: var(--text-primary);
       font-size: 24px;
       cursor: pointer;
+      transition: color var(--transition);
     }
-    
-    /* Hero */
+
+    .theme-toggle-btn {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-primary);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--text-secondary);
+      font-size: 17px;
+      transition: all var(--transition);
+    }
+
+    .theme-toggle-btn:hover {
+      border-color: var(--accent-primary);
+      color: var(--accent-primary);
+      background: var(--accent-glow);
+      transform: rotate(30deg);
+    }
+
     .hero {
       text-align: center;
-      padding: 48px 24px 32px;
+      padding: 60px 24px 40px;
       max-width: 900px;
       margin: 0 auto;
+      position: relative;
     }
-    
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -100px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+      pointer-events: none;
+      opacity: 0.5;
+    }
+
     .hero-badge {
       display: inline-block;
-      background: var(--accent-muted);
+      background: var(--accent-glow);
       color: var(--accent-primary);
-      padding: 4px 14px;
-      border-radius: 20px;
-      font-size: 11px;
+      padding: 6px 20px;
+      border-radius: 30px;
+      font-size: 12px;
       font-weight: 600;
-      margin-bottom: 12px;
+      margin-bottom: 16px;
+      letter-spacing: 0.5px;
+      border: 1px solid var(--border-primary);
+      position: relative;
+      z-index: 1;
     }
-    
+
     .hero h1 {
-      font-size: 40px;
+      font-size: 52px;
       font-weight: 900;
       line-height: 1.1;
-      margin-bottom: 12px;
+      margin-bottom: 16px;
+      position: relative;
+      z-index: 1;
     }
-    
-    .hero h1 span { background: linear-gradient(135deg, var(--accent-primary), #9b6cff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    
+
+    .hero h1 span {
+      background: var(--gradient-main);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
     .hero p {
       font-size: 18px;
       color: var(--text-muted);
       max-width: 700px;
-      margin: 0 auto;
+      margin: 0 auto 8px;
+      position: relative;
+      z-index: 1;
     }
-    
+
     .hero-stats {
       display: flex;
       justify-content: center;
-      gap: 40px;
-      margin-top: 24px;
-      flex-wrap: wrap;
+      gap: 50px;
+      margin-top: 30px;
+      position: relative;
+      z-index: 1;
     }
-    
+
     .hero-stat { text-align: center; }
-    .hero-stat-number { font-size: 28px; font-weight: 800; color: var(--accent-primary); }
-    .hero-stat-label { font-size: 12px; color: var(--text-muted); }
-    
-    /* Blog Posts Grid */
-    .blog-grid {
-      max-width: 1100px;
-      margin: 0 auto 60px;
+    .hero-stat-number {
+      font-size: 32px;
+      font-weight: 800;
+      background: var(--gradient-main);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-stat-label { font-size: 12px; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    .market-bar {
+      max-width: 1400px;
+      margin: 0 auto 32px;
       padding: 0 24px;
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: 24px;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
     }
-    
+
+    .market-bar-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border-primary);
+      border-radius: var(--radius-lg);
+      padding: 14px 18px;
+      text-align: center;
+      transition: all var(--transition);
+      cursor: default;
+    }
+
+    .market-bar-item:hover {
+      border-color: var(--accent-primary);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-glow);
+    }
+
+    .market-bar-item .symbol {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .market-bar-item .price {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-top: 2px;
+      font-family: 'SF Mono', monospace;
+    }
+
+    .market-bar-item .change {
+      font-size: 12px;
+      font-weight: 600;
+      margin-top: 2px;
+    }
+
+    .market-bar-item .change.up { color: var(--up-color); }
+    .market-bar-item .change.down { color: var(--down-color); }
+
+    .blog-section {
+      max-width: 1400px;
+      margin: 0 auto 60px;
+      padding: 0 24px;
+    }
+
+    .blog-section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .blog-section-header h2 {
+      font-size: 24px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .blog-section-header h2 i {
+      color: var(--accent-primary);
+      font-size: 20px;
+    }
+
+    .blog-section-header .update-time {
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .blog-section-header .update-time .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--up-color);
+      animation: pulse-dot 2s infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.3; transform: scale(0.8); }
+    }
+
+    .blog-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 20px;
+    }
+
     .blog-card {
-      background: var(--bg-secondary);
+      background: var(--bg-card);
       border: 1px solid var(--border-primary);
       border-radius: var(--radius-xl);
       padding: 24px;
       text-decoration: none;
       color: var(--text-primary);
-      transition: all 0.3s;
+      transition: all var(--transition);
       position: relative;
       overflow: hidden;
+      cursor: pointer;
     }
-    
+
     .blog-card::before {
       content: '';
       position: absolute;
@@ -196,131 +406,163 @@
       left: 0;
       right: 0;
       height: 3px;
-      background: linear-gradient(90deg, var(--accent-primary), #9b6cff);
+      background: var(--gradient-main);
       opacity: 0;
-      transition: opacity 0.3s;
+      transition: opacity var(--transition);
     }
-    
+
+    .blog-card::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -50%;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+      opacity: 0;
+      transition: opacity var(--transition);
+      pointer-events: none;
+    }
+
     .blog-card:hover {
-      transform: translateY(-4px);
+      transform: translateY(-6px);
       border-color: var(--accent-primary);
-      box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+      box-shadow: var(--shadow-lg), var(--shadow-glow);
     }
-    
+
     .blog-card:hover::before { opacity: 1; }
-    
-    .blog-card .date {
-      font-size: 12px;
-      color: var(--text-muted);
-      margin-bottom: 8px;
+    .blog-card:hover::after { opacity: 0.3; }
+
+    .blog-card .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
     }
-    
+
     .blog-card .symbol-badge {
-      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 14px;
+      border-radius: 20px;
+      background: var(--accent-glow);
+      color: var(--accent-primary);
+      border: 1px solid var(--border-primary);
+      letter-spacing: 0.5px;
+    }
+
+    .blog-card .signal-badge {
       font-size: 10px;
       font-weight: 700;
-      padding: 2px 10px;
-      border-radius: 10px;
-      background: var(--accent-muted);
-      color: var(--accent-primary);
-      margin-bottom: 10px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
-    
-    .blog-card h3 {
+
+    .blog-card .signal-badge.buy {
+      background: rgba(0, 212, 170, 0.15);
+      color: var(--up-color);
+    }
+
+    .blog-card .signal-badge.sell {
+      background: rgba(255, 107, 138, 0.15);
+      color: var(--down-color);
+    }
+
+    .blog-card .signal-badge.hold {
+      background: rgba(255, 193, 7, 0.15);
+      color: #ffc107;
+    }
+
+    .blog-card .card-title {
       font-size: 18px;
       font-weight: 700;
       margin-bottom: 8px;
       line-height: 1.3;
+      transition: color var(--transition);
     }
-    
-    .blog-card .excerpt {
+
+    .blog-card:hover .card-title { color: var(--accent-primary); }
+
+    .blog-card .card-excerpt {
       font-size: 14px;
       color: var(--text-muted);
       line-height: 1.6;
-      margin-bottom: 12px;
+      margin-bottom: 16px;
       display: -webkit-box;
-      -webkit-line-clamp: 3;
+      -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
+      min-height: 44px;
     }
-    
-    .blog-card .signal {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 12px;
-      font-weight: 600;
-    }
-    
-    .blog-card .signal.buy { color: var(--up-color); }
-    .blog-card .signal.sell { color: var(--down-color); }
-    .blog-card .signal.hold { color: #d29922; }
-    
-    .blog-card .read-more {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      color: var(--accent-primary);
-      font-weight: 600;
-      font-size: 13px;
-      margin-top: 8px;
-      transition: gap 0.2s;
-    }
-    
-    .blog-card:hover .read-more { gap: 12px; }
-    
-    .blog-card .price {
-      font-size: 24px;
-      font-weight: 800;
-      color: var(--text-primary);
-      font-family: 'SF Mono', monospace;
-    }
-    
-    .blog-card .change {
-      font-size: 13px;
-      font-weight: 600;
-    }
-    
-    .blog-card .change.up { color: var(--up-color); }
-    .blog-card .change.down { color: var(--down-color); }
-    
-    /* Blog Cards - Alternative Layout */
-    .blog-list {
-      max-width: 1000px;
-      margin: 0 auto 60px;
-      padding: 0 24px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-    
-    .blog-list-item {
+
+    .blog-card .card-footer {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 16px 20px;
-      background: var(--bg-secondary);
-      border: 1px solid var(--border-primary);
-      border-radius: var(--radius-lg);
-      text-decoration: none;
-      color: var(--text-primary);
-      transition: all 0.2s;
+      padding-top: 14px;
+      border-top: 1px solid var(--border-primary);
     }
-    
-    .blog-list-item:hover {
-      border-color: var(--accent-primary);
-      transform: translateX(4px);
+
+    .blog-card .card-footer .price {
+      font-size: 20px;
+      font-weight: 800;
+      font-family: 'SF Mono', monospace;
     }
-    
-    .blog-list-item .info { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
-    .blog-list-item .date { font-size: 12px; color: var(--text-muted); min-width: 80px; }
-    .blog-list-item .title { font-weight: 600; font-size: 15px; }
-    .blog-list-item .arrow { color: var(--text-muted); transition: transform 0.2s; }
-    .blog-list-item:hover .arrow { transform: translateX(4px); color: var(--accent-primary); }
-    
-    /* Footer */
+
+    .blog-card .card-footer .change {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .blog-card .card-footer .change.up { color: var(--up-color); }
+    .blog-card .card-footer .change.down { color: var(--down-color); }
+
+    .blog-card .card-footer .read-more {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent-primary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all var(--transition);
+    }
+
+    .blog-card:hover .card-footer .read-more {
+      gap: 12px;
+      color: var(--accent-secondary);
+    }
+
+    .blog-card .card-date {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 8px;
+    }
+
+    .loading-state {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+    }
+
+    .loading-state .spinner {
+      width: 48px;
+      height: 48px;
+      border: 3px solid var(--border-primary);
+      border-top-color: var(--accent-primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 16px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
     .footer {
-      max-width: 1200px;
+      max-width: 1400px;
       margin: 0 auto;
       padding: 40px 24px 24px;
       border-top: 1px solid var(--border-primary);
@@ -328,35 +570,45 @@
       color: var(--text-muted);
       font-size: 13px;
     }
-    
+
     .footer-links {
       display: flex;
       justify-content: center;
-      gap: 20px;
+      gap: 24px;
       margin-bottom: 12px;
       flex-wrap: wrap;
     }
-    
-    .footer-links a { color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
-    .footer-links a:hover { color: var(--text-primary); }
-    
-    .theme-toggle {
-      background: var(--bg-tertiary);
-      border: 1px solid var(--border-primary);
-      border-radius: 50%;
-      width: 36px;
-      height: 36px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      color: var(--text-secondary);
-      font-size: 16px;
-      transition: all 0.3s;
+
+    .footer-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color var(--transition);
     }
-    
-    .theme-toggle:hover { border-color: var(--accent-primary); color: var(--accent-primary); }
-    
+
+    .footer-links a:hover { color: var(--text-primary); }
+
+    .back-to-top {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--gradient-main);
+      color: white;
+      border: none;
+      font-size: 18px;
+      cursor: pointer;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all var(--transition);
+      box-shadow: 0 4px 20px rgba(79, 140, 255, 0.3);
+      z-index: 999;
+    }
+
+    .back-to-top.visible { opacity: 1; transform: translateY(0); }
+    .back-to-top:hover { transform: translateY(-4px) scale(1.05); box-shadow: 0 8px 30px rgba(79, 140, 255, 0.4); }
+
     @media (max-width: 768px) {
       .menu-toggle { display: block; }
       .nav-links {
@@ -364,31 +616,39 @@
         flex-direction: column;
         width: 100%;
         padding: 16px 0;
-        gap: 12px;
+        gap: 14px;
       }
       .nav-links.open { display: flex; }
       .header-content { flex-wrap: wrap; }
-      .hero h1 { font-size: 28px; }
+
+      .hero h1 { font-size: 32px; }
       .hero p { font-size: 15px; }
-      .hero-stats { gap: 20px; }
+      .hero-stats { gap: 24px; flex-wrap: wrap; }
+      .hero-stat-number { font-size: 24px; }
+
       .blog-grid { grid-template-columns: 1fr; }
+      .market-bar { grid-template-columns: repeat(2, 1fr); }
+
+      .blog-section-header h2 { font-size: 20px; }
+      
+      .back-to-top { bottom: 16px; right: 16px; width: 42px; height: 42px; font-size: 16px; }
     }
-    
+
     @media (max-width: 480px) {
-      .hero h1 { font-size: 22px; }
-      .blog-card { padding: 16px; }
-      .blog-list-item { flex-direction: column; align-items: flex-start; gap: 8px; }
+      .hero h1 { font-size: 26px; }
+      .blog-card { padding: 18px; }
+      .market-bar { grid-template-columns: 1fr 1fr; }
+      .market-bar-item { padding: 10px 14px; }
     }
   </style>
 </head>
-<body>
+<body data-theme="dark">
 
-<!-- Header -->
 <header class="header">
   <div class="header-content">
     <a href="/" class="logo">
       <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-        <rect width="28" height="28" rx="6" fill="#58a6ff"/>
+        <rect width="28" height="28" rx="6" fill="#4f8cff"/>
         <path d="M6 20L12 12L16 16L22 8" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
         <circle cx="22" cy="8" r="2" fill="white"/>
       </svg>
@@ -396,7 +656,7 @@
     </a>
     
     <div style="display:flex;align-items:center;gap:12px;">
-      <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+      <button class="theme-toggle-btn" id="themeToggle" aria-label="Toggle theme">
         <i class="fas fa-moon" id="themeIcon"></i>
       </button>
       <button class="menu-toggle" id="menuToggle" aria-label="Menu">
@@ -415,28 +675,36 @@
   </div>
 </header>
 
-<!-- Hero -->
 <section class="hero">
-  <span class="hero-badge">📊 Auto-Generated Daily Analysis</span>
-  <h1>Daily <span>Market Analysis</span> Blog</h1>
-  <p>Automated daily analysis for the most popular crypto assets. Get technical insights, key levels, and trading signals — all generated in real-time.</p>
+  <span class="hero-badge">📊 Live Market Analysis</span>
+  <h1>Daily <span>Market Intelligence</span></h1>
+  <p>Real-time technical analysis for 50+ crypto assets. Updated every 30 minutes with professional insights, key levels, and actionable trading signals.</p>
   <div class="hero-stats">
-    <div class="hero-stat"><div class="hero-stat-number">5+</div><div class="hero-stat-label">Assets Covered</div></div>
-    <div class="hero-stat"><div class="hero-stat-number">Daily</div><div class="hero-stat-label">Updates</div></div>
-    <div class="hero-stat"><div class="hero-stat-number">Free</div><div class="hero-stat-label">Access</div></div>
+    <div class="hero-stat"><div class="hero-stat-number">50+</div><div class="hero-stat-label">Assets Covered</div></div>
+    <div class="hero-stat"><div class="hero-stat-number">30m</div><div class="hero-stat-label">Update Frequency</div></div>
+    <div class="hero-stat"><div class="hero-stat-number">100%</div><div class="hero-stat-label">Free Access</div></div>
   </div>
 </section>
 
-<!-- Blog Posts Grid -->
-<div class="blog-grid" id="blogGrid">
-  <!-- Populated dynamically or via HTML includes -->
-  <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-muted);">
-    <i class="fas fa-spinner fa-spin" style="font-size:32px;display:block;margin-bottom:16px;"></i>
-    Loading latest analysis...
-  </div>
-</div>
+<div class="market-bar" id="marketBar"></div>
 
-<!-- Footer -->
+<section class="blog-section">
+  <div class="blog-section-header">
+    <h2><i class="fas fa-chart-line"></i> Latest Analysis</h2>
+    <div class="update-time">
+      <span class="dot"></span>
+      <span id="updateTime">Loading...</span>
+    </div>
+  </div>
+  
+  <div class="blog-grid" id="blogGrid">
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading latest market analysis...</p>
+    </div>
+  </div>
+</section>
+
 <footer class="footer">
   <div class="footer-links">
     <a href="/">Home</a>
@@ -447,8 +715,12 @@
     <a href="https://web.facebook.com/tradevisionprochart" target="_blank">Facebook</a>
     <a href="https://x.com/HeniaMwanza" target="_blank">X (Twitter)</a>
   </div>
-  <p>&copy; 2026 TradeVision Pro. All rights reserved. Built for traders, by traders.</p>
+  <p>&copy; 2026 TradeVision Pro. All rights reserved.</p>
 </footer>
+
+<button class="back-to-top" id="backToTop" aria-label="Back to top">
+  <i class="fas fa-arrow-up"></i>
+</button>
 
 <script>
   // Theme toggle
@@ -467,7 +739,7 @@
     localStorage.setItem('tv-theme', next);
     themeIcon.className = next === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
   });
-  
+
   // Mobile menu
   const menuToggle = document.getElementById('menuToggle');
   const navLinks = document.getElementById('navLinks');
@@ -476,62 +748,74 @@
   document.querySelectorAll('.nav-links a').forEach(link => {
     link.addEventListener('click', () => navLinks.classList.remove('open'));
   });
-  
-  // Fetch and display latest blog posts
+
+  // Back to top
+  const backToTop = document.getElementById('backToTop');
+  window.addEventListener('scroll', () => {
+    backToTop.classList.toggle('visible', window.scrollY > 600);
+  });
+  backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+  // Load blog posts
   async function loadBlogPosts() {
     try {
       const response = await fetch('/pillar-guides/technical-analysis/daily-analysis/posts.json');
       const posts = await response.json();
       
-      const grid = document.getElementById('blogGrid');
-      grid.innerHTML = '';
+      document.getElementById('updateTime').textContent = `Updated ${posts.length} assets • ${new Date().toLocaleTimeString()}`;
       
-      posts.forEach(post => {
-        const card = document.createElement('a');
-        card.className = 'blog-card';
-        card.href = post.url;
-        
-        const signalClass = post.signal.toLowerCase();
-        const changeClass = post.change >= 0 ? 'up' : 'down';
-        
-        card.innerHTML = `
-          <div class="date">${post.date}</div>
-          <span class="symbol-badge">${post.symbol}</span>
-          <h3>${post.title}</h3>
-          <div class="excerpt">${post.excerpt}</div>
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;">
-            <div>
-              <span class="price">$${post.price}</span>
-              <span class="change ${changeClass}">${post.change >= 0 ? '+' : ''}${post.change}%</span>
-            </div>
-            <span class="signal ${signalClass}">
-              <i class="fas ${post.signal === 'BUY' ? 'fa-arrow-up' : post.signal === 'SELL' ? 'fa-arrow-down' : 'fa-minus'}"></i>
-              ${post.signal}
-            </span>
+      // Market bar (first 6 assets)
+      const marketBar = document.getElementById('marketBar');
+      marketBar.innerHTML = posts.slice(0, 6).map(post => `
+        <div class="market-bar-item">
+          <div class="symbol">${post.symbol || 'N/A'}</div>
+          <div class="price">$${post.price || '0.00'}</div>
+          <div class="change ${parseFloat(post.change) >= 0 ? 'up' : 'down'}">
+            ${parseFloat(post.change) >= 0 ? '+' : ''}${post.change || '0.00'}%
           </div>
-          <span class="read-more">Read Analysis →</span>
-        `;
-        
-        grid.appendChild(card);
-      });
+        </div>
+      `).join('');
+      
+      // Blog grid
+      const grid = document.getElementById('blogGrid');
+      grid.innerHTML = posts.map(post => `
+        <a href="${post.url || '#'}" class="blog-card">
+          <div class="card-header">
+            <span class="symbol-badge">${post.symbol || 'N/A'}</span>
+            <span class="signal-badge ${(post.signal || 'HOLD').toLowerCase()}">${post.signal || 'HOLD'}</span>
+          </div>
+          <h3 class="card-title">${post.title || `${post.symbol || 'Asset'} Analysis`}</h3>
+          <p class="card-excerpt">${post.excerpt || `Market analysis for ${post.symbol || 'asset'} with technical indicators and key levels.`}</p>
+          <div class="card-footer">
+            <div>
+              <span class="price">$${post.price || '0.00'}</span>
+              <span class="change ${parseFloat(post.change) >= 0 ? 'up' : 'down'}">
+                ${parseFloat(post.change) >= 0 ? '+' : ''}${post.change || '0.00'}%
+              </span>
+            </div>
+            <span class="read-more">Read Analysis <i class="fas fa-arrow-right"></i></span>
+          </div>
+          <div class="card-date">${post.date || ''}</div>
+        </a>
+      `).join('');
       
     } catch (error) {
       console.error('Failed to load posts:', error);
       document.getElementById('blogGrid').innerHTML = `
-        <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-muted);">
-          <i class="fas fa-exclamation-circle" style="font-size:32px;display:block;margin-bottom:16px;"></i>
-          Unable to load latest posts. Please check back later.
-          <br><br>
-          <a href="/pillar-guides/technical-analysis/daily-analysis/2026/03/" style="color:var(--accent-primary);">
+        <div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--text-muted);">
+          <i class="fas fa-exclamation-circle" style="font-size:40px;display:block;margin-bottom:16px;opacity:0.5;"></i>
+          <p style="font-size:16px;font-weight:600;margin-bottom:8px;">Unable to load analysis</p>
+          <p style="font-size:13px;">Please check back later.</p>
+          <a href="/pillar-guides/technical-analysis/daily-analysis/2026/03/" style="display:inline-block;margin-top:16px;color:var(--accent-primary);font-weight:600;">
             View Archive →
           </a>
         </div>
       `;
     }
   }
-  
-  // Load posts
+
   loadBlogPosts();
+  setInterval(loadBlogPosts, 300000);
 </script>
 
 </body>
