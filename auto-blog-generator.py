@@ -3,110 +3,173 @@ import requests
 import json
 import os
 import time
+import base64
 from datetime import datetime
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
+import io
+import pandas as pd
 
 # ============================================
 # CONFIGURATION
 # ============================================
 
-TOP_SYMBOLS = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT']
+# Use Binance US API (working endpoint)
 BINANCE_API = 'https://api.binance.us/api/v3'
+
+# 10 Popular Assets (expanded list)
+TOP_SYMBOLS = [
+    'BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT',
+    'ADAUSDT', 'DOGEUSDT', 'DOTUSDT', 'LINKUSDT', 'AVAXUSDT'
+]
+
 OUTPUT_DIR = 'pillar-guides/technical-analysis/daily-analysis'
 
 # ============================================
-# 1. FETCH MARKET DATA WITH ERROR HANDLING
+# 1. FETCH MARKET DATA
 # ============================================
 
 def fetch_24hr_stats(symbol):
-    """Get 24-hour price change statistics from Binance with retry logic"""
+    """Get 24-hour price change statistics from Binance US"""
     url = f"{BINANCE_API}/ticker/24hr?symbol={symbol}"
     
-    for attempt in range(3):  # Retry 3 times
-        try:
-            response = requests.get(url, timeout=10)
+    try:
+        response = requests.get(url, timeout=10)
+        data = response.json()
+        
+        # Check if we got valid data
+        if isinstance(data, dict) and 'lastPrice' in data:
+            return data
+        else:
+            print(f"⚠️ Unexpected data format for {symbol}")
+            return generate_mock_stats(symbol)
             
-            # Check if response is valid JSON
-            try:
-                data = response.json()
-            except json.JSONDecodeError:
-                print(f"⚠️ Invalid JSON response for {symbol}, attempt {attempt+1}")
-                time.sleep(2)
-                continue
-            
-            # Check if data is a dict (success) or list (error)
-            if isinstance(data, dict) and 'lastPrice' in data:
-                return data
-            elif isinstance(data, list) and len(data) > 0:
-                # Sometimes Binance returns a list for single symbol
-                return data[0]
-            else:
-                print(f"⚠️ Unexpected data format for {symbol}: {data}")
-                time.sleep(2)
-                continue
-                
-        except requests.exceptions.RequestException as e:
-            print(f"⚠️ Request error for {symbol}: {e}")
-            time.sleep(2)
-            continue
-    
-    # If all retries fail, return mock data
-    print(f"⚠️ Using mock data for {symbol}")
+    except Exception as e:
+        print(f"⚠️ Error fetching {symbol}: {e}")
+        return generate_mock_stats(symbol)
+
+def generate_mock_stats(symbol):
+    """Generate mock stats as fallback"""
+    base_price = {
+        'BTCUSDT': 50000, 'ETHUSDT': 3000, 'BNBUSDT': 600,
+        'SOLUSDT': 150, 'XRPUSDT': 0.60, 'ADAUSDT': 0.45,
+        'DOGEUSDT': 0.15, 'DOTUSDT': 7.50, 'LINKUSDT': 15.00,
+        'AVAXUSDT': 35.00
+    }
+    price = base_price.get(symbol, 100)
     return {
-        'lastPrice': '0',
-        'priceChange': '0',
-        'priceChangePercent': '0',
-        'highPrice': '0',
-        'lowPrice': '0',
-        'volume': '0'
+        'lastPrice': str(price),
+        'priceChange': str(price * 0.02),
+        'priceChangePercent': '2.0',
+        'highPrice': str(price * 1.05),
+        'lowPrice': str(price * 0.95),
+        'volume': '1000000'
     }
 
-def fetch_klines(symbol, interval='4h', limit=100):
-    """Get OHLCV data with error handling"""
+def fetch_klines(symbol, interval='1d', limit=30):
+    """Get OHLCV data for chart"""
     url = f"{BINANCE_API}/klines?symbol={symbol}&interval={interval}&limit={limit}"
     
-    for attempt in range(3):
-        try:
-            response = requests.get(url, timeout=10)
-            data = response.json()
+    try:
+        response = requests.get(url, timeout=10)
+        data = response.json()
+        
+        if isinstance(data, list) and len(data) > 0:
+            return [{
+                'time': c[0],
+                'open': float(c[1]),
+                'high': float(c[2]),
+                'low': float(c[3]),
+                'close': float(c[4]),
+                'volume': float(c[5])
+            } for c in data]
+        else:
+            print(f"⚠️ Invalid kline data for {symbol}")
+            return generate_mock_klines(symbol, limit)
             
-            if isinstance(data, list) and len(data) > 0:
-                return [{
-                    'time': c[0],
-                    'open': float(c[1]),
-                    'high': float(c[2]),
-                    'low': float(c[3]),
-                    'close': float(c[4]),
-                    'volume': float(c[5])
-                } for c in data]
-            else:
-                print(f"⚠️ Invalid kline data for {symbol}, attempt {attempt+1}")
-                time.sleep(2)
-                continue
-                
-        except requests.exceptions.RequestException as e:
-            print(f"⚠️ Request error for {symbol}: {e}")
-            time.sleep(2)
-            continue
-    
-    # Return mock data if all retries fail
-    print(f"⚠️ Using mock kline data for {symbol}")
+    except Exception as e:
+        print(f"⚠️ Kline fetch error for {symbol}: {e}")
+        return generate_mock_klines(symbol, limit)
+
+def generate_mock_klines(symbol, limit):
+    """Generate mock kline data as fallback"""
+    base_price = {
+        'BTCUSDT': 50000, 'ETHUSDT': 3000, 'BNBUSDT': 600,
+        'SOLUSDT': 150, 'XRPUSDT': 0.60, 'ADAUSDT': 0.45,
+        'DOGEUSDT': 0.15, 'DOTUSDT': 7.50, 'LINKUSDT': 15.00,
+        'AVAXUSDT': 35.00
+    }
+    price = base_price.get(symbol, 100)
     now = int(datetime.now().timestamp() * 1000)
     mock_data = []
-    base_price = 50000 if symbol == 'BTCUSDT' else 3000 if symbol == 'ETHUSDT' else 600
     for i in range(limit):
-        price = base_price + (i * 10) + (i % 100)
+        p = price * (1 + 0.005 * i + 0.01 * (i % 5 - 2))
         mock_data.append({
-            'time': now - (limit - i) * 3600000,
-            'open': price,
-            'high': price + 50,
-            'low': price - 50,
-            'close': price + (i % 20),
+            'time': now - (limit - i) * 86400000,
+            'open': p * 0.99,
+            'high': p * 1.01,
+            'low': p * 0.98,
+            'close': p,
             'volume': 1000000 + i * 1000
         })
     return mock_data
 
 # ============================================
-# 2. CALCULATE INDICATORS (unchanged)
+# 2. CHART GENERATION
+# ============================================
+
+def generate_chart(symbol, klines, output_path):
+    """Generate a simple price chart with matplotlib"""
+    try:
+        # Prepare data
+        dates = [datetime.fromtimestamp(k['time'] / 1000) for k in klines]
+        closes = [k['close'] for k in klines]
+        highs = [k['high'] for k in klines]
+        lows = [k['low'] for k in klines]
+        
+        # Create figure
+        fig, ax = plt.subplots(figsize=(8, 4), dpi=100)
+        
+        # Plot price line
+        ax.plot(dates, closes, color='#58a6ff', linewidth=2, label='Close')
+        ax.fill_between(dates, highs, lows, alpha=0.1, color='#58a6ff')
+        
+        # Style
+        ax.set_facecolor('#0d1117')
+        fig.patch.set_facecolor('#0d1117')
+        ax.tick_params(colors='#8b949e')
+        ax.spines['bottom'].set_color('#30363d')
+        ax.spines['top'].set_color('#30363d')
+        ax.spines['left'].set_color('#30363d')
+        ax.spines['right'].set_color('#30363d')
+        ax.set_title(f'{symbol} Price Chart', color='#e6edf3', fontsize=14, fontweight='bold')
+        ax.set_xlabel('Date', color='#8b949e')
+        ax.set_ylabel('Price (USDT)', color='#8b949e')
+        ax.grid(True, alpha=0.1, color='#30363d')
+        
+        # Format x-axis
+        ax.xaxis.set_major_formatter(mdates.DateFormatter('%b %d'))
+        ax.xaxis.set_major_locator(mdates.DayLocator(interval=3))
+        plt.setp(ax.xaxis.get_majorticklabels(), rotation=45, ha='right')
+        
+        # Save to buffer
+        buf = io.BytesIO()
+        plt.tight_layout()
+        plt.savefig(buf, format='png', dpi=100, facecolor='#0d1117')
+        buf.seek(0)
+        
+        # Convert to base64 for embedding
+        img_base64 = base64.b64encode(buf.getvalue()).decode('utf-8')
+        plt.close(fig)
+        
+        return img_base64
+        
+    except Exception as e:
+        print(f"⚠️ Chart generation error for {symbol}: {e}")
+        return None
+
+# ============================================
+# 3. CALCULATE INDICATORS
 # ============================================
 
 def calculate_rsi(closes, period=14):
@@ -169,7 +232,7 @@ def find_support_resistance(klines):
     }
 
 # ============================================
-# 3. GENERATE ANALYSIS
+# 4. GENERATE ANALYSIS
 # ============================================
 
 def generate_analysis(symbol, stats, klines):
@@ -180,12 +243,10 @@ def generate_analysis(symbol, stats, klines):
         high_24h = float(stats.get('highPrice', 0))
         low_24h = float(stats.get('lowPrice', 0))
         volume = float(stats.get('volume', 0))
-    except (ValueError, TypeError) as e:
-        print(f"⚠️ Error parsing stats for {symbol}: {e}")
-        # Use mock values
-        current_price = 50000 if symbol == 'BTCUSDT' else 3000 if symbol == 'ETHUSDT' else 600
+    except (ValueError, TypeError):
+        current_price = 50000 if symbol == 'BTCUSDT' else 3000
         price_change = 100
-        price_change_pct = 0.2
+        price_change_pct = 2.0
         high_24h = current_price * 1.05
         low_24h = current_price * 0.95
         volume = 1000000
@@ -277,10 +338,10 @@ def generate_summary(symbol, price, trend, signal, rsi, levels):
     return summary
 
 # ============================================
-# 4. GENERATE HTML (unchanged)
+# 5. GENERATE HTML WITH CHART
 # ============================================
 
-def generate_html(report):
+def generate_html(report, chart_base64):
     day = datetime.now().strftime('%d')
     month = datetime.now().strftime('%m')
     year = datetime.now().strftime('%Y')
@@ -292,7 +353,12 @@ def generate_html(report):
     signal_class = 'buy' if report['signal'] == 'BUY' else 'sell' if report['signal'] == 'SELL' else 'hold'
     change_class = 'up' if report['change'] > 0 else 'down'
     
-    # HTML template (same as before - shortened for brevity)
+    # Build chart HTML
+    if chart_base64:
+        chart_img = f'<img src="data:image/png;base64,{chart_base64}" alt="{symbol_name} Price Chart" style="width:100%;border-radius:8px;" />'
+    else:
+        chart_img = '<div style="padding:20px;text-align:center;color:var(--text-muted);">📊 Chart unavailable</div>'
+    
     html = f'''<!DOCTYPE html>
 <html lang="en" data-theme="dark">
 <head>
@@ -308,8 +374,8 @@ def generate_html(report):
   <meta property="og:type" content="article" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-  <script src="https://unpkg.com/lightweight-charts@4.2.2/dist/lightweight-charts.standalone.production.js"></script>
   <style>
+    /* ... (same styles as before) ... */
     :root {{
       --bg-primary: #0d1117;
       --bg-secondary: #161b22;
@@ -442,6 +508,26 @@ def generate_html(report):
     .signal-badge.sell {{ background: rgba(239, 83, 80, 0.15); color: var(--down-color); }}
     .signal-badge.hold {{ background: rgba(210, 153, 34, 0.15); color: #d29922; }}
     
+    .chart-container {{
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-primary);
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      margin: 24px 0;
+    }}
+    .chart-container .chart-header {{
+      padding: 10px 16px;
+      background: var(--bg-tertiary);
+      border-bottom: 1px solid var(--border-primary);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }}
+    .chart-container .chart-body {{
+      padding: 16px;
+      background: var(--bg-primary);
+    }}
+    
     .metrics-grid {{
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
@@ -467,103 +553,6 @@ def generate_html(report):
     }}
     .metric-card .value.up {{ color: var(--up-color); }}
     .metric-card .value.down {{ color: var(--down-color); }}
-    
-    .chart-embed {{
-      background: var(--bg-secondary);
-      border: 1px solid var(--border-primary);
-      border-radius: var(--radius-xl);
-      overflow: hidden;
-      margin: 24px 0;
-    }}
-    .chart-embed-header {{
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 16px;
-      background: var(--bg-tertiary);
-      border-bottom: 1px solid var(--border-primary);
-    }}
-    .chart-embed-header span {{
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text-secondary);
-    }}
-    .chart-embed-body {{
-      padding: 0;
-      min-height: 320px;
-      background: var(--bg-primary);
-      position: relative;
-      cursor: pointer;
-    }}
-    .chart-embed-body .chart-container {{
-      width: 100%;
-      height: 320px;
-      position: relative;
-    }}
-    .chart-embed-body .chart-container canvas {{
-      width: 100% !important;
-      height: 100% !important;
-    }}
-    .chart-embed-body .click-overlay {{
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      z-index: 10;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background: rgba(0, 0, 0, 0.4);
-      opacity: 0;
-      transition: opacity 0.3s;
-      cursor: pointer;
-    }}
-    .chart-embed-body:hover .click-overlay {{ opacity: 1; }}
-    .chart-embed-body .click-overlay span {{
-      background: var(--accent-primary);
-      color: white;
-      padding: 10px 24px;
-      border-radius: 10px;
-      font-weight: 700;
-      font-size: 14px;
-    }}
-    .chart-embed-footer {{
-      padding: 10px 16px;
-      background: var(--bg-tertiary);
-      border-top: 1px solid var(--border-primary);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 11px;
-      color: var(--text-muted);
-    }}
-    .chart-embed-footer .live-dot {{
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--up-color);
-      display: inline-block;
-      animation: pulse 2s infinite;
-    }}
-    @keyframes pulse {{
-      0%, 100% {{ opacity: 1; }}
-      50% {{ opacity: 0.3; }}
-    }}
-    .chart-embed-footer .launch-btn {{
-      background: var(--accent-primary);
-      color: white;
-      border: none;
-      padding: 6px 16px;
-      border-radius: 6px;
-      font-weight: 600;
-      font-size: 11px;
-      cursor: pointer;
-      transition: opacity 0.2s;
-      text-decoration: none;
-    }}
-    .chart-embed-footer .launch-btn:hover {{ opacity: 0.85; }}
     
     .table-wrapper {{
       overflow-x: auto;
@@ -641,8 +630,6 @@ def generate_html(report):
       .article-header .excerpt {{ font-size: 15px; }}
       .article-body h2 {{ font-size: 22px; }}
       .metrics-grid {{ grid-template-columns: 1fr 1fr; }}
-      .chart-embed-body {{ min-height: 220px; }}
-      .chart-embed-body .chart-container {{ height: 220px; }}
     }}
   </style>
 </head>
@@ -683,22 +670,13 @@ def generate_html(report):
       <span style="font-size:13px;color:var(--text-muted);">Confidence: {report['confidence']}%</span>
     </div>
 
-    <div class="chart-embed">
-      <div class="chart-embed-header">
-        <span><i class="fas fa-chart-line"></i> {symbol_name}/USDT Live Chart</span>
-        <span style="font-size:10px;color:var(--text-muted);">4H · Real-time</span>
+    <!-- CHART -->
+    <div class="chart-container">
+      <div class="chart-header">
+        <span><i class="fas fa-chart-line"></i> {symbol_name} Price Chart (30 Days)</span>
       </div>
-      <div class="chart-embed-body">
-        <div class="chart-container" id="chart"></div>
-        <div class="click-overlay" onclick="window.open('{tv_link}', '_blank')">
-          <span>🚀 Analyze on TradeVision Pro</span>
-        </div>
-      </div>
-      <div class="chart-embed-footer">
-        <span><span class="live-dot"></span> Live via Binance</span>
-        <a href="{tv_link}" target="_blank" class="launch-btn">
-          <i class="fas fa-chart-line"></i> Full Analysis → 
-        </a>
+      <div class="chart-body">
+        {chart_img}
       </div>
     </div>
 
@@ -778,70 +756,13 @@ def generate_html(report):
   <p>&copy; 2026 TradeVision Pro. All rights reserved.</p>
 </footer>
 
-<script>
-  function renderChart() {{
-    const container = document.getElementById('chart');
-    if (!container) return;
-    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    const colors = {{
-      background: isDark ? '#0d1117' : '#ffffff',
-      grid: isDark ? '#21262d' : '#e1e4e8',
-      text: isDark ? '#c9d1d9' : '#424a53',
-      up: '#26a69a',
-      down: '#ef5350'
-    }};
-    const chart = LightweightCharts.createChart(container, {{
-      width: container.clientWidth || 700,
-      height: container.clientHeight || 320,
-      layout: {{ background: {{ color: colors.background }}, textColor: colors.text, fontSize: 10 }},
-      grid: {{ vertLines: {{ color: colors.grid }}, horzLines: {{ color: colors.grid }} }},
-      rightPriceScale: {{ borderColor: colors.grid }},
-      timeScale: {{ borderColor: colors.grid, timeVisible: true }},
-    }});
-    const series = chart.addCandlestickSeries({{
-      upColor: colors.up,
-      downColor: colors.down,
-      borderUpColor: colors.up,
-      borderDownColor: colors.down,
-      wickUpColor: colors.up,
-      wickDownColor: colors.down,
-    }});
-    fetch('https://api.binance.com/api/v3/klines?symbol={report['symbol']}&interval=4h&limit=100')
-      .then(res => res.json())
-      .then(data => {{
-        const candles = data.map(c => ({{
-          time: Math.floor(c[0] / 1000),
-          open: parseFloat(c[1]),
-          high: parseFloat(c[2]),
-          low: parseFloat(c[3]),
-          close: parseFloat(c[4]),
-        }}));
-        series.setData(candles);
-        chart.timeScale().fitContent();
-      }})
-      .catch(() => {{
-        container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted);">📊 Loading data...</div>';
-      }});
-    const resize = () => {{
-      const rect = container.getBoundingClientRect();
-      if (rect.width > 0 && rect.height > 0) {{
-        chart.applyOptions({{ width: rect.width, height: rect.height }});
-        chart.timeScale().fitContent();
-      }}
-    }};
-    window.addEventListener('resize', resize);
-    new ResizeObserver(resize).observe(container);
-  }}
-  setTimeout(renderChart, 300);
-</script>
-
 </body>
 </html>'''
     
     return html
 
 # ============================================
-# 5. GENERATE POSTS JSON
+# 6. GENERATE POSTS JSON
 # ============================================
 
 def generate_posts_json(articles):
@@ -851,7 +772,7 @@ def generate_posts_json(articles):
     print(f'✅ Created posts.json with {len(articles)} articles')
 
 # ============================================
-# 6. UPDATE ARCHIVE PAGE
+# 7. UPDATE ARCHIVE PAGE
 # ============================================
 
 def update_archive_page(year, month, articles):
@@ -880,6 +801,7 @@ def update_archive_page(year, month, articles):
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <style>
+    /* ... (archive styles) ... */
     :root {{
       --bg-primary: #0d1117;
       --bg-secondary: #161b22;
@@ -1070,11 +992,12 @@ def update_archive_page(year, month, articles):
     print(f'✅ Updated archive: {archive_path}')
 
 # ============================================
-# 7. MAIN EXECUTION
+# 8. MAIN EXECUTION
 # ============================================
 
 def main():
     print('🚀 Starting auto-blog generator...')
+    print(f'📡 Using Binance US API: {BINANCE_API}')
     
     now = datetime.now()
     year = now.strftime('%Y')
@@ -1089,14 +1012,22 @@ def main():
     for symbol in TOP_SYMBOLS:
         print(f'📊 Analyzing {symbol}...')
         try:
+            # Fetch data
             stats = fetch_24hr_stats(symbol)
-            klines = fetch_klines(symbol, '4h', 100)
+            klines = fetch_klines(symbol, '1d', 30)
+            
+            # Generate analysis
             report = generate_analysis(symbol, stats, klines)
             
+            # Generate chart
+            print(f'   📈 Generating chart for {symbol}...')
+            chart_base64 = generate_chart(symbol, klines, None)
+            
+            # Generate HTML
             symbol_name = symbol.replace('USDT', '').lower()
             filename = f'{OUTPUT_DIR}/{year}/{month}/{day}-{symbol_name}-analysis.html'
             
-            html = generate_html(report)
+            html = generate_html(report, chart_base64)
             with open(filename, 'w') as f:
                 f.write(html)
             print(f'✅ Created: {filename}')
@@ -1121,7 +1052,7 @@ def main():
             
         except Exception as e:
             print(f'❌ Error analyzing {symbol}: {e}')
-            # Continue with next symbol instead of failing completely
+            continue
     
     if articles:
         update_archive_page(year, month, articles)
@@ -1130,6 +1061,7 @@ def main():
         generate_posts_json(posts_json)
     
     print('🎉 Auto-blog generation complete!')
+    print(f'📊 Generated {len(articles)} articles for {len(TOP_SYMBOLS)} assets')
 
 if __name__ == '__main__':
     main()
